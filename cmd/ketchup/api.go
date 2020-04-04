@@ -4,10 +4,7 @@ import (
 	"flag"
 	"net/http"
 	"os"
-	"strings"
 
-	"github.com/ViBiOh/goweb/pkg/dump"
-	"github.com/ViBiOh/goweb/pkg/hello"
 	"github.com/ViBiOh/httputils/v3/pkg/alcotest"
 	"github.com/ViBiOh/httputils/v3/pkg/cors"
 	"github.com/ViBiOh/httputils/v3/pkg/httputils"
@@ -15,6 +12,7 @@ import (
 	"github.com/ViBiOh/httputils/v3/pkg/owasp"
 	"github.com/ViBiOh/httputils/v3/pkg/prometheus"
 	"github.com/ViBiOh/httputils/v3/pkg/swagger"
+	"github.com/ViBiOh/ketchup/pkg/github"
 )
 
 const (
@@ -23,7 +21,7 @@ const (
 )
 
 func main() {
-	fs := flag.NewFlagSet("api", flag.ExitOnError)
+	fs := flag.NewFlagSet("ketchup", flag.ExitOnError)
 
 	serverConfig := httputils.Flags(fs, "")
 	alcotestConfig := alcotest.Flags(fs, "")
@@ -32,7 +30,7 @@ func main() {
 	corsConfig := cors.Flags(fs, "cors")
 	swaggerConfig := swagger.Flags(fs, "swagger")
 
-	helloConfig := hello.Flags(fs, "")
+	githubConfig := github.Flags(fs, "github")
 
 	logger.Fatal(fs.Parse(os.Args[1:]))
 
@@ -43,23 +41,20 @@ func main() {
 	server.Middleware(owasp.New(owaspConfig).Middleware)
 	server.Middleware(cors.New(corsConfig).Middleware)
 
-	swaggerApp, err := swagger.New(swaggerConfig, server.Swagger, hello.Swagger)
+	githubApp := github.New(githubConfig)
+
+	viwsRelease, err := githubApp.LastRelease("vibioh", "viws")
+	if err != nil {
+		logger.Fatal(err)
+	}
+	logger.Info("%+v", viwsRelease)
+
+	swaggerApp, err := swagger.New(swaggerConfig, server.Swagger)
 	logger.Fatal(err)
 
-	helloHandler := http.StripPrefix(helloPath, hello.Handler(helloConfig))
-	dumpHandler := http.StripPrefix(dumpPath, dump.Handler())
 	swaggerHandler := swaggerApp.Handler()
 
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if strings.HasPrefix(r.URL.Path, helloPath) {
-			helloHandler.ServeHTTP(w, r)
-			return
-		}
-		if strings.HasPrefix(r.URL.Path, dumpPath) {
-			dumpHandler.ServeHTTP(w, r)
-			return
-		}
-
 		swaggerHandler.ServeHTTP(w, r)
 	})
 

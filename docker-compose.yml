@@ -4,20 +4,20 @@ version: "2"
 
 services:
   api:
-    image: ${DOCKER_USER}/goweb
+    image: ${DOCKER_USER}/ketchup
     labels:
-      traefik.http.routers.goweb-http.rule: Host(`${DOMAIN}`)
-      traefik.http.routers.goweb-http.entrypoints: http
-      traefik.http.routers.goweb-http.middlewares: redirect@file
-      traefik.http.routers.goweb-https.rule: Host(`${DOMAIN}`)
-      traefik.http.routers.goweb-https.entrypoints: https
-      traefik.http.routers.goweb-https.middlewares: compress@file, web-limit@file
-      traefik.http.routers.goweb-https.tls: "true"
-      traefik.http.routers.goweb-https.tls.certresolver: default
-      traefik.http.services.goweb-service.loadbalancer.server.port: "1080"
+      traefik.http.routers.ketchup-http.rule: Host(`${DOMAIN}`)
+      traefik.http.routers.ketchup-http.entrypoints: http
+      traefik.http.routers.ketchup-http.middlewares: redirect@file
+      traefik.http.routers.ketchup-https.rule: Host(`${DOMAIN}`)
+      traefik.http.routers.ketchup-https.entrypoints: https
+      traefik.http.routers.ketchup-https.middlewares: compress@file, web-limit@file
+      traefik.http.routers.ketchup-https.tls: "true"
+      traefik.http.routers.ketchup-https.tls.certresolver: default
+      traefik.http.services.ketchup-service.loadbalancer.server.port: "1080"
     environment:
       API_CSP: "default-src 'self'; base-uri 'self'; script-src 'self' 'unsafe-inline' unpkg.com/swagger-ui-dist@3/; style-src 'self' 'unsafe-inline' unpkg.com/swagger-ui-dist@3/; img-src 'self' data:"
-      API_SWAGGER_TITLE: "GoWeb"
+      API_SWAGGER_TITLE: "ketchup"
     restart: on-failure:5
     read_only: true
     cpu_shares: 128

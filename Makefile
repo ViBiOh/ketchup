@@ -5,10 +5,10 @@ ifneq ("$(wildcard .env)","")
 	export
 endif
 
-APP_NAME = goweb
+APP_NAME = ketchup
 PACKAGES ?= ./...
 
-MAIN_SOURCE = cmd/goweb/api.go
+MAIN_SOURCE = cmd/ketchup/api.go
 MAIN_RUNNER = go run $(MAIN_SOURCE)
 ifeq ($(DEBUG), true)
 	MAIN_RUNNER = dlv debug $(MAIN_SOURCE) --
