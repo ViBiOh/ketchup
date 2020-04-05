@@ -7,12 +7,14 @@ import (
 
 	"github.com/ViBiOh/httputils/v3/pkg/alcotest"
 	"github.com/ViBiOh/httputils/v3/pkg/cors"
+	"github.com/ViBiOh/httputils/v3/pkg/db"
 	"github.com/ViBiOh/httputils/v3/pkg/httputils"
 	"github.com/ViBiOh/httputils/v3/pkg/logger"
 	"github.com/ViBiOh/httputils/v3/pkg/owasp"
 	"github.com/ViBiOh/httputils/v3/pkg/prometheus"
 	"github.com/ViBiOh/httputils/v3/pkg/swagger"
 	"github.com/ViBiOh/ketchup/pkg/github"
+	"github.com/ViBiOh/ketchup/pkg/ketchup"
 )
 
 const (
@@ -30,7 +32,9 @@ func main() {
 	corsConfig := cors.Flags(fs, "cors")
 	swaggerConfig := swagger.Flags(fs, "swagger")
 
+	dbConfig := db.Flags(fs, "db")
 	githubConfig := github.Flags(fs, "github")
+	ketchupConfig := ketchup.Flags(fs, "ketchup")
 
 	logger.Fatal(fs.Parse(os.Args[1:]))
 
@@ -41,13 +45,11 @@ func main() {
 	server.Middleware(owasp.New(owaspConfig).Middleware)
 	server.Middleware(cors.New(corsConfig).Middleware)
 
-	githubApp := github.New(githubConfig)
+	ketchupDb, err := db.New(dbConfig)
+	logger.Fatal(err)
 
-	viwsRelease, err := githubApp.LastRelease("vibioh", "viws")
-	if err != nil {
-		logger.Fatal(err)
-	}
-	logger.Info("%+v", viwsRelease)
+	githubApp := github.New(githubConfig)
+	ketchupAp := ketchup.New(ketchupConfig, ketchupDb, githubApp)
 
 	swaggerApp, err := swagger.New(swaggerConfig, server.Swagger)
 	logger.Fatal(err)
@@ -57,6 +59,8 @@ func main() {
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		swaggerHandler.ServeHTTP(w, r)
 	})
+
+	go ketchupAp.Start()
 
 	server.ListenServeWait(handler)
 }
