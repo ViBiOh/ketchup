@@ -37,6 +37,18 @@ Usage of ketchup:
         [cors] Access-Control-Allow-Origin {KETCHUP_CORS_ORIGIN} (default "*")
   -csp string
         [owasp] Content-Security-Policy {KETCHUP_CSP} (default "default-src 'self'; base-uri 'self'")
+  -dbHost string
+        [db] Host {KETCHUP_DB_HOST}
+  -dbName string
+        [db] Name {KETCHUP_DB_NAME}
+  -dbPass string
+        [db] Pass {KETCHUP_DB_PASS}
+  -dbPort uint
+        [db] Port {KETCHUP_DB_PORT} (default 5432)
+  -dbSslmode string
+        [db] SSL Mode {KETCHUP_DB_SSLMODE} (default "disable")
+  -dbUser string
+        [db] User {KETCHUP_DB_USER}
   -frameOptions string
         [owasp] X-Frame-Options {KETCHUP_FRAME_OPTIONS} (default "deny")
   -githubToken string
@@ -45,6 +57,10 @@ Usage of ketchup:
         [http] Grace duration when SIGTERM received {KETCHUP_GRACE_DURATION} (default "15s")
   -hsts
         [owasp] Indicate Strict Transport Security {KETCHUP_HSTS} (default true)
+  -ketchupTimezone string
+        [ketchup] Timezone {KETCHUP_KETCHUP_TIMEZONE} (default "Europe/Paris")
+  -ketchupTo string
+        [ketchup] Email to send notification {KETCHUP_KETCHUP_TO}
   -key string
         [http] Key file {KETCHUP_KEY}
   -okStatus int
