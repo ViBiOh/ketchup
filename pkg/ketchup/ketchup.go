@@ -1,8 +1,9 @@
 package ketchup
 
 import (
-	"database/sql"
+	"context"
 	"flag"
+	"fmt"
 	"strings"
 	"time"
 
@@ -10,6 +11,7 @@ import (
 	"github.com/ViBiOh/httputils/v3/pkg/flags"
 	"github.com/ViBiOh/httputils/v3/pkg/logger"
 	"github.com/ViBiOh/ketchup/pkg/github"
+	"github.com/ViBiOh/ketchup/pkg/target"
 )
 
 // App of package
@@ -27,7 +29,7 @@ type app struct {
 	emailTo  string
 	timezone string
 
-	db        *sql.DB
+	targetApp target.App
 	githubApp github.App
 }
 
@@ -40,12 +42,12 @@ func Flags(fs *flag.FlagSet, prefix string) Config {
 }
 
 // New creates new App from Config
-func New(config Config, db *sql.DB, githubApp github.App) App {
+func New(config Config, targetApp target.App, githubApp github.App) App {
 	return &app{
 		emailTo:  strings.TrimSpace(*config.emailTo),
 		timezone: strings.TrimSpace(*config.timezone),
 
-		db:        db,
+		targetApp: targetApp,
 		githubApp: githubApp,
 	}
 }
@@ -57,11 +59,25 @@ func (a app) Start() {
 }
 
 func (a app) checkUpdates(_ time.Time) error {
-	release, err := a.githubApp.LastRelease("vibioh", "viws")
+	targets, _, err := a.targetApp.List(context.Background(), 1, 100, "", false, nil)
 	if err != nil {
-		return err
+		return fmt.Errorf("unable to get targets: %s", err)
 	}
 
-	logger.Info("%+v", release)
+	for _, o := range targets {
+		target := o.(target.Target)
+
+		release, err := a.githubApp.LastRelease(target.Owner, target.Repository)
+		if err != nil {
+			return err
+		}
+
+		if release.TagName != target.Version {
+			logger.Info("New version available for %s/%s", target.Owner, target.Repository)
+		} else {
+			logger.Info("%s/%s is up-to-date!", target.Owner, target.Repository)
+		}
+	}
+
 	return nil
 }
