@@ -50,6 +50,7 @@ func main() {
 
 	ketchupDb, err := db.New(dbConfig)
 	logger.Fatal(err)
+	server.Health(ketchupDb.Ping)
 
 	targetApp := target.New(ketchupDb)
 	githubApp := github.New(githubConfig)
