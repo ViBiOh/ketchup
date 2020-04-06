@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/ViBiOh/httputils/v3/pkg/crud"
 	"github.com/ViBiOh/httputils/v3/pkg/db"
 	"github.com/ViBiOh/ketchup/pkg/model"
 )
@@ -16,7 +15,7 @@ func scanTarget(row model.RowScanner) (Target, error) {
 	err := row.Scan(&target.ID, &target.Owner, &target.Repository, &target.Version)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return target, crud.ErrNotFound
+			return target, err
 		}
 
 		return target, err

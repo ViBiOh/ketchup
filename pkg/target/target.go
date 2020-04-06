@@ -65,6 +65,10 @@ func (a app) List(ctx context.Context, page, pageSize uint, sortKey string, sort
 func (a app) Get(ctx context.Context, ID uint64) (interface{}, error) {
 	target, err := a.getTargetByID(ID)
 	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, crud.ErrNotFound
+		}
+
 		return nil, fmt.Errorf("unable to get target: %w", err)
 	}
 
