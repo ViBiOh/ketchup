@@ -73,6 +73,16 @@ Usage of ketchup:
         [swagger] API Title {KETCHUP_SWAGGER_TITLE} (default "API")
   -swaggerVersion string
         [swagger] API Version {KETCHUP_SWAGGER_VERSION} (default "1.0.0")
+  -targetsDefaultPage uint
+        [targets] Default page {KETCHUP_TARGETS_DEFAULT_PAGE} (default 1)
+  -targetsDefaultPageSize uint
+        [targets] Default page size {KETCHUP_TARGETS_DEFAULT_PAGE_SIZE} (default 20)
+  -targetsMaxPageSize uint
+        [targets] Max page size {KETCHUP_TARGETS_MAX_PAGE_SIZE} (default 100)
+  -targetsName string
+        [targets] Resource's name {KETCHUP_TARGETS_NAME}
+  -targetsPath string
+        [targets] HTTP Path {KETCHUP_TARGETS_PATH}
   -url string
         [alcotest] URL to check {KETCHUP_URL}
   -userAgent string
