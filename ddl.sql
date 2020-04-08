@@ -2,6 +2,7 @@
 DROP TABLE IF EXISTS target;
 
 DROP INDEX IF EXISTS target_id;
+DROP INDEX IF EXISTS target_repository;
 
 DROP SEQUENCE IF EXISTS target_id_seq;
 
