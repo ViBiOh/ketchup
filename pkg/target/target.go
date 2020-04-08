@@ -43,7 +43,7 @@ func (a app) Unmarshal(content []byte) (interface{}, error) {
 		return nil, err
 	}
 
-	return &o, nil
+	return o, nil
 }
 
 // List Targets
@@ -72,18 +72,18 @@ func (a app) Get(ctx context.Context, ID uint64) (interface{}, error) {
 		return nil, fmt.Errorf("unable to get target: %w", err)
 	}
 
-	return &target, nil
+	return target, nil
 }
 
 // Create Target
 func (a app) Create(ctx context.Context, o interface{}) (item interface{}, err error) {
-	var target *Target
+	var target Target
 	target, err = getTargetFromItem(ctx, o)
 	if err != nil {
 		return
 	}
 
-	err = a.saveTarget(target, nil)
+	err = a.saveTarget(&target, nil)
 	if err != nil {
 		err = fmt.Errorf("unable to create target: %w", err)
 		return
@@ -96,13 +96,13 @@ func (a app) Create(ctx context.Context, o interface{}) (item interface{}, err e
 
 // Update Target
 func (a app) Update(ctx context.Context, o interface{}) (item interface{}, err error) {
-	var target *Target
+	var target Target
 	target, err = getTargetFromItem(ctx, o)
 	if err != nil {
 		return
 	}
 
-	err = a.saveTarget(target, nil)
+	err = a.saveTarget(&target, nil)
 	if err != nil {
 		err = fmt.Errorf("unable to update target: %w", err)
 
@@ -116,13 +116,13 @@ func (a app) Update(ctx context.Context, o interface{}) (item interface{}, err e
 
 // Delete Target
 func (a app) Delete(ctx context.Context, o interface{}) (err error) {
-	var target *Target
+	var target Target
 	target, err = getTargetFromItem(ctx, o)
 	if err != nil {
 		return
 	}
 
-	err = a.deleteTarget(*target, nil)
+	err = a.deleteTarget(target, nil)
 	if err != nil {
 		err = fmt.Errorf("unable to delete target: %w", err)
 	}
@@ -154,10 +154,10 @@ func (a app) Check(ctx context.Context, old, new interface{}) []crud.Error {
 	return errors
 }
 
-func getTargetFromItem(ctx context.Context, o interface{}) (*Target, error) {
-	item, ok := o.(*Target)
+func getTargetFromItem(ctx context.Context, o interface{}) (Target, error) {
+	item, ok := o.(Target)
 	if !ok {
-		return nil, errors.New("item is not a Target")
+		return item, errors.New("item is not a Target")
 	}
 
 	return item, nil
