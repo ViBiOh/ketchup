@@ -23,7 +23,7 @@ type Release struct {
 
 // App of package
 type App interface {
-	LastRelease(owner, repository string) (Release, error)
+	LastRelease(repository string) (Release, error)
 }
 
 // Config of package
@@ -53,22 +53,22 @@ func (a app) newClient() *request.Request {
 	return request.New().Header("Authorization", fmt.Sprintf("token %s", a.token))
 }
 
-func (a app) LastRelease(owner, repository string) (Release, error) {
+func (a app) LastRelease(repository string) (Release, error) {
 	var release Release
 
 	req := a.newClient()
-	resp, err := req.Get(fmt.Sprintf("%s/repos/%s/%s/releases/latest", apiURL, owner, repository)).Send(context.Background(), nil)
+	resp, err := req.Get(fmt.Sprintf("%s/repos/%s/releases/latest", apiURL, repository)).Send(context.Background(), nil)
 	if err != nil {
-		return release, fmt.Errorf("unable to get latest release for %s/%s: %s", owner, repository, err)
+		return release, fmt.Errorf("unable to get latest release for %s: %s", repository, err)
 	}
 
 	payload, err := request.ReadBodyResponse(resp)
 	if err != nil {
-		return release, fmt.Errorf("unable to read release body for %s/%s: %s", owner, repository, err)
+		return release, fmt.Errorf("unable to read release body for %s: %s", repository, err)
 	}
 
 	if err := json.Unmarshal(payload, &release); err != nil {
-		return release, fmt.Errorf("unable to parse release body for %s/%s: %s", owner, repository, err)
+		return release, fmt.Errorf("unable to parse release body for %s: %s", repository, err)
 	}
 
 	return release, err
