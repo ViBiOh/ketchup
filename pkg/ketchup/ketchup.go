@@ -67,15 +67,20 @@ func (a app) checkUpdates(_ time.Time) error {
 	for _, o := range targets {
 		target := o.(target.Target)
 
-		release, err := a.githubApp.LastRelease(target.Owner, target.Repository)
+		release, err := a.githubApp.LastRelease(target.Repository)
 		if err != nil {
 			return err
 		}
 
-		if release.TagName != target.Version {
-			logger.Info("New version available for %s/%s", target.Owner, target.Repository)
-		} else {
-			logger.Info("%s/%s is up-to-date!", target.Owner, target.Repository)
+		if release.TagName != target.LatestVersion {
+			logger.Info("New version available for %s", target.Repository)
+			target.LatestVersion = release.TagName
+
+			if _, err = a.targetApp.Update(context.Background(), target); err != nil {
+				logger.Error("unable to update target %s: %s", target.Repository, err)
+			}
+		} else if release.TagName == target.CurrentVersion {
+			logger.Info("%s is up-to-date!", target.Repository)
 		}
 	}
 

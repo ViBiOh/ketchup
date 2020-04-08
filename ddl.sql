@@ -9,11 +9,12 @@ DROP SEQUENCE IF EXISTS target_id_seq;
 CREATE SEQUENCE target_seq;
 CREATE TABLE target (
   id BIGINT NOT NULL DEFAULT nextval('target_seq'),
-  owner TEXT NOT NULL,
   repository TEXT NOT NULL,
-  version TEXT NOT NULL,
+  current_version TEXT NOT NULL,
+  latest_version TEXT NOT NULL,
   creation_date TIMESTAMP WITH TIME ZONE DEFAULT now()
 );
 ALTER SEQUENCE target_seq OWNED BY target.id;
 
 CREATE UNIQUE INDEX target_id ON target (id);
+CREATE UNIQUE INDEX target_repository ON target (repository);

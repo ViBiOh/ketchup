@@ -143,16 +143,12 @@ func (a app) Check(ctx context.Context, old, new interface{}) []crud.Error {
 
 	errors := make([]crud.Error, 0)
 
-	if strings.TrimSpace(item.Owner) == "" {
-		errors = append(errors, crud.NewError("owner", "owner is required"))
-	}
-
 	if strings.TrimSpace(item.Repository) == "" {
-		errors = append(errors, crud.NewError("repository", "repository is required"))
+		errors = append(errors, crud.NewError("repository", "repository is required, in the form user/repository"))
 	}
 
-	if strings.TrimSpace(item.Version) == "" {
-		errors = append(errors, crud.NewError("version", "version is required"))
+	if strings.TrimSpace(item.CurrentVersion) == "" {
+		errors = append(errors, crud.NewError("current_version", "current version is required"))
 	}
 
 	return errors
