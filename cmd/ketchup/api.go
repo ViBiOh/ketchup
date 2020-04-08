@@ -18,6 +18,7 @@ import (
 	"github.com/ViBiOh/ketchup/pkg/github"
 	"github.com/ViBiOh/ketchup/pkg/ketchup"
 	"github.com/ViBiOh/ketchup/pkg/target"
+	mailer "github.com/ViBiOh/mailer/pkg/client"
 )
 
 const (
@@ -35,6 +36,7 @@ func main() {
 	swaggerConfig := swagger.Flags(fs, "swagger")
 
 	dbConfig := db.Flags(fs, "db")
+	mailerConfig := mailer.Flags(fs, "mailer")
 	githubConfig := github.Flags(fs, "github")
 	ketchupConfig := ketchup.Flags(fs, "ketchup")
 	crudTargetConfig := crud.GetConfiguredFlags("targets", "Target of Ketchup")(fs, "targets")
@@ -52,9 +54,10 @@ func main() {
 	logger.Fatal(err)
 	server.Health(ketchupDb.Ping)
 
-	targetApp := target.New(ketchupDb)
 	githubApp := github.New(githubConfig)
-	ketchupAp := ketchup.New(ketchupConfig, targetApp, githubApp)
+	mailerApp := mailer.New(mailerConfig)
+	targetApp := target.New(ketchupDb, githubApp)
+	ketchupAp := ketchup.New(ketchupConfig, targetApp, githubApp, mailerApp)
 
 	crudTargetApp, err := crud.New(crudTargetConfig, targetApp)
 	logger.Fatal(err)

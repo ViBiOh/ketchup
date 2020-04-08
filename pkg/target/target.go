@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/ViBiOh/httputils/v3/pkg/crud"
+	"github.com/ViBiOh/ketchup/pkg/github"
 )
 
 var _ crud.Service = &app{}
@@ -25,13 +26,15 @@ type App interface {
 }
 
 type app struct {
-	db *sql.DB
+	db        *sql.DB
+	githubApp github.App
 }
 
 // New creates new App from Config
-func New(db *sql.DB) App {
+func New(db *sql.DB, githubApp github.App) App {
 	return &app{
-		db: db,
+		db:        db,
+		githubApp: githubApp,
 	}
 }
 
@@ -78,17 +81,28 @@ func (a app) Get(ctx context.Context, ID uint64) (interface{}, error) {
 // Create Target
 func (a app) Create(ctx context.Context, o interface{}) (item interface{}, err error) {
 	var target Target
+	var newID uint64
+
 	target, err = getTargetFromItem(ctx, o)
 	if err != nil {
 		return
 	}
 
-	err = a.saveTarget(&target, nil)
+	release, githubErr := a.githubApp.LastRelease(target.Repository)
+	if githubErr != nil {
+		err = fmt.Errorf("unable to get latest release for %s: %s", target.Repository, githubErr)
+		return
+	}
+
+	target.LatestVersion = release.TagName
+
+	newID, err = a.saveTarget(target, nil)
 	if err != nil {
 		err = fmt.Errorf("unable to create target: %w", err)
 		return
 	}
 
+	target.ID = newID
 	item = target
 
 	return
@@ -102,7 +116,7 @@ func (a app) Update(ctx context.Context, o interface{}) (item interface{}, err e
 		return
 	}
 
-	err = a.saveTarget(&target, nil)
+	_, err = a.saveTarget(target, nil)
 	if err != nil {
 		err = fmt.Errorf("unable to update target: %w", err)
 
@@ -149,6 +163,10 @@ func (a app) Check(ctx context.Context, old, new interface{}) []crud.Error {
 
 	if strings.TrimSpace(item.CurrentVersion) == "" {
 		errors = append(errors, crud.NewError("current_version", "current version is required"))
+	}
+
+	if target, err := a.getTargetByRepository(item.Repository); err == nil {
+		errors = append(errors, crud.NewError("repository", fmt.Sprintf("repository already exists with id %d", target.ID)))
 	}
 
 	return errors

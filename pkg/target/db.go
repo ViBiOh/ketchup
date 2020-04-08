@@ -2,7 +2,6 @@ package target
 
 import (
 	"database/sql"
-	"errors"
 	"fmt"
 
 	"github.com/ViBiOh/httputils/v3/pkg/db"
@@ -100,13 +99,29 @@ func (a app) getTargetByID(id uint64) (Target, error) {
 	return scanTarget(a.db.QueryRow(getByIDQuery, id))
 }
 
+const getByRepositoryQuery = `
+SELECT
+  id,
+  repository,
+  current_version,
+  latest_version
+FROM
+  target
+WHERE
+  repository = $1
+`
+
+func (a app) getTargetByRepository(repository string) (Target, error) {
+	return scanTarget(a.db.QueryRow(getByRepositoryQuery, repository))
+}
+
 const insertQuery = `
 INSERT INTO
   target
 (
   repository,
   current_version,
-  latest_version,
+  latest_version
 ) VALUES (
   $1,
   $2,
@@ -125,11 +140,7 @@ WHERE
   id = $1
 `
 
-func (a app) saveTarget(o *Target, tx *sql.Tx) (err error) {
-	if o == nil {
-		err = errors.New("cannot save nil Target")
-	}
-
+func (a app) saveTarget(o Target, tx *sql.Tx) (newID uint64, err error) {
 	var usedTx *sql.Tx
 	if usedTx, err = db.GetTx(a.db, tx); err != nil {
 		return
@@ -141,13 +152,9 @@ func (a app) saveTarget(o *Target, tx *sql.Tx) (err error) {
 		}()
 	}
 
-	var newID uint64
-
 	if o.ID != 0 {
 		_, err = usedTx.Exec(updateQuery, o.ID, o.CurrentVersion, o.LatestVersion)
-	} else if insertErr := usedTx.QueryRow(insertQuery, o.Repository, o.CurrentVersion, o.LatestVersion).Scan(&newID); insertErr == nil {
-		o.ID = newID
-	} else {
+	} else if insertErr := usedTx.QueryRow(insertQuery, o.Repository, o.CurrentVersion, o.LatestVersion).Scan(&newID); insertErr != nil {
 		err = insertErr
 	}
 

@@ -12,6 +12,7 @@ import (
 	"github.com/ViBiOh/httputils/v3/pkg/logger"
 	"github.com/ViBiOh/ketchup/pkg/github"
 	"github.com/ViBiOh/ketchup/pkg/target"
+	mailer "github.com/ViBiOh/mailer/pkg/client"
 )
 
 // App of package
@@ -31,6 +32,7 @@ type app struct {
 
 	targetApp target.App
 	githubApp github.App
+	mailerApp mailer.App
 }
 
 // Flags adds flags for configuring package
@@ -42,13 +44,14 @@ func Flags(fs *flag.FlagSet, prefix string) Config {
 }
 
 // New creates new App from Config
-func New(config Config, targetApp target.App, githubApp github.App) App {
+func New(config Config, targetApp target.App, githubApp github.App, mailerApp mailer.App) App {
 	return &app{
 		emailTo:  strings.TrimSpace(*config.emailTo),
 		timezone: strings.TrimSpace(*config.timezone),
 
 		targetApp: targetApp,
 		githubApp: githubApp,
+		mailerApp: mailerApp,
 	}
 }
 
@@ -64,6 +67,8 @@ func (a app) checkUpdates(_ time.Time) error {
 		return fmt.Errorf("unable to get targets: %s", err)
 	}
 
+	newReleases := make([]github.Release, 0)
+
 	for _, o := range targets {
 		target := o.(target.Target)
 
@@ -76,11 +81,19 @@ func (a app) checkUpdates(_ time.Time) error {
 			logger.Info("New version available for %s", target.Repository)
 			target.LatestVersion = release.TagName
 
+			newReleases = append(newReleases, release)
+
 			if _, err = a.targetApp.Update(context.Background(), target); err != nil {
 				logger.Error("unable to update target %s: %s", target.Repository, err)
 			}
 		} else if release.TagName == target.CurrentVersion {
 			logger.Info("%s is up-to-date!", target.Repository)
+		}
+	}
+
+	if len(newReleases) > 0 {
+		if err := mailer.NewEmail(a.mailerApp).Template("ketchup").From("ketchup@vibioh.fr").As("Ketchup").WithSubject("Ketchup - New version available").To(a.emailTo).Data(newReleases).Send(context.Background()); err != nil {
+			logger.Error("unable to send email to %s: %s", a.emailTo, err)
 		}
 	}
 

@@ -63,6 +63,12 @@ Usage of ketchup:
         [ketchup] Email to send notification {KETCHUP_KETCHUP_TO}
   -key string
         [http] Key file {KETCHUP_KEY}
+  -mailerPass string
+        [mailer] Pass {KETCHUP_MAILER_PASS}
+  -mailerURL string
+        [mailer] URL (an instance of github.com/ViBiOh/mailer) {KETCHUP_MAILER_URL}
+  -mailerUser string
+        [mailer] User {KETCHUP_MAILER_USER}
   -okStatus int
         [http] Healthy HTTP Status code {KETCHUP_OK_STATUS} (default 204)
   -port uint
@@ -80,9 +86,9 @@ Usage of ketchup:
   -targetsMaxPageSize uint
         [targets] Max page size {KETCHUP_TARGETS_MAX_PAGE_SIZE} (default 100)
   -targetsName string
-        [targets] Resource's name {KETCHUP_TARGETS_NAME}
+        [targets] Resource's name {KETCHUP_TARGETS_NAME} (default "Target of Ketchup")
   -targetsPath string
-        [targets] HTTP Path {KETCHUP_TARGETS_PATH}
+        [targets] HTTP Path {KETCHUP_TARGETS_PATH} (default "targets")
   -url string
         [alcotest] URL to check {KETCHUP_URL}
   -userAgent string
