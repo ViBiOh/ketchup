@@ -6,6 +6,8 @@
 [![Dependabot Status](https://api.dependabot.com/badges/status?host=github&repo=ViBiOh/ketchup)](https://dependabot.com)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=ViBiOh_ketchup&metric=alert_status)](https://sonarcloud.io/dashboard?id=ViBiOh_ketchup)
 
+Thanks to [OpenEmoji](https://openmoji.org) for favicon.
+
 ## CI
 
 Following variables are required for CI:

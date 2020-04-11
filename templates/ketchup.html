@@ -1,0 +1,22 @@
+{{ define "targets" }}
+<style>
+</style>
+
+<div>
+  {{ range $index, $target := . }}
+    <p>
+      <div>{{ $target.Repository }}</div>
+
+      <span class="{{ if ne $target.CurrentVersion $target.LatestVersion }}danger{{ else }}success{{ end }}">
+        {{ $target.CurrentVersion }}
+      </span>
+
+      {{ if ne $target.CurrentVersion $target.LatestVersion }}
+        <span>
+          -> <a class="success" href="https://github.com/{{ $target.Repository }}/releases/{{ $target.LatestVersion }}" rel="noopener noreferrer" target="_blank">{{ $target.LatestVersion }}</a>
+        </span>
+      {{ end }}
+    </p>
+  {{ end }}
+</div>
+{{ end }}
