@@ -4,6 +4,7 @@ import (
 	"flag"
 	"net/http"
 	"os"
+	"path"
 	"strings"
 
 	"github.com/ViBiOh/httputils/v3/pkg/alcotest"
@@ -18,11 +19,14 @@ import (
 	"github.com/ViBiOh/ketchup/pkg/github"
 	"github.com/ViBiOh/ketchup/pkg/ketchup"
 	"github.com/ViBiOh/ketchup/pkg/target"
+	"github.com/ViBiOh/ketchup/pkg/ui"
 	mailer "github.com/ViBiOh/mailer/pkg/client"
 )
 
 const (
-	targetPath = "/targets"
+	faviconPath = "/favicon"
+	apiPath     = "/api"
+	targetPath  = apiPath + "/targets"
 )
 
 func main() {
@@ -59,22 +63,34 @@ func main() {
 	targetApp := target.New(ketchupDb, githubApp)
 	ketchupAp := ketchup.New(ketchupConfig, targetApp, githubApp, mailerApp)
 
+	uiApp, err := ui.New(targetApp)
+	logger.Fatal(err)
+
 	crudTargetApp, err := crud.New(crudTargetConfig, targetApp)
 	logger.Fatal(err)
 
 	swaggerApp, err := swagger.New(swaggerConfig, server.Swagger, crudTargetApp.Swagger)
 	logger.Fatal(err)
 
+	swaggerHandler := http.StripPrefix(apiPath, swaggerApp.Handler())
 	crudTargetHandler := http.StripPrefix(targetPath, crudTargetApp.Handler())
-	swaggerHandler := swaggerApp.Handler()
+	uiHandler := uiApp.Handler()
 
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if strings.HasPrefix(r.URL.Path, targetPath) {
 			crudTargetHandler.ServeHTTP(w, r)
 			return
 		}
+		if strings.HasPrefix(r.URL.Path, apiPath) {
+			swaggerHandler.ServeHTTP(w, r)
+			return
+		}
 
-		swaggerHandler.ServeHTTP(w, r)
+		if strings.HasPrefix(r.URL.Path, faviconPath) {
+			http.ServeFile(w, r, path.Join("static", r.URL.Path))
+		}
+
+		uiHandler.ServeHTTP(w, r)
 	})
 
 	go ketchupAp.Start()

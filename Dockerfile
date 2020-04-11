@@ -3,9 +3,12 @@ FROM scratch
 ENV ZONEINFO zoneinfo.zip
 EXPOSE 1080
 
-ENV KETCHUP_PORT 1080
 ENV KETCHUP_CSP "default-src 'self'; base-uri 'self'; script-src 'self' 'unsafe-inline' unpkg.com/swagger-ui-dist@3/; style-src 'self' 'unsafe-inline' unpkg.com/swagger-ui-dist@3/; img-src 'self' data:"
+ENV KETCHUP_PORT 1080
 ENV KETCHUP_SWAGGER_TITLE ketchup
+
+COPY templates/ /templates
+COPY static/ /static
 
 HEALTHCHECK --retries=5 CMD [ "/ketchup", "-url", "http://localhost:1080/health" ]
 ENTRYPOINT [ "/ketchup" ]
