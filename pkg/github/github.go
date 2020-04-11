@@ -17,8 +17,9 @@ const (
 
 // Release describes a Github Release
 type Release struct {
-	TagName string `json:"tag_name"`
-	Body    string `json:"body"`
+	Repository string `json:"repository"`
+	TagName    string `json:"tag_name"`
+	Body       string `json:"body"`
 }
 
 // App of package
@@ -70,6 +71,8 @@ func (a app) LastRelease(repository string) (Release, error) {
 	if err := json.Unmarshal(payload, &release); err != nil {
 		return release, fmt.Errorf("unable to parse release body for %s: %s", repository, err)
 	}
+
+	release.Repository = repository
 
 	return release, err
 }

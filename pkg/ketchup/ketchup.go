@@ -78,7 +78,7 @@ func (a app) checkUpdates(_ time.Time) error {
 		}
 
 		if release.TagName != target.LatestVersion {
-			logger.Info("New version available for %s", target.Repository)
+			logger.Info("New version available for %s: %s", target.Repository, release.TagName)
 			target.LatestVersion = release.TagName
 
 			newReleases = append(newReleases, release)
@@ -92,7 +92,9 @@ func (a app) checkUpdates(_ time.Time) error {
 	}
 
 	if len(newReleases) > 0 {
-		if err := mailer.NewEmail(a.mailerApp).Template("ketchup").From("ketchup@vibioh.fr").As("Ketchup").WithSubject("Ketchup - New version available").To(a.emailTo).Data(newReleases).Send(context.Background()); err != nil {
+		if a.mailerApp == nil || !a.mailerApp.Enabled() {
+			logger.Warn("mailer is not configured")
+		} else if err := mailer.NewEmail(a.mailerApp).Template("ketchup").From("ketchup@vibioh.fr").As("Ketchup").WithSubject("Ketchup - New update").To(a.emailTo).Data(newReleases).Send(context.Background()); err != nil {
 			logger.Error("unable to send email to %s: %s", a.emailTo, err)
 		}
 	}
