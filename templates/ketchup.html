@@ -13,7 +13,7 @@
 
       {{ if ne $target.CurrentVersion $target.LatestVersion }}
         <span>
-          -> <a class="success" href="https://github.com/{{ $target.Repository }}/releases/{{ $target.LatestVersion }}" rel="noopener noreferrer" target="_blank">{{ $target.LatestVersion }}</a>
+          -> <a class="success" href="https://github.com/{{ $target.Repository }}/releases/tag/{{ $target.LatestVersion }}" rel="noopener noreferrer" target="_blank">{{ $target.LatestVersion }}</a>
         </span>
       {{ end }}
     </p>
