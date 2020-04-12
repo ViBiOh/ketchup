@@ -88,6 +88,8 @@ func (a app) checkUpdates(_ time.Time) error {
 			}
 		} else if release.TagName == target.CurrentVersion {
 			logger.Info("%s is up-to-date!", target.Repository)
+		} else {
+			logger.Info("%s still need to be updated to %s!", target.Repository, release.TagName)
 		}
 	}
 
