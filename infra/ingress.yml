@@ -1,0 +1,47 @@
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  name: ketchup-auth
+spec:
+  basicAuth:
+    secret: ketchup-auth
+    removeHeader: true
+
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: ketchup-http
+spec:
+  entryPoints:
+    - http
+  routes:
+    - match: Host(`ketchup.vibioh.fr`)
+      kind: Rule
+      middlewares:
+        - name: redirect
+      services:
+        - name: ketchup
+          port: 80
+
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: ketchup-https
+spec:
+  entryPoints:
+    - https
+  routes:
+    - match: Host(`ketchup.vibioh.fr`)
+      kind: Rule
+      middlewares:
+        - name: ketchup-auth
+        - name: compress
+        - name: ratelimit
+      services:
+        - name: ketchup
+          port: 80
+  tls:
+    certResolver: default

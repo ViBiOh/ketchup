@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"html/template"
 	"net/http"
+	"os"
 
 	"github.com/ViBiOh/httputils/v3/pkg/httperror"
 	"github.com/ViBiOh/httputils/v3/pkg/templates"
@@ -37,8 +38,12 @@ func New(targetApp target.App) (App, error) {
 
 // Handler for request. Should be use with net/http
 func (a app) Handler() http.Handler {
+	version := os.Getenv("VERSION")
+
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		content := make(map[string]interface{}, 0)
+		content := map[string]interface{}{
+			"Version": version,
+		}
 		status := http.StatusOK
 
 		targets, _, err := a.targetApp.List(r.Context(), 1, 100, "", false, nil)
