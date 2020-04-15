@@ -5,6 +5,7 @@ import (
 	"html/template"
 	"net/http"
 	"os"
+	"strings"
 
 	"github.com/ViBiOh/httputils/v3/pkg/httperror"
 	"github.com/ViBiOh/httputils/v3/pkg/templates"
@@ -36,11 +37,32 @@ func New(targetApp target.App) (App, error) {
 	}, nil
 }
 
+// SVG render a svg in given coolor
+func (a app) SVG(w http.ResponseWriter, name, fill string) {
+	tpl := a.tpl.Lookup(fmt.Sprintf("svg-%s", name))
+	if tpl == nil {
+		httperror.NotFound(w)
+		return
+	}
+
+	w.Header().Set("Content-Type", "image/svg+xml")
+
+	if err := templates.WriteTemplate(tpl, w, fill, "text/xml"); err != nil {
+		httperror.InternalServerError(w, err)
+		return
+	}
+}
+
 // Handler for request. Should be use with net/http
 func (a app) Handler() http.Handler {
 	version := os.Getenv("VERSION")
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if strings.HasPrefix(r.URL.Path, "/svg") {
+			a.SVG(w, strings.TrimPrefix(r.URL.Path, "/svg/"), r.URL.Query().Get("fill"))
+			return
+		}
+
 		content := map[string]interface{}{
 			"Version": version,
 		}
