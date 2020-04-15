@@ -1,22 +1,93 @@
+{{ define "delete-modal" }}
+  <div id="delete-modal-{{ .ID }}" class="modal">
+    <div class="modal-content">
+      <h2 class="header">Confirmation</h2>
+
+      <form method="delete" action="/api/targets/{{ .ID }}">
+        <p class="padding no-margin center">
+          Are you sure you want to delete <strong>{{ .Repository }}</strong>?
+        </p>
+
+        {{ template "form_buttons" "Confirm" }}
+      </form>
+    </div>
+  </div>
+{{ end }}
+
+
 {{ define "targets" }}
 <style>
+  {{ range . }}
+    #delete-modal-{{ .ID }}:target,
+    #edit-modal-{{ .ID }}:target,
+  {{ end }}
+  #action-modal:target {
+    display: flex;
+    z-index: 5;
+  }
+
+  {{ range . }}
+    #delete-modal-{{ .ID }}:target ~ .content,
+    #edit-modal-{{ .ID }}:target ~ .content,
+  {{ end }}
+  #action-modal:target ~ .content {
+    display: flex;
+    z-index: 5;
+  }
+
+  .target {
+    display: flex;
+  }
 </style>
 
-<div>
-  {{ range $index, $target := . }}
-    <p>
-      <div>{{ $target.Repository }}</div>
+<script>
+    /**
+     * Go back from state.
+     */
+    function goBack() {
+      const previousHash = document.location.hash;
+      document.location.hash = '';
 
-      <span class="{{ if ne $target.CurrentVersion $target.LatestVersion }}danger{{ else }}success{{ end }}">
-        {{ $target.CurrentVersion }}
+      if (/success$/gim.test(previousHash)) {
+        window.location.reload(true);
+      }
+    }
+
+    /**
+     * Handle Previous/next.
+     */
+    window.onkeyup = e => {
+      switch(e.key) {
+        case 'Escape':
+          goBack();
+          break;
+      }
+    };
+</script>
+
+<article>
+  {{ range $index, $target := . }}
+    {{ template "delete-modal" $target }}
+
+    <div class="padding target">
+      <span>
+        <p class="no-margin">{{ $target.Repository }}</p>
+
+        <span class="{{ if ne $target.CurrentVersion $target.LatestVersion }}danger{{ else }}success{{ end }}">
+          {{ $target.CurrentVersion }}
+        </span>
+
+        {{ if ne $target.CurrentVersion $target.LatestVersion }}
+          <span>
+            -> <a class="success" href="https://github.com/{{ $target.Repository }}/releases/tag/{{ $target.LatestVersion }}" rel="noopener noreferrer" target="_blank">{{ $target.LatestVersion }}</a>
+          </span>
+        {{ end }}
       </span>
 
-      {{ if ne $target.CurrentVersion $target.LatestVersion }}
-        <span>
-          -> <a class="success" href="https://github.com/{{ $target.Repository }}/releases/tag/{{ $target.LatestVersion }}" rel="noopener noreferrer" target="_blank">{{ $target.LatestVersion }}</a>
-        </span>
-      {{ end }}
-    </p>
+      <a href="#delete-modal-{{ .ID }}" class="button button-icon" alt="Delete">
+        <img class="icon" src="/svg/times?fill=silver" alt="Delete">
+      </a>
+    </div>
   {{ end }}
-</div>
+</article>
 {{ end }}

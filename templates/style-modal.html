@@ -1,0 +1,27 @@
+{{ define "style-modal" }}
+  {{ $root := . }}
+
+  <style>
+    .modal {
+      align-items: center;
+      background-color: rgba(84, 84, 84, 0.75);
+      display: none;
+      height: 100vh;
+      justify-content: center;
+      left: 0;
+      pointer-events: none;
+      position: fixed;
+      top: 0;
+      width: 100vw;
+    }
+
+    .modal-content {
+      background-color: var(--dark);
+      display: flex;
+      flex-direction: column;
+      max-height: 100%;
+      max-width: 100%;
+      pointer-events: auto;
+    }
+  </style>
+{{ end }}
