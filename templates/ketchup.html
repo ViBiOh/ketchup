@@ -14,6 +14,22 @@
   </div>
 {{ end }}
 
+{{ define "edit-modal" }}
+  <div id="edit-modal-{{ .ID }}" class="modal">
+    <div class="modal-content">
+      <h2 class="header">{{ .Repository }}</h2>
+
+      <form method="PUT" action="/api/targets/{{ .ID }}">
+        <p class="padding no-margin">
+          <label for="edit-current-version-{{ .ID }}" class="block">Current version:</label>
+          <input id="edit-current-version-{{ .ID }}" type="text" value="{{ .CurrentVersion }}">
+        </p>
+
+        {{ template "form_buttons" "Submit" }}
+      </form>
+    </div>
+  </div>
+{{ end }}
 
 {{ define "targets" }}
 <style>
@@ -67,6 +83,7 @@
 
 <article>
   {{ range $index, $target := . }}
+    {{ template "edit-modal" $target }}
     {{ template "delete-modal" $target }}
 
     <div class="padding target">
@@ -84,8 +101,11 @@
         {{ end }}
       </span>
 
+      <a href="#edit-modal-{{ .ID }}" class="button button-icon" alt="Edit">
+        <img class="icon" src="/svg/edit?fill=silver" alt="Edit icon">
+      </a>
       <a href="#delete-modal-{{ .ID }}" class="button button-icon" alt="Delete">
-        <img class="icon" src="/svg/times?fill=silver" alt="Delete">
+        <img class="icon" src="/svg/times?fill=silver" alt="Delete icon">
       </a>
     </div>
   {{ end }}
