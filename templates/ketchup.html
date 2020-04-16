@@ -1,14 +1,20 @@
-{{ define "delete-modal" }}
-  <div id="delete-modal-{{ .ID }}" class="modal">
+{{ define "create-modal" }}
+  <div id="create-modal" class="modal">
     <div class="modal-content">
-      <h2 class="header">Confirmation</h2>
+      <h2 class="header">Create target</h2>
 
-      <form method="delete" action="/api/targets/{{ .ID }}">
-        <p class="padding no-margin center">
-          Are you sure you want to delete <strong>{{ .Repository }}</strong>?
+      <form method="POST" action="/api/targets/">
+        <p class="padding no-margin">
+          <label for="create-name" class="block">Name:</label>
+          <input id="create-name" type="text" value="{{ .CurrentVersion }}">
         </p>
 
-        {{ template "form_buttons" "Confirm" }}
+        <p class="padding no-margin">
+          <label for="create-current-version" class="block">Current version:</label>
+          <input id="create-current-version" type="text" placeholder="1.0.0">
+        </p>
+
+        {{ template "form_buttons" "Create" }}
       </form>
     </div>
   </div>
@@ -25,7 +31,23 @@
           <input id="edit-current-version-{{ .ID }}" type="text" value="{{ .CurrentVersion }}">
         </p>
 
-        {{ template "form_buttons" "Submit" }}
+        {{ template "form_buttons" "Edit" }}
+      </form>
+    </div>
+  </div>
+{{ end }}
+
+{{ define "delete-modal" }}
+  <div id="delete-modal-{{ .ID }}" class="modal">
+    <div class="modal-content">
+      <h2 class="header">Confirmation</h2>
+
+      <form method="delete" action="/api/targets/{{ .ID }}">
+        <p class="padding no-margin center">
+          Are you sure you want to delete <strong>{{ .Repository }}</strong>?
+        </p>
+
+        {{ template "form_buttons" "Delete" }}
       </form>
     </div>
   </div>
@@ -37,7 +59,7 @@
     #delete-modal-{{ .ID }}:target,
     #edit-modal-{{ .ID }}:target,
   {{ end }}
-  #action-modal:target {
+  #create-modal:target {
     display: flex;
     z-index: 5;
   }
@@ -46,13 +68,46 @@
     #delete-modal-{{ .ID }}:target ~ .content,
     #edit-modal-{{ .ID }}:target ~ .content,
   {{ end }}
-  #action-modal:target ~ .content {
+  #create-modal:target ~ .content {
     display: flex;
     z-index: 5;
   }
 
   .target {
+    align-items: center;
     display: flex;
+    height: var(--icon-large);
+  }
+
+  .target:hover {
+    background-color: var(--grey);
+  }
+
+  .target__content {
+    width: 30rem;
+  }
+
+  .target__action {
+    display: none;
+  }
+
+  .target:hover .target__action {
+    display: inline-block;
+  }
+
+  @media screen and (max-width: 640px) {
+    .target {
+      width: auto;
+    }
+
+    .target__content {
+      flex: 1 1;
+      width: auto;
+    }
+
+    .target__action {
+      display: inline-block;
+    }
   }
 </style>
 
@@ -82,12 +137,18 @@
 </script>
 
 <article>
+  {{ template "create-modal" }}
+
+  <p class="padding no-margin">
+    <a href="#create-modal" class="button bg-primary">Create</a>
+  </p>
+
   {{ range $index, $target := . }}
     {{ template "edit-modal" $target }}
     {{ template "delete-modal" $target }}
 
     <div class="padding target">
-      <span>
+      <span class="target__content">
         <p class="no-margin">{{ $target.Repository }}</p>
 
         <span class="{{ if ne $target.CurrentVersion $target.LatestVersion }}danger{{ else }}success{{ end }}">
@@ -101,10 +162,10 @@
         {{ end }}
       </span>
 
-      <a href="#edit-modal-{{ .ID }}" class="button button-icon" alt="Edit">
+      <a href="#edit-modal-{{ .ID }}" class="button button-icon target__action" alt="Edit">
         <img class="icon" src="/svg/edit?fill=silver" alt="Edit icon">
       </a>
-      <a href="#delete-modal-{{ .ID }}" class="button button-icon" alt="Delete">
+      <a href="#delete-modal-{{ .ID }}" class="button button-icon target__action" alt="Delete">
         <img class="icon" src="/svg/times?fill=silver" alt="Delete icon">
       </a>
     </div>
