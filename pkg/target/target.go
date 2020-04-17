@@ -90,7 +90,7 @@ func (a app) Create(ctx context.Context, o interface{}) (item interface{}, err e
 
 	release, githubErr := a.githubApp.LastRelease(target.Repository)
 	if githubErr != nil {
-		err = fmt.Errorf("unable to get latest release for %s: %s", target.Repository, githubErr)
+		err = githubErr
 		return
 	}
 
@@ -165,8 +165,10 @@ func (a app) Check(ctx context.Context, old, new interface{}) []crud.Error {
 		errors = append(errors, crud.NewError("current_version", "current version is required"))
 	}
 
-	if target, err := a.getTargetByRepository(item.Repository); err == nil {
-		errors = append(errors, crud.NewError("repository", fmt.Sprintf("repository already exists with id %d", target.ID)))
+	if old == nil {
+		if target, err := a.getTargetByRepository(item.Repository); err == nil {
+			errors = append(errors, crud.NewError("repository", fmt.Sprintf("repository already exists with id %d", target.ID)))
+		}
 	}
 
 	return errors

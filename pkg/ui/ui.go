@@ -7,10 +7,17 @@ import (
 	"os"
 	"strings"
 
+	"github.com/ViBiOh/httputils/v3/pkg/crud"
 	"github.com/ViBiOh/httputils/v3/pkg/httperror"
+	"github.com/ViBiOh/httputils/v3/pkg/logger"
 	"github.com/ViBiOh/httputils/v3/pkg/templates"
 	"github.com/ViBiOh/ketchup/pkg/model"
 	"github.com/ViBiOh/ketchup/pkg/target"
+)
+
+const (
+	svgPath     = "/svg"
+	targetsPath = "/targets"
 )
 
 // App of package
@@ -19,7 +26,8 @@ type App interface {
 }
 
 type app struct {
-	tpl *template.Template
+	tpl     *template.Template
+	version string
 
 	targetApp target.App
 }
@@ -33,54 +41,58 @@ func New(targetApp target.App) (App, error) {
 
 	return &app{
 		tpl:       template.Must(template.New("ketchup").ParseFiles(filesTemplates...)),
+		version:   os.Getenv("VERSION"),
 		targetApp: targetApp,
 	}, nil
 }
 
-// SVG render a svg in given coolor
-func (a app) SVG(w http.ResponseWriter, name, fill string) {
-	tpl := a.tpl.Lookup(fmt.Sprintf("svg-%s", name))
-	if tpl == nil {
-		httperror.NotFound(w)
-		return
-	}
-
-	w.Header().Set("Content-Type", "image/svg+xml")
-
-	if err := templates.WriteTemplate(tpl, w, fill, "text/xml"); err != nil {
-		httperror.InternalServerError(w, err)
-		return
-	}
-}
-
 // Handler for request. Should be use with net/http
 func (a app) Handler() http.Handler {
-	version := os.Getenv("VERSION")
+	svgHandler := http.StripPrefix(svgPath, a.svg())
+	targetsHandler := http.StripPrefix(targetsPath, a.targets())
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if strings.HasPrefix(r.URL.Path, "/svg") {
-			a.SVG(w, strings.TrimPrefix(r.URL.Path, "/svg/"), r.URL.Query().Get("fill"))
+		if strings.HasPrefix(r.URL.Path, svgPath) {
+			svgHandler.ServeHTTP(w, r)
+			return
+		}
+
+		if strings.HasPrefix(r.URL.Path, targetsPath) {
+			targetsHandler.ServeHTTP(w, r)
+			return
+		}
+
+		targets, _, err := a.targetApp.List(r.Context(), 1, 100, "", false, nil)
+		if err != nil {
+			a.handleError(w, http.StatusInternalServerError, err, nil)
 			return
 		}
 
 		content := map[string]interface{}{
-			"Version": version,
-		}
-		status := http.StatusOK
-
-		targets, _, err := a.targetApp.List(r.Context(), 1, 100, "", false, nil)
-		if err != nil {
-			content["Message"] = model.Message{
-				Level:   "error",
-				Content: err.Error(),
-			}
-			status = http.StatusInternalServerError
-		} else {
-			content["Targets"] = targets
+			"Version": a.version,
+			"Targets": targets,
 		}
 
-		if err := templates.ResponseHTMLTemplate(a.tpl.Lookup("ketchup"), w, content, status); err != nil {
+		if err := templates.ResponseHTMLTemplate(a.tpl.Lookup("app"), w, content, http.StatusOK); err != nil {
 			httperror.InternalServerError(w, err)
 		}
 	})
+}
+
+func (a app) handleError(w http.ResponseWriter, status int, err error, errors []crud.Error) {
+	logger.Error("%s", err)
+
+	content := map[string]interface{}{
+		"Version": a.version,
+		"Message": model.Message{
+			Level:   "error",
+			Content: err.Error(),
+		},
+		"Errors": errors,
+	}
+
+	if err := templates.ResponseHTMLTemplate(a.tpl.Lookup("error"), w, content, status); err != nil {
+		httperror.InternalServerError(w, err)
+		return
+	}
 }
