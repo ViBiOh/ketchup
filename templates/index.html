@@ -1,48 +1,68 @@
-{{ define "favicon" }}
-  <link rel="apple-touch-icon" sizes="180x180" href="/favicon/apple-touch-icon.png?v={{ .Version }}">
-  <link rel="icon" type="image/png" sizes="32x32" href="/favicon/favicon-32x32.png?v={{ .Version }}">
-  <link rel="icon" type="image/png" sizes="16x16" href="/favicon/favicon-16x16.png?v={{ .Version }}">
-  <link rel="manifest" href="/favicon/site.webmanifest?v={{ .Version }}">
-  <link rel="mask-icon" href="/favicon/safari-pinned-tab.svg?v={{ .Version }}" color="#5bbad5">
-  <meta name="theme-color" content="#f8f8f8">
+{{ define "header" }}
+  <!doctype html>
+  <html lang="en">
+    <head>
+      <title>Ketchup</title>
+      <meta charset="utf-8">
+      <meta name="format-detection" content="telephone=no">
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <link rel="apple-touch-icon" sizes="180x180" href="/favicon/apple-touch-icon.png?v={{ .Version }}">
+      <link rel="icon" type="image/png" sizes="32x32" href="/favicon/favicon-32x32.png?v={{ .Version }}">
+      <link rel="icon" type="image/png" sizes="16x16" href="/favicon/favicon-16x16.png?v={{ .Version }}">
+      <link rel="manifest" href="/favicon/site.webmanifest?v={{ .Version }}">
+      <link rel="mask-icon" href="/favicon/safari-pinned-tab.svg?v={{ .Version }}" color="#5bbad5">
+      <meta name="theme-color" content="#f8f8f8">
+      {{ template "style-color" . }}
+      {{ template "style-icon" . }}
+      {{ template "style-button" . }}
+      {{ template "style-modal" . }}
+      {{ template "style" . }}
+    </head>
+
+    <body class="no-margin">
+      <div class="content">
+        <header class="padding">
+          <h1 class="no-margin no-padding">
+            <a href="/" class="no-style clear">Ketchup</a>
+          </h1>
+        </header>
+
+        {{ template "message" .Message }}
+{{ end }}
+
+{{ define "footer" }}
+    </div>
+  </body>
+
+</html>
 {{ end }}
 
 {{ define "message" }}
   {{ if . }}
-    <p class="message {{ if eq .Level "success" }} success{{ else }} danger{{ end }}">
+    <p class="padding center {{ if eq .Level "success" }}success{{ else }}bg-danger{{ end }}">
       {{ .Content }}
     </p>
   {{ end }}
 {{ end }}
 
-{{ define "ketchup" }}
-<!doctype html>
-<html lang="en">
-  <head>
-    <title>Ketchup</title>
-    <meta charset="utf-8">
-    <meta name="format-detection" content="telephone=no">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    {{ template "favicon" . }}
-    {{ template "style-color" . }}
-    {{ template "style-icon" . }}
-    {{ template "style-button" . }}
-    {{ template "style-modal" . }}
-    {{ template "style" . }}
-  </head>
+{{ define "app" }}
+  {{ template "header" . }}
 
-  <body class="no-margin">
-    <div class="content">
-      <header class="padding">
-        <h1 class="no-margin no-padding">
-          <a href="/" class="no-style clear">Ketchup</a>
-        </h1>
-      </header>
+  {{ template "targets" .Targets }}
 
-      {{ template "message" .Message }}
-      {{ template "targets" .Targets }}
-    </div>
-  </body>
+  {{ template "footer" . }}
+{{ end }}
 
-</html>
+{{ define "error" }}
+  {{ template "header" . }}
+
+  {{ if .Errors }}
+    {{ range .Errors }}
+      <p class="padding no-margin center">
+        {{ .Label }}
+      </p>
+    {{ end }}
+  {{ end }}
+
+  {{ template "footer" . }}
 {{ end }}

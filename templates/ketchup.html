@@ -3,15 +3,17 @@
     <div class="modal-content">
       <h2 class="header">Create target</h2>
 
-      <form method="POST" action="/api/targets/">
+      <form method="POST" action="/targets/">
+        <input type="hidden" name="method" value="POST">
+
         <p class="padding no-margin">
           <label for="create-name" class="block">Name:</label>
-          <input id="create-name" type="text" value="{{ .CurrentVersion }}">
+          <input id="create-name" type="text" name="repository" value="{{ .CurrentVersion }}">
         </p>
 
         <p class="padding no-margin">
           <label for="create-current-version" class="block">Current version:</label>
-          <input id="create-current-version" type="text" placeholder="1.0.0">
+          <input id="create-current-version" type="text" name="currentVersion" placeholder="1.0.0">
         </p>
 
         {{ template "form_buttons" "Create" }}
@@ -23,12 +25,17 @@
 {{ define "edit-modal" }}
   <div id="edit-modal-{{ .ID }}" class="modal">
     <div class="modal-content">
-      <h2 class="header">{{ .Repository }}</h2>
+      <h2 class="header">Edit target</h2>
 
-      <form method="PUT" action="/api/targets/{{ .ID }}">
+      <p class="no-margin center">{{ .Repository }}</p>
+
+      <form method="POST" action="/targets/{{ .ID }}">
+        <input type="hidden" name="method" value="PUT">
+        <input type="hidden" name="repository" value="{{ .Repository }}">
+
         <p class="padding no-margin">
           <label for="edit-current-version-{{ .ID }}" class="block">Current version:</label>
-          <input id="edit-current-version-{{ .ID }}" type="text" value="{{ .CurrentVersion }}">
+          <input id="edit-current-version-{{ .ID }}" name="currentVersion" type="text" value="{{ .CurrentVersion }}">
         </p>
 
         {{ template "form_buttons" "Edit" }}
@@ -42,7 +49,9 @@
     <div class="modal-content">
       <h2 class="header">Confirmation</h2>
 
-      <form method="delete" action="/api/targets/{{ .ID }}">
+      <form method="POST" action="/targets/{{ .ID }}">
+        <input type="hidden" name="method" value="DELETE">
+
         <p class="padding no-margin center">
           Are you sure you want to delete <strong>{{ .Repository }}</strong>?
         </p>
@@ -143,21 +152,21 @@
     <a href="#create-modal" class="button bg-primary">Create</a>
   </p>
 
-  {{ range $index, $target := . }}
-    {{ template "edit-modal" $target }}
-    {{ template "delete-modal" $target }}
+  {{ range . }}
+    {{ template "edit-modal" . }}
+    {{ template "delete-modal" . }}
 
     <div class="padding target">
       <span class="target__content">
-        <p class="no-margin">{{ $target.Repository }}</p>
+        <p class="no-margin">{{ .Repository }}</p>
 
-        <span class="{{ if ne $target.CurrentVersion $target.LatestVersion }}danger{{ else }}success{{ end }}">
-          {{ $target.CurrentVersion }}
+        <span class="{{ if ne .CurrentVersion .LatestVersion }}danger{{ else }}success{{ end }}">
+          {{ .CurrentVersion }}
         </span>
 
-        {{ if ne $target.CurrentVersion $target.LatestVersion }}
+        {{ if ne .CurrentVersion .LatestVersion }}
           <span>
-            -> <a class="success" href="https://github.com/{{ $target.Repository }}/releases/tag/{{ $target.LatestVersion }}" rel="noopener noreferrer" target="_blank">{{ $target.LatestVersion }}</a>
+            -> <a class="success" href="https://github.com/{{ .Repository }}/releases/tag/{{ .LatestVersion }}" rel="noopener noreferrer" target="_blank">{{ .LatestVersion }}</a>
           </span>
         {{ end }}
       </span>
