@@ -18,8 +18,8 @@ import (
 	"github.com/ViBiOh/httputils/v3/pkg/swagger"
 	"github.com/ViBiOh/ketchup/pkg/github"
 	"github.com/ViBiOh/ketchup/pkg/ketchup"
+	"github.com/ViBiOh/ketchup/pkg/renderer"
 	"github.com/ViBiOh/ketchup/pkg/target"
-	"github.com/ViBiOh/ketchup/pkg/ui"
 	mailer "github.com/ViBiOh/mailer/pkg/client"
 )
 
@@ -63,7 +63,7 @@ func main() {
 	targetApp := target.New(ketchupDb, githubApp)
 	ketchupAp := ketchup.New(ketchupConfig, targetApp, githubApp, mailerApp)
 
-	uiApp, err := ui.New(targetApp)
+	rendererApp, err := renderer.New(targetApp)
 	logger.Fatal(err)
 
 	crudTargetApp, err := crud.New(crudTargetConfig, targetApp)
@@ -74,7 +74,7 @@ func main() {
 
 	swaggerHandler := http.StripPrefix(apiPath, swaggerApp.Handler())
 	crudTargetHandler := http.StripPrefix(targetPath, crudTargetApp.Handler())
-	uiHandler := uiApp.Handler()
+	rendererHandler := rendererApp.Handler()
 
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if strings.HasPrefix(r.URL.Path, targetPath) {
@@ -90,7 +90,7 @@ func main() {
 			http.ServeFile(w, r, path.Join("static", r.URL.Path))
 		}
 
-		uiHandler.ServeHTTP(w, r)
+		rendererHandler.ServeHTTP(w, r)
 	})
 
 	go ketchupAp.Start()

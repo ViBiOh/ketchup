@@ -8,16 +8,15 @@
 
 Thanks to [OpenEmoji](https://openmoji.org) for favicon.
 
-## CI
+## Getting started
 
-Following variables are required for CI:
+Golang binary is built with static link. You can download it directly from the [Github Release page](https://github.com/ViBiOh/ketchup/releases) or build it by yourself by cloning this repo and running `make`.
 
-| Name | Purpose |
-|:--:|:--:|
-| **DOMAIN** | for setting Traefik domain for app |
-| **DOCKER_USER** | for publishing Docker image |
-| **DOCKER_PASS** | for publishing Docker image |
-| **SCRIPTS_NO_INTERACTIVE** | for disabling prompt in CI |
+A Docker image is available for `amd64`, `arm` and `arm64` platforms on Docker Hub: [vibioh/ketchup](https://hub.docker.com/r/vibioh/ketchup/tags).
+
+You can configure app by passing CLI args or environment variables (cf. [Usage](#usage) section). CLI override environment variables.
+
+You'll find a Kubernetes exemple (without secrets) in the [`infra/`](infra/) folder. We don't manage authentification and rely on Traefik basic-auth.
 
 ## Usage
 
@@ -96,3 +95,13 @@ Usage of ketchup:
   -userAgent string
         [alcotest] User-Agent for check {KETCHUP_USER_AGENT} (default "Alcotest")
 ```
+
+## CI
+
+Following variables are required for CI:
+
+| Name | Purpose |
+|:--:|:--:|
+| **DOCKER_USER** | for publishing Docker image |
+| **DOCKER_PASS** | for publishing Docker image |
+| **SCRIPTS_NO_INTERACTIVE** | for disabling prompt in CI |
