@@ -1,17 +1,15 @@
-package ui
+package renderer
 
 import (
+	"errors"
 	"fmt"
 	"html/template"
 	"net/http"
 	"os"
 	"strings"
 
-	"github.com/ViBiOh/httputils/v3/pkg/crud"
-	"github.com/ViBiOh/httputils/v3/pkg/httperror"
-	"github.com/ViBiOh/httputils/v3/pkg/logger"
+	"github.com/ViBiOh/httputils/v3/pkg/query"
 	"github.com/ViBiOh/httputils/v3/pkg/templates"
-	"github.com/ViBiOh/ketchup/pkg/model"
 	"github.com/ViBiOh/ketchup/pkg/target"
 )
 
@@ -57,42 +55,19 @@ func (a app) Handler() http.Handler {
 			return
 		}
 
+		if query.IsRoot(r) {
+			a.uiHandler(w, r, http.StatusOK, Message{
+				Level:   r.URL.Query().Get("messageLevel"),
+				Content: r.URL.Query().Get("messageContent"),
+			})
+			return
+		}
+
 		if strings.HasPrefix(r.URL.Path, targetsPath) {
 			targetsHandler.ServeHTTP(w, r)
 			return
 		}
 
-		targets, _, err := a.targetApp.List(r.Context(), 1, 100, "", false, nil)
-		if err != nil {
-			a.handleError(w, http.StatusInternalServerError, err, nil)
-			return
-		}
-
-		content := map[string]interface{}{
-			"Version": a.version,
-			"Targets": targets,
-		}
-
-		if err := templates.ResponseHTMLTemplate(a.tpl.Lookup("app"), w, content, http.StatusOK); err != nil {
-			httperror.InternalServerError(w, err)
-		}
+		a.errorHandler(w, http.StatusNotFound, errors.New("page not found"), nil)
 	})
-}
-
-func (a app) handleError(w http.ResponseWriter, status int, err error, errors []crud.Error) {
-	logger.Error("%s", err)
-
-	content := map[string]interface{}{
-		"Version": a.version,
-		"Message": model.Message{
-			Level:   "error",
-			Content: err.Error(),
-		},
-		"Errors": errors,
-	}
-
-	if err := templates.ResponseHTMLTemplate(a.tpl.Lookup("error"), w, content, status); err != nil {
-		httperror.InternalServerError(w, err)
-		return
-	}
 }

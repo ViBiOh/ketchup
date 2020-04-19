@@ -16,7 +16,7 @@ var _ crud.Service = &app{}
 
 // App of package
 type App interface {
-	Unmarshal(data []byte) (interface{}, error)
+	Unmarshal(data []byte, contentType string) (interface{}, error)
 	Check(ctx context.Context, old, new interface{}) []crud.Error
 	List(ctx context.Context, page, pageSize uint, sortKey string, sortDesc bool, filters map[string][]string) ([]interface{}, uint, error)
 	Get(ctx context.Context, ID uint64) (interface{}, error)
@@ -39,7 +39,7 @@ func New(db *sql.DB, githubApp github.App) App {
 }
 
 // Unmarshal a Target
-func (a app) Unmarshal(content []byte) (interface{}, error) {
+func (a app) Unmarshal(content []byte, contentType string) (interface{}, error) {
 	var o Target
 
 	if err := json.Unmarshal(content, &o); err != nil {

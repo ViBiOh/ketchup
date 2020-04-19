@@ -84,7 +84,7 @@ func (a app) checkUpdates(_ time.Time) error {
 			newReleases = append(newReleases, release)
 
 			if _, err = a.targetApp.Update(context.Background(), target); err != nil {
-				logger.Error("unable to update target %s: %s", target.Repository, err)
+				return fmt.Errorf("unable to update target %s: %s", target.Repository, err)
 			}
 		} else if release.TagName == target.CurrentVersion {
 			logger.Info("%s is up-to-date!", target.Repository)
@@ -96,8 +96,15 @@ func (a app) checkUpdates(_ time.Time) error {
 	if len(newReleases) > 0 {
 		if a.mailerApp == nil || !a.mailerApp.Enabled() {
 			logger.Warn("mailer is not configured")
-		} else if err := mailer.NewEmail(a.mailerApp).Template("ketchup").From("ketchup@vibioh.fr").As("Ketchup").WithSubject("Ketchup - New update").To(a.emailTo).Data(newReleases).Send(context.Background()); err != nil {
-			logger.Error("unable to send email to %s: %s", a.emailTo, err)
+			return nil
+		}
+
+		payload := map[string]interface{}{
+			"targets": newReleases,
+		}
+
+		if err := mailer.NewEmail(a.mailerApp).Template("ketchup").From("ketchup@vibioh.fr").As("Ketchup").WithSubject("Ketchup - New update").To(a.emailTo).Data(payload).Send(context.Background()); err != nil {
+			return fmt.Errorf("unable to send email to %s: %s", a.emailTo, err)
 		}
 	}
 
