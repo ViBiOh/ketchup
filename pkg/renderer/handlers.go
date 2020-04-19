@@ -8,6 +8,7 @@ import (
 	"github.com/ViBiOh/httputils/v3/pkg/httperror"
 	"github.com/ViBiOh/httputils/v3/pkg/logger"
 	"github.com/ViBiOh/httputils/v3/pkg/templates"
+	"github.com/ViBiOh/ketchup/pkg/model"
 )
 
 func (a app) getData(r *http.Request) (interface{}, error) {
@@ -16,7 +17,7 @@ func (a app) getData(r *http.Request) (interface{}, error) {
 	return targets, err
 }
 
-func (a app) uiHandler(w http.ResponseWriter, r *http.Request, status int, message Message) {
+func (a app) uiHandler(w http.ResponseWriter, r *http.Request, status int, message model.Message) {
 	targets, err := a.getData(r)
 	if err != nil {
 		a.errorHandler(w, http.StatusInternalServerError, err, nil)
@@ -45,10 +46,7 @@ func (a app) errorHandler(w http.ResponseWriter, status int, errs ...error) {
 	}
 
 	if len(errs) > 0 {
-		content["Message"] = Message{
-			Level:   "error",
-			Content: errs[0].Error(),
-		}
+		content["Message"] = model.NewErrorMessage(errs[0].Error())
 
 		if len(errs) > 1 {
 			content["Errors"] = errs[1:]

@@ -1,7 +1,6 @@
 package renderer
 
 import (
-	"errors"
 	"fmt"
 	"html/template"
 	"net/http"
@@ -10,6 +9,7 @@ import (
 
 	"github.com/ViBiOh/httputils/v3/pkg/query"
 	"github.com/ViBiOh/httputils/v3/pkg/templates"
+	"github.com/ViBiOh/ketchup/pkg/model"
 	"github.com/ViBiOh/ketchup/pkg/target"
 )
 
@@ -56,18 +56,13 @@ func (a app) Handler() http.Handler {
 		}
 
 		if query.IsRoot(r) {
-			a.uiHandler(w, r, http.StatusOK, Message{
+			a.uiHandler(w, r, http.StatusOK, model.Message{
 				Level:   r.URL.Query().Get("messageLevel"),
 				Content: r.URL.Query().Get("messageContent"),
 			})
 			return
 		}
 
-		if strings.HasPrefix(r.URL.Path, targetsPath) {
-			targetsHandler.ServeHTTP(w, r)
-			return
-		}
-
-		a.errorHandler(w, http.StatusNotFound, errors.New("page not found"), nil)
+		targetsHandler.ServeHTTP(w, r)
 	})
 }
