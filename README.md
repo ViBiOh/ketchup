@@ -8,7 +8,33 @@
 
 Thanks to [OpenEmoji](https://openmoji.org) for favicon.
 
+> Check your Github dependencies every day at 8am and send a digest by email.
+
+![](ketchup.png)
+
+## Features
+
+* Timezone aware cron
+* Simple and plain HTML interface, mobile ready
+* Swagger UI documentation available on `/api` endpoint
+* Healthcheck available on `/health` endpoint
+* Version available on `/version` endpoint
+* Prometheus metrics for Golang and HTTP available on `/metrics` endpoint
+* Graceful shutdown of HTTP listener
+* Docker/Kubernetes ready container
+* [12factor app](https://12factor.net) compliant
+
 ## Getting started
+
+### Prerequisites
+
+You need a [Github OAuth Token](https://github.com/settings/tokens), with no particular permission, for having a decent rate-limiting when querying Github. Configuration is done by passing `-githubToken` arg or setting equivalent environment variable (cf. [Usage](#usage) section)
+
+You need a Postgres database for storing your datas. I personnaly use free tier of [ElephantSQL](https://www.elephantsql.com). Once setup, you *have to* to create schema with [provided SQL](ddl.sql). Configuration is done by passing `-dbHost`, `-dbName`, `-dbUser`, `-dbPass` arg or setting equivalent environment variables (cf. [Usage](#usage) section).
+
+In order to send email, you must configure a [mailer](https://github.com/ViBiOh/mailer#getting-started). Configuration is done by passing `-mailerURL` arg or setting equivalent environment variable (cf. [Usage](#usage) section).
+
+### Installation
 
 Golang binary is built with static link. You can download it directly from the [Github Release page](https://github.com/ViBiOh/ketchup/releases) or build it by yourself by cloning this repo and running `make`.
 
@@ -17,6 +43,9 @@ A Docker image is available for `amd64`, `arm` and `arm64` platforms on Docker H
 You can configure app by passing CLI args or environment variables (cf. [Usage](#usage) section). CLI override environment variables.
 
 You'll find a Kubernetes exemple (without secrets) in the [`infra/`](infra/) folder. We don't manage authentification and rely on Traefik basic-auth.
+
+### Mailer
+
 
 ## Usage
 
