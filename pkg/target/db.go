@@ -3,9 +3,14 @@ package target
 import (
 	"database/sql"
 	"fmt"
+	"regexp"
 
 	"github.com/ViBiOh/httputils/v3/pkg/db"
 	"github.com/ViBiOh/ketchup/pkg/model"
+)
+
+var (
+	sortKeyMatcher = regexp.MustCompile(`[A-Za-z0-9]+`)
 )
 
 func scanTarget(row model.RowScanner) (Target, error) {
@@ -53,7 +58,7 @@ SELECT
   count(id) OVER() AS full_count
 FROM
   target
-ORDER BY $3
+ORDER BY %s
 LIMIT $1
 OFFSET $2
 `
@@ -62,16 +67,16 @@ OFFSET $2
 func (a app) listTargets(page, pageSize uint, sortKey string, sortAsc bool) ([]Target, uint, error) {
 	order := "creation_date DESC"
 
-	if sortKey != "" {
+	if sortKeyMatcher.MatchString(sortKey) {
 		order = sortKey
 	}
 	if !sortAsc {
-		order = fmt.Sprintf("%s DESC", order)
+		order += " DESC"
 	}
 
 	offset := (page - 1) * pageSize
 
-	rows, err := a.db.Query(listQuery, pageSize, offset, order)
+	rows, err := a.db.Query(fmt.Sprintf(listQuery, order), pageSize, offset)
 	if err != nil {
 		return nil, 0, err
 	}

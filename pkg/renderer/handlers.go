@@ -12,7 +12,7 @@ import (
 )
 
 func (a app) getData(r *http.Request) (interface{}, error) {
-	targets, _, err := a.targetApp.List(r.Context(), 1, 100, "", false, nil)
+	targets, _, err := a.targetApp.List(r.Context(), 1, 100, "repository", true, nil)
 
 	return targets, err
 }
