@@ -56,7 +56,7 @@ func New(config Config, targetApp target.App, githubApp github.App, mailerApp ma
 }
 
 func (a app) Start() {
-	cron.New().At("08:00").In(a.timezone).Days().Start(a.checkUpdates, func(err error) {
+	cron.New().At("08:00").In(a.timezone).Days().Now().Start(a.checkUpdates, func(err error) {
 		logger.Error("error while running cron: %s", err)
 	})
 }
