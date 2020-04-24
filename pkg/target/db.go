@@ -69,9 +69,10 @@ func (a app) listTargets(page, pageSize uint, sortKey string, sortAsc bool) ([]T
 
 	if sortKeyMatcher.MatchString(sortKey) {
 		order = sortKey
-	}
-	if !sortAsc {
-		order += " DESC"
+
+		if !sortAsc {
+			order += " DESC"
+		}
 	}
 
 	offset := (page - 1) * pageSize
