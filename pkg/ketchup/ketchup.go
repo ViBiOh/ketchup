@@ -65,7 +65,9 @@ func (a app) Start() {
 }
 
 func (a app) checkUpdates(_ time.Time) error {
-	targets, _, err := a.targetApp.List(context.Background(), 1, 100, "", false, nil)
+	ctx := context.Background()
+
+	targets, _, err := a.targetApp.List(ctx, 1, 100, "", false, nil)
 	if err != nil {
 		return fmt.Errorf("unable to get targets: %s", err)
 	}
@@ -86,7 +88,7 @@ func (a app) checkUpdates(_ time.Time) error {
 
 			newReleases = append(newReleases, release)
 
-			if _, err = a.targetApp.Update(context.Background(), target); err != nil {
+			if _, err = a.targetApp.Update(ctx, target); err != nil {
 				return fmt.Errorf("unable to update target %s: %s", target.Repository, err)
 			}
 		} else if release.TagName == target.CurrentVersion {
@@ -96,19 +98,36 @@ func (a app) checkUpdates(_ time.Time) error {
 		}
 	}
 
-	if len(newReleases) > 0 {
-		if a.mailerApp == nil || !a.mailerApp.Enabled() {
-			logger.Warn("mailer is not configured")
-			return nil
-		}
+	if err := a.sendNotification(ctx, newReleases); err != nil {
+		return err
+	}
 
-		payload := map[string]interface{}{
-			"targets": newReleases,
-		}
+	return nil
+}
 
-		if err := mailer.NewEmail(a.mailerApp).Template("ketchup").From("ketchup@vibioh.fr").As("Ketchup").WithSubject("Ketchup - New update").To(a.emailTo).Data(payload).Send(context.Background()); err != nil {
-			return fmt.Errorf("unable to send email to %s: %s", a.emailTo, err)
-		}
+func (a app) sendNotification(ctx context.Context, releases []github.Release) error {
+	if len(releases) == 0 {
+		return nil
+	}
+
+	if a.mailerApp == nil || !a.mailerApp.Enabled() {
+		logger.Warn("mailer is not configured")
+		return nil
+	}
+
+	payload := map[string]interface{}{
+		"targets": releases,
+	}
+
+	email := mailer.NewEmail(a.mailerApp).Template("ketchup").From("ketchup@vibioh.fr").As("Ketchup").To(a.emailTo).Data(payload)
+	if len(releases) > 1 {
+		email.WithSubject("Ketchup - New releases")
+	} else {
+		email.WithSubject("Ketchup - New release")
+	}
+
+	if err := email.Send(ctx); err != nil {
+		return fmt.Errorf("unable to send email to %s: %s", a.emailTo, err)
 	}
 
 	return nil
