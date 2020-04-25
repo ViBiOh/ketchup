@@ -1,12 +1,18 @@
 package target
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"regexp"
+	"time"
 
 	"github.com/ViBiOh/httputils/v3/pkg/db"
 	"github.com/ViBiOh/ketchup/pkg/model"
+)
+
+const (
+	sqlTimeout = time.Second * 10
 )
 
 var (
@@ -77,7 +83,10 @@ func (a app) listTargets(page, pageSize uint, sortKey string, sortAsc bool) ([]T
 
 	offset := (page - 1) * pageSize
 
-	rows, err := a.db.Query(fmt.Sprintf(listQuery, order), pageSize, offset)
+	ctx, cancel := context.WithTimeout(context.Background(), sqlTimeout)
+	defer cancel()
+
+	rows, err := a.db.QueryContext(ctx, fmt.Sprintf(listQuery, order), pageSize, offset)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -102,7 +111,10 @@ WHERE
 `
 
 func (a app) getTargetByID(id uint64) (Target, error) {
-	return scanTarget(a.db.QueryRow(getByIDQuery, id))
+	ctx, cancel := context.WithTimeout(context.Background(), sqlTimeout)
+	defer cancel()
+
+	return scanTarget(a.db.QueryRowContext(ctx, getByIDQuery, id))
 }
 
 const getByRepositoryQuery = `
@@ -118,7 +130,10 @@ WHERE
 `
 
 func (a app) getTargetByRepository(repository string) (Target, error) {
-	return scanTarget(a.db.QueryRow(getByRepositoryQuery, repository))
+	ctx, cancel := context.WithTimeout(context.Background(), sqlTimeout)
+	defer cancel()
+
+	return scanTarget(a.db.QueryRowContext(ctx, getByRepositoryQuery, repository))
 }
 
 const insertQuery = `
@@ -158,9 +173,12 @@ func (a app) saveTarget(o Target, tx *sql.Tx) (newID uint64, err error) {
 		}()
 	}
 
+	ctx, cancel := context.WithTimeout(context.Background(), sqlTimeout)
+	defer cancel()
+
 	if o.ID != 0 {
-		_, err = usedTx.Exec(updateQuery, o.ID, o.CurrentVersion, o.LatestVersion)
-	} else if insertErr := usedTx.QueryRow(insertQuery, o.Repository, o.CurrentVersion, o.LatestVersion).Scan(&newID); insertErr != nil {
+		_, err = usedTx.ExecContext(ctx, updateQuery, o.ID, o.CurrentVersion, o.LatestVersion)
+	} else if insertErr := usedTx.QueryRowContext(ctx, insertQuery, o.Repository, o.CurrentVersion, o.LatestVersion).Scan(&newID); insertErr != nil {
 		err = insertErr
 	}
 
@@ -186,6 +204,9 @@ func (a app) deleteTarget(o Target, tx *sql.Tx) (err error) {
 		}()
 	}
 
-	_, err = usedTx.Exec(deleteQuery, o.ID)
+	ctx, cancel := context.WithTimeout(context.Background(), sqlTimeout)
+	defer cancel()
+
+	_, err = usedTx.ExecContext(ctx, deleteQuery, o.ID)
 	return
 }
