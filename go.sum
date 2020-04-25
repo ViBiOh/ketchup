@@ -1,3 +1,5 @@
+github.com/DATA-DOG/go-sqlmock v1.4.1 h1:ThlnYciV1iM/V0OSF/dtkqWb6xo5qITT1TJBG1MRDJM=
+github.com/DATA-DOG/go-sqlmock v1.4.1/go.mod h1:f/Ixk793poVmq4qj/V1dPUg2JEAKC73Q5eFN3EC/SaM=
 github.com/ViBiOh/httputils/v3 v3.13.0/go.mod h1:exwp/UNyjMLfZTIl8i7x+AfBc4+9x2ar1VDvV0qWbv0=
 github.com/ViBiOh/httputils/v3 v3.14.0 h1:0h6om6YRcugyyVxsnJnAPXlIZ4SBBW8cSrB4tWT6hGE=
 github.com/ViBiOh/httputils/v3 v3.14.0/go.mod h1:exwp/UNyjMLfZTIl8i7x+AfBc4+9x2ar1VDvV0qWbv0=
