@@ -11,12 +11,9 @@ import (
 	"github.com/ViBiOh/ketchup/pkg/model"
 )
 
-const (
-	sqlTimeout = time.Second * 10
-)
-
 var (
 	sortKeyMatcher = regexp.MustCompile(`[A-Za-z0-9]+`)
+	sqlTimeout     = time.Second * 10
 )
 
 func scanTarget(row model.RowScanner) (Target, error) {
