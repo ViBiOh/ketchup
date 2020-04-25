@@ -51,6 +51,7 @@ func New(config Config, targetApp target.App, githubApp github.App, mailerApp ma
 	return &app{
 		emailTo:  strings.TrimSpace(*config.emailTo),
 		timezone: strings.TrimSpace(*config.timezone),
+		hour:     strings.TrimSpace(*config.hour),
 
 		targetApp: targetApp,
 		githubApp: githubApp,
