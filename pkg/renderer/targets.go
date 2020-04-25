@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"net/url"
 	"strconv"
 	"strings"
 
@@ -56,7 +55,7 @@ func (a app) handleCreate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	http.Redirect(w, r, fmt.Sprintf("/?messageContent=%s", url.QueryEscape(fmt.Sprintf("%s created with success!", target.Repository))), http.StatusFound)
+	redirectWithMessage(w, r, fmt.Sprintf("%s created with success!", target.Repository))
 }
 
 func (a app) handleUpdate(w http.ResponseWriter, r *http.Request) {
@@ -91,7 +90,7 @@ func (a app) handleUpdate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	http.Redirect(w, r, fmt.Sprintf("/?messageContent=%s", url.QueryEscape(fmt.Sprintf("%s updated with success!", newTarget.Repository))), http.StatusFound)
+	redirectWithMessage(w, r, fmt.Sprintf("%s updated with success!", newTarget.Repository))
 }
 
 func (a app) handleDelete(w http.ResponseWriter, r *http.Request) {
@@ -119,7 +118,7 @@ func (a app) handleDelete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	http.Redirect(w, r, fmt.Sprintf("/?messageContent=%s", url.QueryEscape(fmt.Sprintf("%s deleted with success!", target.Repository))), http.StatusFound)
+	redirectWithMessage(w, r, fmt.Sprintf("%s deleted with success!", target.Repository))
 }
 
 func (a app) handleCrudError(w http.ResponseWriter, errs []crud.Error) {

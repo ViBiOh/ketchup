@@ -3,6 +3,7 @@ package renderer
 import (
 	"fmt"
 	"net/http"
+	"net/url"
 	"strings"
 
 	"github.com/ViBiOh/httputils/v3/pkg/httperror"
@@ -10,6 +11,10 @@ import (
 	"github.com/ViBiOh/httputils/v3/pkg/templates"
 	"github.com/ViBiOh/ketchup/pkg/model"
 )
+
+func redirectWithMessage(w http.ResponseWriter, r *http.Request, message string) {
+	http.Redirect(w, r, fmt.Sprintf("/?messageContent=%s", url.QueryEscape(message)), http.StatusFound)
+}
 
 func (a app) getData(r *http.Request) (interface{}, error) {
 	targets, _, err := a.targetApp.List(r.Context(), 1, 100, "repository", true, nil)
