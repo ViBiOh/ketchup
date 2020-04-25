@@ -24,11 +24,13 @@ type App interface {
 type Config struct {
 	emailTo  *string
 	timezone *string
+	hour     *string
 }
 
 type app struct {
 	emailTo  string
 	timezone string
+	hour     string
 
 	targetApp target.App
 	githubApp github.App
@@ -40,6 +42,7 @@ func Flags(fs *flag.FlagSet, prefix string) Config {
 	return Config{
 		emailTo:  flags.New(prefix, "ketchup").Name("To").Default("").Label("Email to send notification").ToString(fs),
 		timezone: flags.New(prefix, "ketchup").Name("Timezone").Default("Europe/Paris").Label("Timezone").ToString(fs),
+		hour:     flags.New(prefix, "ketchup").Name("Hour").Default("08:00").Label("Hour of cron, 24-hour format").ToString(fs),
 	}
 }
 
@@ -56,7 +59,7 @@ func New(config Config, targetApp target.App, githubApp github.App, mailerApp ma
 }
 
 func (a app) Start() {
-	cron.New().At("08:00").In(a.timezone).Days().Now().Start(a.checkUpdates, func(err error) {
+	cron.New().At(a.hour).In(a.timezone).Days().Now().Start(a.checkUpdates, func(err error) {
 		logger.Error("error while running cron: %s", err)
 	})
 }
