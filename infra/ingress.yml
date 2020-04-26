@@ -1,15 +1,5 @@
 ---
 apiVersion: traefik.containo.us/v1alpha1
-kind: Middleware
-metadata:
-  name: ketchup-auth
-spec:
-  basicAuth:
-    secret: ketchup-auth
-    removeHeader: true
-
----
-apiVersion: traefik.containo.us/v1alpha1
 kind: IngressRoute
 metadata:
   name: ketchup-http
@@ -37,7 +27,6 @@ spec:
     - match: Host(`ketchup.vibioh.fr`)
       kind: Rule
       middlewares:
-        - name: ketchup-auth
         - name: compress
         - name: ratelimit
       services:
