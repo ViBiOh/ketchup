@@ -1,7 +1,6 @@
 package target
 
 import (
-	"database/sql"
 	"errors"
 	"reflect"
 	"testing"
@@ -294,10 +293,9 @@ func TestGetTargetByRepository(t *testing.T) {
 	}
 }
 
-func TestSaveTarget(t *testing.T) {
+func TestCreateTarget(t *testing.T) {
 	type args struct {
-		o  Target
-		tx bool
+		o Target
 	}
 
 	var cases = []struct {
@@ -314,33 +312,6 @@ func TestSaveTarget(t *testing.T) {
 					CurrentVersion: "1.0.0",
 					LatestVersion:  "1.0.1",
 				},
-				tx: false,
-			},
-			8000,
-			nil,
-		},
-		{
-			"timeout",
-			args{
-				o: Target{
-					Repository:     "vibioh/ketchup",
-					CurrentVersion: "1.0.0",
-					LatestVersion:  "1.0.1",
-				},
-				tx: false,
-			},
-			0,
-			sqlmock.ErrCancelled,
-		},
-		{
-			"with tx",
-			args{
-				o: Target{
-					Repository:     "vibioh/ketchup",
-					CurrentVersion: "1.0.0",
-					LatestVersion:  "1.0.1",
-				},
-				tx: true,
 			},
 			8000,
 			nil,
@@ -355,42 +326,11 @@ func TestSaveTarget(t *testing.T) {
 			}
 			defer db.Close()
 
-			var tx *sql.Tx
-			if tc.args.tx {
-				mock.ExpectBegin()
-				dbTx, err := db.Begin()
+			mock.ExpectBegin()
+			mock.ExpectQuery("INSERT INTO target").WithArgs("vibioh/ketchup", "1.0.0", "1.0.1").WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(8000))
+			mock.ExpectCommit()
 
-				if err != nil {
-					t.Errorf("unable to create tx: %v", err)
-				}
-				tx = dbTx
-			}
-
-			if !tc.args.tx {
-				mock.ExpectBegin()
-			}
-
-			expectedQuery := mock.ExpectQuery("INSERT INTO target").WithArgs("vibioh/ketchup", "1.0.0", "1.0.1").WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(8000))
-
-			if !tc.args.tx {
-				if tc.wantErr != nil {
-					mock.ExpectRollback()
-				} else {
-					mock.ExpectCommit()
-				}
-			}
-
-			if tc.intention == "timeout" {
-				savedSQLTimeout := sqlTimeout
-				sqlTimeout = time.Second
-				defer func() {
-					sqlTimeout = savedSQLTimeout
-				}()
-
-				expectedQuery.WillDelayFor(sqlTimeout * 2)
-			}
-
-			got, gotErr := app{db: db}.saveTarget(tc.args.o, tx)
+			got, gotErr := app{db: db}.createTarget(tc.args.o, nil)
 
 			failed := false
 
@@ -401,7 +341,7 @@ func TestSaveTarget(t *testing.T) {
 			}
 
 			if failed {
-				t.Errorf("saveTarget() = (%d, `%s`), want (%d, `%s`)", got, gotErr, tc.want, tc.wantErr)
+				t.Errorf("createTarget() = (%d, `%s`), want (%d, `%s`)", got, gotErr, tc.want, tc.wantErr)
 			}
 
 			if err := mock.ExpectationsWereMet(); err != nil {
@@ -413,14 +353,12 @@ func TestSaveTarget(t *testing.T) {
 
 func TestUpdateTarget(t *testing.T) {
 	type args struct {
-		o  Target
-		tx bool
+		o Target
 	}
 
 	var cases = []struct {
 		intention string
 		args      args
-		want      uint64
 		wantErr   error
 	}{
 		{
@@ -432,9 +370,7 @@ func TestUpdateTarget(t *testing.T) {
 					CurrentVersion: "1.0.0",
 					LatestVersion:  "1.0.1",
 				},
-				tx: false,
 			},
-			0,
 			nil,
 		},
 	}
@@ -447,53 +383,20 @@ func TestUpdateTarget(t *testing.T) {
 			}
 			defer db.Close()
 
-			var tx *sql.Tx
-			if tc.args.tx {
-				mock.ExpectBegin()
-				dbTx, err := db.Begin()
+			mock.ExpectBegin()
+			mock.ExpectExec("UPDATE target SET").WithArgs(8000, "1.0.0", "1.0.1").WillReturnResult(sqlmock.NewResult(0, 1))
+			mock.ExpectCommit()
 
-				if err != nil {
-					t.Errorf("unable to create tx: %v", err)
-				}
-				tx = dbTx
-			}
-
-			if !tc.args.tx {
-				mock.ExpectBegin()
-			}
-
-			expectedQuery := mock.ExpectExec("UPDATE target SET").WithArgs(8000, "1.0.0", "1.0.1").WillReturnResult(sqlmock.NewResult(0, 1))
-
-			if !tc.args.tx {
-				if tc.wantErr != nil {
-					mock.ExpectRollback()
-				} else {
-					mock.ExpectCommit()
-				}
-			}
-
-			if tc.intention == "timeout" {
-				savedSQLTimeout := sqlTimeout
-				sqlTimeout = time.Second
-				defer func() {
-					sqlTimeout = savedSQLTimeout
-				}()
-
-				expectedQuery.WillDelayFor(sqlTimeout * 2)
-			}
-
-			got, gotErr := app{db: db}.saveTarget(tc.args.o, tx)
+			gotErr := app{db: db}.updateTarget(tc.args.o, nil)
 
 			failed := false
 
 			if tc.wantErr != nil && !errors.Is(gotErr, tc.wantErr) {
 				failed = true
-			} else if got != tc.want {
-				failed = true
 			}
 
 			if failed {
-				t.Errorf("saveTarget() = (%d, `%s`), want (%d, `%s`)", got, gotErr, tc.want, tc.wantErr)
+				t.Errorf("updateTarget() = `%s`, want `%s`", gotErr, tc.wantErr)
 			}
 
 			if err := mock.ExpectationsWereMet(); err != nil {
@@ -505,8 +408,7 @@ func TestUpdateTarget(t *testing.T) {
 
 func TestDeleteTarget(t *testing.T) {
 	type args struct {
-		o  Target
-		tx bool
+		o Target
 	}
 
 	var cases = []struct {
@@ -523,33 +425,6 @@ func TestDeleteTarget(t *testing.T) {
 					CurrentVersion: "1.0.0",
 					LatestVersion:  "1.0.1",
 				},
-				tx: false,
-			},
-			nil,
-		},
-		{
-			"timeout",
-			args{
-				o: Target{
-					ID:             8000,
-					Repository:     "vibioh/ketchup",
-					CurrentVersion: "1.0.0",
-					LatestVersion:  "1.0.1",
-				},
-				tx: false,
-			},
-			sqlmock.ErrCancelled,
-		},
-		{
-			"with tx",
-			args{
-				o: Target{
-					ID:             8000,
-					Repository:     "vibioh/ketchup",
-					CurrentVersion: "1.0.0",
-					LatestVersion:  "1.0.1",
-				},
-				tx: true,
 			},
 			nil,
 		},
@@ -563,42 +438,11 @@ func TestDeleteTarget(t *testing.T) {
 			}
 			defer db.Close()
 
-			var tx *sql.Tx
-			if tc.args.tx {
-				mock.ExpectBegin()
-				dbTx, err := db.Begin()
+			mock.ExpectBegin()
+			mock.ExpectExec("DELETE FROM target WHERE id = (.+)").WillReturnResult(sqlmock.NewResult(0, 1))
+			mock.ExpectCommit()
 
-				if err != nil {
-					t.Errorf("unable to create tx: %v", err)
-				}
-				tx = dbTx
-			}
-
-			if !tc.args.tx {
-				mock.ExpectBegin()
-			}
-
-			expectedQuery := mock.ExpectExec("DELETE FROM target WHERE id = (.+)").WillReturnResult(sqlmock.NewResult(0, 1))
-
-			if !tc.args.tx {
-				if tc.wantErr != nil {
-					mock.ExpectRollback()
-				} else {
-					mock.ExpectCommit()
-				}
-			}
-
-			if tc.intention == "timeout" {
-				savedSQLTimeout := sqlTimeout
-				sqlTimeout = time.Second
-				defer func() {
-					sqlTimeout = savedSQLTimeout
-				}()
-
-				expectedQuery.WillDelayFor(sqlTimeout * 2)
-			}
-
-			gotErr := app{db: db}.deleteTarget(tc.args.o, tx)
+			gotErr := app{db: db}.deleteTarget(tc.args.o, nil)
 
 			failed := false
 

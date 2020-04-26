@@ -13,7 +13,7 @@ import (
 
 var (
 	sortKeyMatcher = regexp.MustCompile(`[A-Za-z0-9]+`)
-	sqlTimeout     = time.Second * 10
+	sqlTimeout     = time.Second * 5
 )
 
 func scanTarget(row model.RowScanner) (Target, error) {
@@ -21,10 +21,6 @@ func scanTarget(row model.RowScanner) (Target, error) {
 
 	err := row.Scan(&target.ID, &target.Repository, &target.CurrentVersion, &target.LatestVersion)
 	if err != nil {
-		if err == sql.ErrNoRows {
-			return target, err
-		}
-
 		return target, err
 	}
 
@@ -39,10 +35,6 @@ func scanTargets(rows *sql.Rows) ([]Target, uint, error) {
 		var target Target
 
 		if err := rows.Scan(&target.ID, &target.Repository, &target.CurrentVersion, &target.LatestVersion, &totalCount); err != nil {
-			if err == sql.ErrNoRows {
-				return nil, 0, err
-			}
-
 			return nil, 0, err
 		}
 
@@ -148,6 +140,10 @@ INSERT INTO
 RETURNING id
 `
 
+func (a app) createTarget(o Target, tx *sql.Tx) (uint64, error) {
+	return db.CreateWithTimeout(a.db, tx, sqlTimeout, insertQuery, o.Repository, o.CurrentVersion, o.LatestVersion)
+}
+
 const updateQuery = `
 UPDATE
   target
@@ -158,28 +154,8 @@ WHERE
   id = $1
 `
 
-func (a app) saveTarget(o Target, tx *sql.Tx) (newID uint64, err error) {
-	var usedTx *sql.Tx
-	if usedTx, err = db.GetTx(a.db, tx); err != nil {
-		return
-	}
-
-	if usedTx != tx {
-		defer func() {
-			err = db.EndTx(usedTx, err)
-		}()
-	}
-
-	ctx, cancel := context.WithTimeout(context.Background(), sqlTimeout)
-	defer cancel()
-
-	if o.ID != 0 {
-		_, err = usedTx.ExecContext(ctx, updateQuery, o.ID, o.CurrentVersion, o.LatestVersion)
-	} else if insertErr := usedTx.QueryRowContext(ctx, insertQuery, o.Repository, o.CurrentVersion, o.LatestVersion).Scan(&newID); insertErr != nil {
-		err = insertErr
-	}
-
-	return
+func (a app) updateTarget(o Target, tx *sql.Tx) error {
+	return db.ExecWithTimeout(a.db, tx, sqlTimeout, updateQuery, o.ID, o.CurrentVersion, o.LatestVersion)
 }
 
 const deleteQuery = `
@@ -190,20 +166,5 @@ WHERE
 `
 
 func (a app) deleteTarget(o Target, tx *sql.Tx) (err error) {
-	var usedTx *sql.Tx
-	if usedTx, err = db.GetTx(a.db, tx); err != nil {
-		return
-	}
-
-	if usedTx != tx {
-		defer func() {
-			err = db.EndTx(usedTx, err)
-		}()
-	}
-
-	ctx, cancel := context.WithTimeout(context.Background(), sqlTimeout)
-	defer cancel()
-
-	_, err = usedTx.ExecContext(ctx, deleteQuery, o.ID)
-	return
+	return db.ExecWithTimeout(a.db, tx, sqlTimeout, deleteQuery, o.ID)
 }

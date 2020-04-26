@@ -96,7 +96,7 @@ func (a app) Create(ctx context.Context, o interface{}) (item interface{}, err e
 
 	target.LatestVersion = release.TagName
 
-	newID, err = a.saveTarget(target, nil)
+	newID, err = a.createTarget(target, nil)
 	if err != nil {
 		err = fmt.Errorf("unable to create target: %w", err)
 		return
@@ -116,10 +116,8 @@ func (a app) Update(ctx context.Context, o interface{}) (item interface{}, err e
 		return
 	}
 
-	_, err = a.saveTarget(target, nil)
-	if err != nil {
+	if err = a.updateTarget(target, nil); err != nil {
 		err = fmt.Errorf("unable to update target: %w", err)
-
 		return
 	}
 
