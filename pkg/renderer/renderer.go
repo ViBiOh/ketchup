@@ -37,7 +37,7 @@ func New(targetApp target.App) (App, error) {
 		return nil, fmt.Errorf("unable to get templates: %s", err)
 	}
 
-	return &app{
+	return app{
 		tpl:       template.Must(template.New("ketchup").ParseFiles(filesTemplates...)),
 		version:   os.Getenv("VERSION"),
 		targetApp: targetApp,

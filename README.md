@@ -87,6 +87,8 @@ Usage of ketchup:
         [http] Grace duration when SIGTERM received {KETCHUP_GRACE_DURATION} (default "15s")
   -hsts
         [owasp] Indicate Strict Transport Security {KETCHUP_HSTS} (default true)
+  -ketchupHour string
+        [ketchup] Hour of cron, 24-hour format {KETCHUP_KETCHUP_HOUR} (default "08:00")
   -ketchupTimezone string
         [ketchup] Timezone {KETCHUP_KETCHUP_TIMEZONE} (default "Europe/Paris")
   -ketchupTo string
@@ -109,20 +111,20 @@ Usage of ketchup:
         [swagger] API Title {KETCHUP_SWAGGER_TITLE} (default "API")
   -swaggerVersion string
         [swagger] API Version {KETCHUP_SWAGGER_VERSION} (default "1.0.0")
-  -targetsDefaultPage uint
-        [targets] Default page {KETCHUP_TARGETS_DEFAULT_PAGE} (default 1)
-  -targetsDefaultPageSize uint
-        [targets] Default page size {KETCHUP_TARGETS_DEFAULT_PAGE_SIZE} (default 20)
-  -targetsMaxPageSize uint
-        [targets] Max page size {KETCHUP_TARGETS_MAX_PAGE_SIZE} (default 100)
-  -targetsName string
-        [targets] Resource's name {KETCHUP_TARGETS_NAME} (default "Target of Ketchup")
-  -targetsPath string
-        [targets] HTTP Path {KETCHUP_TARGETS_PATH} (default "targets")
   -url string
         [alcotest] URL to check {KETCHUP_URL}
   -userAgent string
         [alcotest] User-Agent for check {KETCHUP_USER_AGENT} (default "Alcotest")
+  -usersDefaultPage uint
+        [users] Default page {KETCHUP_USERS_DEFAULT_PAGE} (default 1)
+  -usersDefaultPageSize uint
+        [users] Default page size {KETCHUP_USERS_DEFAULT_PAGE_SIZE} (default 20)
+  -usersMaxPageSize uint
+        [users] Max page size {KETCHUP_USERS_MAX_PAGE_SIZE} (default 100)
+  -usersName string
+        [users] Resource's name {KETCHUP_USERS_NAME} (default "Users")
+  -usersPath string
+        [users] HTTP Path {KETCHUP_USERS_PATH} (default "/api/users")
 ```
 
 ## CI
