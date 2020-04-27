@@ -1,4 +1,4 @@
-package store
+package repository
 
 import (
 	"context"
@@ -8,12 +8,11 @@ import (
 	"time"
 
 	"github.com/DATA-DOG/go-sqlmock"
-	authModel "github.com/ViBiOh/auth/v2/pkg/model"
 	"github.com/ViBiOh/httputils/v3/pkg/db"
 	"github.com/ViBiOh/ketchup/pkg/model"
 )
 
-func TestListUsers(t *testing.T) {
+func TestList(t *testing.T) {
 	type args struct {
 		page     uint
 		pageSize uint
@@ -25,7 +24,7 @@ func TestListUsers(t *testing.T) {
 		intention string
 		args      args
 		expectSQL string
-		want      []model.User
+		want      []model.Repository
 		wantCount uint
 		wantErr   error
 	}{
@@ -35,15 +34,17 @@ func TestListUsers(t *testing.T) {
 				page:     1,
 				pageSize: 20,
 			},
-			"SELECT id, email, .+ AS full_count FROM \"user\" ORDER BY creation_date DESC",
-			[]model.User{
+			"SELECT id, name, version, .+ AS full_count FROM repository ORDER BY creation_date DESC",
+			[]model.Repository{
 				{
-					ID:    1,
-					Email: "nobody@localhost",
+					ID:      1,
+					Name:    "vibioh/ketchup",
+					Version: "1.0.0",
 				},
 				{
-					ID:    2,
-					Email: "guest@internet",
+					ID:      2,
+					Name:    "vibioh/viws",
+					Version: "1.2.3",
 				},
 			},
 			2,
@@ -55,7 +56,7 @@ func TestListUsers(t *testing.T) {
 				page:     1,
 				pageSize: 20,
 			},
-			"SELECT id, email, .+ AS full_count FROM \"user\" ORDER BY creation_date DESC",
+			"SELECT id, name, version, .+ AS full_count FROM repository ORDER BY creation_date DESC",
 			nil,
 			0,
 			sqlmock.ErrCancelled,
@@ -68,15 +69,17 @@ func TestListUsers(t *testing.T) {
 				sortKey:  "email",
 				sortAsc:  true,
 			},
-			"SELECT id, email, .+ AS full_count FROM \"user\" ORDER BY email",
-			[]model.User{
+			"SELECT id, name, version, .+ AS full_count FROM repository ORDER BY email",
+			[]model.Repository{
 				{
-					ID:    1,
-					Email: "nobody@localhost",
+					ID:      1,
+					Name:    "vibioh/ketchup",
+					Version: "1.0.0",
 				},
 				{
-					ID:    2,
-					Email: "guest@internet",
+					ID:      2,
+					Name:    "vibioh/viws",
+					Version: "1.2.3",
 				},
 			},
 			2,
@@ -90,15 +93,17 @@ func TestListUsers(t *testing.T) {
 				sortKey:  "email",
 				sortAsc:  false,
 			},
-			"SELECT id, email, .+ AS full_count FROM \"user\" ORDER BY email DESC",
-			[]model.User{
+			"SELECT id, name, version, .+ AS full_count FROM repository ORDER BY email DESC",
+			[]model.Repository{
 				{
-					ID:    1,
-					Email: "nobody@localhost",
+					ID:      1,
+					Name:    "vibioh/ketchup",
+					Version: "1.0.0",
 				},
 				{
-					ID:    2,
-					Email: "guest@internet",
+					ID:      2,
+					Name:    "vibioh/viws",
+					Version: "1.2.3",
 				},
 			},
 			2,
@@ -114,7 +119,7 @@ func TestListUsers(t *testing.T) {
 			}
 			defer mockDb.Close()
 
-			expectedQuery := mock.ExpectQuery(tc.expectSQL).WithArgs(20, 0).WillReturnRows(sqlmock.NewRows([]string{"id", "email", "full_count"}).AddRow(1, "nobody@localhost", 2).AddRow(2, "guest@internet", 2))
+			expectedQuery := mock.ExpectQuery(tc.expectSQL).WithArgs(20, 0).WillReturnRows(sqlmock.NewRows([]string{"id", "email", "login_id", "full_count"}).AddRow(1, "vibioh/ketchup", "1.0.0", 2).AddRow(2, "vibioh/viws", "1.2.3", 2))
 
 			if tc.intention == "timeout" {
 				savedSQLTimeout := db.SQLTimeout
@@ -126,7 +131,7 @@ func TestListUsers(t *testing.T) {
 				expectedQuery.WillDelayFor(db.SQLTimeout * 2)
 			}
 
-			got, gotCount, gotErr := New(mockDb).ListUsers(context.Background(), tc.args.page, tc.args.pageSize, tc.args.sortKey, tc.args.sortAsc)
+			got, gotCount, gotErr := New(mockDb).List(context.Background(), tc.args.page, tc.args.pageSize, tc.args.sortKey, tc.args.sortAsc)
 			failed := false
 
 			if tc.wantErr == nil && gotErr != nil {
@@ -140,7 +145,7 @@ func TestListUsers(t *testing.T) {
 			}
 
 			if failed {
-				t.Errorf("ListUsers() = (%+v, %d, `%s`), want (%+v, %d, `%s`)", got, gotCount, gotErr, tc.want, tc.wantCount, tc.wantErr)
+				t.Errorf("List() = (%+v, %d, `%s`), want (%+v, %d, `%s`)", got, gotCount, gotErr, tc.want, tc.wantCount, tc.wantErr)
 			}
 
 			if err := mock.ExpectationsWereMet(); err != nil {
@@ -150,7 +155,7 @@ func TestListUsers(t *testing.T) {
 	}
 }
 
-func TestGetUser(t *testing.T) {
+func TestGet(t *testing.T) {
 	type args struct {
 		id uint64
 	}
@@ -158,17 +163,18 @@ func TestGetUser(t *testing.T) {
 	var cases = []struct {
 		intention string
 		args      args
-		want      model.User
+		want      model.Repository
 		wantErr   error
 	}{
 		{
-			"create",
+			"simple",
 			args{
 				id: 1,
 			},
-			model.User{
-				ID:    1,
-				Email: "nobody@localhost",
+			model.Repository{
+				ID:      1,
+				Name:    "vibioh/ketchup",
+				Version: "1.0.0",
 			},
 			nil,
 		},
@@ -182,66 +188,9 @@ func TestGetUser(t *testing.T) {
 			}
 			defer mockDb.Close()
 
-			mock.ExpectQuery("SELECT id, email FROM \"user\"").WithArgs(1).WillReturnRows(sqlmock.NewRows([]string{"id", "email"}).AddRow(1, "nobody@localhost"))
+			mock.ExpectQuery("SELECT id, name, version FROM repository").WithArgs(1).WillReturnRows(sqlmock.NewRows([]string{"id", "email", "login_id"}).AddRow(1, "vibioh/ketchup", "1.0.0"))
 
-			got, gotErr := New(mockDb).GetUser(context.Background(), tc.args.id)
-
-			failed := false
-
-			if tc.wantErr == nil && gotErr != nil {
-				failed = true
-			} else if tc.wantErr != nil && !errors.Is(gotErr, tc.wantErr) {
-				failed = true
-			} else if !reflect.DeepEqual(got, tc.want) {
-				failed = true
-			}
-
-			if failed {
-				t.Errorf("GetUser() = (%+v, `%s`), want (%+v, `%s`)", got, gotErr, tc.want, tc.wantErr)
-			}
-
-			if err := mock.ExpectationsWereMet(); err != nil {
-				t.Errorf("sqlmock unfilled expectations: %s", err)
-			}
-		})
-	}
-}
-
-func TestGetUserByEmail(t *testing.T) {
-	type args struct {
-		email string
-	}
-
-	var cases = []struct {
-		intention string
-		args      args
-		want      model.User
-		wantErr   error
-	}{
-		{
-			"create",
-			args{
-				email: "nobody@localhost",
-			},
-			model.User{
-				ID:    1,
-				Email: "nobody@localhost",
-			},
-			nil,
-		},
-	}
-
-	for _, tc := range cases {
-		t.Run(tc.intention, func(t *testing.T) {
-			mockDb, mock, err := sqlmock.New()
-			if err != nil {
-				t.Fatalf("unable to create mock database: %s", err)
-			}
-			defer mockDb.Close()
-
-			mock.ExpectQuery("SELECT id, email FROM \"user\"").WithArgs("nobody@localhost").WillReturnRows(sqlmock.NewRows([]string{"id", "email"}).AddRow(1, "nobody@localhost"))
-
-			got, gotErr := New(mockDb).GetUserByEmail(context.Background(), tc.args.email)
+			got, gotErr := New(mockDb).Get(context.Background(), tc.args.id)
 
 			failed := false
 
@@ -254,7 +203,7 @@ func TestGetUserByEmail(t *testing.T) {
 			}
 
 			if failed {
-				t.Errorf("GetUserByEmail() = (%+v, `%s`), want (%+v, `%s`)", got, gotErr, tc.want, tc.wantErr)
+				t.Errorf("Get() = (%+v, `%s`), want (%+v, `%s`)", got, gotErr, tc.want, tc.wantErr)
 			}
 
 			if err := mock.ExpectationsWereMet(); err != nil {
@@ -264,9 +213,9 @@ func TestGetUserByEmail(t *testing.T) {
 	}
 }
 
-func TestCreateUser(t *testing.T) {
+func TestCreate(t *testing.T) {
 	type args struct {
-		o model.User
+		o model.Repository
 	}
 
 	var cases = []struct {
@@ -276,15 +225,11 @@ func TestCreateUser(t *testing.T) {
 		wantErr   error
 	}{
 		{
-			"create",
+			"simple",
 			args{
-				o: model.User{
-					Email: "nobody@localhost",
-					Login: authModel.User{
-						ID:       1,
-						Login:    "vibioh",
-						Password: "secret",
-					},
+				o: model.Repository{
+					Name:    "vibioh/ketchup",
+					Version: "1.0.0",
 				},
 			},
 			1,
@@ -301,10 +246,10 @@ func TestCreateUser(t *testing.T) {
 			defer mockDb.Close()
 
 			mock.ExpectBegin()
-			mock.ExpectQuery("INSERT INTO \"user\"").WithArgs("nobody@localhost", 1).WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(1))
+			mock.ExpectQuery("INSERT INTO repository").WithArgs("vibioh/ketchup", "1.0.0").WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(1))
 			mock.ExpectCommit()
 
-			got, gotErr := New(mockDb).CreateUser(context.Background(), tc.args.o)
+			got, gotErr := New(mockDb).Create(context.Background(), tc.args.o)
 
 			failed := false
 
@@ -317,7 +262,7 @@ func TestCreateUser(t *testing.T) {
 			}
 
 			if failed {
-				t.Errorf("CreateUser() = (%d, `%s`), want (%d, `%s`)", got, gotErr, tc.want, tc.wantErr)
+				t.Errorf("Create() = (%d, `%s`), want (%d, `%s`)", got, gotErr, tc.want, tc.wantErr)
 			}
 
 			if err := mock.ExpectationsWereMet(); err != nil {
@@ -327,9 +272,9 @@ func TestCreateUser(t *testing.T) {
 	}
 }
 
-func TestUpdateUser(t *testing.T) {
+func TestUpdate(t *testing.T) {
 	type args struct {
-		o model.User
+		o model.Repository
 	}
 
 	var cases = []struct {
@@ -340,9 +285,10 @@ func TestUpdateUser(t *testing.T) {
 		{
 			"update",
 			args{
-				o: model.User{
-					ID:    1,
-					Email: "nobody@internet",
+				o: model.Repository{
+					ID:      1,
+					Name:    "vibioh/ketchup",
+					Version: "1.0.0",
 				},
 			},
 			nil,
@@ -358,10 +304,10 @@ func TestUpdateUser(t *testing.T) {
 			defer mockDb.Close()
 
 			mock.ExpectBegin()
-			mock.ExpectExec("UPDATE \"user\" SET email").WithArgs(1, "nobody@internet").WillReturnResult(sqlmock.NewResult(0, 1))
+			mock.ExpectExec("UPDATE repository SET version").WithArgs(1, "1.0.0").WillReturnResult(sqlmock.NewResult(0, 1))
 			mock.ExpectCommit()
 
-			gotErr := New(mockDb).UpdateUser(context.Background(), tc.args.o)
+			gotErr := New(mockDb).Update(context.Background(), tc.args.o)
 
 			failed := false
 
@@ -372,7 +318,7 @@ func TestUpdateUser(t *testing.T) {
 			}
 
 			if failed {
-				t.Errorf("UpdateUser() = `%s`, want `%s`", gotErr, tc.wantErr)
+				t.Errorf("Update() = `%s`, want `%s`", gotErr, tc.wantErr)
 			}
 
 			if err := mock.ExpectationsWereMet(); err != nil {
@@ -382,9 +328,9 @@ func TestUpdateUser(t *testing.T) {
 	}
 }
 
-func TestDeleteUser(t *testing.T) {
+func TestDelete(t *testing.T) {
 	type args struct {
-		o model.User
+		o model.Repository
 	}
 
 	var cases = []struct {
@@ -395,7 +341,7 @@ func TestDeleteUser(t *testing.T) {
 		{
 			"update",
 			args{
-				o: model.User{
+				o: model.Repository{
 					ID: 1,
 				},
 			},
@@ -412,10 +358,10 @@ func TestDeleteUser(t *testing.T) {
 			defer mockDb.Close()
 
 			mock.ExpectBegin()
-			mock.ExpectExec("DELETE FROM \"user\"").WithArgs(1).WillReturnResult(sqlmock.NewResult(0, 1))
+			mock.ExpectExec("DELETE FROM repository").WithArgs(1).WillReturnResult(sqlmock.NewResult(0, 1))
 			mock.ExpectCommit()
 
-			gotErr := New(mockDb).DeleteUser(context.Background(), tc.args.o)
+			gotErr := New(mockDb).Delete(context.Background(), tc.args.o)
 
 			failed := false
 
@@ -426,7 +372,7 @@ func TestDeleteUser(t *testing.T) {
 			}
 
 			if failed {
-				t.Errorf("DeleteUser() = `%s`, want `%s`", gotErr, tc.wantErr)
+				t.Errorf("Delete() = `%s`, want `%s`", gotErr, tc.wantErr)
 			}
 
 			if err := mock.ExpectationsWereMet(); err != nil {

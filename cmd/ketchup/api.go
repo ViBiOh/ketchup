@@ -7,6 +7,10 @@ import (
 	"path"
 	"strings"
 
+	authIdent "github.com/ViBiOh/auth/v2/pkg/ident/basic"
+	"github.com/ViBiOh/auth/v2/pkg/middleware"
+	authService "github.com/ViBiOh/auth/v2/pkg/service"
+	authStore "github.com/ViBiOh/auth/v2/pkg/store/db"
 	"github.com/ViBiOh/httputils/v3/pkg/alcotest"
 	"github.com/ViBiOh/httputils/v3/pkg/cors"
 	"github.com/ViBiOh/httputils/v3/pkg/crud"
@@ -19,8 +23,9 @@ import (
 	"github.com/ViBiOh/httputils/v3/pkg/swagger"
 	"github.com/ViBiOh/ketchup/pkg/github"
 	"github.com/ViBiOh/ketchup/pkg/ketchup"
-	service "github.com/ViBiOh/ketchup/pkg/service/user"
-	"github.com/ViBiOh/ketchup/pkg/store"
+	userService "github.com/ViBiOh/ketchup/pkg/service/user"
+	repositoryStore "github.com/ViBiOh/ketchup/pkg/store/repository"
+	userStore "github.com/ViBiOh/ketchup/pkg/store/user"
 	mailer "github.com/ViBiOh/mailer/pkg/client"
 )
 
@@ -59,25 +64,33 @@ func main() {
 	logger.Fatal(err)
 	server.Health(ketchupDb.Ping)
 
-	storeApp := store.New(ketchupDb)
-	serviceApp := service.New(storeApp, nil, nil)
+	/* Auth related things */
+	authProvider := authStore.New(ketchupDb)
+	identProvider := authIdent.New(authProvider)
+	authServiceApp := authService.New(authProvider, authProvider)
+	authMiddleware := middleware.New(authProvider, identProvider)
+	/* Auth related things */
+
+	userStoreApp := userStore.New(ketchupDb)
+	userServiceApp := userService.New(userStoreApp, authServiceApp, authProvider)
+
+	repositoryStoreApp := repositoryStore.New(ketchupDb)
 	githubApp := github.New(githubConfig)
 	mailerApp := mailer.New(mailerConfig)
+	ketchupAp := ketchup.New(ketchupConfig, repositoryStoreApp, githubApp, mailerApp)
 
-	ketchupAp := ketchup.New(ketchupConfig, storeApp, githubApp, mailerApp)
-
-	crudUserApp, err := crud.New(crudUserConfig, serviceApp)
+	crudUserApp, err := crud.New(crudUserConfig, userServiceApp)
 	logger.Fatal(err)
 
 	swaggerApp, err := swagger.New(swaggerConfig, server.Swagger, crudUserApp.Swagger)
 	logger.Fatal(err)
 
 	swaggerHandler := http.StripPrefix(apiPath, swaggerApp.Handler())
-	crudTargetHandler := http.StripPrefix(usersPath, crudUserApp.Handler())
+	crudUserHandler := httputils.ChainMiddlewares(http.StripPrefix(usersPath, crudUserApp.Handler()), authMiddleware.Middleware)
 
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if strings.HasPrefix(r.URL.Path, usersPath) {
-			crudTargetHandler.ServeHTTP(w, r)
+			crudUserHandler.ServeHTTP(w, r)
 			return
 		}
 

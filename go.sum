@@ -14,6 +14,8 @@ github.com/ViBiOh/httputils/v3 v3.15.0 h1:e7Ogaio1aJRlztCF1UPo7NPKHhmVyuym496hez
 github.com/ViBiOh/httputils/v3 v3.15.0/go.mod h1:XaNCzKOhynf+7U0E0RXrzGLtMkLxpVzrHwa0N1ANTmo=
 github.com/ViBiOh/httputils/v3 v3.16.1 h1:oHla9p0TJr3y6QfDa1RQoq4imhMunG8055gXvOMiYik=
 github.com/ViBiOh/httputils/v3 v3.16.1/go.mod h1:XaNCzKOhynf+7U0E0RXrzGLtMkLxpVzrHwa0N1ANTmo=
+github.com/ViBiOh/httputils/v3 v3.17.0 h1:GKt6ZQbBWnjk9qVGd4OAxLPaXLqtNW9C+RBPOQfRC3w=
+github.com/ViBiOh/httputils/v3 v3.17.0/go.mod h1:XaNCzKOhynf+7U0E0RXrzGLtMkLxpVzrHwa0N1ANTmo=
 github.com/ViBiOh/mailer v1.7.0 h1:ht6G7eNu/IhIgpqw7R2PHXd8l4IIPxX6gekKIfK6V+Q=
 github.com/ViBiOh/mailer v1.7.0/go.mod h1:h5tQIdHQIXHmKckTxUgDP0tfnKyXKet2dGdBz7iRWYY=
 github.com/alecthomas/template v0.0.0-20160405071501-a0175ee3bccc/go.mod h1:LOuyumcjzFXgccqObfd/Ljyb9UuFJ6TxHnclSeseNhc=

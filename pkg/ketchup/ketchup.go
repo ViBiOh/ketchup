@@ -32,9 +32,9 @@ type app struct {
 	timezone string
 	hour     string
 
-	storeApp  store.App
-	githubApp github.App
-	mailerApp mailer.App
+	repositoryStore store.RepositoryStore
+	githubApp       github.App
+	mailerApp       mailer.App
 }
 
 // Flags adds flags for configuring package
@@ -47,15 +47,15 @@ func Flags(fs *flag.FlagSet, prefix string) Config {
 }
 
 // New creates new App from Config
-func New(config Config, storeApp store.App, githubApp github.App, mailerApp mailer.App) App {
+func New(config Config, repositoryStore store.RepositoryStore, githubApp github.App, mailerApp mailer.App) App {
 	return app{
 		emailTo:  strings.TrimSpace(*config.emailTo),
 		timezone: strings.TrimSpace(*config.timezone),
 		hour:     strings.TrimSpace(*config.hour),
 
-		storeApp:  storeApp,
-		githubApp: githubApp,
-		mailerApp: mailerApp,
+		repositoryStore: repositoryStore,
+		githubApp:       githubApp,
+		mailerApp:       mailerApp,
 	}
 }
 
@@ -68,7 +68,7 @@ func (a app) Start() {
 func (a app) checkUpdates(_ time.Time) error {
 	ctx := context.Background()
 
-	repositories, _, err := a.storeApp.ListRepositories(ctx, 1, 100, "", false)
+	repositories, _, err := a.repositoryStore.List(ctx, 1, 100, "", false)
 	if err != nil {
 		return fmt.Errorf("unable to get repositories: %s", err)
 	}
@@ -87,7 +87,7 @@ func (a app) checkUpdates(_ time.Time) error {
 
 			newReleases = append(newReleases, release)
 
-			if err = a.storeApp.UpdateRepository(ctx, repository); err != nil {
+			if err = a.repositoryStore.Update(ctx, repository); err != nil {
 				return fmt.Errorf("unable to update repository %s: %s", repository.Name, err)
 			}
 		} else if release.TagName == repository.Version {
