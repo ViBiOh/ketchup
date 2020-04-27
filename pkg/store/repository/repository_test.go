@@ -283,7 +283,7 @@ func TestUpdate(t *testing.T) {
 		wantErr   error
 	}{
 		{
-			"update",
+			"simple",
 			args{
 				o: model.Repository{
 					ID:      1,
@@ -339,7 +339,7 @@ func TestDelete(t *testing.T) {
 		wantErr   error
 	}{
 		{
-			"update",
+			"simple",
 			args{
 				o: model.Repository{
 					ID: 1,

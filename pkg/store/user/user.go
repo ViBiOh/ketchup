@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"regexp"
 
-	authStore "github.com/ViBiOh/auth/v2/pkg/store/db"
 	"github.com/ViBiOh/httputils/v3/pkg/db"
 	"github.com/ViBiOh/ketchup/pkg/model"
 	"github.com/ViBiOh/ketchup/pkg/store"
@@ -31,15 +30,13 @@ type App interface {
 }
 
 type app struct {
-	db        *sql.DB
-	authStore authStore.App
+	db *sql.DB
 }
 
 // New creates new App from Config
 func New(db *sql.DB) App {
 	return app{
-		db:        db,
-		authStore: authStore.New(db),
+		db: db,
 	}
 }
 

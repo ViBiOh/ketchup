@@ -33,6 +33,18 @@ type RepositoryStore interface {
 	Delete(ctx context.Context, o model.Repository) error
 }
 
+// KetchupStore store Ketchup
+type KetchupStore interface {
+	StartAtomic(ctx context.Context) (context.Context, error)
+	EndAtomic(ctx context.Context, err error) error
+
+	List(ctx context.Context, page, pageSize uint, sortKey string, sortAsc bool) ([]model.Ketchup, uint, error)
+	Get(ctx context.Context, id uint64) (model.Ketchup, error)
+	Create(ctx context.Context, o model.Ketchup) (uint64, error)
+	Update(ctx context.Context, o model.Ketchup) error
+	Delete(ctx context.Context, o model.Ketchup) error
+}
+
 // StartAtomic starts atomic work
 func StartAtomic(ctx context.Context, usedDB *sql.DB) (context.Context, error) {
 	if db.ReadTx(ctx) != nil {
