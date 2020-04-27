@@ -7,10 +7,10 @@ import (
 	"path"
 	"strings"
 
-	authHandler "github.com/ViBiOh/auth/v2/pkg/handler"
-	basicIdent "github.com/ViBiOh/auth/v2/pkg/ident/basic"
-	basicProvider "github.com/ViBiOh/auth/v2/pkg/provider/db"
+	authIdent "github.com/ViBiOh/auth/v2/pkg/ident/basic"
+	"github.com/ViBiOh/auth/v2/pkg/middleware"
 	authService "github.com/ViBiOh/auth/v2/pkg/service"
+	authStore "github.com/ViBiOh/auth/v2/pkg/store/db"
 	"github.com/ViBiOh/httputils/v3/pkg/alcotest"
 	"github.com/ViBiOh/httputils/v3/pkg/cors"
 	"github.com/ViBiOh/httputils/v3/pkg/crud"
@@ -23,15 +23,19 @@ import (
 	"github.com/ViBiOh/ketchup/pkg/github"
 	"github.com/ViBiOh/ketchup/pkg/ketchup"
 	"github.com/ViBiOh/ketchup/pkg/renderer"
-	"github.com/ViBiOh/ketchup/pkg/target"
+	ketchupService "github.com/ViBiOh/ketchup/pkg/service/ketchup"
+	userService "github.com/ViBiOh/ketchup/pkg/service/user"
+	ketchupStore "github.com/ViBiOh/ketchup/pkg/store/ketchup"
+	repositoryStore "github.com/ViBiOh/ketchup/pkg/store/repository"
+	userStore "github.com/ViBiOh/ketchup/pkg/store/user"
 	mailer "github.com/ViBiOh/mailer/pkg/client"
 )
 
 const (
-	faviconPath = "/favicon"
-	apiPath     = "/api"
-	targetPath  = apiPath + "/targets"
-	usersPath   = apiPath + "/users"
+	faviconPath  = "/favicon"
+	apiPath      = "/api"
+	usersPath    = apiPath + "/users"
+	ketchupsPath = apiPath + "/ketchups"
 )
 
 func main() {
@@ -48,8 +52,8 @@ func main() {
 	mailerConfig := mailer.Flags(fs, "mailer")
 	githubConfig := github.Flags(fs, "github")
 	ketchupConfig := ketchup.Flags(fs, "ketchup")
-	crudTargetConfig := crud.GetConfiguredFlags(targetPath, "Target of Ketchup")(fs, "targets")
-	crudUserConfig := crud.GetConfiguredFlags(usersPath, "Users of Ketchup")(fs, "users")
+	crudUserConfig := crud.GetConfiguredFlags(usersPath, "Users")(fs, "users")
+	crudKetchupConfig := crud.GetConfiguredFlags(ketchupsPath, "Ketchup")(fs, "ketchups")
 
 	logger.Fatal(fs.Parse(os.Args[1:]))
 
@@ -64,43 +68,52 @@ func main() {
 	logger.Fatal(err)
 	server.Health(ketchupDb.Ping)
 
-	/* Basic auth management */
-	basicApp := basicProvider.New(ketchupDb)
-	basicProvider := basicIdent.New(basicApp)
-	handlerApp := authHandler.New(basicApp, basicProvider)
-	server.Middleware(handlerApp.Middleware)
+	/* Auth related things */
+	authProvider := authStore.New(ketchupDb)
+	identProvider := authIdent.New(authProvider)
+	authServiceApp := authService.New(authProvider, authProvider)
+	authMiddleware := middleware.New(authProvider, identProvider)
+	/* Auth related things */
 
-	crudUserApp, err := crud.New(crudUserConfig, authService.New(ketchupDb, basicApp))
-	logger.Fatal(err)
-	/* Basic auth management */
+	userStoreApp := userStore.New(ketchupDb)
+	userServiceApp := userService.New(userStoreApp, authServiceApp, authProvider)
+
+	repositoryStoreApp := repositoryStore.New(ketchupDb)
+
+	ketchupStoreApp := ketchupStore.New(ketchupDb)
+	ketchupServiceApp := ketchupService.New(ketchupStoreApp, repositoryStoreApp)
 
 	githubApp := github.New(githubConfig)
 	mailerApp := mailer.New(mailerConfig)
-	targetApp := target.New(ketchupDb, githubApp)
-	ketchupAp := ketchup.New(ketchupConfig, targetApp, githubApp, mailerApp)
+	ketchupAp := ketchup.New(ketchupConfig, repositoryStoreApp, githubApp, mailerApp)
 
-	rendererApp, err := renderer.New(targetApp)
+	rendererApp, err := renderer.New(ketchupServiceApp)
 	logger.Fatal(err)
 
-	crudTargetApp, err := crud.New(crudTargetConfig, targetApp)
+	/* Crud and Swagger related things */
+	crudUserApp, err := crud.New(crudUserConfig, userServiceApp)
 	logger.Fatal(err)
 
-	swaggerApp, err := swagger.New(swaggerConfig, server.Swagger, crudTargetApp.Swagger, crudUserApp.Swagger)
+	crudKetchupApp, err := crud.New(crudKetchupConfig, ketchupServiceApp)
+	logger.Fatal(err)
+
+	swaggerApp, err := swagger.New(swaggerConfig, server.Swagger, crudUserApp.Swagger, crudKetchupApp.Swagger)
 	logger.Fatal(err)
 
 	swaggerHandler := http.StripPrefix(apiPath, swaggerApp.Handler())
-	crudTargetHandler := http.StripPrefix(targetPath, crudTargetApp.Handler())
-	crudUserHandler := http.StripPrefix(usersPath, crudUserApp.Handler())
-	rendererHandler := rendererApp.Handler()
+	crudUserHandler := httputils.ChainMiddlewares(http.StripPrefix(usersPath, crudUserApp.Handler()), authMiddleware.Middleware)
+	crudKetchupHandler := httputils.ChainMiddlewares(http.StripPrefix(ketchupsPath, crudKetchupApp.Handler()), authMiddleware.Middleware)
+	/* Crud and Swagger related things */
+
+	rendererHandler := httputils.ChainMiddlewares(rendererApp.Handler(), authMiddleware.Middleware)
 
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if strings.HasPrefix(r.URL.Path, targetPath) {
-			crudTargetHandler.ServeHTTP(w, r)
-			return
-		}
-
 		if strings.HasPrefix(r.URL.Path, usersPath) {
 			crudUserHandler.ServeHTTP(w, r)
+			return
+		}
+		if strings.HasPrefix(r.URL.Path, ketchupsPath) {
+			crudKetchupHandler.ServeHTTP(w, r)
 			return
 		}
 

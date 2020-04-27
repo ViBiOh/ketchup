@@ -11,7 +11,7 @@ import (
 	"github.com/ViBiOh/httputils/v3/pkg/flags"
 	"github.com/ViBiOh/httputils/v3/pkg/logger"
 	"github.com/ViBiOh/ketchup/pkg/github"
-	"github.com/ViBiOh/ketchup/pkg/target"
+	"github.com/ViBiOh/ketchup/pkg/store"
 	mailer "github.com/ViBiOh/mailer/pkg/client"
 )
 
@@ -32,9 +32,9 @@ type app struct {
 	timezone string
 	hour     string
 
-	targetApp target.App
-	githubApp github.App
-	mailerApp mailer.App
+	repositoryStore store.RepositoryStore
+	githubApp       github.App
+	mailerApp       mailer.App
 }
 
 // Flags adds flags for configuring package
@@ -47,15 +47,15 @@ func Flags(fs *flag.FlagSet, prefix string) Config {
 }
 
 // New creates new App from Config
-func New(config Config, targetApp target.App, githubApp github.App, mailerApp mailer.App) App {
-	return &app{
+func New(config Config, repositoryStore store.RepositoryStore, githubApp github.App, mailerApp mailer.App) App {
+	return app{
 		emailTo:  strings.TrimSpace(*config.emailTo),
 		timezone: strings.TrimSpace(*config.timezone),
 		hour:     strings.TrimSpace(*config.hour),
 
-		targetApp: targetApp,
-		githubApp: githubApp,
-		mailerApp: mailerApp,
+		repositoryStore: repositoryStore,
+		githubApp:       githubApp,
+		mailerApp:       mailerApp,
 	}
 }
 
@@ -68,34 +68,32 @@ func (a app) Start() {
 func (a app) checkUpdates(_ time.Time) error {
 	ctx := context.Background()
 
-	targets, _, err := a.targetApp.List(ctx, 1, 100, "", false, nil)
+	repositories, _, err := a.repositoryStore.List(ctx, 1, 100, "", false)
 	if err != nil {
-		return fmt.Errorf("unable to get targets: %s", err)
+		return fmt.Errorf("unable to get repositories: %s", err)
 	}
 
 	newReleases := make([]github.Release, 0)
 
-	for _, o := range targets {
-		target := o.(target.Target)
-
-		release, err := a.githubApp.LastRelease(target.Repository)
+	for _, repository := range repositories {
+		release, err := a.githubApp.LastRelease(repository.Name)
 		if err != nil {
 			return err
 		}
 
-		if release.TagName != target.LatestVersion {
-			logger.Info("New version available for %s: %s", target.Repository, release.TagName)
-			target.LatestVersion = release.TagName
+		if release.TagName != repository.Version {
+			logger.Info("New version available for %s: %s", repository.Name, release.TagName)
+			repository.Version = release.TagName
 
 			newReleases = append(newReleases, release)
 
-			if _, err = a.targetApp.Update(ctx, target); err != nil {
-				return fmt.Errorf("unable to update target %s: %s", target.Repository, err)
+			if err = a.repositoryStore.Update(ctx, repository); err != nil {
+				return fmt.Errorf("unable to update repository %s: %s", repository.Name, err)
 			}
-		} else if release.TagName == target.CurrentVersion {
-			logger.Info("%s is up-to-date!", target.Repository)
+		} else if release.TagName == repository.Version {
+			logger.Info("%s is up-to-date!", repository.Name)
 		} else {
-			logger.Info("%s still need to be updated to %s!", target.Repository, release.TagName)
+			logger.Info("%s still need to be updated to %s!", repository.Name, release.TagName)
 		}
 	}
 

@@ -3,12 +3,12 @@
     <div class="modal-content">
       <h2 class="header">Create target</h2>
 
-      <form method="POST" action="/targets/">
+      <form method="POST" action="/ketchups/">
         <input type="hidden" name="method" value="POST">
 
         <p class="padding no-margin">
           <label for="create-name" class="block">Name:</label>
-          <input id="create-name" type="text" name="repository" value="{{ .CurrentVersion }}">
+          <input id="create-name" type="text" name="repository" value="{{ .Version }}">
         </p>
 
         <p class="padding no-margin">
@@ -23,19 +23,18 @@
 {{ end }}
 
 {{ define "edit-modal" }}
-  <div id="edit-modal-{{ .ID }}" class="modal">
+  <div id="edit-modal-{{ .Repository.ID }}" class="modal">
     <div class="modal-content">
       <h2 class="header">Edit target</h2>
 
-      <p class="no-margin center">{{ .Repository }}</p>
+      <p class="no-margin center">{{ .Repository.Name }}</p>
 
-      <form method="POST" action="/targets/{{ .ID }}">
+      <form method="POST" action="/ketchups/{{ .Repository.ID }}">
         <input type="hidden" name="method" value="PUT">
-        <input type="hidden" name="repository" value="{{ .Repository }}">
 
         <p class="padding no-margin">
-          <label for="edit-current-version-{{ .ID }}" class="block">Current version:</label>
-          <input id="edit-current-version-{{ .ID }}" name="currentVersion" type="text" value="{{ .CurrentVersion }}">
+          <label for="edit-current-version-{{ .Repository.ID }}" class="block">Current version:</label>
+          <input id="edit-current-version-{{ .Repository.ID }}" name="currentVersion" type="text" value="{{ .Version }}">
         </p>
 
         {{ template "form_buttons" "Edit" }}
@@ -45,15 +44,15 @@
 {{ end }}
 
 {{ define "delete-modal" }}
-  <div id="delete-modal-{{ .ID }}" class="modal">
+  <div id="delete-modal-{{ .Repository.ID }}" class="modal">
     <div class="modal-content">
       <h2 class="header">Confirmation</h2>
 
-      <form method="POST" action="/targets/{{ .ID }}">
+      <form method="POST" action="/ketchups/{{ .Repository.ID }}">
         <input type="hidden" name="method" value="DELETE">
 
         <p class="padding no-margin center">
-          Are you sure you want to delete <strong>{{ .Repository }}</strong>?
+          Are you sure you want to delete <strong>{{ .Repository.Name }}</strong>?
         </p>
 
         {{ template "form_buttons" "Delete" }}
@@ -62,11 +61,11 @@
   </div>
 {{ end }}
 
-{{ define "targets" }}
+{{ define "ketchups" }}
 <style>
   {{ range . }}
-    #delete-modal-{{ .ID }}:target,
-    #edit-modal-{{ .ID }}:target,
+    #delete-modal-{{ .Repository.ID }}:target,
+    #edit-modal-{{ .Repository.ID }}:target,
   {{ end }}
   #create-modal:target {
     display: flex;
@@ -74,8 +73,8 @@
   }
 
   {{ range . }}
-    #delete-modal-{{ .ID }}:target ~ .content,
-    #edit-modal-{{ .ID }}:target ~ .content,
+    #delete-modal-{{ .Repository.ID }}:target ~ .content,
+    #edit-modal-{{ .Repository.ID }}:target ~ .content,
   {{ end }}
   #create-modal:target ~ .content {
     display: flex;
@@ -162,23 +161,23 @@
 
     <div class="padding target">
       <span class="target__content">
-        <p class="no-margin">{{ .Repository }}</p>
+        <p class="no-margin">{{ .Repository.Name }}</p>
 
-        <span class="{{ if ne .CurrentVersion .LatestVersion }}danger{{ else }}success{{ end }}">
-          {{ .CurrentVersion }}
+        <span class="{{ if ne .Version .Repository.Version }}danger{{ else }}success{{ end }}">
+          {{ .Version }}
         </span>
 
-        {{ if ne .CurrentVersion .LatestVersion }}
+        {{ if ne .Version .Repository.Version }}
           <span>
-            -> <a class="success" href="https://github.com/{{ .Repository }}/releases/tag/{{ .LatestVersion }}" rel="noopener noreferrer" target="_blank">{{ .LatestVersion }}</a>
+            -> <a class="success" href="https://github.com/{{ .Repository.Name }}/releases/tag/{{ .Repository.Version }}" rel="noopener noreferrer" target="_blank">{{ .Repository.Version }}</a>
           </span>
         {{ end }}
       </span>
 
-      <a href="#edit-modal-{{ .ID }}" class="button button-icon target__action" alt="Edit">
+      <a href="#edit-modal-{{ .Repository.ID }}" class="button button-icon target__action" alt="Edit">
         <img class="icon" src="/svg/edit?fill=silver" alt="Edit icon">
       </a>
-      <a href="#delete-modal-{{ .ID }}" class="button button-icon target__action" alt="Delete">
+      <a href="#delete-modal-{{ .Repository.ID }}" class="button button-icon target__action" alt="Delete">
         <img class="icon" src="/svg/times?fill=silver" alt="Delete icon">
       </a>
     </div>
