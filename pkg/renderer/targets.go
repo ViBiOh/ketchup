@@ -8,11 +8,10 @@ import (
 	"strings"
 
 	"github.com/ViBiOh/httputils/v3/pkg/crud"
-	"github.com/ViBiOh/ketchup/pkg/target"
+	"github.com/ViBiOh/ketchup/pkg/model"
 )
 
-// SVG render a svg in given coolor
-func (a app) targets() http.Handler {
+func (a app) ketchups() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodPost {
 			a.errorHandler(w, http.StatusMethodNotAllowed, fmt.Errorf("invalid method %s", r.Method), nil)
@@ -40,22 +39,24 @@ func (a app) targets() http.Handler {
 }
 
 func (a app) handleCreate(w http.ResponseWriter, r *http.Request) {
-	target := target.Target{
-		Repository:     r.FormValue("repository"),
-		CurrentVersion: r.FormValue("currentVersion"),
+	ketchup := model.Ketchup{
+		Version: r.FormValue("currentVersion"),
+		Repository: model.Repository{
+			Name: r.FormValue("repository"),
+		},
 	}
 
-	if errs := a.targetApp.Check(r.Context(), nil, target); len(errs) > 0 {
+	if errs := a.ketchupApp.Check(r.Context(), nil, ketchup); len(errs) > 0 {
 		a.handleCrudError(w, errs)
 		return
 	}
 
-	if _, err := a.targetApp.Create(r.Context(), target); err != nil {
+	if _, err := a.ketchupApp.Create(r.Context(), ketchup); err != nil {
 		a.errorHandler(w, http.StatusInternalServerError, err, nil)
 		return
 	}
 
-	redirectWithMessage(w, r, fmt.Sprintf("%s created with success!", target.Repository))
+	redirectWithMessage(w, r, fmt.Sprintf("%s created with success!", ketchup.Repository.Name))
 }
 
 func (a app) handleUpdate(w http.ResponseWriter, r *http.Request) {
@@ -65,32 +66,32 @@ func (a app) handleUpdate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	rawOldTarget, err := a.targetApp.Get(r.Context(), id)
+	rawOldKetchup, err := a.ketchupApp.Get(r.Context(), id)
 	if err != nil {
 		a.errorHandler(w, http.StatusBadRequest, err, nil)
 		return
 	}
 
-	oldTarget := rawOldTarget.(target.Target)
+	oldKetchup := rawOldKetchup.(model.Ketchup)
 
-	newTarget := target.Target{
-		ID:             id,
-		Repository:     r.FormValue("repository"),
-		CurrentVersion: r.FormValue("currentVersion"),
-		LatestVersion:  oldTarget.LatestVersion,
+	newKetchup := model.Ketchup{
+		Version: r.FormValue("currentVersion"),
+		Repository: model.Repository{
+			Name: r.FormValue("repository"),
+		},
 	}
 
-	if errs := a.targetApp.Check(r.Context(), oldTarget, newTarget); len(errs) > 0 {
+	if errs := a.ketchupApp.Check(r.Context(), oldKetchup, newKetchup); len(errs) > 0 {
 		a.handleCrudError(w, errs)
 		return
 	}
 
-	if _, err := a.targetApp.Update(r.Context(), newTarget); err != nil {
+	if _, err := a.ketchupApp.Update(r.Context(), newKetchup); err != nil {
 		a.errorHandler(w, http.StatusInternalServerError, err, nil)
 		return
 	}
 
-	redirectWithMessage(w, r, fmt.Sprintf("%s updated with success!", newTarget.Repository))
+	redirectWithMessage(w, r, fmt.Sprintf("%s updated with success!", newKetchup.Repository.Name))
 }
 
 func (a app) handleDelete(w http.ResponseWriter, r *http.Request) {
@@ -100,25 +101,25 @@ func (a app) handleDelete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	rawTarget, err := a.targetApp.Get(r.Context(), id)
+	rawKetchup, err := a.ketchupApp.Get(r.Context(), id)
 	if err != nil {
 		a.errorHandler(w, http.StatusBadRequest, err, nil)
 		return
 	}
 
-	target := rawTarget.(target.Target)
+	ketchup := rawKetchup.(model.Ketchup)
 
-	if errs := a.targetApp.Check(r.Context(), target, nil); len(errs) > 0 {
+	if errs := a.ketchupApp.Check(r.Context(), ketchup, nil); len(errs) > 0 {
 		a.handleCrudError(w, errs)
 		return
 	}
 
-	if err := a.targetApp.Delete(r.Context(), target); err != nil {
+	if err := a.ketchupApp.Delete(r.Context(), ketchup); err != nil {
 		a.errorHandler(w, http.StatusInternalServerError, err, nil)
 		return
 	}
 
-	redirectWithMessage(w, r, fmt.Sprintf("%s deleted with success!", target.Repository))
+	redirectWithMessage(w, r, fmt.Sprintf("%s deleted with success!", ketchup.Repository.Name))
 }
 
 func (a app) handleCrudError(w http.ResponseWriter, errs []crud.Error) {

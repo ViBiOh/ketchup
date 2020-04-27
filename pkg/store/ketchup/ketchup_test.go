@@ -35,17 +35,15 @@ func TestList(t *testing.T) {
 				page:     1,
 				pageSize: 20,
 			},
-			"SELECT id, version, repository_id, .+ AS full_count FROM ketchup WHERE user_id = .+ ORDER BY creation_date DESC",
+			"SELECT version, repository_id, .+ AS full_count FROM ketchup WHERE user_id = .+ ORDER BY creation_date DESC",
 			[]model.Ketchup{
 				{
-					ID:      1,
 					Version: "0.9.0",
 					Repository: model.Repository{
 						ID: 1,
 					},
 				},
 				{
-					ID:      2,
 					Version: "1.0.0",
 					Repository: model.Repository{
 						ID: 2,
@@ -61,7 +59,7 @@ func TestList(t *testing.T) {
 				page:     1,
 				pageSize: 20,
 			},
-			"SELECT id, version, repository_id, .+ AS full_count FROM ketchup WHERE user_id = .+ ORDER BY creation_date DESC",
+			"SELECT version, repository_id, .+ AS full_count FROM ketchup WHERE user_id = .+ ORDER BY creation_date DESC",
 			nil,
 			0,
 			sqlmock.ErrCancelled,
@@ -74,17 +72,15 @@ func TestList(t *testing.T) {
 				sortKey:  "version",
 				sortAsc:  true,
 			},
-			"SELECT id, version, repository_id, .+ AS full_count FROM ketchup WHERE user_id = .+ ORDER BY version",
+			"SELECT version, repository_id, .+ AS full_count FROM ketchup WHERE user_id = .+ ORDER BY version",
 			[]model.Ketchup{
 				{
-					ID:      1,
 					Version: "0.9.0",
 					Repository: model.Repository{
 						ID: 1,
 					},
 				},
 				{
-					ID:      2,
 					Version: "1.0.0",
 					Repository: model.Repository{
 						ID: 2,
@@ -102,17 +98,15 @@ func TestList(t *testing.T) {
 				sortKey:  "version",
 				sortAsc:  false,
 			},
-			"SELECT id, version, repository_id, .+ AS full_count FROM ketchup WHERE user_id = .+ ORDER BY version DESC",
+			"SELECT version, repository_id, .+ AS full_count FROM ketchup WHERE user_id = .+ ORDER BY version DESC",
 			[]model.Ketchup{
 				{
-					ID:      1,
 					Version: "0.9.0",
 					Repository: model.Repository{
 						ID: 1,
 					},
 				},
 				{
-					ID:      2,
 					Version: "1.0.0",
 					Repository: model.Repository{
 						ID: 2,
@@ -132,7 +126,7 @@ func TestList(t *testing.T) {
 			}
 			defer mockDb.Close()
 
-			expectedQuery := mock.ExpectQuery(tc.expectSQL).WithArgs(20, 0, 3).WillReturnRows(sqlmock.NewRows([]string{"id", "version", "repository_id", "full_count"}).AddRow(1, "0.9.0", 1, 2).AddRow(2, "1.0.0", 2, 2))
+			expectedQuery := mock.ExpectQuery(tc.expectSQL).WithArgs(20, 0, 3).WillReturnRows(sqlmock.NewRows([]string{"version", "repository_id", "full_count"}).AddRow("0.9.0", 1, 2).AddRow("1.0.0", 2, 2))
 
 			if tc.intention == "timeout" {
 				savedSQLTimeout := db.SQLTimeout
@@ -185,7 +179,6 @@ func TestGet(t *testing.T) {
 				id: 1,
 			},
 			model.Ketchup{
-				ID:      1,
 				Version: "0.9.0",
 				Repository: model.Repository{
 					ID: 1,
@@ -203,9 +196,9 @@ func TestGet(t *testing.T) {
 			}
 			defer mockDb.Close()
 
-			mock.ExpectQuery("SELECT id, version, repository_id FROM ketchup").WithArgs(1).WillReturnRows(sqlmock.NewRows([]string{"id", "email", "login_id"}).AddRow(1, "0.9.0", 1))
+			mock.ExpectQuery("SELECT version, repository_id FROM ketchup").WithArgs(1, 3).WillReturnRows(sqlmock.NewRows([]string{"email", "repository_id"}).AddRow("0.9.0", 1))
 
-			got, gotErr := New(mockDb).Get(context.Background(), tc.args.id)
+			got, gotErr := New(mockDb).Get(authModel.StoreUser(context.Background(), authModel.NewUser(3, "vibioh")), tc.args.id)
 
 			failed := false
 
@@ -303,8 +296,10 @@ func TestUpdate(t *testing.T) {
 			"simple",
 			args{
 				o: model.Ketchup{
-					ID:      1,
 					Version: "0.9.0",
+					Repository: model.Repository{
+						ID: 1,
+					},
 				},
 			},
 			nil,
@@ -320,10 +315,10 @@ func TestUpdate(t *testing.T) {
 			defer mockDb.Close()
 
 			mock.ExpectBegin()
-			mock.ExpectExec("UPDATE ketchup SET version").WithArgs(1, "0.9.0").WillReturnResult(sqlmock.NewResult(0, 1))
+			mock.ExpectExec("UPDATE ketchup SET version").WithArgs(1, 3, "0.9.0").WillReturnResult(sqlmock.NewResult(0, 1))
 			mock.ExpectCommit()
 
-			gotErr := New(mockDb).Update(context.Background(), tc.args.o)
+			gotErr := New(mockDb).Update(authModel.StoreUser(context.Background(), authModel.NewUser(3, "vibioh")), tc.args.o)
 
 			failed := false
 
@@ -358,7 +353,9 @@ func TestDelete(t *testing.T) {
 			"simple",
 			args{
 				o: model.Ketchup{
-					ID: 1,
+					Repository: model.Repository{
+						ID: 1,
+					},
 				},
 			},
 			nil,
@@ -374,10 +371,10 @@ func TestDelete(t *testing.T) {
 			defer mockDb.Close()
 
 			mock.ExpectBegin()
-			mock.ExpectExec("DELETE FROM ketchup").WithArgs(1).WillReturnResult(sqlmock.NewResult(0, 1))
+			mock.ExpectExec("DELETE FROM ketchup").WithArgs(1, 3).WillReturnResult(sqlmock.NewResult(0, 1))
 			mock.ExpectCommit()
 
-			gotErr := New(mockDb).Delete(context.Background(), tc.args.o)
+			gotErr := New(mockDb).Delete(authModel.StoreUser(context.Background(), authModel.NewUser(3, "vibioh")), tc.args.o)
 
 			failed := false
 

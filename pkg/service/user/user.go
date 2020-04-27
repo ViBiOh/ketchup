@@ -1,4 +1,4 @@
-package service
+package user
 
 import (
 	"context"
@@ -48,14 +48,12 @@ func New(userStore store.UserStore, authService authService.App, authProvider au
 	}
 }
 
-// Unmarshal User
 func (a app) Unmarshal(data []byte, contentType string) (interface{}, error) {
-	var user model.User
-	err := json.Unmarshal(data, &user)
-	return user, err
+	var item model.User
+	err := json.Unmarshal(data, &item)
+	return item, err
 }
 
-// List Users
 func (a app) List(ctx context.Context, page, pageSize uint, sortKey string, sortAsc bool, filters map[string][]string) ([]interface{}, uint, error) {
 	if err := a.CheckRights(ctx, 0); err != nil {
 		return nil, 0, err
@@ -74,7 +72,6 @@ func (a app) List(ctx context.Context, page, pageSize uint, sortKey string, sort
 	return itemsList, total, nil
 }
 
-// Get User
 func (a app) Get(ctx context.Context, ID uint64) (interface{}, error) {
 	if err := a.CheckRights(ctx, ID); err != nil {
 		return nil, err
@@ -99,12 +96,11 @@ func (a app) Get(ctx context.Context, ID uint64) (interface{}, error) {
 	return item, nil
 }
 
-// Create User
 func (a app) Create(ctx context.Context, o interface{}) (output interface{}, err error) {
 	output = model.NoneUser
-	user := o.(model.User)
+	item := o.(model.User)
 
-	if inputErrors := a.authService.Check(ctx, nil, user.Login); len(inputErrors) != 0 {
+	if inputErrors := a.authService.Check(ctx, nil, item.Login); len(inputErrors) != 0 {
 		err = fmt.Errorf("%s: %w", inputErrors, crud.ErrInvalid)
 		return
 	}
@@ -115,46 +111,46 @@ func (a app) Create(ctx context.Context, o interface{}) (output interface{}, err
 	}
 
 	defer func() {
-		a.userStore.EndAtomic(ctx, err)
+		if endErr := a.userStore.EndAtomic(ctx, err); endErr != nil {
+			err = fmt.Errorf("%s: %w", err.Error(), endErr)
+		}
 	}()
 
 	var loginUser interface{}
-	loginUser, err = a.authService.Create(ctx, user.Login)
+	loginUser, err = a.authService.Create(ctx, item.Login)
 	if err != nil {
 		err = fmt.Errorf("unable to create auth: %w", err)
 	}
 
-	user.Login = loginUser.(authModel.User)
+	item.Login = loginUser.(authModel.User)
 
 	var id uint64
-	id, err = a.userStore.Create(ctx, user)
+	id, err = a.userStore.Create(ctx, item)
 	if err != nil {
 		err = fmt.Errorf("unable to create: %w", err)
 		return
 	}
 
-	user.ID = id
-	output = user
+	item.ID = id
+	output = item
 
 	return
 }
 
-// Update User
 func (a app) Update(ctx context.Context, o interface{}) (interface{}, error) {
-	user := o.(model.User)
+	item := o.(model.User)
 
-	if err := a.userStore.Update(ctx, user); err != nil {
-		return user, fmt.Errorf("unable to update: %w", err)
+	if err := a.userStore.Update(ctx, item); err != nil {
+		return item, fmt.Errorf("unable to update: %w", err)
 	}
 
-	return user, nil
+	return item, nil
 }
 
-// Delete User
 func (a app) Delete(ctx context.Context, o interface{}) (err error) {
-	user := o.(model.User)
+	item := o.(model.User)
 
-	if inputErrors := a.authService.Check(ctx, user.Login, nil); len(inputErrors) != 0 {
+	if inputErrors := a.authService.Check(ctx, item.Login, nil); len(inputErrors) != 0 {
 		err = fmt.Errorf("%s: %w", inputErrors, crud.ErrInvalid)
 		return
 	}
@@ -165,15 +161,17 @@ func (a app) Delete(ctx context.Context, o interface{}) (err error) {
 	}
 
 	defer func() {
-		a.userStore.EndAtomic(ctx, err)
+		if endErr := a.userStore.EndAtomic(ctx, err); endErr != nil {
+			err = fmt.Errorf("%s: %w", err.Error(), endErr)
+		}
 	}()
 
-	err = a.authService.Delete(ctx, user.Login)
+	err = a.authService.Delete(ctx, item.Login)
 	if err != nil {
 		err = fmt.Errorf("unable to delete auth: %w", err)
 	}
 
-	if err = a.userStore.Delete(ctx, user); err != nil {
+	if err = a.userStore.Delete(ctx, item); err != nil {
 		err = fmt.Errorf("unable to delete: %w", err)
 		return
 	}
@@ -197,22 +195,22 @@ func (a app) Check(ctx context.Context, old, new interface{}) []crud.Error {
 		return errors
 	}
 
-	newUser := new.(model.User)
+	newItem := new.(model.User)
 
-	if old != nil && new != nil && !(user.ID == newUser.ID || a.authProvider.IsAuthorized(ctx, user, "admin")) {
+	if old != nil && new != nil && !(user.ID == newItem.ID || a.authProvider.IsAuthorized(ctx, user, "admin")) {
 		errors = append(errors, crud.NewError("context", "you're not authorized to interact with other user"))
 	}
 
-	if len(strings.TrimSpace(newUser.Email)) == 0 {
+	if len(strings.TrimSpace(newItem.Email)) == 0 {
 		errors = append(errors, crud.NewError("email", "email is required"))
 	}
 
-	userWithEmail, err := a.userStore.GetByEmail(ctx, newUser.Email)
+	userWithEmail, err := a.userStore.GetByEmail(ctx, newItem.Email)
 	if err != nil {
 		if err != sql.ErrNoRows {
 			errors = append(errors, crud.NewError("email", "unable to check if email already exists"))
 		}
-	} else if userWithEmail.ID != newUser.ID {
+	} else if userWithEmail.ID != newItem.ID {
 		errors = append(errors, crud.NewError("email", "email already used by another user"))
 	}
 

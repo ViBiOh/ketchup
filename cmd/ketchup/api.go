@@ -15,7 +15,6 @@ import (
 	"github.com/ViBiOh/httputils/v3/pkg/cors"
 	"github.com/ViBiOh/httputils/v3/pkg/crud"
 	"github.com/ViBiOh/httputils/v3/pkg/db"
-	"github.com/ViBiOh/httputils/v3/pkg/httperror"
 	"github.com/ViBiOh/httputils/v3/pkg/httputils"
 	"github.com/ViBiOh/httputils/v3/pkg/logger"
 	"github.com/ViBiOh/httputils/v3/pkg/owasp"
@@ -23,16 +22,20 @@ import (
 	"github.com/ViBiOh/httputils/v3/pkg/swagger"
 	"github.com/ViBiOh/ketchup/pkg/github"
 	"github.com/ViBiOh/ketchup/pkg/ketchup"
+	"github.com/ViBiOh/ketchup/pkg/renderer"
+	ketchupService "github.com/ViBiOh/ketchup/pkg/service/ketchup"
 	userService "github.com/ViBiOh/ketchup/pkg/service/user"
+	ketchupStore "github.com/ViBiOh/ketchup/pkg/store/ketchup"
 	repositoryStore "github.com/ViBiOh/ketchup/pkg/store/repository"
 	userStore "github.com/ViBiOh/ketchup/pkg/store/user"
 	mailer "github.com/ViBiOh/mailer/pkg/client"
 )
 
 const (
-	faviconPath = "/favicon"
-	apiPath     = "/api"
-	usersPath   = apiPath + "/users"
+	faviconPath  = "/favicon"
+	apiPath      = "/api"
+	usersPath    = apiPath + "/users"
+	ketchupsPath = apiPath + "/ketchups"
 )
 
 func main() {
@@ -50,6 +53,7 @@ func main() {
 	githubConfig := github.Flags(fs, "github")
 	ketchupConfig := ketchup.Flags(fs, "ketchup")
 	crudUserConfig := crud.GetConfiguredFlags(usersPath, "Users")(fs, "users")
+	crudKetchupConfig := crud.GetConfiguredFlags(ketchupsPath, "Ketchup")(fs, "ketchups")
 
 	logger.Fatal(fs.Parse(os.Args[1:]))
 
@@ -75,22 +79,41 @@ func main() {
 	userServiceApp := userService.New(userStoreApp, authServiceApp, authProvider)
 
 	repositoryStoreApp := repositoryStore.New(ketchupDb)
+
+	ketchupStoreApp := ketchupStore.New(ketchupDb)
+	ketchupServiceApp := ketchupService.New(ketchupStoreApp, repositoryStoreApp)
+
 	githubApp := github.New(githubConfig)
 	mailerApp := mailer.New(mailerConfig)
 	ketchupAp := ketchup.New(ketchupConfig, repositoryStoreApp, githubApp, mailerApp)
 
+	rendererApp, err := renderer.New(ketchupServiceApp)
+	logger.Fatal(err)
+
+	/* Crud and Swagger related things */
 	crudUserApp, err := crud.New(crudUserConfig, userServiceApp)
 	logger.Fatal(err)
 
-	swaggerApp, err := swagger.New(swaggerConfig, server.Swagger, crudUserApp.Swagger)
+	crudKetchupApp, err := crud.New(crudKetchupConfig, ketchupServiceApp)
+	logger.Fatal(err)
+
+	swaggerApp, err := swagger.New(swaggerConfig, server.Swagger, crudUserApp.Swagger, crudKetchupApp.Swagger)
 	logger.Fatal(err)
 
 	swaggerHandler := http.StripPrefix(apiPath, swaggerApp.Handler())
 	crudUserHandler := httputils.ChainMiddlewares(http.StripPrefix(usersPath, crudUserApp.Handler()), authMiddleware.Middleware)
+	crudKetchupHandler := httputils.ChainMiddlewares(http.StripPrefix(ketchupsPath, crudKetchupApp.Handler()), authMiddleware.Middleware)
+	/* Crud and Swagger related things */
+
+	rendererHandler := httputils.ChainMiddlewares(rendererApp.Handler(), authMiddleware.Middleware)
 
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if strings.HasPrefix(r.URL.Path, usersPath) {
 			crudUserHandler.ServeHTTP(w, r)
+			return
+		}
+		if strings.HasPrefix(r.URL.Path, ketchupsPath) {
+			crudKetchupHandler.ServeHTTP(w, r)
 			return
 		}
 
@@ -103,7 +126,7 @@ func main() {
 			http.ServeFile(w, r, path.Join("static", r.URL.Path))
 		}
 
-		httperror.NotFound(w)
+		rendererHandler.ServeHTTP(w, r)
 	})
 
 	go ketchupAp.Start()

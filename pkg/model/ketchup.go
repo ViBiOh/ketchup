@@ -7,7 +7,6 @@ var (
 
 // Ketchup of app
 type Ketchup struct {
-	ID         uint64     `json:"id"`
 	Version    string     `json:"version"`
 	Repository Repository `json:"repository"`
 }

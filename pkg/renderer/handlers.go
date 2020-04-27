@@ -17,21 +17,21 @@ func redirectWithMessage(w http.ResponseWriter, r *http.Request, message string)
 }
 
 func (a app) getData(r *http.Request) (interface{}, error) {
-	targets, _, err := a.targetApp.List(r.Context(), 1, 100, "repository", true, nil)
+	ketchups, _, err := a.ketchupApp.List(r.Context(), 1, 100, "", true, nil)
 
-	return targets, err
+	return ketchups, err
 }
 
 func (a app) uiHandler(w http.ResponseWriter, r *http.Request, status int, message model.Message) {
-	targets, err := a.getData(r)
+	ketchups, err := a.getData(r)
 	if err != nil {
 		a.errorHandler(w, http.StatusInternalServerError, err, nil)
 		return
 	}
 
 	content := map[string]interface{}{
-		"Version": a.version,
-		"Targets": targets,
+		"Version":  a.version,
+		"Ketchups": ketchups,
 	}
 
 	if len(message.Content) > 0 {

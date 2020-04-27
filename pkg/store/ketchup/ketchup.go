@@ -43,7 +43,7 @@ func New(db *sql.DB) App {
 func scanItem(row db.RowScanner) (model.Ketchup, error) {
 	var item model.Ketchup
 
-	if err := row.Scan(&item.ID, &item.Version, &item.Repository.ID); err != nil {
+	if err := row.Scan(&item.Version, &item.Repository.ID); err != nil {
 		if err == sql.ErrNoRows {
 			return model.NoneKetchup, nil
 		}
@@ -61,7 +61,7 @@ func scanItems(rows *sql.Rows) ([]model.Ketchup, uint, error) {
 	for rows.Next() {
 		var item model.Ketchup
 
-		if err := rows.Scan(&item.ID, &item.Version, &item.Repository.ID, &totalCount); err != nil {
+		if err := rows.Scan(&item.Version, &item.Repository.ID, &totalCount); err != nil {
 			return nil, 0, err
 		}
 
@@ -81,7 +81,6 @@ func (a app) EndAtomic(ctx context.Context, err error) error {
 
 const listQuery = `
 SELECT
-  id,
   version,
   repository_id,
   count(1) OVER() AS full_count
@@ -124,17 +123,17 @@ func (a app) List(ctx context.Context, page, pageSize uint, sortKey string, sort
 
 const getQuery = `
 SELECT
-  id,
   version,
   repository_id
 FROM
   ketchup
 WHERE
-  id = $1
+  repository_id = $1
+  AND user_id = $2
 `
 
 func (a app) Get(ctx context.Context, id uint64) (model.Ketchup, error) {
-	return scanItem(db.GetRow(ctx, a.db, getQuery, id))
+	return scanItem(db.GetRow(ctx, a.db, getQuery, id, authModel.ReadUser(ctx).ID))
 }
 
 const insertQuery = `
@@ -148,7 +147,7 @@ INSERT INTO
   $1,
   $2,
   $3
-) RETURNING id
+) RETURNING 1
 `
 
 func (a app) Create(ctx context.Context, o model.Ketchup) (uint64, error) {
@@ -159,22 +158,24 @@ const updateQuery = `
 UPDATE
   ketchup
 SET
-  version = $2
+  version = $3
 WHERE
-  id = $1
+  repository_id = $1
+  AND user_id = $2
 `
 
 func (a app) Update(ctx context.Context, o model.Ketchup) error {
-	return db.Exec(ctx, a.db, updateQuery, o.ID, o.Version)
+	return db.Exec(ctx, a.db, updateQuery, o.Repository.ID, authModel.ReadUser(ctx).ID, o.Version)
 }
 
 const deleteQuery = `
 DELETE FROM
   ketchup
 WHERE
-  id = $1
+  repository_id = $1
+  AND user_id = $2
 `
 
 func (a app) Delete(ctx context.Context, o model.Ketchup) error {
-	return db.Exec(ctx, a.db, deleteQuery, o.ID)
+	return db.Exec(ctx, a.db, deleteQuery, o.Repository.ID, authModel.ReadUser(ctx).ID)
 }
