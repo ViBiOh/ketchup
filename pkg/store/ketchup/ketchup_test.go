@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/DATA-DOG/go-sqlmock"
-	authModel "github.com/ViBiOh/auth/v2/pkg/model"
 	"github.com/ViBiOh/httputils/v3/pkg/db"
 	"github.com/ViBiOh/ketchup/pkg/model"
 )
@@ -156,7 +155,7 @@ func TestList(t *testing.T) {
 				expectedQuery.WillDelayFor(db.SQLTimeout * 2)
 			}
 
-			got, gotCount, gotErr := New(mockDb).List(authModel.StoreUser(context.Background(), authModel.NewUser(3, "vibioh")), tc.args.page, tc.args.pageSize, tc.args.sortKey, tc.args.sortAsc)
+			got, gotCount, gotErr := New(mockDb).List(model.StoreUser(context.Background(), model.User{ID: 3}), tc.args.page, tc.args.pageSize, tc.args.sortKey, tc.args.sortAsc)
 			failed := false
 
 			if tc.wantErr == nil && gotErr != nil {
@@ -219,7 +218,7 @@ func TestGetByRepositoryID(t *testing.T) {
 
 			mock.ExpectQuery("SELECT version, repository_id, user_id FROM ketchup").WithArgs(1, 3).WillReturnRows(sqlmock.NewRows([]string{"email", "repository_id", "user_id"}).AddRow("0.9.0", 1, 3))
 
-			got, gotErr := New(mockDb).GetByRepositoryID(authModel.StoreUser(context.Background(), authModel.NewUser(3, "vibioh")), tc.args.id)
+			got, gotErr := New(mockDb).GetByRepositoryID(model.StoreUser(context.Background(), model.User{ID: 3}), tc.args.id)
 
 			failed := false
 
@@ -280,7 +279,7 @@ func TestCreate(t *testing.T) {
 			mock.ExpectQuery("INSERT INTO ketchup").WithArgs("0.9.0", 1, 3).WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(1))
 			mock.ExpectCommit()
 
-			got, gotErr := New(mockDb).Create(authModel.StoreUser(context.Background(), authModel.NewUser(3, "vibioh")), tc.args.o)
+			got, gotErr := New(mockDb).Create(model.StoreUser(context.Background(), model.User{ID: 3}), tc.args.o)
 
 			failed := false
 
@@ -339,7 +338,7 @@ func TestUpdate(t *testing.T) {
 			mock.ExpectExec("UPDATE ketchup SET version").WithArgs(1, 3, "0.9.0").WillReturnResult(sqlmock.NewResult(0, 1))
 			mock.ExpectCommit()
 
-			gotErr := New(mockDb).Update(authModel.StoreUser(context.Background(), authModel.NewUser(3, "vibioh")), tc.args.o)
+			gotErr := New(mockDb).Update(model.StoreUser(context.Background(), model.User{ID: 3}), tc.args.o)
 
 			failed := false
 
@@ -395,7 +394,7 @@ func TestDelete(t *testing.T) {
 			mock.ExpectExec("DELETE FROM ketchup").WithArgs(1, 3).WillReturnResult(sqlmock.NewResult(0, 1))
 			mock.ExpectCommit()
 
-			gotErr := New(mockDb).Delete(authModel.StoreUser(context.Background(), authModel.NewUser(3, "vibioh")), tc.args.o)
+			gotErr := New(mockDb).Delete(model.StoreUser(context.Background(), model.User{ID: 3}), tc.args.o)
 
 			failed := false
 

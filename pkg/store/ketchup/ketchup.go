@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"regexp"
 
-	authModel "github.com/ViBiOh/auth/v2/pkg/model"
 	"github.com/ViBiOh/httputils/v3/pkg/db"
 	"github.com/ViBiOh/ketchup/pkg/model"
 	"github.com/ViBiOh/ketchup/pkg/store"
@@ -112,7 +111,7 @@ func (a app) List(ctx context.Context, page, pageSize uint, sortKey string, sort
 	ctx, cancel := context.WithTimeout(ctx, db.SQLTimeout)
 	defer cancel()
 
-	rows, err := a.db.QueryContext(ctx, fmt.Sprintf(listQuery, order), pageSize, offset, authModel.ReadUser(ctx).ID)
+	rows, err := a.db.QueryContext(ctx, fmt.Sprintf(listQuery, order), pageSize, offset, model.ReadUser(ctx).ID)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -175,7 +174,7 @@ WHERE
 `
 
 func (a app) GetByRepositoryID(ctx context.Context, id uint64) (model.Ketchup, error) {
-	return scanItem(db.GetRow(ctx, a.db, getQuery, id, authModel.ReadUser(ctx).ID))
+	return scanItem(db.GetRow(ctx, a.db, getQuery, id, model.ReadUser(ctx).ID))
 }
 
 const insertQuery = `
@@ -193,7 +192,7 @@ INSERT INTO
 `
 
 func (a app) Create(ctx context.Context, o model.Ketchup) (uint64, error) {
-	return db.Create(ctx, a.db, insertQuery, o.Version, o.Repository.ID, authModel.ReadUser(ctx).ID)
+	return db.Create(ctx, a.db, insertQuery, o.Version, o.Repository.ID, model.ReadUser(ctx).ID)
 }
 
 const updateQuery = `
@@ -207,7 +206,7 @@ WHERE
 `
 
 func (a app) Update(ctx context.Context, o model.Ketchup) error {
-	return db.Exec(ctx, a.db, updateQuery, o.Repository.ID, authModel.ReadUser(ctx).ID, o.Version)
+	return db.Exec(ctx, a.db, updateQuery, o.Repository.ID, model.ReadUser(ctx).ID, o.Version)
 }
 
 const deleteQuery = `
@@ -219,5 +218,5 @@ WHERE
 `
 
 func (a app) Delete(ctx context.Context, o model.Ketchup) error {
-	return db.Exec(ctx, a.db, deleteQuery, o.Repository.ID, authModel.ReadUser(ctx).ID)
+	return db.Exec(ctx, a.db, deleteQuery, o.Repository.ID, model.ReadUser(ctx).ID)
 }
