@@ -13,9 +13,12 @@ import (
 
 // App of package
 type App interface {
+	List(ctx context.Context, page, pageSize uint, sortKey string, sortAsc bool, filters map[string][]string) ([]interface{}, uint, error)
 	Get(ctx context.Context, ID uint64) (interface{}, error)
 	GetOrCreate(ctx context.Context, name string) (interface{}, error)
 	Create(ctx context.Context, o interface{}) (interface{}, error)
+	Update(ctx context.Context, o interface{}) (interface{}, error)
+	Delete(ctx context.Context, o interface{}) error
 }
 
 type app struct {
@@ -29,6 +32,20 @@ func New(repositoryStore store.RepositoryStore, githubApp github.App) App {
 		repositoryStore: repositoryStore,
 		githubApp:       githubApp,
 	}
+}
+
+func (a app) List(ctx context.Context, page, pageSize uint, sortKey string, sortAsc bool, filters map[string][]string) ([]interface{}, uint, error) {
+	list, total, err := a.repositoryStore.List(ctx, page, pageSize, sortKey, sortAsc)
+	if err != nil {
+		return nil, 0, fmt.Errorf("unable to list: %w", err)
+	}
+
+	itemsList := make([]interface{}, len(list))
+	for index, item := range list {
+		itemsList[index] = item
+	}
+
+	return itemsList, total, nil
 }
 
 func (a app) Get(ctx context.Context, ID uint64) (interface{}, error) {
@@ -70,7 +87,7 @@ func (a app) Create(ctx context.Context, o interface{}) (interface{}, error) {
 
 	release, err := a.githubApp.LastRelease(item.Name)
 	if err != nil {
-		return model.NoneRepository, fmt.Errorf("unable to prepare: %s", err)
+		return model.NoneRepository, fmt.Errorf("unable to prepare creation: %s", err)
 	}
 
 	item.Version = release.TagName
@@ -83,6 +100,26 @@ func (a app) Create(ctx context.Context, o interface{}) (interface{}, error) {
 	item.ID = id
 
 	return item, nil
+}
+
+func (a app) Update(ctx context.Context, o interface{}) (interface{}, error) {
+	item := o.(model.Repository)
+
+	if err := a.repositoryStore.Update(ctx, item); err != nil {
+		return model.NoneRepository, fmt.Errorf("unable to update: %w", err)
+	}
+
+	return item, nil
+}
+
+func (a app) Delete(ctx context.Context, o interface{}) error {
+	item := o.(model.Repository)
+
+	if err := a.repositoryStore.Update(ctx, item); err != nil {
+		return fmt.Errorf("unable to delete: %w", err)
+	}
+
+	return nil
 }
 
 func (a app) Check(ctx context.Context, old, new interface{}) []crud.Error {

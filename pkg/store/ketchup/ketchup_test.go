@@ -35,18 +35,24 @@ func TestList(t *testing.T) {
 				page:     1,
 				pageSize: 20,
 			},
-			"SELECT version, repository_id, .+ AS full_count FROM ketchup WHERE user_id = .+ ORDER BY creation_date DESC",
+			"SELECT version, repository_id, user_id, .+ AS full_count FROM ketchup WHERE user_id = .+ ORDER BY creation_date DESC",
 			[]model.Ketchup{
 				{
 					Version: "0.9.0",
 					Repository: model.Repository{
 						ID: 1,
 					},
+					User: model.User{
+						ID: 3,
+					},
 				},
 				{
 					Version: "1.0.0",
 					Repository: model.Repository{
 						ID: 2,
+					},
+					User: model.User{
+						ID: 3,
 					},
 				},
 			},
@@ -59,7 +65,7 @@ func TestList(t *testing.T) {
 				page:     1,
 				pageSize: 20,
 			},
-			"SELECT version, repository_id, .+ AS full_count FROM ketchup WHERE user_id = .+ ORDER BY creation_date DESC",
+			"SELECT version, repository_id, user_id, .+ AS full_count FROM ketchup WHERE user_id = .+ ORDER BY creation_date DESC",
 			nil,
 			0,
 			sqlmock.ErrCancelled,
@@ -72,18 +78,24 @@ func TestList(t *testing.T) {
 				sortKey:  "version",
 				sortAsc:  true,
 			},
-			"SELECT version, repository_id, .+ AS full_count FROM ketchup WHERE user_id = .+ ORDER BY version",
+			"SELECT version, repository_id, user_id, .+ AS full_count FROM ketchup WHERE user_id = .+ ORDER BY version",
 			[]model.Ketchup{
 				{
 					Version: "0.9.0",
 					Repository: model.Repository{
 						ID: 1,
 					},
+					User: model.User{
+						ID: 3,
+					},
 				},
 				{
 					Version: "1.0.0",
 					Repository: model.Repository{
 						ID: 2,
+					},
+					User: model.User{
+						ID: 3,
 					},
 				},
 			},
@@ -98,18 +110,24 @@ func TestList(t *testing.T) {
 				sortKey:  "version",
 				sortAsc:  false,
 			},
-			"SELECT version, repository_id, .+ AS full_count FROM ketchup WHERE user_id = .+ ORDER BY version DESC",
+			"SELECT version, repository_id, user_id, .+ AS full_count FROM ketchup WHERE user_id = .+ ORDER BY version DESC",
 			[]model.Ketchup{
 				{
 					Version: "0.9.0",
 					Repository: model.Repository{
 						ID: 1,
 					},
+					User: model.User{
+						ID: 3,
+					},
 				},
 				{
 					Version: "1.0.0",
 					Repository: model.Repository{
 						ID: 2,
+					},
+					User: model.User{
+						ID: 3,
 					},
 				},
 			},
@@ -126,7 +144,7 @@ func TestList(t *testing.T) {
 			}
 			defer mockDb.Close()
 
-			expectedQuery := mock.ExpectQuery(tc.expectSQL).WithArgs(20, 0, 3).WillReturnRows(sqlmock.NewRows([]string{"version", "repository_id", "full_count"}).AddRow("0.9.0", 1, 2).AddRow("1.0.0", 2, 2))
+			expectedQuery := mock.ExpectQuery(tc.expectSQL).WithArgs(20, 0, 3).WillReturnRows(sqlmock.NewRows([]string{"version", "repository_id", "user_id", "full_count"}).AddRow("0.9.0", 1, 3, 2).AddRow("1.0.0", 2, 3, 2))
 
 			if tc.intention == "timeout" {
 				savedSQLTimeout := db.SQLTimeout
@@ -183,6 +201,9 @@ func TestGetByRepositoryID(t *testing.T) {
 				Repository: model.Repository{
 					ID: 1,
 				},
+				User: model.User{
+					ID: 3,
+				},
 			},
 			nil,
 		},
@@ -196,7 +217,7 @@ func TestGetByRepositoryID(t *testing.T) {
 			}
 			defer mockDb.Close()
 
-			mock.ExpectQuery("SELECT version, repository_id FROM ketchup").WithArgs(1, 3).WillReturnRows(sqlmock.NewRows([]string{"email", "repository_id"}).AddRow("0.9.0", 1))
+			mock.ExpectQuery("SELECT version, repository_id, user_id FROM ketchup").WithArgs(1, 3).WillReturnRows(sqlmock.NewRows([]string{"email", "repository_id", "user_id"}).AddRow("0.9.0", 1, 3))
 
 			got, gotErr := New(mockDb).GetByRepositoryID(authModel.StoreUser(context.Background(), authModel.NewUser(3, "vibioh")), tc.args.id)
 
