@@ -3,8 +3,8 @@ package repository
 import (
 	"context"
 	"database/sql"
-	"fmt"
 	"regexp"
+	"strings"
 
 	"github.com/ViBiOh/httputils/v3/pkg/db"
 	"github.com/ViBiOh/ketchup/pkg/model"
@@ -12,8 +12,7 @@ import (
 )
 
 var (
-	sortKeyMatcher                       = regexp.MustCompile(`[A-Za-z0-9]+`)
-	_              store.RepositoryStore = app{}
+	sortKeyMatcher = regexp.MustCompile(`[A-Za-z0-9]+`)
 )
 
 // App of package
@@ -21,7 +20,7 @@ type App interface {
 	StartAtomic(ctx context.Context) (context.Context, error)
 	EndAtomic(ctx context.Context, err error) error
 
-	List(ctx context.Context, page, pageSize uint, sortKey string, sortAsc bool) ([]model.Repository, uint, error)
+	List(ctx context.Context, page, pageSize uint) ([]model.Repository, uint, error)
 	Get(ctx context.Context, id uint64) (model.Repository, error)
 	GetByName(ctx context.Context, name string) (model.Repository, error)
 	Create(ctx context.Context, o model.Repository) (uint64, error)
@@ -40,37 +39,6 @@ func New(db *sql.DB) App {
 	}
 }
 
-func scanItem(row db.RowScanner) (model.Repository, error) {
-	var repository model.Repository
-
-	if err := row.Scan(&repository.ID, &repository.Name, &repository.Version); err != nil {
-		if err == sql.ErrNoRows {
-			return model.NoneRepository, nil
-		}
-
-		return model.NoneRepository, err
-	}
-
-	return repository, nil
-}
-
-func scanItems(rows *sql.Rows) ([]model.Repository, uint, error) {
-	var totalCount uint
-	list := make([]model.Repository, 0)
-
-	for rows.Next() {
-		var repository model.Repository
-
-		if err := rows.Scan(&repository.ID, &repository.Name, &repository.Version, &totalCount); err != nil {
-			return nil, 0, err
-		}
-
-		list = append(list, repository)
-	}
-
-	return list, totalCount, nil
-}
-
 func (a app) StartAtomic(ctx context.Context) (context.Context, error) {
 	return store.StartAtomic(ctx, a.db)
 }
@@ -87,28 +55,15 @@ SELECT
   count(1) OVER() AS full_count
 FROM
   repository
-ORDER BY %s
 LIMIT $1
 OFFSET $2
 `
 
-func (a app) List(ctx context.Context, page, pageSize uint, sortKey string, sortAsc bool) ([]model.Repository, uint, error) {
-	order := "creation_date DESC"
-
-	if sortKeyMatcher.MatchString(sortKey) {
-		order = sortKey
-
-		if !sortAsc {
-			order += " DESC"
-		}
-	}
-
-	offset := (page - 1) * pageSize
-
+func (a app) List(ctx context.Context, page, pageSize uint) ([]model.Repository, uint, error) {
 	ctx, cancel := context.WithTimeout(ctx, db.SQLTimeout)
 	defer cancel()
 
-	rows, err := a.db.QueryContext(ctx, fmt.Sprintf(listQuery, order), pageSize, offset)
+	rows, err := a.db.QueryContext(ctx, listQuery, pageSize, (page-1)*pageSize)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -117,7 +72,34 @@ func (a app) List(ctx context.Context, page, pageSize uint, sortKey string, sort
 		err = db.RowsClose(rows, err)
 	}()
 
-	return scanItems(rows)
+	var totalCount uint
+	list := make([]model.Repository, 0)
+
+	for rows.Next() {
+		var item model.Repository
+
+		if err := rows.Scan(&item.ID, &item.Name, &item.Version, &totalCount); err != nil {
+			return nil, 0, err
+		}
+
+		list = append(list, item)
+	}
+
+	return list, totalCount, nil
+}
+
+func scanItem(row db.RowScanner) (model.Repository, error) {
+	var repository model.Repository
+
+	if err := row.Scan(&repository.ID, &repository.Name, &repository.Version); err != nil {
+		if err == sql.ErrNoRows {
+			return model.NoneRepository, nil
+		}
+
+		return model.NoneRepository, err
+	}
+
+	return repository, nil
 }
 
 const getQuery = `
@@ -163,7 +145,7 @@ INSERT INTO
 `
 
 func (a app) Create(ctx context.Context, o model.Repository) (uint64, error) {
-	return db.Create(ctx, a.db, insertQuery, o.Name, o.Version)
+	return db.Create(ctx, a.db, insertQuery, strings.ToLower(o.Name), o.Version)
 }
 
 const updateRepositoryQuery = `

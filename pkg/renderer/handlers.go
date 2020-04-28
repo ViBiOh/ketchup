@@ -17,7 +17,7 @@ func redirectWithMessage(w http.ResponseWriter, r *http.Request, message string)
 }
 
 func (a app) getData(r *http.Request) (interface{}, error) {
-	ketchups, _, err := a.ketchupApp.List(r.Context(), 1, 100, "", true, nil)
+	ketchups, _, err := a.ketchupService.List(r.Context(), 1, 100)
 
 	return ketchups, err
 }

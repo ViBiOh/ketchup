@@ -14,8 +14,8 @@ import (
 	"github.com/ViBiOh/httputils/v3/pkg/logger"
 	"github.com/ViBiOh/ketchup/pkg/github"
 	"github.com/ViBiOh/ketchup/pkg/model"
-	ketchupService "github.com/ViBiOh/ketchup/pkg/service/ketchup"
-	repositoryService "github.com/ViBiOh/ketchup/pkg/service/repository"
+	"github.com/ViBiOh/ketchup/pkg/service/ketchup"
+	"github.com/ViBiOh/ketchup/pkg/service/repository"
 	mailer "github.com/ViBiOh/mailer/pkg/client"
 )
 
@@ -40,10 +40,10 @@ type app struct {
 	hour     string
 	loginID  uint64
 
-	repositoryApp repositoryService.App
-	ketchupApp    ketchupService.App
-	githubApp     github.App
-	mailerApp     mailer.App
+	repositoryApp  repository.App
+	ketchupService ketchup.App
+	githubApp      github.App
+	mailerApp      mailer.App
 }
 
 // Flags adds flags for configuring package
@@ -56,16 +56,16 @@ func Flags(fs *flag.FlagSet, prefix string) Config {
 }
 
 // New creates new App from Config
-func New(config Config, repositoryApp repositoryService.App, ketchupApp ketchupService.App, githubApp github.App, mailerApp mailer.App) App {
+func New(config Config, repositoryApp repository.App, ketchupService ketchup.App, githubApp github.App, mailerApp mailer.App) App {
 	return app{
 		timezone: strings.TrimSpace(*config.timezone),
 		hour:     strings.TrimSpace(*config.hour),
 		loginID:  uint64(*config.loginID),
 
-		repositoryApp: repositoryApp,
-		ketchupApp:    ketchupApp,
-		githubApp:     githubApp,
-		mailerApp:     mailerApp,
+		repositoryApp:  repositoryApp,
+		ketchupService: ketchupService,
+		githubApp:      githubApp,
+		mailerApp:      mailerApp,
 	}
 }
 
@@ -100,14 +100,12 @@ func (a app) getNewReleases(ctx context.Context) ([]model.Release, error) {
 	page := uint(1)
 
 	for {
-		repositories, totalCount, err := a.repositoryApp.List(ctx, page, pageSize, "name", true, nil)
+		repositories, totalCount, err := a.repositoryApp.List(ctx, page, pageSize)
 		if err != nil {
 			return nil, fmt.Errorf("unable to fetch page %d of repositories: %s", page, err)
 		}
 
-		for _, o := range repositories {
-			repository := o.(model.Repository)
-
+		for _, repository := range repositories {
 			release, err := a.githubApp.LastRelease(repository.Name)
 			if err != nil {
 				return nil, err
@@ -122,7 +120,7 @@ func (a app) getNewReleases(ctx context.Context) ([]model.Release, error) {
 
 			newReleases = append(newReleases, model.NewRelease(repository, release))
 
-			if _, err := a.repositoryApp.Update(ctx, repository); err != nil {
+			if err := a.repositoryApp.Update(ctx, repository); err != nil {
 				return nil, fmt.Errorf("unable to update repository %s: %s", repository.Name, err)
 			}
 		}
@@ -141,7 +139,7 @@ func (a app) getKetchupToNotify(ctx context.Context, releases []model.Release) (
 		repositories[index] = release.Repository
 	}
 
-	ketchups, err := a.ketchupApp.ListForRepositories(ctx, repositories)
+	ketchups, err := a.ketchupService.ListForRepositories(ctx, repositories)
 	if err != nil {
 		return nil, fmt.Errorf("unable to get ketchups for repositories: %s", err)
 	}

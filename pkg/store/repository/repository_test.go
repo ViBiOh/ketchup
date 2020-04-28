@@ -16,8 +16,6 @@ func TestList(t *testing.T) {
 	type args struct {
 		page     uint
 		pageSize uint
-		sortKey  string
-		sortAsc  bool
 	}
 
 	var cases = []struct {
@@ -34,7 +32,7 @@ func TestList(t *testing.T) {
 				page:     1,
 				pageSize: 20,
 			},
-			"SELECT id, name, version, .+ AS full_count FROM repository ORDER BY creation_date DESC",
+			"SELECT id, name, version, .+ AS full_count FROM repository",
 			[]model.Repository{
 				{
 					ID:      1,
@@ -56,58 +54,10 @@ func TestList(t *testing.T) {
 				page:     1,
 				pageSize: 20,
 			},
-			"SELECT id, name, version, .+ AS full_count FROM repository ORDER BY creation_date DESC",
+			"SELECT id, name, version, .+ AS full_count FROM repository",
 			nil,
 			0,
 			sqlmock.ErrCancelled,
-		},
-		{
-			"order",
-			args{
-				page:     1,
-				pageSize: 20,
-				sortKey:  "email",
-				sortAsc:  true,
-			},
-			"SELECT id, name, version, .+ AS full_count FROM repository ORDER BY email",
-			[]model.Repository{
-				{
-					ID:      1,
-					Name:    "vibioh/ketchup",
-					Version: "1.0.0",
-				},
-				{
-					ID:      2,
-					Name:    "vibioh/viws",
-					Version: "1.2.3",
-				},
-			},
-			2,
-			nil,
-		},
-		{
-			"descending",
-			args{
-				page:     1,
-				pageSize: 20,
-				sortKey:  "email",
-				sortAsc:  false,
-			},
-			"SELECT id, name, version, .+ AS full_count FROM repository ORDER BY email DESC",
-			[]model.Repository{
-				{
-					ID:      1,
-					Name:    "vibioh/ketchup",
-					Version: "1.0.0",
-				},
-				{
-					ID:      2,
-					Name:    "vibioh/viws",
-					Version: "1.2.3",
-				},
-			},
-			2,
-			nil,
 		},
 	}
 
@@ -131,7 +81,7 @@ func TestList(t *testing.T) {
 				expectedQuery.WillDelayFor(db.SQLTimeout * 2)
 			}
 
-			got, gotCount, gotErr := New(mockDb).List(context.Background(), tc.args.page, tc.args.pageSize, tc.args.sortKey, tc.args.sortAsc)
+			got, gotCount, gotErr := New(mockDb).List(context.Background(), tc.args.page, tc.args.pageSize)
 			failed := false
 
 			if tc.wantErr == nil && gotErr != nil {
@@ -188,7 +138,7 @@ func TestGet(t *testing.T) {
 			}
 			defer mockDb.Close()
 
-			mock.ExpectQuery("SELECT id, name, version FROM repository").WithArgs(1).WillReturnRows(sqlmock.NewRows([]string{"id", "email", "login_id"}).AddRow(1, "vibioh/ketchup", "1.0.0"))
+			mock.ExpectQuery("SELECT id, name, version FROM repository WHERE id =").WithArgs(1).WillReturnRows(sqlmock.NewRows([]string{"id", "email", "login_id"}).AddRow(1, "vibioh/ketchup", "1.0.0"))
 
 			got, gotErr := New(mockDb).Get(context.Background(), tc.args.id)
 
@@ -246,7 +196,7 @@ func TestGetByName(t *testing.T) {
 			}
 			defer mockDb.Close()
 
-			mock.ExpectQuery("SELECT id, name, version FROM repository").WithArgs("vibioh/ketchup").WillReturnRows(sqlmock.NewRows([]string{"id", "email", "login_id"}).AddRow(1, "vibioh/ketchup", "1.0.0"))
+			mock.ExpectQuery("SELECT id, name, version FROM repository WHERE name =").WithArgs("vibioh/ketchup").WillReturnRows(sqlmock.NewRows([]string{"id", "email", "login_id"}).AddRow(1, "vibioh/ketchup", "1.0.0"))
 
 			got, gotErr := New(mockDb).GetByName(context.Background(), tc.args.name)
 

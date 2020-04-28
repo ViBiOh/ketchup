@@ -2,66 +2,57 @@ package repository
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 
-	"github.com/ViBiOh/httputils/v3/pkg/crud"
 	"github.com/ViBiOh/ketchup/pkg/github"
 	"github.com/ViBiOh/ketchup/pkg/model"
-	"github.com/ViBiOh/ketchup/pkg/store"
+	"github.com/ViBiOh/ketchup/pkg/store/repository"
 )
 
 // App of package
 type App interface {
-	List(ctx context.Context, page, pageSize uint, sortKey string, sortAsc bool, filters map[string][]string) ([]interface{}, uint, error)
-	Get(ctx context.Context, ID uint64) (interface{}, error)
-	GetOrCreate(ctx context.Context, name string) (interface{}, error)
-	Create(ctx context.Context, o interface{}) (interface{}, error)
-	Update(ctx context.Context, o interface{}) (interface{}, error)
-	Delete(ctx context.Context, o interface{}) error
+	Check(ctx context.Context, old, new model.Repository) []error
+	List(ctx context.Context, page, pageSize uint) ([]model.Repository, uint, error)
+	Get(ctx context.Context, id uint64) (model.Repository, error)
+	GetOrCreate(ctx context.Context, name string) (model.Repository, error)
+	Create(ctx context.Context, item model.Repository) (model.Repository, error)
+	Update(ctx context.Context, item model.Repository) error
 }
 
 type app struct {
-	repositoryStore store.RepositoryStore
+	repositoryStore repository.App
 	githubApp       github.App
 }
 
 // New creates new App from Config
-func New(repositoryStore store.RepositoryStore, githubApp github.App) App {
+func New(repositoryStore repository.App, githubApp github.App) App {
 	return app{
 		repositoryStore: repositoryStore,
 		githubApp:       githubApp,
 	}
 }
 
-func (a app) List(ctx context.Context, page, pageSize uint, sortKey string, sortAsc bool, filters map[string][]string) ([]interface{}, uint, error) {
-	list, total, err := a.repositoryStore.List(ctx, page, pageSize, sortKey, sortAsc)
+func (a app) List(ctx context.Context, page, pageSize uint) ([]model.Repository, uint, error) {
+	list, total, err := a.repositoryStore.List(ctx, page, pageSize)
 	if err != nil {
-		return nil, 0, fmt.Errorf("unable to list: %w", err)
+		return nil, 0, fmt.Errorf("unable to list: %s", err)
 	}
 
-	itemsList := make([]interface{}, len(list))
-	for index, item := range list {
-		itemsList[index] = item
-	}
-
-	return itemsList, total, nil
+	return list, total, nil
 }
 
-func (a app) Get(ctx context.Context, ID uint64) (interface{}, error) {
-	item, err := a.repositoryStore.Get(ctx, ID)
+func (a app) Get(ctx context.Context, id uint64) (model.Repository, error) {
+	repository, err := a.repositoryStore.Get(ctx, id)
 	if err != nil {
-		return nil, fmt.Errorf("unable to get: %w", err)
+		return model.NoneRepository, fmt.Errorf("unable to get: %s", err)
 	}
 
-	if item == model.NoneRepository {
-		return nil, crud.ErrNotFound
-	}
-
-	return item, nil
+	return repository, nil
 }
 
-func (a app) GetOrCreate(ctx context.Context, name string) (interface{}, error) {
+func (a app) GetOrCreate(ctx context.Context, name string) (model.Repository, error) {
 	repository, err := a.repositoryStore.GetByName(ctx, name)
 	if err != nil {
 		return model.NoneRepository, err
@@ -75,16 +66,14 @@ func (a app) GetOrCreate(ctx context.Context, name string) (interface{}, error) 
 		Name: name,
 	}
 
-	if inputErrors := a.Check(ctx, nil, repository); len(inputErrors) != 0 {
-		return model.NoneRepository, fmt.Errorf("%s: %w", inputErrors, crud.ErrInvalid)
+	if inputErrors := a.Check(ctx, model.NoneRepository, repository); len(inputErrors) != 0 {
+		return model.NoneRepository, fmt.Errorf("%s", inputErrors)
 	}
 
 	return a.Create(ctx, repository)
 }
 
-func (a app) Create(ctx context.Context, o interface{}) (interface{}, error) {
-	item := o.(model.Repository)
-
+func (a app) Create(ctx context.Context, item model.Repository) (model.Repository, error) {
 	release, err := a.githubApp.LastRelease(item.Name)
 	if err != nil {
 		return model.NoneRepository, fmt.Errorf("unable to prepare creation: %s", err)
@@ -102,47 +91,55 @@ func (a app) Create(ctx context.Context, o interface{}) (interface{}, error) {
 	return item, nil
 }
 
-func (a app) Update(ctx context.Context, o interface{}) (interface{}, error) {
-	item := o.(model.Repository)
-
-	if err := a.repositoryStore.Update(ctx, item); err != nil {
-		return model.NoneRepository, fmt.Errorf("unable to update: %w", err)
+func (a app) Update(ctx context.Context, item model.Repository) (err error) {
+	ctx, err = a.repositoryStore.StartAtomic(ctx)
+	if err != nil {
+		return
 	}
 
-	return item, nil
-}
+	defer func() {
+		if endErr := a.repositoryStore.EndAtomic(ctx, err); endErr != nil {
+			err = fmt.Errorf("%s: %s", err.Error(), endErr)
+		}
+	}()
 
-func (a app) Delete(ctx context.Context, o interface{}) error {
-	item := o.(model.Repository)
-
-	if err := a.repositoryStore.Update(ctx, item); err != nil {
-		return fmt.Errorf("unable to delete: %w", err)
+	var old model.Repository
+	old, err = a.repositoryStore.Get(ctx, item.ID)
+	if err != nil {
+		err = fmt.Errorf("unable to fetch current: %s", err)
 	}
 
-	return nil
+	if errs := a.Check(ctx, old, item); len(errs) > 0 {
+		err = fmt.Errorf("invalid payload: %s", errs)
+		return
+	}
+
+	if err = a.repositoryStore.Update(ctx, item); err != nil {
+		err = fmt.Errorf("unable to update: %s", err)
+	}
+
+	return
 }
 
-func (a app) Check(ctx context.Context, old, new interface{}) []crud.Error {
-	errors := make([]crud.Error, 0)
+func (a app) Check(ctx context.Context, old, new model.Repository) []error {
+	output := make([]error, 0)
 
 	// TODO check if ketchup used that repository
 
-	if new == nil {
-		return errors
+	if new == model.NoneRepository {
+		return output
 	}
 
-	newItem := new.(model.Repository)
-
-	if len(strings.TrimSpace(newItem.Name)) == 0 {
-		errors = append(errors, crud.NewError("name", "name is required"))
+	if len(strings.TrimSpace(new.Name)) == 0 {
+		output = append(output, errors.New("name is required"))
 	}
 
-	repositoryWithName, err := a.repositoryStore.GetByName(ctx, newItem.Name)
+	repositoryWithName, err := a.repositoryStore.GetByName(ctx, new.Name)
 	if err != nil {
-		errors = append(errors, crud.NewError("name", "unable to check if name already exists"))
-	} else if repositoryWithName != model.NoneRepository && repositoryWithName.ID != newItem.ID {
-		errors = append(errors, crud.NewError("name", "name already exists"))
+		output = append(output, errors.New("unable to check if name already exists"))
+	} else if repositoryWithName != model.NoneRepository && repositoryWithName.ID != new.ID {
+		output = append(output, errors.New("name already exists"))
 	}
 
-	return errors
+	return output
 }

@@ -3,8 +3,6 @@ package ketchup
 import (
 	"context"
 	"database/sql"
-	"fmt"
-	"regexp"
 
 	"github.com/ViBiOh/httputils/v3/pkg/db"
 	"github.com/ViBiOh/ketchup/pkg/model"
@@ -12,19 +10,14 @@ import (
 	"github.com/lib/pq"
 )
 
-var (
-	sortKeyMatcher                    = regexp.MustCompile(`[A-Za-z0-9]+`)
-	_              store.KetchupStore = app{}
-)
-
 // App of package
 type App interface {
 	StartAtomic(ctx context.Context) (context.Context, error)
 	EndAtomic(ctx context.Context, err error) error
 
-	List(ctx context.Context, page, pageSize uint, sortKey string, sortAsc bool) ([]model.Ketchup, uint, error)
+	List(ctx context.Context, page, pageSize uint) ([]model.Ketchup, uint, error)
 	ListByRepositoriesID(ctx context.Context, ids []uint64) ([]model.Ketchup, error)
-	GetByRepositoryID(ctx context.Context, id uint64) (model.Ketchup, error)
+	GetByRepositoryID(ctx context.Context, id uint64, forUpdate bool) (model.Ketchup, error)
 	Create(ctx context.Context, o model.Ketchup) (uint64, error)
 	Update(ctx context.Context, o model.Ketchup) error
 	Delete(ctx context.Context, o model.Ketchup) error
@@ -41,37 +34,6 @@ func New(db *sql.DB) App {
 	}
 }
 
-func scanItem(row db.RowScanner) (model.Ketchup, error) {
-	var item model.Ketchup
-
-	if err := row.Scan(&item.Version, &item.Repository.ID, &item.User.ID); err != nil {
-		if err == sql.ErrNoRows {
-			return model.NoneKetchup, nil
-		}
-
-		return model.NoneKetchup, err
-	}
-
-	return item, nil
-}
-
-func scanItems(rows *sql.Rows) ([]model.Ketchup, uint, error) {
-	var totalCount uint
-	list := make([]model.Ketchup, 0)
-
-	for rows.Next() {
-		var item model.Ketchup
-
-		if err := rows.Scan(&item.Version, &item.Repository.ID, &item.User.ID, &totalCount); err != nil {
-			return nil, 0, err
-		}
-
-		list = append(list, item)
-	}
-
-	return list, totalCount, nil
-}
-
 func (a app) StartAtomic(ctx context.Context) (context.Context, error) {
 	return store.StartAtomic(ctx, a.db)
 }
@@ -82,36 +44,29 @@ func (a app) EndAtomic(ctx context.Context, err error) error {
 
 const listQuery = `
 SELECT
-  version,
-  repository_id,
-  user_id,
+  k.version,
+  k.repository_id,
+  r.name,
+  r.version,
   count(1) OVER() AS full_count
 FROM
-  ketchup
+  ketchup k,
+  repository r
 WHERE
   user_id = $3
-ORDER BY %s
+  AND repository_id = id
+ORDER BY r.name
 LIMIT $1
 OFFSET $2
 `
 
-func (a app) List(ctx context.Context, page, pageSize uint, sortKey string, sortAsc bool) ([]model.Ketchup, uint, error) {
-	order := "creation_date DESC"
-
-	if sortKeyMatcher.MatchString(sortKey) {
-		order = sortKey
-
-		if !sortAsc {
-			order += " DESC"
-		}
-	}
-
-	offset := (page - 1) * pageSize
+func (a app) List(ctx context.Context, page, pageSize uint) ([]model.Ketchup, uint, error) {
+	user := model.ReadUser(ctx)
 
 	ctx, cancel := context.WithTimeout(ctx, db.SQLTimeout)
 	defer cancel()
 
-	rows, err := a.db.QueryContext(ctx, fmt.Sprintf(listQuery, order), pageSize, offset, model.ReadUser(ctx).ID)
+	rows, err := a.db.QueryContext(ctx, listQuery, pageSize, (page-1)*pageSize, user.ID)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -120,18 +75,36 @@ func (a app) List(ctx context.Context, page, pageSize uint, sortKey string, sort
 		err = db.RowsClose(rows, err)
 	}()
 
-	return scanItems(rows)
+	var totalCount uint
+	list := make([]model.Ketchup, 0)
+
+	for rows.Next() {
+		item := model.Ketchup{
+			User: user,
+		}
+
+		if err := rows.Scan(&item.Version, &item.Repository.ID, &item.Repository.Name, &item.Repository.Version, &totalCount); err != nil {
+			return nil, 0, err
+		}
+
+		list = append(list, item)
+	}
+
+	return list, totalCount, nil
 }
 
 const listByRepositoriesIDQuery = `
 SELECT
-  version,
-  repository_id,
-  user_id
+  k.version,
+  k.repository_id,
+  k.user_id,
+  u.email
 FROM
-  ketchup
+  ketchup k,
+  "user" u
 WHERE
   repository_id = ANY($1)
+  AND k.user_id = u.id
 `
 
 func (a app) ListByRepositoriesID(ctx context.Context, ids []uint64) ([]model.Ketchup, error) {
@@ -150,8 +123,9 @@ func (a app) ListByRepositoriesID(ctx context.Context, ids []uint64) ([]model.Ke
 	list := make([]model.Ketchup, 0)
 
 	for rows.Next() {
-		item, err := scanItem(rows)
-		if err != nil {
+		var item model.Ketchup
+
+		if err := rows.Scan(&item.Version, &item.Repository.ID, &item.User.ID, &item.User.Email); err != nil {
 			return nil, err
 		}
 
@@ -173,8 +147,26 @@ WHERE
   AND user_id = $2
 `
 
-func (a app) GetByRepositoryID(ctx context.Context, id uint64) (model.Ketchup, error) {
-	return scanItem(db.GetRow(ctx, a.db, getQuery, id, model.ReadUser(ctx).ID))
+func (a app) GetByRepositoryID(ctx context.Context, id uint64, forUpdate bool) (model.Ketchup, error) {
+	query := getQuery
+	if forUpdate {
+		query += " FOR UPDATE"
+	}
+
+	user := model.ReadUser(ctx)
+	item := model.Ketchup{
+		User: user,
+	}
+
+	if err := db.GetRow(ctx, a.db, query, id, user.ID).Scan(&item.Version, &item.Repository.ID, &item.User.ID); err != nil {
+		if err == sql.ErrNoRows {
+			return model.NoneKetchup, nil
+		}
+
+		return model.NoneKetchup, err
+	}
+
+	return item, nil
 }
 
 const insertQuery = `
