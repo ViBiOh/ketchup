@@ -104,19 +104,27 @@ func main() {
 	logger.Fatal(err)
 
 	swaggerHandler := http.StripPrefix(apiPath, swaggerApp.Handler())
-	crudUserHandler := httputils.ChainMiddlewares(http.StripPrefix(usersPath, crudUserApp.Handler()), authMiddleware.Middleware)
-	crudKetchupHandler := httputils.ChainMiddlewares(http.StripPrefix(ketchupsPath, crudKetchupApp.Handler()), authMiddleware.Middleware)
+	userHandler := http.StripPrefix(usersPath, crudUserApp.Handler())
+
+	protectedUserHandler := httputils.ChainMiddlewares(userHandler, authMiddleware.Middleware)
+	protectedKetchupHandler := httputils.ChainMiddlewares(http.StripPrefix(ketchupsPath, crudKetchupApp.Handler()), authMiddleware.Middleware)
 	/* Crud and Swagger related things */
 
 	rendererHandler := httputils.ChainMiddlewares(rendererApp.Handler(), authMiddleware.Middleware)
 
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if strings.HasPrefix(r.URL.Path, usersPath) {
-			crudUserHandler.ServeHTTP(w, r)
+		if strings.TrimSuffix(r.URL.Path, "/") == usersPath && r.Method == http.MethodPost {
+			userHandler.ServeHTTP(w, r)
 			return
 		}
+
+		if strings.HasPrefix(r.URL.Path, usersPath) {
+			protectedUserHandler.ServeHTTP(w, r)
+			return
+		}
+
 		if strings.HasPrefix(r.URL.Path, ketchupsPath) {
-			crudKetchupHandler.ServeHTTP(w, r)
+			protectedKetchupHandler.ServeHTTP(w, r)
 			return
 		}
 
