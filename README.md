@@ -87,12 +87,16 @@ Usage of ketchup:
         [http] Grace duration when SIGTERM received {KETCHUP_GRACE_DURATION} (default "15s")
   -hsts
         [owasp] Indicate Strict Transport Security {KETCHUP_HSTS} (default true)
-  -ketchupHour string
-        [ketchup] Hour of cron, 24-hour format {KETCHUP_KETCHUP_HOUR} (default "08:00")
-  -ketchupTimezone string
-        [ketchup] Timezone {KETCHUP_KETCHUP_TIMEZONE} (default "Europe/Paris")
-  -ketchupTo string
-        [ketchup] Email to send notification {KETCHUP_KETCHUP_TO}
+  -ketchupsDefaultPage uint
+        [ketchups] Default page {KETCHUP_KETCHUPS_DEFAULT_PAGE} (default 1)
+  -ketchupsDefaultPageSize uint
+        [ketchups] Default page size {KETCHUP_KETCHUPS_DEFAULT_PAGE_SIZE} (default 20)
+  -ketchupsMaxPageSize uint
+        [ketchups] Max page size {KETCHUP_KETCHUPS_MAX_PAGE_SIZE} (default 100)
+  -ketchupsName string
+        [ketchups] Resource's name {KETCHUP_KETCHUPS_NAME} (default "Ketchup")
+  -ketchupsPath string
+        [ketchups] HTTP Path {KETCHUP_KETCHUPS_PATH} (default "/api/ketchups")
   -key string
         [http] Key file {KETCHUP_KEY}
   -mailerPass string
@@ -107,6 +111,12 @@ Usage of ketchup:
         [http] Listen port {KETCHUP_PORT} (default 1080)
   -prometheusPath string
         [prometheus] Path for exposing metrics {KETCHUP_PROMETHEUS_PATH} (default "/metrics")
+  -schedulerHour string
+        [scheduler] Hour of cron, 24-hour format {KETCHUP_SCHEDULER_HOUR} (default "08:00")
+  -schedulerLoginID uint
+        [scheduler] Scheduler user ID {KETCHUP_SCHEDULER_LOGIN_ID} (default 1)
+  -schedulerTimezone string
+        [scheduler] Timezone {KETCHUP_SCHEDULER_TIMEZONE} (default "Europe/Paris")
   -swaggerTitle string
         [swagger] API Title {KETCHUP_SWAGGER_TITLE} (default "API")
   -swaggerVersion string

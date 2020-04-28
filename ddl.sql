@@ -47,3 +47,14 @@ CREATE TABLE ketchup (
 );
 
 CREATE UNIQUE INDEX ketchup_user ON ketchup(user_id);
+
+-- data
+DO $$
+  DECLARE login_id BIGINT;
+  DECLARE profile_id BIGINT;
+  BEGIN
+    INSERT INTO login (login, password) VALUES ('scheduler', 'service-account') RETURNING id INTO login_id;
+    INSERT INTO profile (name) VALUES ('admin') RETURNING id INTO profile_id;
+
+    INSERT INTO login_profile (login_id, profile_id) VALUES (login_id, profile_id);
+END $$;

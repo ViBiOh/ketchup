@@ -1,4 +1,4 @@
-package ketchup
+package scheduler
 
 import (
 	"flag"
@@ -13,7 +13,7 @@ func TestFlags(t *testing.T) {
 	}{
 		{
 			"simple",
-			"Usage of simple:\n  -hour string\n    \t[ketchup] Hour of cron, 24-hour format {SIMPLE_HOUR} (default \"08:00\")\n  -timezone string\n    \t[ketchup] Timezone {SIMPLE_TIMEZONE} (default \"Europe/Paris\")\n  -to string\n    \t[ketchup] Email to send notification {SIMPLE_TO}\n",
+			"Usage of simple:\n  -hour string\n    \t[scheduler] Hour of cron, 24-hour format {SIMPLE_HOUR} (default \"08:00\")\n  -loginID uint\n    \t[scheduler] Scheduler user ID {SIMPLE_LOGIN_ID} (default 1)\n  -timezone string\n    \t[scheduler] Timezone {SIMPLE_TIMEZONE} (default \"Europe/Paris\")\n",
 		},
 	}
 

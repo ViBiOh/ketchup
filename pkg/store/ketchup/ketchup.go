@@ -10,6 +10,7 @@ import (
 	"github.com/ViBiOh/httputils/v3/pkg/db"
 	"github.com/ViBiOh/ketchup/pkg/model"
 	"github.com/ViBiOh/ketchup/pkg/store"
+	"github.com/lib/pq"
 )
 
 var (
@@ -23,6 +24,7 @@ type App interface {
 	EndAtomic(ctx context.Context, err error) error
 
 	List(ctx context.Context, page, pageSize uint, sortKey string, sortAsc bool) ([]model.Ketchup, uint, error)
+	ListByRepositoriesID(ctx context.Context, ids []uint64) ([]model.Ketchup, error)
 	GetByRepositoryID(ctx context.Context, id uint64) (model.Ketchup, error)
 	Create(ctx context.Context, o model.Ketchup) (uint64, error)
 	Update(ctx context.Context, o model.Ketchup) error
@@ -43,7 +45,7 @@ func New(db *sql.DB) App {
 func scanItem(row db.RowScanner) (model.Ketchup, error) {
 	var item model.Ketchup
 
-	if err := row.Scan(&item.Version, &item.Repository.ID); err != nil {
+	if err := row.Scan(&item.Version, &item.Repository.ID, &item.User.ID); err != nil {
 		if err == sql.ErrNoRows {
 			return model.NoneKetchup, nil
 		}
@@ -61,7 +63,7 @@ func scanItems(rows *sql.Rows) ([]model.Ketchup, uint, error) {
 	for rows.Next() {
 		var item model.Ketchup
 
-		if err := rows.Scan(&item.Version, &item.Repository.ID, &totalCount); err != nil {
+		if err := rows.Scan(&item.Version, &item.Repository.ID, &item.User.ID, &totalCount); err != nil {
 			return nil, 0, err
 		}
 
@@ -83,6 +85,7 @@ const listQuery = `
 SELECT
   version,
   repository_id,
+  user_id,
   count(1) OVER() AS full_count
 FROM
   ketchup
@@ -121,10 +124,49 @@ func (a app) List(ctx context.Context, page, pageSize uint, sortKey string, sort
 	return scanItems(rows)
 }
 
+const listByRepositoriesIDQuery = `
+SELECT
+  version,
+  repository_id,
+  user_id
+FROM
+  ketchup
+WHERE
+  repository_id = ANY($1)
+`
+
+func (a app) ListByRepositoriesID(ctx context.Context, ids []uint64) ([]model.Ketchup, error) {
+	ctx, cancel := context.WithTimeout(ctx, db.SQLTimeout)
+	defer cancel()
+
+	rows, err := a.db.QueryContext(ctx, listByRepositoriesIDQuery, pq.Array(ids))
+	if err != nil {
+		return nil, err
+	}
+
+	defer func() {
+		err = db.RowsClose(rows, err)
+	}()
+
+	list := make([]model.Ketchup, 0)
+
+	for rows.Next() {
+		item, err := scanItem(rows)
+		if err != nil {
+			return nil, err
+		}
+
+		list = append(list, item)
+	}
+
+	return list, nil
+}
+
 const getQuery = `
 SELECT
   version,
-  repository_id
+  repository_id,
+  user_id
 FROM
   ketchup
 WHERE

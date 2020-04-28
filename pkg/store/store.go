@@ -40,6 +40,7 @@ type KetchupStore interface {
 	EndAtomic(ctx context.Context, err error) error
 
 	List(ctx context.Context, page, pageSize uint, sortKey string, sortAsc bool) ([]model.Ketchup, uint, error)
+	ListByRepositoriesID(ctx context.Context, ids []uint64) ([]model.Ketchup, error)
 	GetByRepositoryID(ctx context.Context, id uint64) (model.Ketchup, error)
 	Create(ctx context.Context, o model.Ketchup) (uint64, error)
 	Update(ctx context.Context, o model.Ketchup) error

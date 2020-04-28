@@ -1,14 +1,16 @@
 package main
 
 import (
+	"database/sql"
 	"flag"
 	"net/http"
 	"os"
 	"path"
 	"strings"
 
+	auth "github.com/ViBiOh/auth/v2/pkg/auth"
 	authIdent "github.com/ViBiOh/auth/v2/pkg/ident/basic"
-	"github.com/ViBiOh/auth/v2/pkg/middleware"
+	authMiddleware "github.com/ViBiOh/auth/v2/pkg/middleware"
 	authService "github.com/ViBiOh/auth/v2/pkg/service"
 	authStore "github.com/ViBiOh/auth/v2/pkg/store/db"
 	"github.com/ViBiOh/httputils/v3/pkg/alcotest"
@@ -21,8 +23,8 @@ import (
 	"github.com/ViBiOh/httputils/v3/pkg/prometheus"
 	"github.com/ViBiOh/httputils/v3/pkg/swagger"
 	"github.com/ViBiOh/ketchup/pkg/github"
-	"github.com/ViBiOh/ketchup/pkg/ketchup"
 	"github.com/ViBiOh/ketchup/pkg/renderer"
+	"github.com/ViBiOh/ketchup/pkg/scheduler"
 	ketchupService "github.com/ViBiOh/ketchup/pkg/service/ketchup"
 	repositoryService "github.com/ViBiOh/ketchup/pkg/service/repository"
 	userService "github.com/ViBiOh/ketchup/pkg/service/user"
@@ -39,6 +41,13 @@ const (
 	ketchupsPath = apiPath + "/ketchups"
 )
 
+func initAuth(db *sql.DB) (authService.App, auth.Provider, authMiddleware.App) {
+	authProvider := authStore.New(db)
+	identProvider := authIdent.New(authProvider)
+
+	return authService.New(authProvider, authProvider), authProvider, authMiddleware.New(authProvider, identProvider)
+}
+
 func main() {
 	fs := flag.NewFlagSet("ketchup", flag.ExitOnError)
 
@@ -52,7 +61,8 @@ func main() {
 	dbConfig := db.Flags(fs, "db")
 	mailerConfig := mailer.Flags(fs, "mailer")
 	githubConfig := github.Flags(fs, "github")
-	ketchupConfig := ketchup.Flags(fs, "ketchup")
+	schedulerConfig := scheduler.Flags(fs, "scheduler")
+
 	crudUserConfig := crud.GetConfiguredFlags(usersPath, "Users")(fs, "users")
 	crudKetchupConfig := crud.GetConfiguredFlags(ketchupsPath, "Ketchup")(fs, "ketchups")
 
@@ -69,35 +79,25 @@ func main() {
 	logger.Fatal(err)
 	server.Health(ketchupDb.Ping)
 
-	/* Auth related things */
-	authProvider := authStore.New(ketchupDb)
-	identProvider := authIdent.New(authProvider)
-	authServiceApp := authService.New(authProvider, authProvider)
-	authMiddleware := middleware.New(authProvider, identProvider)
-	/* Auth related things */
+	authService, identProvider, authMiddleware := initAuth(ketchupDb)
 
 	githubApp := github.New(githubConfig)
 	mailerApp := mailer.New(mailerConfig)
 
-	userStoreApp := userStore.New(ketchupDb)
-	userServiceApp := userService.New(userStoreApp, authServiceApp, authProvider)
+	userServiceApp := userService.New(userStore.New(ketchupDb), authService, identProvider)
+	repositoryApp := repositoryService.New(repositoryStore.New(ketchupDb), githubApp)
+	ketchupApp := ketchupService.New(ketchupStore.New(ketchupDb), repositoryApp, userServiceApp)
 
-	repositoryStoreApp := repositoryStore.New(ketchupDb)
-	repositoryServiceApp := repositoryService.New(repositoryStoreApp, githubApp)
+	schedulerApp := scheduler.New(schedulerConfig, repositoryApp, ketchupApp, githubApp, mailerApp)
 
-	ketchupStoreApp := ketchupStore.New(ketchupDb)
-	ketchupServiceApp := ketchupService.New(ketchupStoreApp, repositoryServiceApp)
-
-	ketchupAp := ketchup.New(ketchupConfig, repositoryStoreApp, githubApp, mailerApp)
-
-	rendererApp, err := renderer.New(ketchupServiceApp)
+	rendererApp, err := renderer.New(ketchupApp)
 	logger.Fatal(err)
 
 	/* Crud and Swagger related things */
 	crudUserApp, err := crud.New(crudUserConfig, userServiceApp)
 	logger.Fatal(err)
 
-	crudKetchupApp, err := crud.New(crudKetchupConfig, ketchupServiceApp)
+	crudKetchupApp, err := crud.New(crudKetchupConfig, ketchupApp)
 	logger.Fatal(err)
 
 	swaggerApp, err := swagger.New(swaggerConfig, server.Swagger, crudUserApp.Swagger, crudKetchupApp.Swagger)
@@ -132,7 +132,7 @@ func main() {
 		rendererHandler.ServeHTTP(w, r)
 	})
 
-	go ketchupAp.Start()
+	go schedulerApp.Start()
 
 	server.ListenServeWait(handler)
 }

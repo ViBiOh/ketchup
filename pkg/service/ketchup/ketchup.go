@@ -10,6 +10,7 @@ import (
 	"github.com/ViBiOh/httputils/v3/pkg/crud"
 	"github.com/ViBiOh/ketchup/pkg/model"
 	repositoryService "github.com/ViBiOh/ketchup/pkg/service/repository"
+	userService "github.com/ViBiOh/ketchup/pkg/service/user"
 	"github.com/ViBiOh/ketchup/pkg/store"
 )
 
@@ -26,18 +27,22 @@ type App interface {
 	Create(ctx context.Context, o interface{}) (interface{}, error)
 	Update(ctx context.Context, o interface{}) (interface{}, error)
 	Delete(ctx context.Context, o interface{}) error
+
+	ListForRepositories(ctx context.Context, repositories []model.Repository) ([]model.Ketchup, error)
 }
 
 type app struct {
 	ketchupStore      store.KetchupStore
 	repositoryService repositoryService.App
+	userService       userService.App
 }
 
 // New creates new App from Config
-func New(ketchupStore store.KetchupStore, repositoryService repositoryService.App) App {
+func New(ketchupStore store.KetchupStore, repositoryService repositoryService.App, userService userService.App) App {
 	return app{
 		ketchupStore:      ketchupStore,
 		repositoryService: repositoryService,
+		userService:       userService,
 	}
 }
 
@@ -50,7 +55,7 @@ func (a app) Unmarshal(data []byte, contentType string) (interface{}, error) {
 func (a app) List(ctx context.Context, page, pageSize uint, sortKey string, sortAsc bool, filters map[string][]string) ([]interface{}, uint, error) {
 	list, total, err := a.ketchupStore.List(ctx, page, pageSize, sortKey, sortAsc)
 	if err != nil {
-		return nil, 0, fmt.Errorf("unable to list: %w", err)
+		return nil, 0, fmt.Errorf("unable to list: %s", err)
 	}
 
 	itemsList := make([]interface{}, len(list))
@@ -71,7 +76,7 @@ func (a app) List(ctx context.Context, page, pageSize uint, sortKey string, sort
 func (a app) Get(ctx context.Context, ID uint64) (interface{}, error) {
 	item, err := a.ketchupStore.GetByRepositoryID(ctx, ID)
 	if err != nil {
-		return nil, fmt.Errorf("unable to get: %w", err)
+		return nil, fmt.Errorf("unable to get: %s", err)
 	}
 
 	if item == model.NoneKetchup {
@@ -80,7 +85,7 @@ func (a app) Get(ctx context.Context, ID uint64) (interface{}, error) {
 
 	repository, err := a.repositoryService.Get(ctx, item.Repository.ID)
 	if err != nil {
-		return nil, fmt.Errorf("unable to get repository: %w", err)
+		return nil, fmt.Errorf("unable to get repository: %s", err)
 	}
 
 	item.Repository = repository.(model.Repository)
@@ -112,7 +117,7 @@ func (a app) Create(ctx context.Context, o interface{}) (output interface{}, err
 	item.Repository = repository.(model.Repository)
 
 	if _, err = a.ketchupStore.Create(ctx, item); err != nil {
-		return o, fmt.Errorf("unable to create: %w", err)
+		return o, fmt.Errorf("unable to create: %s", err)
 	}
 
 	return item, nil
@@ -122,21 +127,45 @@ func (a app) Update(ctx context.Context, o interface{}) (interface{}, error) {
 	item := o.(model.Ketchup)
 
 	if err := a.ketchupStore.Update(ctx, item); err != nil {
-		return item, fmt.Errorf("unable to update: %w", err)
+		return item, fmt.Errorf("unable to update: %s", err)
 	}
 
 	return item, nil
 }
 
-func (a app) Delete(ctx context.Context, o interface{}) (err error) {
+func (a app) Delete(ctx context.Context, o interface{}) error {
 	item := o.(model.Ketchup)
 
-	if err = a.ketchupStore.Delete(ctx, item); err != nil {
-		err = fmt.Errorf("unable to delete: %w", err)
-		return
+	if err := a.ketchupStore.Delete(ctx, item); err != nil {
+		return fmt.Errorf("unable to delete: %s", err)
 	}
 
-	return
+	return nil
+}
+
+func (a app) ListForRepositories(ctx context.Context, repositories []model.Repository) ([]model.Ketchup, error) {
+	ids := make([]uint64, len(repositories))
+	for index, repo := range repositories {
+		ids[index] = repo.ID
+	}
+
+	list, err := a.ketchupStore.ListByRepositoriesID(ctx, ids)
+	if err != nil {
+		return nil, fmt.Errorf("unable to list by ids: %s", err)
+	}
+
+	enrichList := make([]model.Ketchup, len(list))
+	for index, ketchup := range list {
+		user, err := a.userService.Get(ctx, ketchup.User.ID)
+		if err != nil {
+			return nil, fmt.Errorf("unable to get user for repository %d and user %d: %s", ketchup.Repository.ID, ketchup.User.ID, err)
+		}
+
+		ketchup.User = user.(model.User)
+		enrichList[index] = ketchup
+	}
+
+	return enrichList, nil
 }
 
 func (a app) Check(ctx context.Context, old, new interface{}) []crud.Error {
