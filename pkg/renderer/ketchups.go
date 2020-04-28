@@ -66,20 +66,14 @@ func (a app) handleUpdate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	rawOldKetchup, err := a.ketchupApp.Get(r.Context(), id)
+	oldKetchup, err := a.ketchupApp.Get(r.Context(), id)
 	if err != nil {
 		a.errorHandler(w, http.StatusBadRequest, err, nil)
 		return
 	}
 
-	oldKetchup := rawOldKetchup.(model.Ketchup)
-
-	newKetchup := model.Ketchup{
-		Version: r.FormValue("currentVersion"),
-		Repository: model.Repository{
-			Name: r.FormValue("repository"),
-		},
-	}
+	newKetchup := oldKetchup.(model.Ketchup)
+	newKetchup.Version = r.FormValue("currentVersion")
 
 	if errs := a.ketchupApp.Check(r.Context(), oldKetchup, newKetchup); len(errs) > 0 {
 		a.handleCrudError(w, errs)

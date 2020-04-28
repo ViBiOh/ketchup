@@ -213,6 +213,64 @@ func TestGet(t *testing.T) {
 	}
 }
 
+func TestGetByName(t *testing.T) {
+	type args struct {
+		name string
+	}
+
+	var cases = []struct {
+		intention string
+		args      args
+		want      model.Repository
+		wantErr   error
+	}{
+		{
+			"simple",
+			args{
+				name: "vibioh/ketchup",
+			},
+			model.Repository{
+				ID:      1,
+				Name:    "vibioh/ketchup",
+				Version: "1.0.0",
+			},
+			nil,
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.intention, func(t *testing.T) {
+			mockDb, mock, err := sqlmock.New()
+			if err != nil {
+				t.Fatalf("unable to create mock database: %s", err)
+			}
+			defer mockDb.Close()
+
+			mock.ExpectQuery("SELECT id, name, version FROM repository").WithArgs("vibioh/ketchup").WillReturnRows(sqlmock.NewRows([]string{"id", "email", "login_id"}).AddRow(1, "vibioh/ketchup", "1.0.0"))
+
+			got, gotErr := New(mockDb).GetByName(context.Background(), tc.args.name)
+
+			failed := false
+
+			if tc.wantErr == nil && gotErr != nil {
+				failed = true
+			} else if tc.wantErr != nil && !errors.Is(gotErr, tc.wantErr) {
+				failed = true
+			} else if !reflect.DeepEqual(got, tc.want) {
+				failed = true
+			}
+
+			if failed {
+				t.Errorf("GetByName() = (%+v, `%s`), want (%+v, `%s`)", got, gotErr, tc.want, tc.wantErr)
+			}
+
+			if err := mock.ExpectationsWereMet(); err != nil {
+				t.Errorf("sqlmock unfilled expectations: %s", err)
+			}
+		})
+	}
+}
+
 func TestCreate(t *testing.T) {
 	type args struct {
 		o model.Repository

@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	authModel "github.com/ViBiOh/auth/v2/pkg/model"
 	"github.com/ViBiOh/httputils/v3/pkg/crud"
@@ -67,7 +68,7 @@ func (a app) List(ctx context.Context, page, pageSize uint, sortKey string, sort
 }
 
 func (a app) Get(ctx context.Context, ID uint64) (interface{}, error) {
-	item, err := a.ketchupStore.Get(ctx, ID)
+	item, err := a.ketchupStore.GetByRepositoryID(ctx, ID)
 	if err != nil {
 		return nil, fmt.Errorf("unable to get: %w", err)
 	}
@@ -86,10 +87,30 @@ func (a app) Get(ctx context.Context, ID uint64) (interface{}, error) {
 	return item, nil
 }
 
-func (a app) Create(ctx context.Context, o interface{}) (interface{}, error) {
+func (a app) Create(ctx context.Context, o interface{}) (output interface{}, err error) {
+	output = model.NoneKetchup
 	item := o.(model.Ketchup)
 
-	if _, err := a.ketchupStore.Create(ctx, item); err != nil {
+	ctx, err = a.ketchupStore.StartAtomic(ctx)
+	if err != nil {
+		return
+	}
+
+	defer func() {
+		if endErr := a.ketchupStore.EndAtomic(ctx, err); endErr != nil {
+			err = fmt.Errorf("%s: %w", err.Error(), endErr)
+		}
+	}()
+
+	var repository model.Repository
+	repository, err = a.repositoryStore.GetByName(ctx, item.Repository.Name)
+	if err != nil {
+		return nil, err
+	}
+
+	item.Repository = repository
+
+	if _, err = a.ketchupStore.Create(ctx, item); err != nil {
 		return o, fmt.Errorf("unable to create: %w", err)
 	}
 
@@ -123,6 +144,16 @@ func (a app) Check(ctx context.Context, old, new interface{}) []crud.Error {
 	user := authModel.ReadUser(ctx)
 	if old != nil && user == authModel.NoneUser {
 		errors = append(errors, crud.NewError("context", "you must be logged in for interacting"))
+	}
+
+	if new == nil {
+		return errors
+	}
+
+	newItem := new.(model.Ketchup)
+
+	if len(strings.TrimSpace(newItem.Version)) == 0 {
+		errors = append(errors, crud.NewError("version", "version is required"))
 	}
 
 	return errors

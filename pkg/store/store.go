@@ -28,6 +28,7 @@ type RepositoryStore interface {
 
 	List(ctx context.Context, page, pageSize uint, sortKey string, sortAsc bool) ([]model.Repository, uint, error)
 	Get(ctx context.Context, id uint64) (model.Repository, error)
+	GetByName(ctx context.Context, name string) (model.Repository, error)
 	Create(ctx context.Context, o model.Repository) (uint64, error)
 	Update(ctx context.Context, o model.Repository) error
 	Delete(ctx context.Context, o model.Repository) error
@@ -39,7 +40,7 @@ type KetchupStore interface {
 	EndAtomic(ctx context.Context, err error) error
 
 	List(ctx context.Context, page, pageSize uint, sortKey string, sortAsc bool) ([]model.Ketchup, uint, error)
-	Get(ctx context.Context, id uint64) (model.Ketchup, error)
+	GetByRepositoryID(ctx context.Context, id uint64) (model.Ketchup, error)
 	Create(ctx context.Context, o model.Ketchup) (uint64, error)
 	Update(ctx context.Context, o model.Ketchup) error
 	Delete(ctx context.Context, o model.Ketchup) error
