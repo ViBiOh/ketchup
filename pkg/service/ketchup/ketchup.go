@@ -53,6 +53,11 @@ func (a app) Unmarshal(data []byte, contentType string) (interface{}, error) {
 }
 
 func (a app) List(ctx context.Context, page, pageSize uint, sortKey string, sortAsc bool, filters map[string][]string) ([]interface{}, uint, error) {
+	ctx, err := a.convertLoginToUser(ctx)
+	if err != nil {
+		return nil, 0, fmt.Errorf("unable to convert user: %s", err)
+	}
+
 	list, total, err := a.ketchupStore.List(ctx, page, pageSize, sortKey, sortAsc)
 	if err != nil {
 		return nil, 0, fmt.Errorf("unable to list: %s", err)
@@ -74,6 +79,11 @@ func (a app) List(ctx context.Context, page, pageSize uint, sortKey string, sort
 }
 
 func (a app) Get(ctx context.Context, ID uint64) (interface{}, error) {
+	ctx, err := a.convertLoginToUser(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("unable to convert user: %s", err)
+	}
+
 	item, err := a.ketchupStore.GetByRepositoryID(ctx, ID)
 	if err != nil {
 		return nil, fmt.Errorf("unable to get: %s", err)
@@ -94,6 +104,11 @@ func (a app) Get(ctx context.Context, ID uint64) (interface{}, error) {
 }
 
 func (a app) Create(ctx context.Context, o interface{}) (output interface{}, err error) {
+	ctx, err = a.convertLoginToUser(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("unable to convert user: %s", err)
+	}
+
 	output = model.NoneKetchup
 	item := o.(model.Ketchup)
 
@@ -124,6 +139,11 @@ func (a app) Create(ctx context.Context, o interface{}) (output interface{}, err
 }
 
 func (a app) Update(ctx context.Context, o interface{}) (interface{}, error) {
+	ctx, err := a.convertLoginToUser(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("unable to convert user: %s", err)
+	}
+
 	item := o.(model.Ketchup)
 
 	if err := a.ketchupStore.Update(ctx, item); err != nil {
@@ -134,6 +154,11 @@ func (a app) Update(ctx context.Context, o interface{}) (interface{}, error) {
 }
 
 func (a app) Delete(ctx context.Context, o interface{}) error {
+	ctx, err := a.convertLoginToUser(ctx)
+	if err != nil {
+		return fmt.Errorf("unable to convert user: %s", err)
+	}
+
 	item := o.(model.Ketchup)
 
 	if err := a.ketchupStore.Delete(ctx, item); err != nil {
@@ -187,4 +212,13 @@ func (a app) Check(ctx context.Context, old, new interface{}) []crud.Error {
 	}
 
 	return errors
+}
+
+func (a app) convertLoginToUser(ctx context.Context) (context.Context, error) {
+	user, err := a.userService.GetFromContext(ctx)
+	if err != nil {
+		return ctx, err
+	}
+
+	return model.StoreUser(ctx, user.(model.User)), nil
 }

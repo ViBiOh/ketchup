@@ -28,6 +28,8 @@ type App interface {
 	Create(ctx context.Context, o interface{}) (interface{}, error)
 	Update(ctx context.Context, o interface{}) (interface{}, error)
 	Delete(ctx context.Context, o interface{}) error
+
+	GetFromContext(ctx context.Context) (interface{}, error)
 }
 
 type app struct {
@@ -91,6 +93,19 @@ func (a app) Get(ctx context.Context, ID uint64) (interface{}, error) {
 	}
 
 	item.Login = login.(authModel.User)
+
+	return item, nil
+}
+
+func (a app) GetFromContext(ctx context.Context) (interface{}, error) {
+	item, err := a.userStore.GetByLoginID(ctx, authModel.ReadUser(ctx).ID)
+	if err != nil {
+		return nil, fmt.Errorf("unable to get: %w", err)
+	}
+
+	if item == model.NoneUser {
+		return nil, crud.ErrNotFound
+	}
 
 	return item, nil
 }

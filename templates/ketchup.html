@@ -12,8 +12,8 @@
         </p>
 
         <p class="padding no-margin">
-          <label for="create-current-version" class="block">Current version:</label>
-          <input id="create-current-version" type="text" name="currentVersion" placeholder="1.0.0">
+          <label for="create-version" class="block">My version:</label>
+          <input id="create-version" type="text" name="version" placeholder="1.0.0">
         </p>
 
         {{ template "form_buttons" "Create" }}
@@ -33,8 +33,8 @@
         <input type="hidden" name="method" value="PUT">
 
         <p class="padding no-margin">
-          <label for="edit-current-version-{{ .Repository.ID }}" class="block">Current version:</label>
-          <input id="edit-current-version-{{ .Repository.ID }}" name="currentVersion" type="text" value="{{ .Version }}">
+          <label for="edit-version-{{ .Repository.ID }}" class="block">My version:</label>
+          <input id="edit-version-{{ .Repository.ID }}" name="version" type="text" value="{{ .Version }}">
         </p>
 
         {{ template "form_buttons" "Edit" }}

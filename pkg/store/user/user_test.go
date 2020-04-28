@@ -272,6 +272,64 @@ func TestGetByEmail(t *testing.T) {
 	}
 }
 
+func TestGetByLoginID(t *testing.T) {
+	type args struct {
+		loginID uint64
+	}
+
+	var cases = []struct {
+		intention string
+		args      args
+		want      model.User
+		wantErr   error
+	}{
+		{
+			"simple",
+			args{
+				loginID: 2,
+			},
+			model.User{
+				ID:    1,
+				Email: "nobody@localhost",
+				Login: authModel.NewUser(2, ""),
+			},
+			nil,
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.intention, func(t *testing.T) {
+			mockDb, mock, err := sqlmock.New()
+			if err != nil {
+				t.Fatalf("unable to create mock database: %s", err)
+			}
+			defer mockDb.Close()
+
+			mock.ExpectQuery("SELECT id, email, login_id FROM \"user\"").WithArgs(2).WillReturnRows(sqlmock.NewRows([]string{"id", "email", "login_id"}).AddRow(1, "nobody@localhost", 2))
+
+			got, gotErr := New(mockDb).GetByLoginID(context.Background(), tc.args.loginID)
+
+			failed := false
+
+			if tc.wantErr == nil && gotErr != nil {
+				failed = true
+			} else if tc.wantErr != nil && !errors.Is(gotErr, tc.wantErr) {
+				failed = true
+			} else if !reflect.DeepEqual(got, tc.want) {
+				failed = true
+			}
+
+			if failed {
+				t.Errorf("GetByLoginID() = (%+v, `%s`), want (%+v, `%s`)", got, gotErr, tc.want, tc.wantErr)
+			}
+
+			if err := mock.ExpectationsWereMet(); err != nil {
+				t.Errorf("sqlmock unfilled expectations: %s", err)
+			}
+		})
+	}
+}
+
 func TestCreate(t *testing.T) {
 	type args struct {
 		o model.User

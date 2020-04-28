@@ -40,7 +40,7 @@ func (a app) ketchups() http.Handler {
 
 func (a app) handleCreate(w http.ResponseWriter, r *http.Request) {
 	ketchup := model.Ketchup{
-		Version: r.FormValue("currentVersion"),
+		Version: r.FormValue("version"),
 		Repository: model.Repository{
 			Name: r.FormValue("repository"),
 		},
@@ -73,7 +73,7 @@ func (a app) handleUpdate(w http.ResponseWriter, r *http.Request) {
 	}
 
 	newKetchup := oldKetchup.(model.Ketchup)
-	newKetchup.Version = r.FormValue("currentVersion")
+	newKetchup.Version = r.FormValue("version")
 
 	if errs := a.ketchupApp.Check(r.Context(), oldKetchup, newKetchup); len(errs) > 0 {
 		a.handleCrudError(w, errs)

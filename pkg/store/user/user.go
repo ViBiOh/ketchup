@@ -24,6 +24,7 @@ type App interface {
 	List(ctx context.Context, page, pageSize uint, sortKey string, sortAsc bool) ([]model.User, uint, error)
 	Get(ctx context.Context, id uint64) (model.User, error)
 	GetByEmail(ctx context.Context, email string) (model.User, error)
+	GetByLoginID(ctx context.Context, loginID uint64) (model.User, error)
 	Create(ctx context.Context, o model.User) (uint64, error)
 	Update(ctx context.Context, o model.User) error
 	Delete(ctx context.Context, o model.User) error
@@ -148,6 +149,21 @@ WHERE
 
 func (a app) GetByEmail(ctx context.Context, email string) (model.User, error) {
 	return scanItem(db.GetRow(ctx, a.db, getByEmailQuery, email))
+}
+
+const getByLoginIDQuery = `
+SELECT
+  id,
+  email,
+  login_id
+FROM
+  "user"
+WHERE
+  login_id = $1
+`
+
+func (a app) GetByLoginID(ctx context.Context, loginID uint64) (model.User, error) {
+	return scanItem(db.GetRow(ctx, a.db, getByLoginIDQuery, loginID))
 }
 
 const insertQuery = `
