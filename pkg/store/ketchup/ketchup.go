@@ -23,7 +23,7 @@ type App interface {
 	EndAtomic(ctx context.Context, err error) error
 
 	List(ctx context.Context, page, pageSize uint, sortKey string, sortAsc bool) ([]model.Ketchup, uint, error)
-	Get(ctx context.Context, id uint64) (model.Ketchup, error)
+	GetByRepositoryID(ctx context.Context, id uint64) (model.Ketchup, error)
 	Create(ctx context.Context, o model.Ketchup) (uint64, error)
 	Update(ctx context.Context, o model.Ketchup) error
 	Delete(ctx context.Context, o model.Ketchup) error
@@ -132,7 +132,7 @@ WHERE
   AND user_id = $2
 `
 
-func (a app) Get(ctx context.Context, id uint64) (model.Ketchup, error) {
+func (a app) GetByRepositoryID(ctx context.Context, id uint64) (model.Ketchup, error) {
 	return scanItem(db.GetRow(ctx, a.db, getQuery, id, authModel.ReadUser(ctx).ID))
 }
 

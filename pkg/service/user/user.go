@@ -2,7 +2,6 @@ package user
 
 import (
 	"context"
-	"database/sql"
 	"encoding/json"
 	"fmt"
 	"strings"
@@ -207,9 +206,7 @@ func (a app) Check(ctx context.Context, old, new interface{}) []crud.Error {
 
 	userWithEmail, err := a.userStore.GetByEmail(ctx, newItem.Email)
 	if err != nil {
-		if err != sql.ErrNoRows {
-			errors = append(errors, crud.NewError("email", "unable to check if email already exists"))
-		}
+		errors = append(errors, crud.NewError("email", "unable to check if email already exists"))
 	} else if userWithEmail.ID != newItem.ID {
 		errors = append(errors, crud.NewError("email", "email already used by another user"))
 	}

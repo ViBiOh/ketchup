@@ -14,8 +14,8 @@ import (
 )
 
 const (
-	svgPath     = "/svg"
-	targetsPath = "/targets"
+	svgPath      = "/svg"
+	ketchupsPath = "/ketchups"
 )
 
 // App of package
@@ -47,7 +47,7 @@ func New(ketchupApp ketchupService.App) (App, error) {
 // Handler for request. Should be use with net/http
 func (a app) Handler() http.Handler {
 	svgHandler := http.StripPrefix(svgPath, a.svg())
-	targetsHandler := http.StripPrefix(targetsPath, a.ketchups())
+	targetsHandler := http.StripPrefix(ketchupsPath, a.ketchups())
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if strings.HasPrefix(r.URL.Path, svgPath) {

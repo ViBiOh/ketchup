@@ -162,7 +162,7 @@ func TestList(t *testing.T) {
 	}
 }
 
-func TestGet(t *testing.T) {
+func TestGetByRepositoryID(t *testing.T) {
 	type args struct {
 		id uint64
 	}
@@ -198,7 +198,7 @@ func TestGet(t *testing.T) {
 
 			mock.ExpectQuery("SELECT version, repository_id FROM ketchup").WithArgs(1, 3).WillReturnRows(sqlmock.NewRows([]string{"email", "repository_id"}).AddRow("0.9.0", 1))
 
-			got, gotErr := New(mockDb).Get(authModel.StoreUser(context.Background(), authModel.NewUser(3, "vibioh")), tc.args.id)
+			got, gotErr := New(mockDb).GetByRepositoryID(authModel.StoreUser(context.Background(), authModel.NewUser(3, "vibioh")), tc.args.id)
 
 			failed := false
 
@@ -211,7 +211,7 @@ func TestGet(t *testing.T) {
 			}
 
 			if failed {
-				t.Errorf("Get() = (%+v, `%s`), want (%+v, `%s`)", got, gotErr, tc.want, tc.wantErr)
+				t.Errorf("GetByRepositoryID() = (%+v, `%s`), want (%+v, `%s`)", got, gotErr, tc.want, tc.wantErr)
 			}
 
 			if err := mock.ExpectationsWereMet(); err != nil {

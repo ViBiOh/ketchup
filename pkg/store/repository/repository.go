@@ -23,6 +23,7 @@ type App interface {
 
 	List(ctx context.Context, page, pageSize uint, sortKey string, sortAsc bool) ([]model.Repository, uint, error)
 	Get(ctx context.Context, id uint64) (model.Repository, error)
+	GetByName(ctx context.Context, name string) (model.Repository, error)
 	Create(ctx context.Context, o model.Repository) (uint64, error)
 	Update(ctx context.Context, o model.Repository) error
 	Delete(ctx context.Context, o model.Repository) error
@@ -132,6 +133,21 @@ WHERE
 
 func (a app) Get(ctx context.Context, id uint64) (model.Repository, error) {
 	return scanItem(db.GetRow(ctx, a.db, getQuery, id))
+}
+
+const getByNameQuery = `
+SELECT
+  id,
+  name,
+  version
+FROM
+  repository
+WHERE
+  name = $1
+`
+
+func (a app) GetByName(ctx context.Context, name string) (model.Repository, error) {
+	return scanItem(db.GetRow(ctx, a.db, getByNameQuery, name))
 }
 
 const insertQuery = `

@@ -4,10 +4,12 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	authModel "github.com/ViBiOh/auth/v2/pkg/model"
 	"github.com/ViBiOh/httputils/v3/pkg/crud"
 	"github.com/ViBiOh/ketchup/pkg/model"
+	repositoryService "github.com/ViBiOh/ketchup/pkg/service/repository"
 	"github.com/ViBiOh/ketchup/pkg/store"
 )
 
@@ -27,15 +29,15 @@ type App interface {
 }
 
 type app struct {
-	ketchupStore    store.KetchupStore
-	repositoryStore store.RepositoryStore
+	ketchupStore      store.KetchupStore
+	repositoryService repositoryService.App
 }
 
 // New creates new App from Config
-func New(ketchupStore store.KetchupStore, repositoryStore store.RepositoryStore) App {
+func New(ketchupStore store.KetchupStore, repositoryService repositoryService.App) App {
 	return app{
-		ketchupStore:    ketchupStore,
-		repositoryStore: repositoryStore,
+		ketchupStore:      ketchupStore,
+		repositoryService: repositoryService,
 	}
 }
 
@@ -53,12 +55,12 @@ func (a app) List(ctx context.Context, page, pageSize uint, sortKey string, sort
 
 	itemsList := make([]interface{}, len(list))
 	for index, item := range list {
-		repository, err := a.repositoryStore.Get(ctx, item.Repository.ID)
+		repository, err := a.repositoryService.Get(ctx, item.Repository.ID)
 		if err != nil {
 			return nil, 0, fmt.Errorf("unable to get repository for %d: %s", item.Repository.ID, err)
 		}
 
-		item.Repository = repository
+		item.Repository = repository.(model.Repository)
 
 		itemsList[index] = item
 	}
@@ -67,7 +69,7 @@ func (a app) List(ctx context.Context, page, pageSize uint, sortKey string, sort
 }
 
 func (a app) Get(ctx context.Context, ID uint64) (interface{}, error) {
-	item, err := a.ketchupStore.Get(ctx, ID)
+	item, err := a.ketchupStore.GetByRepositoryID(ctx, ID)
 	if err != nil {
 		return nil, fmt.Errorf("unable to get: %w", err)
 	}
@@ -76,20 +78,40 @@ func (a app) Get(ctx context.Context, ID uint64) (interface{}, error) {
 		return nil, crud.ErrNotFound
 	}
 
-	repository, err := a.repositoryStore.Get(ctx, item.Repository.ID)
+	repository, err := a.repositoryService.Get(ctx, item.Repository.ID)
 	if err != nil {
 		return nil, fmt.Errorf("unable to get repository: %w", err)
 	}
 
-	item.Repository = repository
+	item.Repository = repository.(model.Repository)
 
 	return item, nil
 }
 
-func (a app) Create(ctx context.Context, o interface{}) (interface{}, error) {
+func (a app) Create(ctx context.Context, o interface{}) (output interface{}, err error) {
+	output = model.NoneKetchup
 	item := o.(model.Ketchup)
 
-	if _, err := a.ketchupStore.Create(ctx, item); err != nil {
+	ctx, err = a.ketchupStore.StartAtomic(ctx)
+	if err != nil {
+		return
+	}
+
+	defer func() {
+		if endErr := a.ketchupStore.EndAtomic(ctx, err); endErr != nil {
+			err = fmt.Errorf("%s: %w", err.Error(), endErr)
+		}
+	}()
+
+	var repository interface{}
+	repository, err = a.repositoryService.GetOrCreate(ctx, item.Repository.Name)
+	if err != nil {
+		return
+	}
+
+	item.Repository = repository.(model.Repository)
+
+	if _, err = a.ketchupStore.Create(ctx, item); err != nil {
 		return o, fmt.Errorf("unable to create: %w", err)
 	}
 
@@ -123,6 +145,16 @@ func (a app) Check(ctx context.Context, old, new interface{}) []crud.Error {
 	user := authModel.ReadUser(ctx)
 	if old != nil && user == authModel.NoneUser {
 		errors = append(errors, crud.NewError("context", "you must be logged in for interacting"))
+	}
+
+	if new == nil {
+		return errors
+	}
+
+	newItem := new.(model.Ketchup)
+
+	if len(strings.TrimSpace(newItem.Version)) == 0 {
+		errors = append(errors, crud.NewError("version", "version is required"))
 	}
 
 	return errors

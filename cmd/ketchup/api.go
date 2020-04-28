@@ -24,6 +24,7 @@ import (
 	"github.com/ViBiOh/ketchup/pkg/ketchup"
 	"github.com/ViBiOh/ketchup/pkg/renderer"
 	ketchupService "github.com/ViBiOh/ketchup/pkg/service/ketchup"
+	repositoryService "github.com/ViBiOh/ketchup/pkg/service/repository"
 	userService "github.com/ViBiOh/ketchup/pkg/service/user"
 	ketchupStore "github.com/ViBiOh/ketchup/pkg/store/ketchup"
 	repositoryStore "github.com/ViBiOh/ketchup/pkg/store/repository"
@@ -75,16 +76,18 @@ func main() {
 	authMiddleware := middleware.New(authProvider, identProvider)
 	/* Auth related things */
 
+	githubApp := github.New(githubConfig)
+	mailerApp := mailer.New(mailerConfig)
+
 	userStoreApp := userStore.New(ketchupDb)
 	userServiceApp := userService.New(userStoreApp, authServiceApp, authProvider)
 
 	repositoryStoreApp := repositoryStore.New(ketchupDb)
+	repositoryServiceApp := repositoryService.New(repositoryStoreApp, githubApp)
 
 	ketchupStoreApp := ketchupStore.New(ketchupDb)
-	ketchupServiceApp := ketchupService.New(ketchupStoreApp, repositoryStoreApp)
+	ketchupServiceApp := ketchupService.New(ketchupStoreApp, repositoryServiceApp)
 
-	githubApp := github.New(githubConfig)
-	mailerApp := mailer.New(mailerConfig)
 	ketchupAp := ketchup.New(ketchupConfig, repositoryStoreApp, githubApp, mailerApp)
 
 	rendererApp, err := renderer.New(ketchupServiceApp)
