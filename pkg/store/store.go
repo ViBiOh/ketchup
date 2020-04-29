@@ -25,7 +25,7 @@ func StartAtomic(ctx context.Context, usedDB *sql.DB) (context.Context, error) {
 func EndAtomic(ctx context.Context, err error) error {
 	tx := db.ReadTx(ctx)
 	if tx == nil {
-		return nil
+		return err
 	}
 
 	return db.EndTx(tx, err)

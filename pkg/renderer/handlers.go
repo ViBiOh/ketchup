@@ -25,7 +25,7 @@ func (a app) getData(r *http.Request) (interface{}, error) {
 func (a app) uiHandler(w http.ResponseWriter, r *http.Request, status int, message model.Message) {
 	ketchups, err := a.getData(r)
 	if err != nil {
-		a.errorHandler(w, http.StatusInternalServerError, err, nil)
+		a.errorHandler(w, http.StatusInternalServerError, err)
 		return
 	}
 
@@ -43,18 +43,29 @@ func (a app) uiHandler(w http.ResponseWriter, r *http.Request, status int, messa
 	}
 }
 
-func (a app) errorHandler(w http.ResponseWriter, status int, errs ...error) {
-	logger.Error("%s", errs)
+func (a app) errorHandler(w http.ResponseWriter, status int, err error) {
+	logger.Error("%s", err)
 
 	content := map[string]interface{}{
 		"Version": a.version,
 	}
 
-	if len(errs) > 0 {
-		content["Message"] = model.NewErrorMessage(errs[0].Error())
+	if err != nil {
+		message := err.Error()
+		errors := ""
 
-		if len(errs) > 1 {
-			content["Errors"] = errs[1:]
+		if strings.HasPrefix(message, "invalid:") {
+			errors = strings.TrimPrefix(message, "invalid:")
+			status = http.StatusBadRequest
+			message = "Invalid form"
+		} else if strings.HasPrefix(message, "invalid method") {
+			status = http.StatusMethodNotAllowed
+		}
+
+		content["Message"] = model.NewErrorMessage(message)
+
+		if len(errors) > 0 {
+			content["Errors"] = strings.Split(errors, ", ")
 		}
 	}
 
