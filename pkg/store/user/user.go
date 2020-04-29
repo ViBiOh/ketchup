@@ -41,20 +41,6 @@ func New(db *sql.DB) App {
 	}
 }
 
-func scanItem(row db.RowScanner) (model.User, error) {
-	var item model.User
-
-	if err := row.Scan(&item.ID, &item.Email, &item.Login.ID); err != nil {
-		if err == sql.ErrNoRows {
-			return model.NoneUser, nil
-		}
-
-		return model.NoneUser, err
-	}
-
-	return item, nil
-}
-
 func scanItems(rows *sql.Rows) ([]model.User, uint, error) {
 	var totalCount uint
 	list := make([]model.User, 0)
