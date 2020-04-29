@@ -88,20 +88,6 @@ func (a app) List(ctx context.Context, page, pageSize uint) ([]model.Repository,
 	return list, totalCount, nil
 }
 
-func scanItem(row db.RowScanner) (model.Repository, error) {
-	var repository model.Repository
-
-	if err := row.Scan(&repository.ID, &repository.Name, &repository.Version); err != nil {
-		if err == sql.ErrNoRows {
-			return model.NoneRepository, nil
-		}
-
-		return model.NoneRepository, err
-	}
-
-	return repository, nil
-}
-
 const getQuery = `
 SELECT
   id,
@@ -114,7 +100,19 @@ WHERE
 `
 
 func (a app) Get(ctx context.Context, id uint64) (model.Repository, error) {
-	return scanItem(db.GetRow(ctx, a.db, getQuery, id))
+	var item model.Repository
+	scanner := func(row db.RowScanner) error {
+		err := row.Scan(&item.ID, &item.Name, &item.Version)
+		if err == sql.ErrNoRows {
+			item = model.NoneRepository
+			return nil
+		}
+
+		return err
+	}
+
+	err := db.GetRow(ctx, a.db, scanner, getQuery, id)
+	return item, err
 }
 
 const getByNameQuery = `
@@ -129,7 +127,19 @@ WHERE
 `
 
 func (a app) GetByName(ctx context.Context, name string) (model.Repository, error) {
-	return scanItem(db.GetRow(ctx, a.db, getByNameQuery, name))
+	var item model.Repository
+	scanner := func(row db.RowScanner) error {
+		err := row.Scan(&item.ID, &item.Name, &item.Version)
+		if err == sql.ErrNoRows {
+			item = model.NoneRepository
+			return nil
+		}
+
+		return err
+	}
+
+	err := db.GetRow(ctx, a.db, scanner, getByNameQuery, name)
+	return item, err
 }
 
 const insertQuery = `

@@ -158,15 +158,17 @@ func (a app) GetByRepositoryID(ctx context.Context, id uint64, forUpdate bool) (
 		User: user,
 	}
 
-	if err := db.GetRow(ctx, a.db, query, id, user.ID).Scan(&item.Version, &item.Repository.ID, &item.User.ID); err != nil {
+	scanner := func(row db.RowScanner) error {
+		err := row.Scan(&item.Version, &item.Repository.ID, &item.User.ID)
 		if err == sql.ErrNoRows {
-			return model.NoneKetchup, nil
+			item = model.NoneKetchup
 		}
 
-		return model.NoneKetchup, err
+		return err
 	}
 
-	return item, nil
+	err := db.GetRow(ctx, a.db, scanner, query, id, user.ID)
+	return item, err
 }
 
 const insertQuery = `
