@@ -1,13 +1,11 @@
 package renderer
 
 import (
-	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
 
-	"github.com/ViBiOh/httputils/v3/pkg/crud"
 	"github.com/ViBiOh/ketchup/pkg/model"
 )
 
@@ -46,12 +44,7 @@ func (a app) handleCreate(w http.ResponseWriter, r *http.Request) {
 		},
 	}
 
-	if errs := a.ketchupApp.Check(r.Context(), nil, ketchup); len(errs) > 0 {
-		a.handleCrudError(w, errs)
-		return
-	}
-
-	if _, err := a.ketchupApp.Create(r.Context(), ketchup); err != nil {
+	if _, err := a.ketchupService.Create(r.Context(), ketchup); err != nil {
 		a.errorHandler(w, http.StatusInternalServerError, err, nil)
 		return
 	}
@@ -66,26 +59,19 @@ func (a app) handleUpdate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	oldKetchup, err := a.ketchupApp.Get(r.Context(), id)
-	if err != nil {
-		a.errorHandler(w, http.StatusBadRequest, err, nil)
-		return
+	item := model.Ketchup{
+		Version: r.FormValue("version"),
+		Repository: model.Repository{
+			ID: id,
+		},
 	}
 
-	newKetchup := oldKetchup.(model.Ketchup)
-	newKetchup.Version = r.FormValue("version")
-
-	if errs := a.ketchupApp.Check(r.Context(), oldKetchup, newKetchup); len(errs) > 0 {
-		a.handleCrudError(w, errs)
-		return
-	}
-
-	if _, err := a.ketchupApp.Update(r.Context(), newKetchup); err != nil {
+	if err := a.ketchupService.Update(r.Context(), item); err != nil {
 		a.errorHandler(w, http.StatusInternalServerError, err, nil)
 		return
 	}
 
-	redirectWithMessage(w, r, fmt.Sprintf("%s updated with success!", newKetchup.Repository.Name))
+	redirectWithMessage(w, r, fmt.Sprintf("Updated to %s with success!", item.Version))
 }
 
 func (a app) handleDelete(w http.ResponseWriter, r *http.Request) {
@@ -95,33 +81,10 @@ func (a app) handleDelete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	rawKetchup, err := a.ketchupApp.Get(r.Context(), id)
-	if err != nil {
-		a.errorHandler(w, http.StatusBadRequest, err, nil)
-		return
-	}
-
-	ketchup := rawKetchup.(model.Ketchup)
-
-	if errs := a.ketchupApp.Check(r.Context(), ketchup, nil); len(errs) > 0 {
-		a.handleCrudError(w, errs)
-		return
-	}
-
-	if err := a.ketchupApp.Delete(r.Context(), ketchup); err != nil {
+	if err := a.ketchupService.Delete(r.Context(), id); err != nil {
 		a.errorHandler(w, http.StatusInternalServerError, err, nil)
 		return
 	}
 
-	redirectWithMessage(w, r, fmt.Sprintf("%s deleted with success!", ketchup.Repository.Name))
-}
-
-func (a app) handleCrudError(w http.ResponseWriter, errs []crud.Error) {
-	errorsValues := make([]error, 1+len(errs))
-	errorsValues[0] = errors.New("invalid form")
-	for i, err := range errs {
-		errorsValues[i+1] = err
-	}
-
-	a.errorHandler(w, http.StatusBadRequest, errorsValues...)
+	redirectWithMessage(w, r, "Deleted with success!")
 }

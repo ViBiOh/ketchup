@@ -46,7 +46,7 @@ CREATE TABLE ketchup (
   creation_date TIMESTAMP WITH TIME ZONE DEFAULT now()
 );
 
-CREATE UNIQUE INDEX ketchup_user ON ketchup(user_id);
+CREATE UNIQUE INDEX ketchup_id ON ketchup(user_id, repository_id);
 
 -- data
 DO $$

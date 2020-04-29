@@ -10,7 +10,7 @@ import (
 	"github.com/ViBiOh/httputils/v3/pkg/query"
 	"github.com/ViBiOh/httputils/v3/pkg/templates"
 	"github.com/ViBiOh/ketchup/pkg/model"
-	ketchupService "github.com/ViBiOh/ketchup/pkg/service/ketchup"
+	"github.com/ViBiOh/ketchup/pkg/service/ketchup"
 )
 
 const (
@@ -27,20 +27,20 @@ type app struct {
 	tpl     *template.Template
 	version string
 
-	ketchupApp ketchupService.App
+	ketchupService ketchup.App
 }
 
 // New creates new App from Config
-func New(ketchupApp ketchupService.App) (App, error) {
+func New(ketchupService ketchup.App) (App, error) {
 	filesTemplates, err := templates.GetTemplates("templates", ".html")
 	if err != nil {
 		return nil, fmt.Errorf("unable to get templates: %s", err)
 	}
 
 	return app{
-		tpl:        template.Must(template.New("ketchup").ParseFiles(filesTemplates...)),
-		version:    os.Getenv("VERSION"),
-		ketchupApp: ketchupApp,
+		tpl:            template.Must(template.New("ketchup").ParseFiles(filesTemplates...)),
+		version:        os.Getenv("VERSION"),
+		ketchupService: ketchupService,
 	}, nil
 }
 

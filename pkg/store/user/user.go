@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 	"regexp"
+	"strings"
 
 	"github.com/ViBiOh/httputils/v3/pkg/db"
 	"github.com/ViBiOh/ketchup/pkg/model"
@@ -12,8 +13,7 @@ import (
 )
 
 var (
-	sortKeyMatcher                 = regexp.MustCompile(`[A-Za-z0-9]+`)
-	_              store.UserStore = app{}
+	sortKeyMatcher = regexp.MustCompile(`[A-Za-z0-9]+`)
 )
 
 // App of package
@@ -133,7 +133,19 @@ WHERE
 `
 
 func (a app) Get(ctx context.Context, id uint64) (model.User, error) {
-	return scanItem(db.GetRow(ctx, a.db, getQuery, id))
+	var item model.User
+	scanner := func(row db.RowScanner) error {
+		err := row.Scan(&item.ID, &item.Email, &item.Login.ID)
+		if err == sql.ErrNoRows {
+			item = model.NoneUser
+			return nil
+		}
+
+		return err
+	}
+
+	err := db.GetRow(ctx, a.db, scanner, getQuery, id)
+	return item, err
 }
 
 const getByEmailQuery = `
@@ -148,7 +160,19 @@ WHERE
 `
 
 func (a app) GetByEmail(ctx context.Context, email string) (model.User, error) {
-	return scanItem(db.GetRow(ctx, a.db, getByEmailQuery, email))
+	var item model.User
+	scanner := func(row db.RowScanner) error {
+		err := row.Scan(&item.ID, &item.Email, &item.Login.ID)
+		if err == sql.ErrNoRows {
+			item = model.NoneUser
+			return nil
+		}
+
+		return err
+	}
+
+	err := db.GetRow(ctx, a.db, scanner, getByEmailQuery, email)
+	return item, err
 }
 
 const getByLoginIDQuery = `
@@ -163,7 +187,19 @@ WHERE
 `
 
 func (a app) GetByLoginID(ctx context.Context, loginID uint64) (model.User, error) {
-	return scanItem(db.GetRow(ctx, a.db, getByLoginIDQuery, loginID))
+	var item model.User
+	scanner := func(row db.RowScanner) error {
+		err := row.Scan(&item.ID, &item.Email, &item.Login.ID)
+		if err == sql.ErrNoRows {
+			item = model.NoneUser
+			return nil
+		}
+
+		return err
+	}
+
+	err := db.GetRow(ctx, a.db, scanner, getByLoginIDQuery, loginID)
+	return item, err
 }
 
 const insertQuery = `
@@ -179,7 +215,7 @@ INSERT INTO
 `
 
 func (a app) Create(ctx context.Context, o model.User) (uint64, error) {
-	return db.Create(ctx, a.db, insertQuery, o.Email, o.Login.ID)
+	return db.Create(ctx, a.db, insertQuery, strings.ToLower(o.Email), o.Login.ID)
 }
 
 const updateQuery = `

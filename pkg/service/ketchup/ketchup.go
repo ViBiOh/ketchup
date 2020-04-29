@@ -2,43 +2,34 @@ package ketchup
 
 import (
 	"context"
-	"encoding/json"
+	"errors"
 	"fmt"
 	"strings"
 
-	authModel "github.com/ViBiOh/auth/v2/pkg/model"
-	"github.com/ViBiOh/httputils/v3/pkg/crud"
 	"github.com/ViBiOh/ketchup/pkg/model"
-	repositoryService "github.com/ViBiOh/ketchup/pkg/service/repository"
-	userService "github.com/ViBiOh/ketchup/pkg/service/user"
-	"github.com/ViBiOh/ketchup/pkg/store"
-)
-
-var (
-	_ crud.Service = app{}
+	"github.com/ViBiOh/ketchup/pkg/service/repository"
+	"github.com/ViBiOh/ketchup/pkg/service/user"
+	"github.com/ViBiOh/ketchup/pkg/store/ketchup"
 )
 
 // App of package
 type App interface {
-	Unmarshal(data []byte, contentType string) (interface{}, error)
-	Check(ctx context.Context, old, new interface{}) []crud.Error
-	List(ctx context.Context, page, pageSize uint, sortKey string, sortDesc bool, filters map[string][]string) ([]interface{}, uint, error)
-	Get(ctx context.Context, ID uint64) (interface{}, error)
-	Create(ctx context.Context, o interface{}) (interface{}, error)
-	Update(ctx context.Context, o interface{}) (interface{}, error)
-	Delete(ctx context.Context, o interface{}) error
-
+	Check(ctx context.Context, old, new model.Ketchup) []error
+	List(ctx context.Context, page, pageSize uint) ([]model.Ketchup, uint, error)
 	ListForRepositories(ctx context.Context, repositories []model.Repository) ([]model.Ketchup, error)
+	Create(ctx context.Context, item model.Ketchup) (model.Ketchup, error)
+	Update(ctx context.Context, item model.Ketchup) error
+	Delete(ctx context.Context, id uint64) error
 }
 
 type app struct {
-	ketchupStore      store.KetchupStore
-	repositoryService repositoryService.App
-	userService       userService.App
+	ketchupStore      ketchup.App
+	repositoryService repository.App
+	userService       user.App
 }
 
 // New creates new App from Config
-func New(ketchupStore store.KetchupStore, repositoryService repositoryService.App, userService userService.App) App {
+func New(ketchupStore ketchup.App, repositoryService repository.App, userService user.App) App {
 	return app{
 		ketchupStore:      ketchupStore,
 		repositoryService: repositoryService,
@@ -46,71 +37,17 @@ func New(ketchupStore store.KetchupStore, repositoryService repositoryService.Ap
 	}
 }
 
-func (a app) Unmarshal(data []byte, contentType string) (interface{}, error) {
-	var item model.Ketchup
-	err := json.Unmarshal(data, &item)
-	return item, err
-}
-
-func (a app) List(ctx context.Context, page, pageSize uint, sortKey string, sortAsc bool, filters map[string][]string) ([]interface{}, uint, error) {
-	ctx, err := a.convertLoginToUser(ctx)
-	if err != nil {
-		return nil, 0, fmt.Errorf("unable to convert user: %s", err)
-	}
-
-	list, total, err := a.ketchupStore.List(ctx, page, pageSize, sortKey, sortAsc)
+func (a app) List(ctx context.Context, page, pageSize uint) ([]model.Ketchup, uint, error) {
+	list, total, err := a.ketchupStore.List(ctx, page, pageSize)
 	if err != nil {
 		return nil, 0, fmt.Errorf("unable to list: %s", err)
 	}
 
-	itemsList := make([]interface{}, len(list))
-	for index, item := range list {
-		repository, err := a.repositoryService.Get(ctx, item.Repository.ID)
-		if err != nil {
-			return nil, 0, fmt.Errorf("unable to get repository for %d: %s", item.Repository.ID, err)
-		}
-
-		item.Repository = repository.(model.Repository)
-
-		itemsList[index] = item
-	}
-
-	return itemsList, total, nil
+	return list, total, nil
 }
 
-func (a app) Get(ctx context.Context, ID uint64) (interface{}, error) {
-	ctx, err := a.convertLoginToUser(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("unable to convert user: %s", err)
-	}
-
-	item, err := a.ketchupStore.GetByRepositoryID(ctx, ID)
-	if err != nil {
-		return nil, fmt.Errorf("unable to get: %s", err)
-	}
-
-	if item == model.NoneKetchup {
-		return nil, crud.ErrNotFound
-	}
-
-	repository, err := a.repositoryService.Get(ctx, item.Repository.ID)
-	if err != nil {
-		return nil, fmt.Errorf("unable to get repository: %s", err)
-	}
-
-	item.Repository = repository.(model.Repository)
-
-	return item, nil
-}
-
-func (a app) Create(ctx context.Context, o interface{}) (output interface{}, err error) {
-	ctx, err = a.convertLoginToUser(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("unable to convert user: %s", err)
-	}
-
+func (a app) Create(ctx context.Context, item model.Ketchup) (output model.Ketchup, err error) {
 	output = model.NoneKetchup
-	item := o.(model.Ketchup)
 
 	ctx, err = a.ketchupStore.StartAtomic(ctx)
 	if err != nil {
@@ -123,45 +60,75 @@ func (a app) Create(ctx context.Context, o interface{}) (output interface{}, err
 		}
 	}()
 
-	var repository interface{}
+	var repository model.Repository
 	repository, err = a.repositoryService.GetOrCreate(ctx, item.Repository.Name)
 	if err != nil {
 		return
 	}
 
-	item.Repository = repository.(model.Repository)
+	item.Repository = repository
 
 	if _, err = a.ketchupStore.Create(ctx, item); err != nil {
-		return o, fmt.Errorf("unable to create: %s", err)
+		return model.NoneKetchup, fmt.Errorf("unable to create: %s", err)
 	}
 
 	return item, nil
 }
 
-func (a app) Update(ctx context.Context, o interface{}) (interface{}, error) {
-	ctx, err := a.convertLoginToUser(ctx)
+func (a app) Update(ctx context.Context, item model.Ketchup) (err error) {
+	ctx, err = a.ketchupStore.StartAtomic(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("unable to convert user: %s", err)
+		return
 	}
 
-	item := o.(model.Ketchup)
+	defer func() {
+		if endErr := a.ketchupStore.EndAtomic(ctx, err); endErr != nil {
+			err = fmt.Errorf("%s: %s", err.Error(), endErr)
+		}
+	}()
 
-	if err := a.ketchupStore.Update(ctx, item); err != nil {
-		return item, fmt.Errorf("unable to update: %s", err)
+	var old model.Ketchup
+	old, err = a.ketchupStore.GetByRepositoryID(ctx, item.Repository.ID, true)
+	if err != nil {
+		err = fmt.Errorf("unable to fetch current: %s", err)
 	}
 
-	return item, nil
+	if errs := a.Check(ctx, old, item); len(errs) > 0 {
+		err = fmt.Errorf("invalid payload: %s", errs)
+		return
+	}
+
+	if err = a.ketchupStore.Update(ctx, item); err != nil {
+		err = fmt.Errorf("unable to update: %s", err)
+	}
+
+	return
 }
 
-func (a app) Delete(ctx context.Context, o interface{}) error {
-	ctx, err := a.convertLoginToUser(ctx)
+func (a app) Delete(ctx context.Context, id uint64) (err error) {
+	ctx, err = a.ketchupStore.StartAtomic(ctx)
 	if err != nil {
-		return fmt.Errorf("unable to convert user: %s", err)
+		return
 	}
 
-	item := o.(model.Ketchup)
+	defer func() {
+		if endErr := a.ketchupStore.EndAtomic(ctx, err); endErr != nil {
+			err = fmt.Errorf("%s: %s", err.Error(), endErr)
+		}
+	}()
 
-	if err := a.ketchupStore.Delete(ctx, item); err != nil {
+	var old model.Ketchup
+	old, err = a.ketchupStore.GetByRepositoryID(ctx, id, true)
+	if err != nil {
+		err = fmt.Errorf("unable to fetch current: %s", err)
+	}
+
+	if errs := a.Check(ctx, old, model.NoneKetchup); len(errs) > 0 {
+		err = fmt.Errorf("invalid payload: %s", errs)
+		return
+	}
+
+	if err := a.ketchupStore.Delete(ctx, old); err != nil {
 		return fmt.Errorf("unable to delete: %s", err)
 	}
 
@@ -179,46 +146,23 @@ func (a app) ListForRepositories(ctx context.Context, repositories []model.Repos
 		return nil, fmt.Errorf("unable to list by ids: %s", err)
 	}
 
-	enrichList := make([]model.Ketchup, len(list))
-	for index, ketchup := range list {
-		user, err := a.userService.Get(ctx, ketchup.User.ID)
-		if err != nil {
-			return nil, fmt.Errorf("unable to get user for repository %d and user %d: %s", ketchup.Repository.ID, ketchup.User.ID, err)
-		}
-
-		ketchup.User = user.(model.User)
-		enrichList[index] = ketchup
-	}
-
-	return enrichList, nil
+	return list, nil
 }
 
-func (a app) Check(ctx context.Context, old, new interface{}) []crud.Error {
-	errors := make([]crud.Error, 0)
+func (a app) Check(ctx context.Context, old, new model.Ketchup) []error {
+	output := make([]error, 0)
 
-	user := authModel.ReadUser(ctx)
-	if old != nil && user == authModel.NoneUser {
-		errors = append(errors, crud.NewError("context", "you must be logged in for interacting"))
+	if model.ReadUser(ctx) == model.NoneUser {
+		output = append(output, errors.New("you must be logged in for interacting"))
 	}
 
-	if new == nil {
-		return errors
+	if new == model.NoneKetchup {
+		return output
 	}
 
-	newItem := new.(model.Ketchup)
-
-	if len(strings.TrimSpace(newItem.Version)) == 0 {
-		errors = append(errors, crud.NewError("version", "version is required"))
+	if len(strings.TrimSpace(new.Version)) == 0 {
+		output = append(output, errors.New("version is required"))
 	}
 
-	return errors
-}
-
-func (a app) convertLoginToUser(ctx context.Context) (context.Context, error) {
-	user, err := a.userService.GetFromContext(ctx)
-	if err != nil {
-		return ctx, err
-	}
-
-	return model.StoreUser(ctx, user.(model.User)), nil
+	return output
 }
