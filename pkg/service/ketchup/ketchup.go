@@ -94,7 +94,7 @@ func (a app) Update(ctx context.Context, item model.Ketchup) (err error) {
 	}
 
 	if errs := a.Check(ctx, old, item); len(errs) > 0 {
-		err = fmt.Errorf("invalid payload: %s", errs)
+		err = fmt.Errorf("invalid: %s", errs)
 		return
 	}
 
@@ -124,7 +124,7 @@ func (a app) Delete(ctx context.Context, id uint64) (err error) {
 	}
 
 	if errs := a.Check(ctx, old, model.NoneKetchup); len(errs) > 0 {
-		err = fmt.Errorf("invalid payload: %s", errs)
+		err = fmt.Errorf("invalid: %s", errs)
 		return
 	}
 

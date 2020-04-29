@@ -22,6 +22,7 @@ import (
 	"github.com/ViBiOh/httputils/v3/pkg/prometheus"
 	"github.com/ViBiOh/ketchup/pkg/github"
 	"github.com/ViBiOh/ketchup/pkg/middleware"
+	"github.com/ViBiOh/ketchup/pkg/public"
 	"github.com/ViBiOh/ketchup/pkg/renderer"
 	"github.com/ViBiOh/ketchup/pkg/scheduler"
 	ketchupService "github.com/ViBiOh/ketchup/pkg/service/ketchup"
@@ -34,10 +35,9 @@ import (
 )
 
 const (
-	faviconPath  = "/favicon"
-	apiPath      = "/api"
-	usersPath    = apiPath + "/users"
-	ketchupsPath = apiPath + "/ketchups"
+	faviconPath = "/favicon"
+	apiPath     = "/api"
+	signupPath  = "/signup"
 )
 
 func initAuth(db *sql.DB) (authService.App, auth.Provider, authMiddleware.App) {
@@ -88,11 +88,18 @@ func main() {
 	rendererApp, err := renderer.New(ketchupService)
 	logger.Fatal(err)
 
+	signupHandler := public.New(userServiceApp).Handler()
 	rendererHandler := httputils.ChainMiddlewares(rendererApp.Handler(), authMiddleware.Middleware, middleware.New(userServiceApp).Middleware)
 
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if strings.HasPrefix(r.URL.Path, faviconPath) {
 			http.ServeFile(w, r, path.Join("static", r.URL.Path))
+			return
+		}
+
+		if strings.HasPrefix(r.URL.Path, signupPath) {
+			signupHandler.ServeHTTP(w, r)
+			return
 		}
 
 		rendererHandler.ServeHTTP(w, r)

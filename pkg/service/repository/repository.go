@@ -62,18 +62,16 @@ func (a app) GetOrCreate(ctx context.Context, name string) (model.Repository, er
 		return repository, nil
 	}
 
-	repository = model.Repository{
+	return a.Create(ctx, model.Repository{
 		Name: name,
-	}
-
-	if inputErrors := a.Check(ctx, model.NoneRepository, repository); len(inputErrors) != 0 {
-		return model.NoneRepository, fmt.Errorf("%s", inputErrors)
-	}
-
-	return a.Create(ctx, repository)
+	})
 }
 
 func (a app) Create(ctx context.Context, item model.Repository) (model.Repository, error) {
+	if inputErrors := a.Check(ctx, model.NoneRepository, item); len(inputErrors) != 0 {
+		return model.NoneRepository, fmt.Errorf("invalid: %s", inputErrors)
+	}
+
 	release, err := a.githubApp.LastRelease(item.Name)
 	if err != nil {
 		return model.NoneRepository, fmt.Errorf("unable to prepare creation: %s", err)
@@ -106,11 +104,11 @@ func (a app) Update(ctx context.Context, item model.Repository) (err error) {
 	var old model.Repository
 	old, err = a.repositoryStore.Get(ctx, item.ID)
 	if err != nil {
-		err = fmt.Errorf("unable to fetch current: %s", err)
+		err = fmt.Errorf("unable to fetch: %s", err)
 	}
 
 	if errs := a.Check(ctx, old, item); len(errs) > 0 {
-		err = fmt.Errorf("invalid payload: %s", errs)
+		err = fmt.Errorf("invalid: %s", errs)
 		return
 	}
 

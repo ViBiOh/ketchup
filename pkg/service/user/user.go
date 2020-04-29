@@ -64,6 +64,14 @@ func (a app) StoreInContext(ctx context.Context) context.Context {
 }
 
 func (a app) Create(ctx context.Context, item model.User) (output model.User, err error) {
+	if errs := a.Check(ctx, model.NoneUser, item); len(errs) != 0 {
+		return model.NoneUser, fmt.Errorf("invalid: %s", errs)
+	}
+
+	if errs := a.authService.Check(ctx, nil, item.Login); len(errs) != 0 {
+		return model.NoneUser, fmt.Errorf("invalid: auth %s", errs)
+	}
+
 	ctx, err = a.userStore.StartAtomic(ctx)
 	if err != nil {
 		return
@@ -74,16 +82,6 @@ func (a app) Create(ctx context.Context, item model.User) (output model.User, er
 			err = fmt.Errorf("%s: %w", err.Error(), endErr)
 		}
 	}()
-
-	if errs := a.Check(ctx, model.NoneUser, item); len(errs) != 0 {
-		err = fmt.Errorf("invalid payload: %s", errs)
-		return
-	}
-
-	if errs := a.authService.Check(ctx, nil, item.Login); len(errs) != 0 {
-		err = fmt.Errorf("invalid login payload: %s", errs)
-		return
-	}
 
 	var loginUser interface{}
 	loginUser, err = a.authService.Create(ctx, item.Login)

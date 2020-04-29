@@ -162,6 +162,7 @@ func (a app) GetByRepositoryID(ctx context.Context, id uint64, forUpdate bool) (
 		err := row.Scan(&item.Version, &item.Repository.ID, &item.User.ID)
 		if err == sql.ErrNoRows {
 			item = model.NoneKetchup
+			return nil
 		}
 
 		return err
