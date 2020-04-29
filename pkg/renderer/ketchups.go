@@ -12,12 +12,12 @@ import (
 func (a app) ketchups() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodPost {
-			a.errorHandler(w, http.StatusMethodNotAllowed, fmt.Errorf("invalid method %s", r.Method), nil)
+			a.errorHandler(w, http.StatusMethodNotAllowed, fmt.Errorf("invalid method %s", r.Method))
 			return
 		}
 
 		if err := r.ParseForm(); err != nil {
-			a.errorHandler(w, http.StatusBadRequest, err, nil)
+			a.errorHandler(w, http.StatusBadRequest, err)
 			return
 		}
 
@@ -31,7 +31,7 @@ func (a app) ketchups() http.Handler {
 		case http.MethodDelete:
 			a.handleDelete(w, r)
 		default:
-			a.errorHandler(w, http.StatusBadRequest, fmt.Errorf("invalid method %s", method), nil)
+			a.errorHandler(w, http.StatusBadRequest, fmt.Errorf("invalid method %s", method))
 		}
 	})
 }
@@ -45,7 +45,7 @@ func (a app) handleCreate(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if _, err := a.ketchupService.Create(r.Context(), ketchup); err != nil {
-		a.errorHandler(w, http.StatusInternalServerError, err, nil)
+		a.errorHandler(w, http.StatusInternalServerError, err)
 		return
 	}
 
@@ -55,7 +55,7 @@ func (a app) handleCreate(w http.ResponseWriter, r *http.Request) {
 func (a app) handleUpdate(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.ParseUint(strings.Trim(r.URL.Path, "/"), 10, 64)
 	if err != nil {
-		a.errorHandler(w, http.StatusBadRequest, err, nil)
+		a.errorHandler(w, http.StatusBadRequest, err)
 		return
 	}
 
@@ -67,7 +67,7 @@ func (a app) handleUpdate(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := a.ketchupService.Update(r.Context(), item); err != nil {
-		a.errorHandler(w, http.StatusInternalServerError, err, nil)
+		a.errorHandler(w, http.StatusInternalServerError, err)
 		return
 	}
 
@@ -77,12 +77,12 @@ func (a app) handleUpdate(w http.ResponseWriter, r *http.Request) {
 func (a app) handleDelete(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.ParseUint(strings.Trim(r.URL.Path, "/"), 10, 64)
 	if err != nil {
-		a.errorHandler(w, http.StatusBadRequest, err, nil)
+		a.errorHandler(w, http.StatusBadRequest, err)
 		return
 	}
 
 	if err := a.ketchupService.Delete(r.Context(), id); err != nil {
-		a.errorHandler(w, http.StatusInternalServerError, err, nil)
+		a.errorHandler(w, http.StatusInternalServerError, err)
 		return
 	}
 

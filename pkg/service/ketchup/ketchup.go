@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/ViBiOh/ketchup/pkg/model"
+	"github.com/ViBiOh/ketchup/pkg/service"
 	"github.com/ViBiOh/ketchup/pkg/service/repository"
 	"github.com/ViBiOh/ketchup/pkg/service/user"
 	"github.com/ViBiOh/ketchup/pkg/store/ketchup"
@@ -14,7 +15,6 @@ import (
 
 // App of package
 type App interface {
-	Check(ctx context.Context, old, new model.Ketchup) []error
 	List(ctx context.Context, page, pageSize uint) ([]model.Ketchup, uint, error)
 	ListForRepositories(ctx context.Context, repositories []model.Repository) ([]model.Ketchup, error)
 	Create(ctx context.Context, item model.Ketchup) (model.Ketchup, error)
@@ -55,9 +55,7 @@ func (a app) Create(ctx context.Context, item model.Ketchup) (output model.Ketch
 	}
 
 	defer func() {
-		if endErr := a.ketchupStore.EndAtomic(ctx, err); endErr != nil {
-			err = fmt.Errorf("%s: %w", err.Error(), endErr)
-		}
+		err = a.ketchupStore.EndAtomic(ctx, err)
 	}()
 
 	var repository model.Repository
@@ -67,6 +65,11 @@ func (a app) Create(ctx context.Context, item model.Ketchup) (output model.Ketch
 	}
 
 	item.Repository = repository
+
+	if err = a.check(ctx, model.NoneKetchup, item); err != nil {
+		err = fmt.Errorf("invalid: %s", err)
+		return
+	}
 
 	if _, err = a.ketchupStore.Create(ctx, item); err != nil {
 		return model.NoneKetchup, fmt.Errorf("unable to create: %s", err)
@@ -82,9 +85,7 @@ func (a app) Update(ctx context.Context, item model.Ketchup) (err error) {
 	}
 
 	defer func() {
-		if endErr := a.ketchupStore.EndAtomic(ctx, err); endErr != nil {
-			err = fmt.Errorf("%s: %s", err.Error(), endErr)
-		}
+		err = a.ketchupStore.EndAtomic(ctx, err)
 	}()
 
 	var old model.Ketchup
@@ -93,8 +94,8 @@ func (a app) Update(ctx context.Context, item model.Ketchup) (err error) {
 		err = fmt.Errorf("unable to fetch current: %s", err)
 	}
 
-	if errs := a.Check(ctx, old, item); len(errs) > 0 {
-		err = fmt.Errorf("invalid: %s", errs)
+	if err = a.check(ctx, old, item); err != nil {
+		err = fmt.Errorf("invalid: %s", err)
 		return
 	}
 
@@ -112,9 +113,7 @@ func (a app) Delete(ctx context.Context, id uint64) (err error) {
 	}
 
 	defer func() {
-		if endErr := a.ketchupStore.EndAtomic(ctx, err); endErr != nil {
-			err = fmt.Errorf("%s: %s", err.Error(), endErr)
-		}
+		err = a.ketchupStore.EndAtomic(ctx, err)
 	}()
 
 	var old model.Ketchup
@@ -123,8 +122,8 @@ func (a app) Delete(ctx context.Context, id uint64) (err error) {
 		err = fmt.Errorf("unable to fetch current: %s", err)
 	}
 
-	if errs := a.Check(ctx, old, model.NoneKetchup); len(errs) > 0 {
-		err = fmt.Errorf("invalid: %s", errs)
+	if err = a.check(ctx, old, model.NoneKetchup); err != nil {
+		err = fmt.Errorf("invalid: %s", err)
 		return
 	}
 
@@ -149,7 +148,7 @@ func (a app) ListForRepositories(ctx context.Context, repositories []model.Repos
 	return list, nil
 }
 
-func (a app) Check(ctx context.Context, old, new model.Ketchup) []error {
+func (a app) check(ctx context.Context, old, new model.Ketchup) error {
 	output := make([]error, 0)
 
 	if model.ReadUser(ctx) == model.NoneUser {
@@ -157,12 +156,21 @@ func (a app) Check(ctx context.Context, old, new model.Ketchup) []error {
 	}
 
 	if new == model.NoneKetchup {
-		return output
+		return service.ConcatError(output)
 	}
 
 	if len(strings.TrimSpace(new.Version)) == 0 {
 		output = append(output, errors.New("version is required"))
 	}
 
-	return output
+	if old == model.NoneKetchup {
+		ketchup, err := a.ketchupStore.GetByRepositoryID(ctx, new.Repository.ID, false)
+		if err != nil {
+			output = append(output, errors.New("unable to check if ketchup already exists"))
+		} else if ketchup != model.NoneKetchup {
+			output = append(output, fmt.Errorf("ketchup for %s already exists", new.Repository.Name))
+		}
+	}
+
+	return service.ConcatError(output)
 }
