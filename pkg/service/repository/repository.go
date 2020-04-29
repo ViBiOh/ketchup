@@ -6,14 +6,15 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/ViBiOh/httputils/v3/pkg/logger"
 	"github.com/ViBiOh/ketchup/pkg/github"
 	"github.com/ViBiOh/ketchup/pkg/model"
+	"github.com/ViBiOh/ketchup/pkg/service"
 	"github.com/ViBiOh/ketchup/pkg/store/repository"
 )
 
 // App of package
 type App interface {
-	Check(ctx context.Context, old, new model.Repository) []error
 	List(ctx context.Context, page, pageSize uint) ([]model.Repository, uint, error)
 	Get(ctx context.Context, id uint64) (model.Repository, error)
 	GetOrCreate(ctx context.Context, name string) (model.Repository, error)
@@ -37,7 +38,7 @@ func New(repositoryStore repository.App, githubApp github.App) App {
 func (a app) List(ctx context.Context, page, pageSize uint) ([]model.Repository, uint, error) {
 	list, total, err := a.repositoryStore.List(ctx, page, pageSize)
 	if err != nil {
-		return nil, 0, fmt.Errorf("unable to list: %s", err)
+		return nil, 0, fmt.Errorf("unable to list: %s: %w", err, service.ErrInternalError)
 	}
 
 	return list, total, nil
@@ -46,7 +47,7 @@ func (a app) List(ctx context.Context, page, pageSize uint) ([]model.Repository,
 func (a app) Get(ctx context.Context, id uint64) (model.Repository, error) {
 	repository, err := a.repositoryStore.Get(ctx, id)
 	if err != nil {
-		return model.NoneRepository, fmt.Errorf("unable to get: %s", err)
+		return model.NoneRepository, fmt.Errorf("unable to get: %s: %w", err, service.ErrInternalError)
 	}
 
 	return repository, nil
@@ -68,20 +69,21 @@ func (a app) GetOrCreate(ctx context.Context, name string) (model.Repository, er
 }
 
 func (a app) Create(ctx context.Context, item model.Repository) (model.Repository, error) {
-	if inputErrors := a.Check(ctx, model.NoneRepository, item); len(inputErrors) != 0 {
-		return model.NoneRepository, fmt.Errorf("invalid: %s", inputErrors)
+	if err := a.check(ctx, model.NoneRepository, item); err != nil {
+		return model.NoneRepository, fmt.Errorf("%s: %w", err, service.ErrInvalid)
 	}
 
 	release, err := a.githubApp.LastRelease(item.Name)
 	if err != nil {
-		return model.NoneRepository, fmt.Errorf("unable to prepare creation: %s", err)
+		logger.Error("%s", err)
+		return model.NoneRepository, fmt.Errorf("no release found for %s: %w", item.Name, service.ErrNotFound)
 	}
 
 	item.Version = release.TagName
 
 	id, err := a.repositoryStore.Create(ctx, item)
 	if err != nil {
-		return model.NoneRepository, fmt.Errorf("unable to create: %s", err)
+		return model.NoneRepository, fmt.Errorf("unable to create: %s: %w", err, service.ErrInternalError)
 	}
 
 	item.ID = id
@@ -96,36 +98,34 @@ func (a app) Update(ctx context.Context, item model.Repository) (err error) {
 	}
 
 	defer func() {
-		if endErr := a.repositoryStore.EndAtomic(ctx, err); endErr != nil {
-			err = fmt.Errorf("%s: %s", err.Error(), endErr)
-		}
+		err = a.repositoryStore.EndAtomic(ctx, err)
 	}()
 
 	var old model.Repository
 	old, err = a.repositoryStore.Get(ctx, item.ID)
 	if err != nil {
-		err = fmt.Errorf("unable to fetch: %s", err)
+		err = fmt.Errorf("unable to fetch: %s: %w", err, service.ErrInternalError)
 	}
 
-	if errs := a.Check(ctx, old, item); len(errs) > 0 {
-		err = fmt.Errorf("invalid: %s", errs)
+	if err = a.check(ctx, old, item); err != nil {
+		err = fmt.Errorf("%s: %w", err, service.ErrInvalid)
 		return
 	}
 
 	if err = a.repositoryStore.Update(ctx, item); err != nil {
-		err = fmt.Errorf("unable to update: %s", err)
+		err = fmt.Errorf("unable to update: %s: %w", err, service.ErrInternalError)
 	}
 
 	return
 }
 
-func (a app) Check(ctx context.Context, old, new model.Repository) []error {
+func (a app) check(ctx context.Context, old, new model.Repository) error {
 	output := make([]error, 0)
 
 	// TODO check if ketchup used that repository
 
 	if new == model.NoneRepository {
-		return output
+		return service.ConcatError(output)
 	}
 
 	if len(strings.TrimSpace(new.Name)) == 0 {
@@ -139,5 +139,5 @@ func (a app) Check(ctx context.Context, old, new model.Repository) []error {
 		output = append(output, errors.New("name already exists"))
 	}
 
-	return output
+	return service.ConcatError(output)
 }

@@ -12,13 +12,13 @@ import (
 	authService "github.com/ViBiOh/auth/v2/pkg/service"
 	"github.com/ViBiOh/httputils/v3/pkg/logger"
 	"github.com/ViBiOh/ketchup/pkg/model"
+	"github.com/ViBiOh/ketchup/pkg/service"
 	"github.com/ViBiOh/ketchup/pkg/store/user"
 )
 
 // App of package
 type App interface {
 	Unmarshal(data []byte, contentType string) (model.User, error)
-	Check(ctx context.Context, old, new model.User) []error
 	Create(ctx context.Context, o model.User) (model.User, error)
 	StoreInContext(ctx context.Context) context.Context
 }
@@ -64,12 +64,12 @@ func (a app) StoreInContext(ctx context.Context) context.Context {
 }
 
 func (a app) Create(ctx context.Context, item model.User) (output model.User, err error) {
-	if errs := a.Check(ctx, model.NoneUser, item); len(errs) != 0 {
-		return model.NoneUser, fmt.Errorf("invalid: %s", errs)
+	if err := a.check(ctx, model.NoneUser, item); err != nil {
+		return model.NoneUser, fmt.Errorf("%s: %w", err, service.ErrInvalid)
 	}
 
 	if errs := a.authService.Check(ctx, nil, item.Login); len(errs) != 0 {
-		return model.NoneUser, fmt.Errorf("invalid: auth %s", errs)
+		return model.NoneUser, fmt.Errorf("auth %s: %w", errs, service.ErrInvalid)
 	}
 
 	ctx, err = a.userStore.StartAtomic(ctx)
@@ -78,15 +78,13 @@ func (a app) Create(ctx context.Context, item model.User) (output model.User, er
 	}
 
 	defer func() {
-		if endErr := a.userStore.EndAtomic(ctx, err); endErr != nil {
-			err = fmt.Errorf("%s: %w", err.Error(), endErr)
-		}
+		err = a.userStore.EndAtomic(ctx, err)
 	}()
 
 	var loginUser interface{}
 	loginUser, err = a.authService.Create(ctx, item.Login)
 	if err != nil {
-		err = fmt.Errorf("unable to create login: %w", err)
+		err = fmt.Errorf("unable to create login: %s: %w", err, service.ErrInternalError)
 	}
 
 	item.Login = loginUser.(authModel.User)
@@ -94,7 +92,7 @@ func (a app) Create(ctx context.Context, item model.User) (output model.User, er
 	var id uint64
 	id, err = a.userStore.Create(ctx, item)
 	if err != nil {
-		err = fmt.Errorf("unable to create: %w", err)
+		err = fmt.Errorf("unable to create: %s: %w", err, service.ErrInternalError)
 		return
 	}
 
@@ -103,11 +101,11 @@ func (a app) Create(ctx context.Context, item model.User) (output model.User, er
 	return
 }
 
-func (a app) Check(ctx context.Context, old, new model.User) []error {
+func (a app) check(ctx context.Context, old, new model.User) error {
 	output := make([]error, 0)
 
 	if new == model.NoneUser {
-		return output
+		return service.ConcatError(output)
 	}
 
 	if len(strings.TrimSpace(new.Email)) == 0 {
@@ -120,5 +118,5 @@ func (a app) Check(ctx context.Context, old, new model.User) []error {
 		output = append(output, errors.New("email already used"))
 	}
 
-	return output
+	return service.ConcatError(output)
 }
