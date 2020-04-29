@@ -1,12 +1,13 @@
 package public
 
 import (
+	"errors"
 	"net/http"
-	"strings"
 
 	"github.com/ViBiOh/httputils/v3/pkg/httperror"
 	"github.com/ViBiOh/httputils/v3/pkg/httpjson"
 	"github.com/ViBiOh/httputils/v3/pkg/request"
+	"github.com/ViBiOh/ketchup/pkg/service"
 	"github.com/ViBiOh/ketchup/pkg/service/user"
 )
 
@@ -57,7 +58,7 @@ func (a app) signup(w http.ResponseWriter, r *http.Request) {
 
 	user, err := a.userService.Create(r.Context(), item)
 	if err != nil {
-		if strings.HasPrefix(err.Error(), "invalid:") {
+		if errors.Is(err, service.ErrInvalid) {
 			httperror.BadRequest(w, err)
 			return
 		}

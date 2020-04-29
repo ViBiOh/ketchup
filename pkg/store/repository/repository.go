@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"regexp"
 	"strings"
 
@@ -103,7 +104,7 @@ func (a app) Get(ctx context.Context, id uint64) (model.Repository, error) {
 	var item model.Repository
 	scanner := func(row db.RowScanner) error {
 		err := row.Scan(&item.ID, &item.Name, &item.Version)
-		if err == sql.ErrNoRows {
+		if errors.Is(err, sql.ErrNoRows) {
 			item = model.NoneRepository
 			return nil
 		}
@@ -130,7 +131,7 @@ func (a app) GetByName(ctx context.Context, name string) (model.Repository, erro
 	var item model.Repository
 	scanner := func(row db.RowScanner) error {
 		err := row.Scan(&item.ID, &item.Name, &item.Version)
-		if err == sql.ErrNoRows {
+		if errors.Is(err, sql.ErrNoRows) {
 			item = model.NoneRepository
 			return nil
 		}

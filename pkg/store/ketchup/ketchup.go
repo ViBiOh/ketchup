@@ -3,6 +3,7 @@ package ketchup
 import (
 	"context"
 	"database/sql"
+	"errors"
 
 	"github.com/ViBiOh/httputils/v3/pkg/db"
 	"github.com/ViBiOh/ketchup/pkg/model"
@@ -160,7 +161,7 @@ func (a app) GetByRepositoryID(ctx context.Context, id uint64, forUpdate bool) (
 
 	scanner := func(row db.RowScanner) error {
 		err := row.Scan(&item.Version, &item.Repository.ID, &item.User.ID)
-		if err == sql.ErrNoRows {
+		if errors.Is(err, sql.ErrNoRows) {
 			item = model.NoneKetchup
 			return nil
 		}

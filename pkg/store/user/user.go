@@ -3,6 +3,7 @@ package user
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"regexp"
 	"strings"
@@ -122,7 +123,7 @@ func (a app) Get(ctx context.Context, id uint64) (model.User, error) {
 	var item model.User
 	scanner := func(row db.RowScanner) error {
 		err := row.Scan(&item.ID, &item.Email, &item.Login.ID)
-		if err == sql.ErrNoRows {
+		if errors.Is(err, sql.ErrNoRows) {
 			item = model.NoneUser
 			return nil
 		}
@@ -149,7 +150,7 @@ func (a app) GetByEmail(ctx context.Context, email string) (model.User, error) {
 	var item model.User
 	scanner := func(row db.RowScanner) error {
 		err := row.Scan(&item.ID, &item.Email, &item.Login.ID)
-		if err == sql.ErrNoRows {
+		if errors.Is(err, sql.ErrNoRows) {
 			item = model.NoneUser
 			return nil
 		}
@@ -176,7 +177,7 @@ func (a app) GetByLoginID(ctx context.Context, loginID uint64) (model.User, erro
 	var item model.User
 	scanner := func(row db.RowScanner) error {
 		err := row.Scan(&item.ID, &item.Email, &item.Login.ID)
-		if err == sql.ErrNoRows {
+		if errors.Is(err, sql.ErrNoRows) {
 			item = model.NoneUser
 			return nil
 		}

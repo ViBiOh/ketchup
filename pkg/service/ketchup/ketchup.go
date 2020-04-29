@@ -40,7 +40,7 @@ func New(ketchupStore ketchup.App, repositoryService repository.App, userService
 func (a app) List(ctx context.Context, page, pageSize uint) ([]model.Ketchup, uint, error) {
 	list, total, err := a.ketchupStore.List(ctx, page, pageSize)
 	if err != nil {
-		return nil, 0, fmt.Errorf("unable to list: %s", err)
+		return nil, 0, fmt.Errorf("unable to list: %s: %w", err, service.ErrInternalError)
 	}
 
 	return list, total, nil
@@ -67,12 +67,12 @@ func (a app) Create(ctx context.Context, item model.Ketchup) (output model.Ketch
 	item.Repository = repository
 
 	if err = a.check(ctx, model.NoneKetchup, item); err != nil {
-		err = fmt.Errorf("invalid: %s", err)
+		err = fmt.Errorf("%s: %w", err, service.ErrInvalid)
 		return
 	}
 
 	if _, err = a.ketchupStore.Create(ctx, item); err != nil {
-		return model.NoneKetchup, fmt.Errorf("unable to create: %s", err)
+		return model.NoneKetchup, fmt.Errorf("unable to create: %s: %w", err, service.ErrInternalError)
 	}
 
 	return item, nil
@@ -91,16 +91,16 @@ func (a app) Update(ctx context.Context, item model.Ketchup) (err error) {
 	var old model.Ketchup
 	old, err = a.ketchupStore.GetByRepositoryID(ctx, item.Repository.ID, true)
 	if err != nil {
-		err = fmt.Errorf("unable to fetch current: %s", err)
+		err = fmt.Errorf("unable to fetch current: %s: %w", err, service.ErrInternalError)
 	}
 
 	if err = a.check(ctx, old, item); err != nil {
-		err = fmt.Errorf("invalid: %s", err)
+		err = fmt.Errorf("%s: %w", err, service.ErrInvalid)
 		return
 	}
 
 	if err = a.ketchupStore.Update(ctx, item); err != nil {
-		err = fmt.Errorf("unable to update: %s", err)
+		err = fmt.Errorf("unable to update: %s: %w", err, service.ErrInternalError)
 	}
 
 	return
@@ -119,16 +119,16 @@ func (a app) Delete(ctx context.Context, id uint64) (err error) {
 	var old model.Ketchup
 	old, err = a.ketchupStore.GetByRepositoryID(ctx, id, true)
 	if err != nil {
-		err = fmt.Errorf("unable to fetch current: %s", err)
+		err = fmt.Errorf("unable to fetch current: %s: %w", err, service.ErrInternalError)
 	}
 
 	if err = a.check(ctx, old, model.NoneKetchup); err != nil {
-		err = fmt.Errorf("invalid: %s", err)
+		err = fmt.Errorf("%s: %w", err, service.ErrInvalid)
 		return
 	}
 
 	if err := a.ketchupStore.Delete(ctx, old); err != nil {
-		return fmt.Errorf("unable to delete: %s", err)
+		return fmt.Errorf("unable to delete: %s: %w", err, service.ErrInternalError)
 	}
 
 	return nil
@@ -142,7 +142,7 @@ func (a app) ListForRepositories(ctx context.Context, repositories []model.Repos
 
 	list, err := a.ketchupStore.ListByRepositoriesID(ctx, ids)
 	if err != nil {
-		return nil, fmt.Errorf("unable to list by ids: %s", err)
+		return nil, fmt.Errorf("unable to list by ids: %s: %w", err, service.ErrInternalError)
 	}
 
 	return list, nil

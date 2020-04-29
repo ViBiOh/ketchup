@@ -1,6 +1,7 @@
 package renderer
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -10,6 +11,7 @@ import (
 	"github.com/ViBiOh/httputils/v3/pkg/logger"
 	"github.com/ViBiOh/httputils/v3/pkg/templates"
 	"github.com/ViBiOh/ketchup/pkg/model"
+	"github.com/ViBiOh/ketchup/pkg/service"
 )
 
 func redirectWithMessage(w http.ResponseWriter, r *http.Request, message string) {
@@ -52,20 +54,26 @@ func (a app) errorHandler(w http.ResponseWriter, status int, err error) {
 
 	if err != nil {
 		message := err.Error()
-		errors := ""
+		subMessages := ""
 
-		if strings.HasPrefix(message, "invalid:") {
-			errors = strings.TrimPrefix(message, "invalid:")
+		if errors.Is(err, service.ErrInvalid) {
+			subMessages = strings.TrimSuffix(message, ": "+service.ErrInvalid.Error())
 			status = http.StatusBadRequest
 			message = "Invalid form"
+		} else if errors.Is(err, service.ErrInternalError) {
+			status = http.StatusInternalServerError
+			message = "Oops! Something went wrong."
+		} else if errors.Is(err, service.ErrNotFound) {
+			status = http.StatusNotFound
+			message = strings.TrimSuffix(message, ": "+service.ErrNotFound.Error())
 		} else if strings.HasPrefix(message, "invalid method") {
 			status = http.StatusMethodNotAllowed
 		}
 
 		content["Message"] = model.NewErrorMessage(message)
 
-		if len(errors) > 0 {
-			content["Errors"] = strings.Split(errors, ", ")
+		if len(subMessages) > 0 {
+			content["Errors"] = strings.Split(subMessages, ", ")
 		}
 	}
 
