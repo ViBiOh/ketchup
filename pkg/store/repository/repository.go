@@ -26,7 +26,7 @@ type App interface {
 	GetByName(ctx context.Context, name string) (model.Repository, error)
 	Create(ctx context.Context, o model.Repository) (uint64, error)
 	Update(ctx context.Context, o model.Repository) error
-	Delete(ctx context.Context, o model.Repository) error
+	DeleteUnused(ctx context.Context) error
 }
 
 type app struct {
@@ -176,9 +176,14 @@ const deleteQuery = `
 DELETE FROM
   repository
 WHERE
-  id = $1
+  id NOT IN (
+    SELECT
+      DISTINCT repository_id
+    FROM
+      ketchup
+  )
 `
 
-func (a app) Delete(ctx context.Context, o model.Repository) error {
-	return db.Exec(ctx, a.db, deleteQuery, o.ID)
+func (a app) DeleteUnused(ctx context.Context) error {
+	return db.Exec(ctx, a.db, deleteQuery)
 }
