@@ -19,6 +19,7 @@ Steps to reproduce the behavior:
 
 **Environment**
 * Version of OS, browser, tool, and every applicables softwares
+
 **Expected behavior**
 A clear and concise description of what you expected to happen.
 

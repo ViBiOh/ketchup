@@ -336,23 +336,13 @@ func TestUpdate(t *testing.T) {
 	}
 }
 
-func TestDelete(t *testing.T) {
-	type args struct {
-		o model.Repository
-	}
-
+func TestDeleteUnused(t *testing.T) {
 	var cases = []struct {
 		intention string
-		args      args
 		wantErr   error
 	}{
 		{
 			"simple",
-			args{
-				o: model.Repository{
-					ID: 1,
-				},
-			},
 			nil,
 		},
 	}
@@ -366,10 +356,10 @@ func TestDelete(t *testing.T) {
 			defer mockDb.Close()
 
 			mock.ExpectBegin()
-			mock.ExpectExec("DELETE FROM repository").WithArgs(1).WillReturnResult(sqlmock.NewResult(0, 1))
+			mock.ExpectExec("DELETE FROM repository WHERE id NOT IN").WillReturnResult(sqlmock.NewResult(0, 1))
 			mock.ExpectCommit()
 
-			gotErr := New(mockDb).Delete(context.Background(), tc.args.o)
+			gotErr := New(mockDb).DeleteUnused(context.Background())
 
 			failed := false
 
@@ -380,7 +370,7 @@ func TestDelete(t *testing.T) {
 			}
 
 			if failed {
-				t.Errorf("Delete() = `%s`, want `%s`", gotErr, tc.wantErr)
+				t.Errorf("DeleteUnused() = `%s`, want `%s`", gotErr, tc.wantErr)
 			}
 
 			if err := mock.ExpectationsWereMet(); err != nil {

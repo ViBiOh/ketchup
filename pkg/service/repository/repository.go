@@ -25,6 +25,7 @@ type App interface {
 	GetOrCreate(ctx context.Context, name string) (model.Repository, error)
 	Create(ctx context.Context, item model.Repository) (model.Repository, error)
 	Update(ctx context.Context, item model.Repository) error
+	Clean(ctx context.Context) error
 }
 
 type app struct {
@@ -127,6 +128,14 @@ func (a app) Update(ctx context.Context, item model.Repository) (err error) {
 	}
 
 	return
+}
+
+func (a app) Clean(ctx context.Context) error {
+	if err := a.repositoryStore.DeleteUnused(ctx); err != nil {
+		return fmt.Errorf("unable to delete: %s: %w", err, service.ErrInternalError)
+	}
+
+	return nil
 }
 
 func (a app) check(ctx context.Context, old, new model.Repository) error {
