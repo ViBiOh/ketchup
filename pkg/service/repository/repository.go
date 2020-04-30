@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"regexp"
 	"strings"
 
 	"github.com/ViBiOh/httputils/v3/pkg/logger"
@@ -11,6 +12,10 @@ import (
 	"github.com/ViBiOh/ketchup/pkg/model"
 	"github.com/ViBiOh/ketchup/pkg/service"
 	"github.com/ViBiOh/ketchup/pkg/store/repository"
+)
+
+var (
+	nameMatcher = regexp.MustCompile(`(?i)(?:github.com/)?([^/\n]+/[^/\n]+)`)
 )
 
 // App of package
@@ -55,6 +60,11 @@ func (a app) Get(ctx context.Context, id uint64) (model.Repository, error) {
 }
 
 func (a app) GetOrCreate(ctx context.Context, name string) (model.Repository, error) {
+	matches := nameMatcher.FindAllStringSubmatch(name, -1)
+	if len(matches) > 0 {
+		name = matches[0][len(matches[0])-1]
+	}
+
 	repository, err := a.repositoryStore.GetByName(ctx, name)
 	if err != nil {
 		return model.NoneRepository, err
@@ -130,8 +140,6 @@ func (a app) Clean(ctx context.Context) error {
 
 func (a app) check(ctx context.Context, old, new model.Repository) error {
 	output := make([]error, 0)
-
-	// TODO check if ketchup used that repository
 
 	if new == model.NoneRepository {
 		return service.ConcatError(output)
