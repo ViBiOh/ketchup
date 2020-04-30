@@ -97,6 +97,7 @@ func (a app) Create(ctx context.Context, item model.User) (output model.User, er
 	}
 
 	item.ID = id
+	output = item
 
 	return
 }
