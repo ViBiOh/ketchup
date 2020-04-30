@@ -70,13 +70,17 @@ func New(config Config, repositoryApp repository.App, ketchupService ketchup.App
 }
 
 func (a app) Start() {
-	cron.New().At(a.hour).In(a.timezone).Days().Start(a.checkUpdates, func(err error) {
-		logger.Error("error while running cron: %s", err)
+	cron.New().At(a.hour).In(a.timezone).Days().Start(a.ketchupNotify, func(err error) {
+		logger.Error("error while running ketchup notify: %s", err)
 	})
 }
 
-func (a app) checkUpdates(_ time.Time) error {
+func (a app) ketchupNotify(_ time.Time) error {
 	ctx := authModel.StoreUser(context.Background(), authModel.NewUser(a.loginID, "scheduler"))
+
+	if err := a.repositoryApp.Clean(ctx); err != nil {
+		return fmt.Errorf("unable to clean repository before starting: %s", err)
+	}
 
 	newReleases, err := a.getNewReleases(ctx)
 	if err != nil {
