@@ -44,12 +44,13 @@ func (a app) handleCreate(w http.ResponseWriter, r *http.Request) {
 		},
 	}
 
-	if _, err := a.ketchupService.Create(r.Context(), ketchup); err != nil {
+	created, err := a.ketchupService.Create(r.Context(), ketchup)
+	if err != nil {
 		a.errorHandler(w, http.StatusInternalServerError, err)
 		return
 	}
 
-	redirectWithMessage(w, r, fmt.Sprintf("%s created with success!", ketchup.Repository.Name))
+	redirectWithMessage(w, r, fmt.Sprintf("%s created with success!", created.Repository.Name))
 }
 
 func (a app) handleUpdate(w http.ResponseWriter, r *http.Request) {
