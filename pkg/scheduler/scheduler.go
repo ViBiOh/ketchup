@@ -118,11 +118,11 @@ func (a app) getNewReleases(ctx context.Context) ([]model.Release, error) {
 			logger.Info("New version available for %s: %s", repository.Name, release.TagName)
 			repository.Version = release.TagName
 
-			newReleases = append(newReleases, model.NewRelease(repository, release))
-
 			if err := a.repositoryApp.Update(ctx, repository); err != nil {
 				return nil, fmt.Errorf("unable to update repository %s: %s", repository.Name, err)
 			}
+
+			newReleases = append(newReleases, model.NewRelease(repository, release))
 		}
 
 		if (page * pageSize) < totalCount {
@@ -144,26 +144,36 @@ func (a app) getKetchupToNotify(ctx context.Context, releases []model.Release) (
 		return nil, fmt.Errorf("unable to get ketchups for repositories: %s", err)
 	}
 
-	ketchupToNotify := make(map[model.User][]model.Release, 0)
+	userToNotify := make(map[model.User][]model.Release, 0)
 
 	sort.Sort(model.ReleaseByRepositoryID(releases))
 	sort.Sort(model.KetchupByRepositoryID(ketchups))
 
+	ketchupsIndex := 0
+	ketchupsSize := len(ketchups)
+
 	for _, release := range releases {
-		for _, ketchup := range ketchups {
+		for ketchupsIndex < ketchupsSize {
+			ketchup := ketchups[ketchupsIndex]
+			if release.Repository.ID < ketchup.Repository.ID {
+				break
+			}
+
 			if ketchup.Version == release.Release.TagName {
 				continue
 			}
 
-			if ketchupToNotify[ketchup.User] != nil {
-				ketchupToNotify[ketchup.User] = append(ketchupToNotify[ketchup.User], release)
+			if userToNotify[ketchup.User] != nil {
+				userToNotify[ketchup.User] = append(userToNotify[ketchup.User], release)
 			} else {
-				ketchupToNotify[ketchup.User] = []model.Release{release}
+				userToNotify[ketchup.User] = []model.Release{release}
 			}
+
+			ketchupsIndex++
 		}
 	}
 
-	return ketchupToNotify, nil
+	return userToNotify, nil
 }
 
 func (a app) sendNotification(ctx context.Context, ketchupToNotify map[model.User][]model.Release) error {
