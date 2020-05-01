@@ -104,7 +104,7 @@ FROM
   ketchup k,
   "user" u
 WHERE
-  repository_id = ANY($1)
+  repository_id = ANY ($1)
   AND k.user_id = u.id
 `
 
