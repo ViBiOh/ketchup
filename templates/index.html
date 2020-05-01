@@ -23,6 +23,8 @@
 
           --icon-size: 2.4rem;
           --icon-large: 4.8rem;
+
+          --space-size: 1rem;
         }
 
         * {
@@ -125,7 +127,7 @@
           cursor: pointer;
           display: inline-block;
           margin: 0;
-          padding: 1rem;
+          padding: var(--space-size);
           text-decoration: none;
         }
 
@@ -183,7 +185,7 @@
         .header {
           background-color: var(--grey);
           margin-top: 0;
-          padding: 0.5rem 1rem;
+          padding: calc(var(--space-size) / 2) var(--space-size);
           text-align: left;
         }
 
@@ -192,7 +194,7 @@
         }
 
         .padding {
-          padding: 1rem;
+          padding: var(--space-size);
         }
 
         .no-padding {
@@ -200,7 +202,7 @@
         }
 
         .margin {
-          margin: 1rem;
+          margin: var(--space-size);
         }
 
         .no-margin {
