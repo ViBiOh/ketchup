@@ -47,7 +47,7 @@ func New(ketchupService ketchup.App) (App, error) {
 // Handler for request. Should be use with net/http
 func (a app) Handler() http.Handler {
 	svgHandler := http.StripPrefix(svgPath, a.svg())
-	targetsHandler := http.StripPrefix(ketchupsPath, a.ketchups())
+	ketchupsHandler := http.StripPrefix(ketchupsPath, a.ketchups())
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if strings.HasPrefix(r.URL.Path, svgPath) {
@@ -63,6 +63,6 @@ func (a app) Handler() http.Handler {
 			return
 		}
 
-		targetsHandler.ServeHTTP(w, r)
+		ketchupsHandler.ServeHTTP(w, r)
 	})
 }

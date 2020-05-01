@@ -67,12 +67,13 @@ func (a app) handleUpdate(w http.ResponseWriter, r *http.Request) {
 		},
 	}
 
-	if err := a.ketchupService.Update(r.Context(), item); err != nil {
+	updated, err := a.ketchupService.Update(r.Context(), item)
+	if err != nil {
 		a.errorHandler(w, http.StatusInternalServerError, err)
 		return
 	}
 
-	redirectWithMessage(w, r, fmt.Sprintf("Updated to %s with success!", item.Version))
+	redirectWithMessage(w, r, fmt.Sprintf("Updated %s with success!", updated.Version))
 }
 
 func (a app) handleDelete(w http.ResponseWriter, r *http.Request) {
@@ -82,7 +83,7 @@ func (a app) handleDelete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := a.ketchupService.Delete(r.Context(), id); err != nil {
+	if err := a.ketchupService.Delete(r.Context(), model.Ketchup{Repository: model.Repository{ID: id}}); err != nil {
 		a.errorHandler(w, http.StatusInternalServerError, err)
 		return
 	}
