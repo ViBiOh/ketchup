@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"reflect"
+	"strings"
 	"testing"
 	"time"
 
@@ -110,6 +111,19 @@ func TestList(t *testing.T) {
 			2,
 			nil,
 		},
+		{
+			"invalid rows",
+			args{
+				page:     1,
+				pageSize: 20,
+				sortKey:  "email",
+				sortAsc:  false,
+			},
+			"SELECT id, email, .+ AS full_count FROM \"user\" ORDER BY email DESC",
+			nil,
+			0,
+			errors.New("converting driver.Value type string (\"a\") to a uint64: invalid syntax"),
+		},
 	}
 
 	for _, tc := range cases {
@@ -120,7 +134,14 @@ func TestList(t *testing.T) {
 			}
 			defer mockDb.Close()
 
-			expectedQuery := mock.ExpectQuery(tc.expectSQL).WithArgs(20, 0).WillReturnRows(sqlmock.NewRows([]string{"id", "email", "login_id", "full_count"}).AddRow(1, "nobody@localhost", 1, 2).AddRow(2, "guest@internet", 2, 2))
+			rows := sqlmock.NewRows([]string{"id", "email", "login_id", "full_count"})
+			expectedQuery := mock.ExpectQuery(tc.expectSQL).WithArgs(20, 0).WillReturnRows(rows)
+
+			if tc.intention != "invalid rows" {
+				rows.AddRow(1, "nobody@localhost", 1, 2).AddRow(2, "guest@internet", 2, 2)
+			} else {
+				rows.AddRow("a", "nobody@localhost", 1, 2)
+			}
 
 			if tc.intention == "timeout" {
 				savedSQLTimeout := db.SQLTimeout
@@ -137,7 +158,9 @@ func TestList(t *testing.T) {
 
 			if tc.wantErr == nil && gotErr != nil {
 				failed = true
-			} else if tc.wantErr != nil && !errors.Is(gotErr, tc.wantErr) {
+			} else if tc.wantErr != nil && gotErr == nil {
+				failed = true
+			} else if tc.wantErr != nil && !strings.Contains(gotErr.Error(), tc.wantErr.Error()) {
 				failed = true
 			} else if !reflect.DeepEqual(got, tc.want) {
 				failed = true
@@ -179,6 +202,14 @@ func TestGet(t *testing.T) {
 			},
 			nil,
 		},
+		{
+			"no rows",
+			args{
+				id: 1,
+			},
+			model.NoneUser,
+			nil,
+		},
 	}
 
 	for _, tc := range cases {
@@ -189,7 +220,12 @@ func TestGet(t *testing.T) {
 			}
 			defer mockDb.Close()
 
-			mock.ExpectQuery("SELECT id, email, login_id FROM \"user\"").WithArgs(1).WillReturnRows(sqlmock.NewRows([]string{"id", "email", "login_id"}).AddRow(1, "nobody@localhost", 1))
+			rows := sqlmock.NewRows([]string{"id", "email", "login_id"})
+			mock.ExpectQuery("SELECT id, email, login_id FROM \"user\"").WithArgs(1).WillReturnRows(rows)
+
+			if tc.intention != "no rows" {
+				rows.AddRow(1, "nobody@localhost", 1)
+			}
 
 			got, gotErr := New(mockDb).Get(context.Background(), tc.args.id)
 
@@ -237,6 +273,14 @@ func TestGetByEmail(t *testing.T) {
 			},
 			nil,
 		},
+		{
+			"no rows",
+			args{
+				email: "nobody@localhost",
+			},
+			model.NoneUser,
+			nil,
+		},
 	}
 
 	for _, tc := range cases {
@@ -247,7 +291,12 @@ func TestGetByEmail(t *testing.T) {
 			}
 			defer mockDb.Close()
 
-			mock.ExpectQuery("SELECT id, email, login_id FROM \"user\"").WithArgs("nobody@localhost").WillReturnRows(sqlmock.NewRows([]string{"id", "email", "login_id"}).AddRow(1, "nobody@localhost", 1))
+			rows := sqlmock.NewRows([]string{"id", "email", "login_id"})
+			mock.ExpectQuery("SELECT id, email, login_id FROM \"user\"").WithArgs("nobody@localhost").WillReturnRows(rows)
+
+			if tc.intention != "no rows" {
+				rows.AddRow(1, "nobody@localhost", 1)
+			}
 
 			got, gotErr := New(mockDb).GetByEmail(context.Background(), tc.args.email)
 
@@ -295,6 +344,14 @@ func TestGetByLoginID(t *testing.T) {
 			},
 			nil,
 		},
+		{
+			"no rows",
+			args{
+				loginID: 2,
+			},
+			model.NoneUser,
+			nil,
+		},
 	}
 
 	for _, tc := range cases {
@@ -305,7 +362,12 @@ func TestGetByLoginID(t *testing.T) {
 			}
 			defer mockDb.Close()
 
-			mock.ExpectQuery("SELECT id, email, login_id FROM \"user\"").WithArgs(2).WillReturnRows(sqlmock.NewRows([]string{"id", "email", "login_id"}).AddRow(1, "nobody@localhost", 2))
+			rows := sqlmock.NewRows([]string{"id", "email", "login_id"})
+			mock.ExpectQuery("SELECT id, email, login_id FROM \"user\"").WithArgs(2).WillReturnRows(rows)
+
+			if tc.intention != "no rows" {
+				rows.AddRow(1, "nobody@localhost", 2)
+			}
 
 			got, gotErr := New(mockDb).GetByLoginID(context.Background(), tc.args.loginID)
 

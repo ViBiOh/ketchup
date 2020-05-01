@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"reflect"
+	"strings"
 	"testing"
 	"time"
 
@@ -59,6 +60,17 @@ func TestList(t *testing.T) {
 			0,
 			sqlmock.ErrCancelled,
 		},
+		{
+			"invalid rows",
+			args{
+				page:     1,
+				pageSize: 20,
+			},
+			"SELECT id, name, version, .+ AS full_count FROM repository",
+			nil,
+			0,
+			errors.New("converting driver.Value type string (\"a\") to a uint64: invalid syntax"),
+		},
 	}
 
 	for _, tc := range cases {
@@ -69,7 +81,14 @@ func TestList(t *testing.T) {
 			}
 			defer mockDb.Close()
 
-			expectedQuery := mock.ExpectQuery(tc.expectSQL).WithArgs(20, 0).WillReturnRows(sqlmock.NewRows([]string{"id", "email", "login_id", "full_count"}).AddRow(1, "vibioh/ketchup", "1.0.0", 2).AddRow(2, "vibioh/viws", "1.2.3", 2))
+			rows := sqlmock.NewRows([]string{"id", "email", "login_id", "full_count"})
+			expectedQuery := mock.ExpectQuery(tc.expectSQL).WithArgs(20, 0).WillReturnRows(rows)
+
+			if tc.intention != "invalid rows" {
+				rows.AddRow(1, "vibioh/ketchup", "1.0.0", 2).AddRow(2, "vibioh/viws", "1.2.3", 2)
+			} else {
+				rows.AddRow("a", "vibioh/ketchup", "1.0.0", 2)
+			}
 
 			if tc.intention == "timeout" {
 				savedSQLTimeout := db.SQLTimeout
@@ -86,7 +105,9 @@ func TestList(t *testing.T) {
 
 			if tc.wantErr == nil && gotErr != nil {
 				failed = true
-			} else if tc.wantErr != nil && !errors.Is(gotErr, tc.wantErr) {
+			} else if tc.wantErr != nil && gotErr == nil {
+				failed = true
+			} else if tc.wantErr != nil && !strings.Contains(gotErr.Error(), tc.wantErr.Error()) {
 				failed = true
 			} else if !reflect.DeepEqual(got, tc.want) {
 				failed = true
@@ -128,6 +149,14 @@ func TestGet(t *testing.T) {
 			},
 			nil,
 		},
+		{
+			"no rows",
+			args{
+				id: 1,
+			},
+			model.NoneRepository,
+			nil,
+		},
 	}
 
 	for _, tc := range cases {
@@ -138,7 +167,11 @@ func TestGet(t *testing.T) {
 			}
 			defer mockDb.Close()
 
-			mock.ExpectQuery("SELECT id, name, version FROM repository WHERE id =").WithArgs(1).WillReturnRows(sqlmock.NewRows([]string{"id", "email", "login_id"}).AddRow(1, "vibioh/ketchup", "1.0.0"))
+			rows := sqlmock.NewRows([]string{"id", "email", "login_id"})
+			mock.ExpectQuery("SELECT id, name, version FROM repository WHERE id =").WithArgs(1).WillReturnRows(rows)
+			if tc.intention != "no rows" {
+				rows.AddRow(1, "vibioh/ketchup", "1.0.0")
+			}
 
 			got, gotErr := New(mockDb).Get(context.Background(), tc.args.id)
 
@@ -186,6 +219,14 @@ func TestGetByName(t *testing.T) {
 			},
 			nil,
 		},
+		{
+			"no rows",
+			args{
+				name: "vibioh/ketchup",
+			},
+			model.NoneRepository,
+			nil,
+		},
 	}
 
 	for _, tc := range cases {
@@ -196,7 +237,12 @@ func TestGetByName(t *testing.T) {
 			}
 			defer mockDb.Close()
 
-			mock.ExpectQuery("SELECT id, name, version FROM repository WHERE name =").WithArgs("vibioh/ketchup").WillReturnRows(sqlmock.NewRows([]string{"id", "email", "login_id"}).AddRow(1, "vibioh/ketchup", "1.0.0"))
+			rows := sqlmock.NewRows([]string{"id", "email", "login_id"})
+			mock.ExpectQuery("SELECT id, name, version FROM repository WHERE name =").WithArgs("vibioh/ketchup").WillReturnRows(rows)
+
+			if tc.intention != "no rows" {
+				rows.AddRow(1, "vibioh/ketchup", "1.0.0")
+			}
 
 			got, gotErr := New(mockDb).GetByName(context.Background(), tc.args.name)
 
