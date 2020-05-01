@@ -228,8 +228,6 @@
             <a href="/" class="no-style clear">Ketchup</a>
           </h1>
         </header>
-
-        {{ template "message" .Message }}
 {{ end }}
 
 {{ define "footer" }}
@@ -242,7 +240,7 @@
 {{ define "message" }}
   {{ if . }}
     {{ if gt (len .Content) 0 }}
-      <p class="no-margin padding center {{ if eq .Level "error" }}bg-danger{{ else }}success{{ end }}">
+      <p class="message no-margin padding center {{ if eq .Level "error" }}bg-danger{{ else }}success{{ end }}">
         {{ .Content }}
       </p>
     {{ end }}
@@ -252,13 +250,14 @@
 {{ define "app" }}
   {{ template "header" . }}
 
-  {{- template "ketchups" .Ketchups -}}
+  {{- template "ketchups" . -}}
 
   {{ template "footer" . }}
 {{ end }}
 
 {{ define "error" }}
   {{ template "header" . }}
+  {{ template "message" .Message }}
 
   {{ if .Errors }}
     {{ range .Errors }}

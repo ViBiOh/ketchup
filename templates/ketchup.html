@@ -1,7 +1,7 @@
 {{ define "create-modal" }}
   <div id="create-modal" class="modal">
     <div class="modal-content">
-      <h2 class="header">Create target</h2>
+      <h2 class="header">Create ketchup</h2>
 
       <form method="POST" action="/ketchups/">
         <input type="hidden" name="method" value="POST">
@@ -25,7 +25,7 @@
 {{ define "edit-modal" }}
   <div id="edit-modal-{{ .Repository.ID }}" class="modal">
     <div class="modal-content">
-      <h2 class="header">Edit target</h2>
+      <h2 class="header">Edit ketchup</h2>
 
       <p class="no-margin center padding">{{ .Repository.Name }}</p>
 
@@ -63,7 +63,7 @@
 
 {{ define "ketchups" }}
 <style>
-  {{ range . }}
+  {{ range .Ketchups }}
     #delete-modal-{{ .Repository.ID }}:target,
     #edit-modal-{{ .Repository.ID }}:target,
   {{ end }}
@@ -72,7 +72,7 @@
     z-index: 5;
   }
 
-  {{ range . }}
+  {{ range .Ketchups }}
     #delete-modal-{{ .Repository.ID }}:target ~ .content,
     #edit-modal-{{ .Repository.ID }}:target ~ .content,
   {{ end }}
@@ -81,45 +81,55 @@
     z-index: 5;
   }
 
-  .target {
+  .ketchup__action {
     align-items: center;
     display: flex;
-    min-height: calc(var(--icon-size) + var(--space-size) * 4);
   }
 
-  .target:hover {
-    background-color: var(--grey);
-  }
-
-  .target__content {
-    width: 35rem;
-  }
-
-  .target__action {
-    display: none;
-  }
-
-  .target:hover .target__action {
+  .ketchup__action .message {
     display: inline-block;
+    flex: 1 1;
+    flex-basis: auto;
+  }
+
+  .ketchups {
+    display: grid;
+    grid-gap: .5rem;
+    grid-template-columns: repeat(auto-fill, minmax(24rem, 1fr));
+    margin: .5rem;
+  }
+
+  .ketchup {
+    border: 1px solid var(--white);
+    display: inline-flex;
+    flex-direction: column;
+    height: 15rem;
+  }
+
+  .ketchup__version {
+    align-items: center;
+    display: flex;
+    flex: 1 1;
+    flex-basis: auto;
+    justify-content: center;
+  }
+
+  .ellipsis {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   .block {
     display: block;
   }
 
-  @media screen and (max-width: 640px) {
-    .target {
-      width: auto;
-    }
+  .inline {
+    display: inline-block;
+  }
 
-    .target__content {
-      flex: 1 1;
-      width: auto;
-    }
-
-    .target__action {
-      display: inline-block;
-    }
+  .small {
+    font-size: 1.6rem;
   }
 </style>
 
@@ -148,53 +158,58 @@
     };
 </script>
 
-<article>
+<div class="ketchup__action">
   {{ template "create-modal" }}
-
-  <p class="padding no-margin">
+  <p class="padding no-margin inline">
     <a href="#create-modal" class="button bg-primary">Create</a>
   </p>
 
-  {{ range . }}
+  {{ template "message" .Message }}
+</div>
+
+<article class="ketchups">
+  {{ range .Ketchups }}
     {{ template "edit-modal" . }}
     {{ template "delete-modal" . }}
 
-    <div class="padding target">
-      <span class="target__content">
-        <p class="no-margin">{{ .Repository.Name }}</p>
+    <div class="ketchup center">
+      <h2 class="header small ellipsis">{{ .Repository.Name }}</h2>
 
+      <div class="ketchup__version">
         <span class="{{ if ne .Version .Repository.Version }}danger{{ else }}success{{ end }}">
           {{ .Version }}
         </span>
 
         {{ if ne .Version .Repository.Version }}
           <span>
-            -> <a class="success" href="https://github.com/{{ .Repository.Name }}/releases/tag/{{ .Repository.Version }}" rel="noopener noreferrer" target="_blank">{{ .Repository.Version }}</a>
+            &nbsp;->&nbsp;<a class="success" href="https://github.com/{{ .Repository.Name }}/releases/tag/{{ .Repository.Version }}" target="_blank" rel="noopener noreferrer">{{ .Repository.Version }}</a>
           </span>
         {{ end }}
-      </span>
+      </div>
 
-      {{ if ne .Version .Repository.Version }}
-        <a href="https://github.com/{{ .Repository.Name }}/compare/{{ .Version }}...{{ .Repository.Version }}" target="_blank" rel="noreferrer noopener" class="button button-icon target__action" title="Compare">
-          <img class="icon" src="/svg/eyes?fill=silver" alt="Compare icon">
+      <div>
+        {{ if ne .Version .Repository.Version }}
+          <a href="https://github.com/{{ .Repository.Name }}/compare/{{ .Version }}...{{ .Repository.Version }}" target="_blank" rel="noreferrer noopener" class="button button-icon target__action" title="Compare">
+            <img class="icon" src="/svg/eyes?fill=silver" alt="Compare icon">
+          </a>
+
+          <form method="POST" action="/ketchups/{{ .Repository.ID }}" class="inline">
+            <input type="hidden" name="method" value="PUT">
+            <input type="hidden" name="version" value="{{ .Repository.Version }}">
+
+            <button type="submit" class="button button-icon" title="Update to latest">
+              <img class="icon" src="/svg/circle-up?fill=silver" alt="Update icon">
+            </button>
+          </form>
+        {{ end }}
+
+        <a href="#edit-modal-{{ .Repository.ID }}" class="button button-icon target__action" title="Edit">
+          <img class="icon" src="/svg/edit?fill=silver" alt="Edit icon">
         </a>
-
-        <form method="POST" action="/ketchups/{{ .Repository.ID }}" class="target__action">
-          <input type="hidden" name="method" value="PUT">
-          <input type="hidden" name="version" value="{{ .Repository.Version }}">
-
-          <button type="submit" class="button button-icon" title="Update to latest">
-            <img class="icon" src="/svg/circle-up?fill=silver" alt="Update icon">
-          </button>
-        </form>
-      {{ end }}
-
-      <a href="#edit-modal-{{ .Repository.ID }}" class="button button-icon target__action" title="Edit">
-        <img class="icon" src="/svg/edit?fill=silver" alt="Edit icon">
-      </a>
-      <a href="#delete-modal-{{ .Repository.ID }}" class="button button-icon target__action" title="Delete">
-        <img class="icon" src="/svg/times?fill=silver" alt="Delete icon">
-      </a>
+        <a href="#delete-modal-{{ .Repository.ID }}" class="button button-icon target__action" title="Delete">
+          <img class="icon" src="/svg/times?fill=silver" alt="Delete icon">
+        </a>
+      </div>
     </div>
   {{ end }}
 </article>
