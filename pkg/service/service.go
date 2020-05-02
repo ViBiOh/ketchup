@@ -2,6 +2,7 @@ package service
 
 import (
 	"errors"
+	"fmt"
 	"strings"
 )
 
@@ -28,4 +29,14 @@ func ConcatError(errs []error) error {
 	}
 
 	return errors.New(strings.Join(values, ", "))
+}
+
+// WrapInvalid wraps given error with invalid err
+func WrapInvalid(err error) error {
+	return fmt.Errorf("%s: %w", err, ErrInvalid)
+}
+
+// WrapInternal wraps given error with invalid err
+func WrapInternal(err error) error {
+	return fmt.Errorf("%s: %w", err, ErrInternalError)
 }

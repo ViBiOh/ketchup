@@ -44,7 +44,7 @@ func New(repositoryStore repository.App, githubApp github.App) App {
 func (a app) List(ctx context.Context, page, pageSize uint) ([]model.Repository, uint, error) {
 	list, total, err := a.repositoryStore.List(ctx, page, pageSize)
 	if err != nil {
-		return nil, 0, fmt.Errorf("unable to list: %s: %w", err, service.ErrInternalError)
+		return nil, 0, service.WrapInternal(fmt.Errorf("unable to list: %s", err))
 	}
 
 	return list, total, nil
@@ -53,7 +53,7 @@ func (a app) List(ctx context.Context, page, pageSize uint) ([]model.Repository,
 func (a app) Get(ctx context.Context, id uint64) (model.Repository, error) {
 	repository, err := a.repositoryStore.Get(ctx, id)
 	if err != nil {
-		return model.NoneRepository, fmt.Errorf("unable to get: %s: %w", err, service.ErrInternalError)
+		return model.NoneRepository, service.WrapInternal(fmt.Errorf("unable to get: %s", err))
 	}
 
 	return repository, nil
@@ -81,7 +81,7 @@ func (a app) GetOrCreate(ctx context.Context, name string) (model.Repository, er
 
 func (a app) Create(ctx context.Context, item model.Repository) (model.Repository, error) {
 	if err := a.check(ctx, model.NoneRepository, item); err != nil {
-		return model.NoneRepository, fmt.Errorf("%s: %w", err, service.ErrInvalid)
+		return model.NoneRepository, service.WrapInvalid(err)
 	}
 
 	release, err := a.githubApp.LastRelease(item.Name)
@@ -94,7 +94,7 @@ func (a app) Create(ctx context.Context, item model.Repository) (model.Repositor
 
 	id, err := a.repositoryStore.Create(ctx, item)
 	if err != nil {
-		return model.NoneRepository, fmt.Errorf("unable to create: %s: %w", err, service.ErrInternalError)
+		return model.NoneRepository, service.WrapInternal(fmt.Errorf("unable to create: %s", err))
 	}
 
 	item.ID = id
@@ -115,16 +115,16 @@ func (a app) Update(ctx context.Context, item model.Repository) (err error) {
 	var old model.Repository
 	old, err = a.repositoryStore.Get(ctx, item.ID)
 	if err != nil {
-		err = fmt.Errorf("unable to fetch: %s: %w", err, service.ErrInternalError)
+		err = service.WrapInternal(fmt.Errorf("unable to fetch: %s", err))
 	}
 
 	if err = a.check(ctx, old, item); err != nil {
-		err = fmt.Errorf("%s: %w", err, service.ErrInvalid)
+		err = service.WrapInvalid(err)
 		return
 	}
 
 	if err = a.repositoryStore.Update(ctx, item); err != nil {
-		err = fmt.Errorf("unable to update: %s: %w", err, service.ErrInternalError)
+		err = service.WrapInternal(fmt.Errorf("unable to update: %s", err))
 	}
 
 	return
@@ -132,7 +132,7 @@ func (a app) Update(ctx context.Context, item model.Repository) (err error) {
 
 func (a app) Clean(ctx context.Context) error {
 	if err := a.repositoryStore.DeleteUnused(ctx); err != nil {
-		return fmt.Errorf("unable to delete: %s: %w", err, service.ErrInternalError)
+		return service.WrapInternal(fmt.Errorf("unable to delete: %s", err))
 	}
 
 	return nil
