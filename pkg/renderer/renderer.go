@@ -6,6 +6,7 @@ import (
 	"html/template"
 	"net/http"
 	"os"
+	"path"
 	"strings"
 
 	"github.com/ViBiOh/httputils/v3/pkg/flags"
@@ -17,9 +18,11 @@ import (
 )
 
 const (
+	faviconPath  = "/favicon"
 	svgPath      = "/svg"
 	signupPath   = "/signup"
 	ketchupsPath = "/ketchups"
+	appPath      = "/app"
 )
 
 // App of package
@@ -88,6 +91,11 @@ func (a app) PublicHandler() http.Handler {
 	svgHandler := http.StripPrefix(svgPath, a.svg())
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if strings.HasPrefix(r.URL.Path, faviconPath) {
+			http.ServeFile(w, r, path.Join("static", r.URL.Path))
+			return
+		}
+
 		if strings.HasPrefix(r.URL.Path, svgPath) {
 			svgHandler.ServeHTTP(w, r)
 			return

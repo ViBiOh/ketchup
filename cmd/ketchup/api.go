@@ -5,7 +5,6 @@ import (
 	"flag"
 	"net/http"
 	"os"
-	"path"
 	"strings"
 
 	auth "github.com/ViBiOh/auth/v2/pkg/auth"
@@ -34,9 +33,7 @@ import (
 )
 
 const (
-	faviconPath = "/favicon"
-	apiPath     = "/api"
-	publicPath  = "/public"
+	appPath = "/app"
 )
 
 func initAuth(db *sql.DB) (authService.App, auth.Provider, authMiddleware.App) {
@@ -88,21 +85,16 @@ func main() {
 	rendererApp, err := renderer.New(rendererConfig, ketchupServiceApp, userServiceApp)
 	logger.Fatal(err)
 
-	aboutHandler := http.StripPrefix(publicPath, rendererApp.PublicHandler())
-	protectedhandler := httputils.ChainMiddlewares(rendererApp.Handler(), authMiddleware.Middleware, middleware.New(userServiceApp).Middleware)
+	publicHandler := rendererApp.PublicHandler()
+	protectedhandler := httputils.ChainMiddlewares(http.StripPrefix(appPath, rendererApp.Handler()), authMiddleware.Middleware, middleware.New(userServiceApp).Middleware)
 
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if strings.HasPrefix(r.URL.Path, faviconPath) {
-			http.ServeFile(w, r, path.Join("static", r.URL.Path))
+		if strings.HasPrefix(r.URL.Path, appPath) {
+			protectedhandler.ServeHTTP(w, r)
 			return
 		}
 
-		if strings.HasPrefix(r.URL.Path, publicPath) {
-			aboutHandler.ServeHTTP(w, r)
-			return
-		}
-
-		protectedhandler.ServeHTTP(w, r)
+		publicHandler.ServeHTTP(w, r)
 	})
 
 	go schedulerApp.Start()
