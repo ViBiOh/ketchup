@@ -48,5 +48,5 @@ func (a app) signup(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	redirectWithMessage(w, r, fmt.Sprintf("http://%s:%s@%s/", user.Login.Login, user.Login.Password, a.publicPath), "Welcome to ketchup!")
+	redirectWithMessage(w, r, fmt.Sprintf("https://%s:%s@%s/", user.Login.Login, user.Login.Password, a.uiPath), "Welcome to ketchup!")
 }

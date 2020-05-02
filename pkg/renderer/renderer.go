@@ -30,13 +30,13 @@ type App interface {
 
 // Config of package
 type Config struct {
-	publicPath *string
+	uiPath *string
 }
 
 type app struct {
-	tpl        *template.Template
-	publicPath string
-	version    string
+	tpl     *template.Template
+	uiPath  string
+	version string
 
 	ketchupService ketchup.App
 	userService    user.App
@@ -45,7 +45,7 @@ type app struct {
 // Flags adds flags for configuring package
 func Flags(fs *flag.FlagSet, prefix string) Config {
 	return Config{
-		publicPath: flags.New(prefix, "ui").Name("PublicPath").Default("https://ketchup.vibioh.fr").Label("Public path of UI").ToString(fs),
+		uiPath: flags.New(prefix, "ui").Name("PublicPath").Default("ketchup.vibioh.fr").Label("Public path").ToString(fs),
 	}
 }
 
@@ -57,9 +57,9 @@ func New(config Config, ketchupService ketchup.App, userService user.App) (App, 
 	}
 
 	return app{
-		tpl:        template.Must(template.New("ketchup").ParseFiles(filesTemplates...)),
-		publicPath: strings.TrimSpace(*config.publicPath),
-		version:    os.Getenv("VERSION"),
+		tpl:     template.Must(template.New("ketchup").ParseFiles(filesTemplates...)),
+		uiPath:  strings.TrimSpace(*config.uiPath),
+		version: os.Getenv("VERSION"),
 
 		ketchupService: ketchupService,
 		userService:    userService,
