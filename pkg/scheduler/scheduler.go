@@ -76,6 +76,8 @@ func (a app) Start() {
 }
 
 func (a app) ketchupNotify(_ time.Time) error {
+	logger.Info("Starting ketchup notifier")
+
 	ctx := authModel.StoreUser(context.Background(), authModel.NewUser(a.loginID, "scheduler"))
 
 	if err := a.repositoryApp.Clean(ctx); err != nil {
@@ -101,6 +103,7 @@ func (a app) ketchupNotify(_ time.Time) error {
 
 func (a app) getNewReleases(ctx context.Context) ([]model.Release, error) {
 	newReleases := make([]model.Release, 0)
+	count := 0
 	page := uint(1)
 
 	for {
@@ -110,6 +113,8 @@ func (a app) getNewReleases(ctx context.Context) ([]model.Release, error) {
 		}
 
 		for _, repository := range repositories {
+			count++
+
 			release, err := a.githubApp.LastRelease(repository.Name)
 			if err != nil {
 				return nil, err
@@ -132,6 +137,7 @@ func (a app) getNewReleases(ctx context.Context) ([]model.Release, error) {
 		if (page * pageSize) < totalCount {
 			page++
 		} else {
+			logger.Info("%d repositories checked, %d new releases", count, len(newReleases))
 			return newReleases, nil
 		}
 	}
@@ -176,6 +182,8 @@ func (a app) getKetchupToNotify(ctx context.Context, releases []model.Release) (
 			ketchupsIndex++
 		}
 	}
+
+	logger.Info("%d ketchups for %d users to notify", len(ketchups), len(userToNotify))
 
 	return userToNotify, nil
 }
