@@ -14,8 +14,8 @@ import (
 	"github.com/ViBiOh/ketchup/pkg/service"
 )
 
-func redirectWithMessage(w http.ResponseWriter, r *http.Request, message string) {
-	http.Redirect(w, r, fmt.Sprintf("/?messageContent=%s", url.QueryEscape(message)), http.StatusFound)
+func redirectWithMessage(w http.ResponseWriter, r *http.Request, path, message string) {
+	http.Redirect(w, r, fmt.Sprintf("%s?messageContent=%s", path, url.QueryEscape(message)), http.StatusFound)
 }
 
 func (a app) getData(r *http.Request) (interface{}, error) {

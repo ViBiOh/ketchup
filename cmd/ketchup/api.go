@@ -22,7 +22,6 @@ import (
 	"github.com/ViBiOh/httputils/v3/pkg/prometheus"
 	"github.com/ViBiOh/ketchup/pkg/github"
 	"github.com/ViBiOh/ketchup/pkg/middleware"
-	"github.com/ViBiOh/ketchup/pkg/public"
 	"github.com/ViBiOh/ketchup/pkg/renderer"
 	"github.com/ViBiOh/ketchup/pkg/scheduler"
 	ketchupService "github.com/ViBiOh/ketchup/pkg/service/ketchup"
@@ -37,7 +36,7 @@ import (
 const (
 	faviconPath = "/favicon"
 	apiPath     = "/api"
-	signupPath  = "/signup"
+	publicPath  = "/public"
 )
 
 func initAuth(db *sql.DB) (authService.App, auth.Provider, authMiddleware.App) {
@@ -59,6 +58,7 @@ func main() {
 	dbConfig := db.Flags(fs, "db")
 	mailerConfig := mailer.Flags(fs, "mailer")
 	githubConfig := github.Flags(fs, "github")
+	rendererConfig := renderer.Flags(fs, "ui")
 	schedulerConfig := scheduler.Flags(fs, "scheduler")
 
 	logger.Fatal(fs.Parse(os.Args[1:]))
@@ -74,22 +74,22 @@ func main() {
 	logger.Fatal(err)
 	server.Health(ketchupDb.Ping)
 
-	authService, identProvider, authMiddleware := initAuth(ketchupDb)
+	authServiceApp, identProvider, authMiddleware := initAuth(ketchupDb)
 
 	githubApp := github.New(githubConfig)
 	mailerApp := mailer.New(mailerConfig)
 
-	userServiceApp := userService.New(userStore.New(ketchupDb), authService, identProvider)
+	userServiceApp := userService.New(userStore.New(ketchupDb), authServiceApp, identProvider)
 	repositoryApp := repositoryService.New(repositoryStore.New(ketchupDb), githubApp)
-	ketchupService := ketchupService.New(ketchupStore.New(ketchupDb), repositoryApp)
+	ketchupServiceApp := ketchupService.New(ketchupStore.New(ketchupDb), repositoryApp)
 
-	schedulerApp := scheduler.New(schedulerConfig, repositoryApp, ketchupService, githubApp, mailerApp)
+	schedulerApp := scheduler.New(schedulerConfig, repositoryApp, ketchupServiceApp, githubApp, mailerApp)
 
-	rendererApp, err := renderer.New(ketchupService)
+	rendererApp, err := renderer.New(rendererConfig, ketchupServiceApp, userServiceApp)
 	logger.Fatal(err)
 
-	signupHandler := public.New(userServiceApp).Handler()
-	rendererHandler := httputils.ChainMiddlewares(rendererApp.Handler(), authMiddleware.Middleware, middleware.New(userServiceApp).Middleware)
+	aboutHandler := http.StripPrefix(publicPath, rendererApp.PublicHandler())
+	protectedhandler := httputils.ChainMiddlewares(rendererApp.Handler(), authMiddleware.Middleware, middleware.New(userServiceApp).Middleware)
 
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if strings.HasPrefix(r.URL.Path, faviconPath) {
@@ -97,12 +97,12 @@ func main() {
 			return
 		}
 
-		if strings.HasPrefix(r.URL.Path, signupPath) {
-			signupHandler.ServeHTTP(w, r)
+		if strings.HasPrefix(r.URL.Path, publicPath) {
+			aboutHandler.ServeHTTP(w, r)
 			return
 		}
 
-		rendererHandler.ServeHTTP(w, r)
+		protectedhandler.ServeHTTP(w, r)
 	})
 
 	go schedulerApp.Start()

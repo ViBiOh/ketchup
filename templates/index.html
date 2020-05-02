@@ -255,6 +255,15 @@
   {{ template "footer" . }}
 {{ end }}
 
+{{ define "public" }}
+  {{ template "header" . }}
+  {{ template "message" .Message }}
+
+  {{ template "signup" }}
+
+  {{ template "footer" . }}
+{{ end }}
+
 {{ define "error" }}
   {{ template "header" . }}
   {{ template "message" .Message }}
@@ -266,6 +275,10 @@
       </p>
     {{ end }}
   {{ end }}
+
+  <h3 class="center">
+    <a href="javascript:history.back()">Go Back</a>
+  </h3>
 
   {{ template "footer" . }}
 {{ end }}

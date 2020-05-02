@@ -89,16 +89,6 @@ Usage of ketchup:
         [http] Grace duration when SIGTERM received {KETCHUP_GRACE_DURATION} (default "15s")
   -hsts
         [owasp] Indicate Strict Transport Security {KETCHUP_HSTS} (default true)
-  -ketchupsDefaultPage uint
-        [ketchups] Default page {KETCHUP_KETCHUPS_DEFAULT_PAGE} (default 1)
-  -ketchupsDefaultPageSize uint
-        [ketchups] Default page size {KETCHUP_KETCHUPS_DEFAULT_PAGE_SIZE} (default 20)
-  -ketchupsMaxPageSize uint
-        [ketchups] Max page size {KETCHUP_KETCHUPS_MAX_PAGE_SIZE} (default 100)
-  -ketchupsName string
-        [ketchups] Resource's name {KETCHUP_KETCHUPS_NAME} (default "Ketchup")
-  -ketchupsPath string
-        [ketchups] HTTP Path {KETCHUP_KETCHUPS_PATH} (default "/api/ketchups")
   -key string
         [http] Key file {KETCHUP_KEY}
   -mailerPass string
@@ -119,24 +109,12 @@ Usage of ketchup:
         [scheduler] Scheduler user ID {KETCHUP_SCHEDULER_LOGIN_ID} (default 1)
   -schedulerTimezone string
         [scheduler] Timezone {KETCHUP_SCHEDULER_TIMEZONE} (default "Europe/Paris")
-  -swaggerTitle string
-        [swagger] API Title {KETCHUP_SWAGGER_TITLE} (default "API")
-  -swaggerVersion string
-        [swagger] API Version {KETCHUP_SWAGGER_VERSION} (default "1.0.0")
+  -uiPublicPath string
+        [ui] Public path of UI {KETCHUP_UI_PUBLIC_PATH} (default "https://ketchup.vibioh.fr")
   -url string
         [alcotest] URL to check {KETCHUP_URL}
   -userAgent string
         [alcotest] User-Agent for check {KETCHUP_USER_AGENT} (default "Alcotest")
-  -usersDefaultPage uint
-        [users] Default page {KETCHUP_USERS_DEFAULT_PAGE} (default 1)
-  -usersDefaultPageSize uint
-        [users] Default page size {KETCHUP_USERS_DEFAULT_PAGE_SIZE} (default 20)
-  -usersMaxPageSize uint
-        [users] Max page size {KETCHUP_USERS_MAX_PAGE_SIZE} (default 100)
-  -usersName string
-        [users] Resource's name {KETCHUP_USERS_NAME} (default "Users")
-  -usersPath string
-        [users] HTTP Path {KETCHUP_USERS_PATH} (default "/api/users")
 ```
 
 ## CI
