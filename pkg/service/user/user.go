@@ -48,7 +48,6 @@ func (a app) Unmarshal(data []byte, contentType string) (model.User, error) {
 
 func (a app) StoreInContext(ctx context.Context) context.Context {
 	id := authModel.ReadUser(ctx).ID
-
 	if id == 0 {
 		logger.Warn("no login user in context")
 		return ctx
