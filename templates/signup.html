@@ -1,0 +1,33 @@
+{{ define "signup" }}
+  <style>
+    .form {
+      margin: 0 auto;
+      width: 25rem;
+    }
+  </style>
+
+  <fieldset class="form">
+    <legend>Signup</legend>
+
+    <form method="POST" action="/public/signup">
+      <p class="padding no-margin">
+        <label for="email" class="block">Email: *</label>
+        <input id="email" type="text" name="email" placeholder="nobody@localhost">
+      </p>
+
+      <p class="padding no-margin">
+        <label for="login" class="block">Login: *</label>
+        <input id="login" type="text" name="login" placeholder="johndoe">
+      </p>
+
+      <p class="padding no-margin">
+        <label for="password" class="block">Password: *</label>
+        <input id="password" type="password" name="password">
+      </p>
+
+      <p class="padding no-margin center">
+        <button type="submit" class="button bg-primary">Signup</button>
+      </p>
+    </form>
+  </fieldset>
+{{ end }}

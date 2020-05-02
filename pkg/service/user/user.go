@@ -2,7 +2,6 @@ package user
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"strings"
@@ -18,7 +17,6 @@ import (
 
 // App of package
 type App interface {
-	Unmarshal(data []byte, contentType string) (model.User, error)
 	Create(ctx context.Context, o model.User) (model.User, error)
 	StoreInContext(ctx context.Context) context.Context
 }
@@ -38,12 +36,6 @@ func New(userStore user.App, authService authService.App, authProvider auth.Prov
 		authService:  authService,
 		authProvider: authProvider,
 	}
-}
-
-func (a app) Unmarshal(data []byte, contentType string) (model.User, error) {
-	var item model.User
-	err := json.Unmarshal(data, &item)
-	return item, err
 }
 
 func (a app) StoreInContext(ctx context.Context) context.Context {

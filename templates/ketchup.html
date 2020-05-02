@@ -200,7 +200,7 @@
       <div>
         {{ if ne .Version .Repository.Version }}
           <a href="https://github.com/{{ .Repository.Name }}/compare/{{ .Version }}...{{ .Repository.Version }}" target="_blank" rel="noreferrer noopener" class="button button-icon target__action" title="Compare">
-            <img class="icon" src="/svg/eyes?fill=silver" alt="Compare icon">
+            <img class="icon" src="/public/svg/eyes?fill=silver" alt="Compare icon">
           </a>
 
           <form method="POST" action="/ketchups/{{ .Repository.ID }}" class="inline">
@@ -208,16 +208,16 @@
             <input type="hidden" name="version" value="{{ .Repository.Version }}">
 
             <button type="submit" class="button button-icon" title="Update to latest">
-              <img class="icon" src="/svg/circle-up?fill=silver" alt="Update icon">
+              <img class="icon" src="/public/svg/circle-up?fill=silver" alt="Update icon">
             </button>
           </form>
         {{ end }}
 
         <a href="#edit-modal-{{ .Repository.ID }}" class="button button-icon target__action" title="Edit">
-          <img class="icon" src="/svg/edit?fill=silver" alt="Edit icon">
+          <img class="icon" src="/public/svg/edit?fill=silver" alt="Edit icon">
         </a>
         <a href="#delete-modal-{{ .Repository.ID }}" class="button button-icon target__action" title="Delete">
-          <img class="icon" src="/svg/times?fill=silver" alt="Delete icon">
+          <img class="icon" src="/public/svg/times?fill=silver" alt="Delete icon">
         </a>
       </div>
     </div>
