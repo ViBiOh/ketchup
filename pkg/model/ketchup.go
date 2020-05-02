@@ -10,6 +10,7 @@ var (
 // Ketchup of app
 type Ketchup struct {
 	Version    string     `json:"version"`
+	Semver     string     `json:"semver"`
 	Repository Repository `json:"repository"`
 	User       User       `json:"-"`
 }

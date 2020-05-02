@@ -100,10 +100,14 @@
   }
 
   .ketchup {
-    border: 1px solid var(--white);
+    border: 1px solid var(--success);
     display: inline-flex;
     flex-direction: column;
     height: 15rem;
+  }
+
+  .ketchup--outdated {
+    border-color: var(--danger);
   }
 
   .ketchup__version {
@@ -172,8 +176,14 @@
     {{ template "edit-modal" . }}
     {{ template "delete-modal" . }}
 
-    <div class="ketchup center">
+    <div class="ketchup center {{ if ne .Version .Repository.Version }}ketchup--outdated{{ end }}">
       <h2 class="header small ellipsis">{{ .Repository.Name }}</h2>
+
+      {{ if .Semver }}
+        <p class="no-margin padding">
+          {{ .Semver }}
+        </p>
+      {{ end }}
 
       <div class="ketchup__version">
         <span class="{{ if ne .Version .Repository.Version }}danger{{ else }}success{{ end }}">
