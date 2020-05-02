@@ -7,7 +7,6 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/ViBiOh/httputils/v3/pkg/logger"
 	"github.com/ViBiOh/ketchup/pkg/github"
 	"github.com/ViBiOh/ketchup/pkg/model"
 	"github.com/ViBiOh/ketchup/pkg/service"
@@ -21,9 +20,7 @@ var (
 // App of package
 type App interface {
 	List(ctx context.Context, page, pageSize uint) ([]model.Repository, uint, error)
-	Get(ctx context.Context, id uint64) (model.Repository, error)
 	GetOrCreate(ctx context.Context, name string) (model.Repository, error)
-	Create(ctx context.Context, item model.Repository) (model.Repository, error)
 	Update(ctx context.Context, item model.Repository) error
 	Clean(ctx context.Context) error
 }
@@ -50,15 +47,6 @@ func (a app) List(ctx context.Context, page, pageSize uint) ([]model.Repository,
 	return list, total, nil
 }
 
-func (a app) Get(ctx context.Context, id uint64) (model.Repository, error) {
-	repository, err := a.repositoryStore.Get(ctx, id)
-	if err != nil {
-		return model.NoneRepository, service.WrapInternal(fmt.Errorf("unable to get: %s", err))
-	}
-
-	return repository, nil
-}
-
 func (a app) GetOrCreate(ctx context.Context, name string) (model.Repository, error) {
 	matches := nameMatcher.FindStringSubmatch(name)
 	if len(matches) > 0 {
@@ -74,19 +62,18 @@ func (a app) GetOrCreate(ctx context.Context, name string) (model.Repository, er
 		return repository, nil
 	}
 
-	return a.Create(ctx, model.Repository{
+	return a.create(ctx, model.Repository{
 		Name: name,
 	})
 }
 
-func (a app) Create(ctx context.Context, item model.Repository) (model.Repository, error) {
+func (a app) create(ctx context.Context, item model.Repository) (model.Repository, error) {
 	if err := a.check(ctx, model.NoneRepository, item); err != nil {
 		return model.NoneRepository, service.WrapInvalid(err)
 	}
 
 	release, err := a.githubApp.LastRelease(item.Name)
 	if err != nil {
-		logger.Error("%s", err)
 		return model.NoneRepository, fmt.Errorf("no release found for %s: %w", item.Name, service.ErrNotFound)
 	}
 
@@ -116,6 +103,7 @@ func (a app) Update(ctx context.Context, item model.Repository) (err error) {
 	old, err = a.repositoryStore.Get(ctx, item.ID)
 	if err != nil {
 		err = service.WrapInternal(fmt.Errorf("unable to fetch: %s", err))
+		return
 	}
 
 	if err = a.check(ctx, old, item); err != nil {
@@ -125,6 +113,7 @@ func (a app) Update(ctx context.Context, item model.Repository) (err error) {
 
 	if err = a.repositoryStore.Update(ctx, item); err != nil {
 		err = service.WrapInternal(fmt.Errorf("unable to update: %s", err))
+		return
 	}
 
 	return

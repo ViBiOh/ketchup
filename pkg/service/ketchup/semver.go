@@ -10,6 +10,16 @@ var (
 	semverMatcher = regexp.MustCompile(`(?i)(?:v)?([0-9]+)\.([0-9]+)\.([0-9]+)(?:\+.+)?`)
 )
 
+func enrichSemver(list []model.Ketchup) []model.Ketchup {
+	output := make([]model.Ketchup, len(list))
+	for index, item := range list {
+		item.Semver = computeSemver(item)
+		output[index] = item
+	}
+
+	return output
+}
+
 func computeSemver(item model.Ketchup) string {
 	if item.Version == item.Repository.Version {
 		return ""

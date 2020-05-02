@@ -231,9 +231,7 @@ func TestGet(t *testing.T) {
 
 			failed := false
 
-			if tc.wantErr == nil && gotErr != nil {
-				failed = true
-			} else if tc.wantErr != nil && !errors.Is(gotErr, tc.wantErr) {
+			if !errors.Is(gotErr, tc.wantErr) {
 				failed = true
 			} else if !reflect.DeepEqual(got, tc.want) {
 				failed = true
@@ -302,9 +300,7 @@ func TestGetByEmail(t *testing.T) {
 
 			failed := false
 
-			if tc.wantErr == nil && gotErr != nil {
-				failed = true
-			} else if tc.wantErr != nil && !errors.Is(gotErr, tc.wantErr) {
+			if !errors.Is(gotErr, tc.wantErr) {
 				failed = true
 			} else if !reflect.DeepEqual(got, tc.want) {
 				failed = true
@@ -373,9 +369,7 @@ func TestGetByLoginID(t *testing.T) {
 
 			failed := false
 
-			if tc.wantErr == nil && gotErr != nil {
-				failed = true
-			} else if tc.wantErr != nil && !errors.Is(gotErr, tc.wantErr) {
+			if !errors.Is(gotErr, tc.wantErr) {
 				failed = true
 			} else if !reflect.DeepEqual(got, tc.want) {
 				failed = true
@@ -436,9 +430,7 @@ func TestCreate(t *testing.T) {
 
 			failed := false
 
-			if tc.wantErr == nil && gotErr != nil {
-				failed = true
-			} else if tc.wantErr != nil && !errors.Is(gotErr, tc.wantErr) {
+			if !errors.Is(gotErr, tc.wantErr) {
 				failed = true
 			} else if got != tc.want {
 				failed = true
@@ -493,9 +485,7 @@ func TestUpdate(t *testing.T) {
 
 			failed := false
 
-			if tc.wantErr == nil && gotErr != nil {
-				failed = true
-			} else if tc.wantErr != nil && !errors.Is(gotErr, tc.wantErr) {
+			if !errors.Is(gotErr, tc.wantErr) {
 				failed = true
 			}
 
@@ -547,9 +537,7 @@ func TestDelete(t *testing.T) {
 
 			failed := false
 
-			if tc.wantErr == nil && gotErr != nil {
-				failed = true
-			} else if tc.wantErr != nil && !errors.Is(gotErr, tc.wantErr) {
+			if !errors.Is(gotErr, tc.wantErr) {
 				failed = true
 			}
 

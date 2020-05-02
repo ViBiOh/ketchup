@@ -16,7 +16,7 @@ type App interface {
 	StartAtomic(ctx context.Context) (context.Context, error)
 	EndAtomic(ctx context.Context, err error) error
 
-	List(ctx context.Context, page, pageSize uint) ([]model.Ketchup, uint, error)
+	List(ctx context.Context, page, pageSize uint) ([]model.Ketchup, uint64, error)
 	ListByRepositoriesID(ctx context.Context, ids []uint64) ([]model.Ketchup, error)
 	GetByRepositoryID(ctx context.Context, id uint64, forUpdate bool) (model.Ketchup, error)
 	Create(ctx context.Context, o model.Ketchup) (uint64, error)
@@ -61,7 +61,7 @@ LIMIT $1
 OFFSET $2
 `
 
-func (a app) List(ctx context.Context, page, pageSize uint) ([]model.Ketchup, uint, error) {
+func (a app) List(ctx context.Context, page, pageSize uint) ([]model.Ketchup, uint64, error) {
 	user := model.ReadUser(ctx)
 
 	ctx, cancel := context.WithTimeout(ctx, db.SQLTimeout)
@@ -76,7 +76,7 @@ func (a app) List(ctx context.Context, page, pageSize uint) ([]model.Ketchup, ui
 		err = db.RowsClose(rows, err)
 	}()
 
-	var totalCount uint
+	var totalCount uint64
 	list := make([]model.Ketchup, 0)
 
 	for rows.Next() {

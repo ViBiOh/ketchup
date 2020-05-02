@@ -81,7 +81,7 @@ func main() {
 
 	userServiceApp := userService.New(userStore.New(ketchupDb), authService, identProvider)
 	repositoryApp := repositoryService.New(repositoryStore.New(ketchupDb), githubApp)
-	ketchupService := ketchupService.New(ketchupStore.New(ketchupDb), repositoryApp, userServiceApp)
+	ketchupService := ketchupService.New(ketchupStore.New(ketchupDb), repositoryApp)
 
 	schedulerApp := scheduler.New(schedulerConfig, repositoryApp, ketchupService, githubApp, mailerApp)
 

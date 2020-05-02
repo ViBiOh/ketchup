@@ -9,13 +9,12 @@ import (
 	"github.com/ViBiOh/ketchup/pkg/model"
 	"github.com/ViBiOh/ketchup/pkg/service"
 	"github.com/ViBiOh/ketchup/pkg/service/repository"
-	"github.com/ViBiOh/ketchup/pkg/service/user"
 	"github.com/ViBiOh/ketchup/pkg/store/ketchup"
 )
 
 // App of package
 type App interface {
-	List(ctx context.Context, page, pageSize uint) ([]model.Ketchup, uint, error)
+	List(ctx context.Context, page, pageSize uint) ([]model.Ketchup, uint64, error)
 	ListForRepositories(ctx context.Context, repositories []model.Repository) ([]model.Ketchup, error)
 	Create(ctx context.Context, item model.Ketchup) (model.Ketchup, error)
 	Update(ctx context.Context, item model.Ketchup) (model.Ketchup, error)
@@ -25,31 +24,37 @@ type App interface {
 type app struct {
 	ketchupStore      ketchup.App
 	repositoryService repository.App
-	userService       user.App
 }
 
 // New creates new App from Config
-func New(ketchupStore ketchup.App, repositoryService repository.App, userService user.App) App {
+func New(ketchupStore ketchup.App, repositoryService repository.App) App {
 	return app{
 		ketchupStore:      ketchupStore,
 		repositoryService: repositoryService,
-		userService:       userService,
 	}
 }
 
-func (a app) List(ctx context.Context, page, pageSize uint) ([]model.Ketchup, uint, error) {
+func (a app) List(ctx context.Context, page, pageSize uint) ([]model.Ketchup, uint64, error) {
 	list, total, err := a.ketchupStore.List(ctx, page, pageSize)
 	if err != nil {
 		return nil, 0, service.WrapInternal(fmt.Errorf("unable to list: %s", err))
 	}
 
-	output := make([]model.Ketchup, len(list))
-	for index, item := range list {
-		item.Semver = computeSemver(item)
-		output[index] = item
+	return enrichSemver(list), total, nil
+}
+
+func (a app) ListForRepositories(ctx context.Context, repositories []model.Repository) ([]model.Ketchup, error) {
+	ids := make([]uint64, len(repositories))
+	for index, repo := range repositories {
+		ids[index] = repo.ID
 	}
 
-	return output, total, nil
+	list, err := a.ketchupStore.ListByRepositoriesID(ctx, ids)
+	if err != nil {
+		return nil, service.WrapInternal(fmt.Errorf("unable to list by ids: %s", err))
+	}
+
+	return enrichSemver(list), nil
 }
 
 func (a app) Create(ctx context.Context, item model.Ketchup) (output model.Ketchup, err error) {
@@ -98,7 +103,8 @@ func (a app) Update(ctx context.Context, item model.Ketchup) (output model.Ketch
 	var old model.Ketchup
 	old, err = a.ketchupStore.GetByRepositoryID(ctx, item.Repository.ID, true)
 	if err != nil {
-		err = service.WrapInternal(fmt.Errorf("unable to fetch current: %s", err))
+		err = service.WrapInternal(fmt.Errorf("unable to fetch: %s", err))
+		return
 	}
 
 	new := model.Ketchup{
@@ -114,6 +120,7 @@ func (a app) Update(ctx context.Context, item model.Ketchup) (output model.Ketch
 
 	if err = a.ketchupStore.Update(ctx, new); err != nil {
 		err = service.WrapInternal(fmt.Errorf("unable to update: %s", err))
+		return
 	}
 
 	output = new
@@ -135,6 +142,7 @@ func (a app) Delete(ctx context.Context, item model.Ketchup) (err error) {
 	old, err = a.ketchupStore.GetByRepositoryID(ctx, item.Repository.ID, true)
 	if err != nil {
 		err = service.WrapInternal(fmt.Errorf("unable to fetch current: %s", err))
+		return
 	}
 
 	if err = a.check(ctx, old, model.NoneKetchup); err != nil {
@@ -148,20 +156,6 @@ func (a app) Delete(ctx context.Context, item model.Ketchup) (err error) {
 	}
 
 	return
-}
-
-func (a app) ListForRepositories(ctx context.Context, repositories []model.Repository) ([]model.Ketchup, error) {
-	ids := make([]uint64, len(repositories))
-	for index, repo := range repositories {
-		ids[index] = repo.ID
-	}
-
-	list, err := a.ketchupStore.ListByRepositoriesID(ctx, ids)
-	if err != nil {
-		return nil, service.WrapInternal(fmt.Errorf("unable to list by ids: %s", err))
-	}
-
-	return list, nil
 }
 
 func (a app) check(ctx context.Context, old, new model.Ketchup) error {

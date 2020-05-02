@@ -40,10 +40,10 @@ type app struct {
 	hour     string
 	loginID  uint64
 
-	repositoryApp  repository.App
-	ketchupService ketchup.App
-	githubApp      github.App
-	mailerApp      mailer.App
+	repositoryService repository.App
+	ketchupService    ketchup.App
+	githubApp         github.App
+	mailerApp         mailer.App
 }
 
 // Flags adds flags for configuring package
@@ -56,16 +56,16 @@ func Flags(fs *flag.FlagSet, prefix string) Config {
 }
 
 // New creates new App from Config
-func New(config Config, repositoryApp repository.App, ketchupService ketchup.App, githubApp github.App, mailerApp mailer.App) App {
+func New(config Config, repositoryService repository.App, ketchupService ketchup.App, githubApp github.App, mailerApp mailer.App) App {
 	return app{
 		timezone: strings.TrimSpace(*config.timezone),
 		hour:     strings.TrimSpace(*config.hour),
 		loginID:  uint64(*config.loginID),
 
-		repositoryApp:  repositoryApp,
-		ketchupService: ketchupService,
-		githubApp:      githubApp,
-		mailerApp:      mailerApp,
+		repositoryService: repositoryService,
+		ketchupService:    ketchupService,
+		githubApp:         githubApp,
+		mailerApp:         mailerApp,
 	}
 }
 
@@ -80,7 +80,7 @@ func (a app) ketchupNotify(_ time.Time) error {
 
 	ctx := authModel.StoreUser(context.Background(), authModel.NewUser(a.loginID, "scheduler"))
 
-	if err := a.repositoryApp.Clean(ctx); err != nil {
+	if err := a.repositoryService.Clean(ctx); err != nil {
 		return fmt.Errorf("unable to clean repository before starting: %s", err)
 	}
 
@@ -107,7 +107,7 @@ func (a app) getNewReleases(ctx context.Context) ([]model.Release, error) {
 	page := uint(1)
 
 	for {
-		repositories, totalCount, err := a.repositoryApp.List(ctx, page, pageSize)
+		repositories, totalCount, err := a.repositoryService.List(ctx, page, pageSize)
 		if err != nil {
 			return nil, fmt.Errorf("unable to fetch page %d of repositories: %s", page, err)
 		}
@@ -127,7 +127,7 @@ func (a app) getNewReleases(ctx context.Context) ([]model.Release, error) {
 			logger.Info("New version available for %s: %s", repository.Name, release.TagName)
 			repository.Version = release.TagName
 
-			if err := a.repositoryApp.Update(ctx, repository); err != nil {
+			if err := a.repositoryService.Update(ctx, repository); err != nil {
 				return nil, fmt.Errorf("unable to update repository %s: %s", repository.Name, err)
 			}
 
