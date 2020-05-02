@@ -4,10 +4,12 @@ import (
 	"flag"
 	"fmt"
 	"html/template"
+	"math/rand"
 	"net/http"
 	"os"
 	"path"
 	"strings"
+	"time"
 
 	"github.com/ViBiOh/httputils/v3/pkg/flags"
 	"github.com/ViBiOh/httputils/v3/pkg/query"
@@ -38,6 +40,7 @@ type Config struct {
 
 type app struct {
 	tpl     *template.Template
+	rand    *rand.Rand
 	uiPath  string
 	version string
 
@@ -63,6 +66,7 @@ func New(config Config, ketchupService ketchup.App, userService user.App) (App, 
 		tpl:     template.Must(template.New("ketchup").ParseFiles(filesTemplates...)),
 		uiPath:  strings.TrimSpace(*config.uiPath),
 		version: os.Getenv("VERSION"),
+		rand:    rand.New(rand.NewSource(time.Now().UnixNano())),
 
 		ketchupService: ketchupService,
 		userService:    userService,
