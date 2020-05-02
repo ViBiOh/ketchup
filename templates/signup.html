@@ -38,6 +38,12 @@
         <input id="password" type="password" name="password">
       </p>
 
+      <p class="padding no-margin">
+        <input type="hidden" name="question" value="{{ .QuestionID }}">
+        <label for="question" class="block">{{ .Question }}:</label>
+        <input id="question" type="text" name="answer">
+      </p>
+
       <p class="padding no-margin center">
         <button type="submit" class="button bg-primary">Signup</button>
       </p>

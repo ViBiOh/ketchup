@@ -1,8 +1,11 @@
 package renderer
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
+	"strconv"
+	"strings"
 
 	authModel "github.com/ViBiOh/auth/v2/pkg/model"
 	"github.com/ViBiOh/httputils/v3/pkg/httperror"
@@ -11,8 +14,12 @@ import (
 )
 
 func (a app) publicHandler(w http.ResponseWriter, r *http.Request, status int, message model.Message) {
+	questionID := a.rand.Int63n(int64(len(colors)))
+
 	content := map[string]interface{}{
-		"Version": a.version,
+		"Version":    a.version,
+		"QuestionID": questionID,
+		"Question":   colors[questionID].Question,
 	}
 
 	if len(message.Content) > 0 {
@@ -32,6 +39,17 @@ func (a app) signup(w http.ResponseWriter, r *http.Request) {
 
 	if err := r.ParseForm(); err != nil {
 		a.errorHandler(w, http.StatusBadRequest, err)
+		return
+	}
+
+	questionID, err := strconv.ParseInt(r.FormValue("question"), 10, 64)
+	if err != nil {
+		a.errorHandler(w, http.StatusBadRequest, err)
+		return
+	}
+
+	if colors[questionID].Answer != strings.TrimSpace(r.FormValue("answer")) {
+		a.errorHandler(w, http.StatusBadRequest, errors.New("invalid answer for question"))
 		return
 	}
 

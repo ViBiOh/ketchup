@@ -19,8 +19,8 @@ var (
 
 // User of app
 type User struct {
-	ID    uint64 `json:"id"`
-	Email string `json:"email"`
+	ID    uint64
+	Email string
 	Login authModel.User
 }
 
