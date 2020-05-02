@@ -60,9 +60,9 @@ func (a app) Get(ctx context.Context, id uint64) (model.Repository, error) {
 }
 
 func (a app) GetOrCreate(ctx context.Context, name string) (model.Repository, error) {
-	matches := nameMatcher.FindAllStringSubmatch(name, -1)
+	matches := nameMatcher.FindStringSubmatch(name)
 	if len(matches) > 0 {
-		name = matches[0][len(matches[0])-1]
+		name = matches[len(matches)-1]
 	}
 
 	repository, err := a.repositoryStore.GetByName(ctx, name)

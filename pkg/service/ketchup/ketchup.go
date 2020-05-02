@@ -43,7 +43,13 @@ func (a app) List(ctx context.Context, page, pageSize uint) ([]model.Ketchup, ui
 		return nil, 0, service.WrapInternal(fmt.Errorf("unable to list: %s", err))
 	}
 
-	return list, total, nil
+	output := make([]model.Ketchup, len(list))
+	for index, item := range list {
+		item.Semver = computeSemver(item)
+		output[index] = item
+	}
+
+	return output, total, nil
 }
 
 func (a app) Create(ctx context.Context, item model.Ketchup) (output model.Ketchup, err error) {
