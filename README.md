@@ -110,7 +110,7 @@ Usage of ketchup:
   -schedulerTimezone string
         [scheduler] Timezone {KETCHUP_SCHEDULER_TIMEZONE} (default "Europe/Paris")
   -uiPublicPath string
-        [ui] Public path of UI {KETCHUP_UI_PUBLIC_PATH} (default "https://ketchup.vibioh.fr")
+        [ui] Public path {KETCHUP_UI_PUBLIC_PATH} (default "ketchup.vibioh.fr")
   -url string
         [alcotest] URL to check {KETCHUP_URL}
   -userAgent string
