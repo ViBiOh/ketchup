@@ -1,15 +1,28 @@
 {{ define "signup" }}
   <style>
-    .form {
+    .active-link {
+      color: var(--primary);
+    }
+
+    #signup {
+      display: none;
       margin: 0 auto;
       width: 25rem;
     }
+
+    #signup:target {
+      display: block;
+    }
   </style>
 
-  <fieldset class="form">
+  <h2 class="center">
+    <a href="/app/" class="active-link">Login</a> or <a href="#signup" class="active-link">Signup</a>
+  </h2>
+
+  <fieldset id="signup">
     <legend>Signup</legend>
 
-    <form method="POST" action="/public/signup">
+    <form method="POST" action="/signup">
       <p class="padding no-margin">
         <label for="email" class="block">Email: *</label>
         <input id="email" type="text" name="email" placeholder="nobody@localhost">

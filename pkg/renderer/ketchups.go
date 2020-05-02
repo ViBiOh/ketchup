@@ -50,7 +50,7 @@ func (a app) handleCreate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	redirectWithMessage(w, r, "/", fmt.Sprintf("%s created with success!", created.Repository.Name))
+	redirectWithMessage(w, r, fmt.Sprintf("%s/", appPath), fmt.Sprintf("%s created with success!", created.Repository.Name))
 }
 
 func (a app) handleUpdate(w http.ResponseWriter, r *http.Request) {
@@ -73,7 +73,7 @@ func (a app) handleUpdate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	redirectWithMessage(w, r, "/", fmt.Sprintf("Updated %s with success!", updated.Version))
+	redirectWithMessage(w, r, fmt.Sprintf("%s/", appPath), fmt.Sprintf("Updated %s with success!", updated.Version))
 }
 
 func (a app) handleDelete(w http.ResponseWriter, r *http.Request) {
@@ -88,5 +88,5 @@ func (a app) handleDelete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	redirectWithMessage(w, r, "/", "Deleted with success!")
+	redirectWithMessage(w, r, fmt.Sprintf("%s/", appPath), "Deleted with success!")
 }
