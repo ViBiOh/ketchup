@@ -37,14 +37,14 @@ func (a app) ketchups() http.Handler {
 }
 
 func (a app) handleCreate(w http.ResponseWriter, r *http.Request) {
-	ketchup := model.Ketchup{
+	item := model.Ketchup{
 		Version: r.FormValue("version"),
 		Repository: model.Repository{
 			Name: r.FormValue("repository"),
 		},
 	}
 
-	created, err := a.ketchupService.Create(r.Context(), ketchup)
+	created, err := a.ketchupService.Create(r.Context(), item)
 	if err != nil {
 		a.errorHandler(w, http.StatusInternalServerError, err)
 		return
@@ -83,7 +83,13 @@ func (a app) handleDelete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := a.ketchupService.Delete(r.Context(), model.Ketchup{Repository: model.Repository{ID: id}}); err != nil {
+	item := model.Ketchup{
+		Repository: model.Repository{
+			ID: id,
+		},
+	}
+
+	if err := a.ketchupService.Delete(r.Context(), item); err != nil {
 		a.errorHandler(w, http.StatusInternalServerError, err)
 		return
 	}
