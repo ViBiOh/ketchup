@@ -7,7 +7,6 @@ import (
 	"os"
 	"strings"
 
-	auth "github.com/ViBiOh/auth/v2/pkg/auth"
 	authIdent "github.com/ViBiOh/auth/v2/pkg/ident/basic"
 	authMiddleware "github.com/ViBiOh/auth/v2/pkg/middleware"
 	authService "github.com/ViBiOh/auth/v2/pkg/service"
@@ -36,11 +35,11 @@ const (
 	appPath = "/app"
 )
 
-func initAuth(db *sql.DB) (authService.App, auth.Provider, authMiddleware.App) {
+func initAuth(db *sql.DB) (authService.App, authMiddleware.App) {
 	authProvider := authStore.New(db)
 	identProvider := authIdent.New(authProvider)
 
-	return authService.New(authProvider, authProvider), authProvider, authMiddleware.New(authProvider, identProvider)
+	return authService.New(authProvider, authProvider), authMiddleware.New(authProvider, identProvider)
 }
 
 func main() {
@@ -71,16 +70,16 @@ func main() {
 	logger.Fatal(err)
 	server.Health(ketchupDb.Ping)
 
-	authServiceApp, identProvider, authMiddleware := initAuth(ketchupDb)
+	authServiceApp, authMiddleware := initAuth(ketchupDb)
 
 	githubApp := github.New(githubConfig)
 	mailerApp := mailer.New(mailerConfig)
 
-	userServiceApp := userService.New(userStore.New(ketchupDb), authServiceApp, identProvider)
-	repositoryApp := repositoryService.New(repositoryStore.New(ketchupDb), githubApp)
-	ketchupServiceApp := ketchupService.New(ketchupStore.New(ketchupDb), repositoryApp)
+	userServiceApp := userService.New(userStore.New(ketchupDb), authServiceApp)
+	repositoryServiceApp := repositoryService.New(repositoryStore.New(ketchupDb), githubApp)
+	ketchupServiceApp := ketchupService.New(ketchupStore.New(ketchupDb), repositoryServiceApp)
 
-	schedulerApp := scheduler.New(schedulerConfig, repositoryApp, ketchupServiceApp, githubApp, mailerApp)
+	schedulerApp := scheduler.New(schedulerConfig, repositoryServiceApp, ketchupServiceApp, githubApp, mailerApp)
 
 	rendererApp, err := renderer.New(rendererConfig, ketchupServiceApp, userServiceApp)
 	logger.Fatal(err)

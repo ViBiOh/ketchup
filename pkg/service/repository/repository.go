@@ -128,11 +128,11 @@ func (a app) Clean(ctx context.Context) error {
 }
 
 func (a app) check(ctx context.Context, old, new model.Repository) error {
-	output := make([]error, 0)
-
 	if new == model.NoneRepository {
-		return service.ConcatError(output)
+		return nil
 	}
+
+	output := make([]error, 0)
 
 	if len(strings.TrimSpace(new.Name)) == 0 {
 		output = append(output, errors.New("name is required"))
