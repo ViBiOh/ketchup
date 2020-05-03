@@ -98,6 +98,7 @@ func main() {
 	})
 
 	go schedulerApp.Start()
+	go rendererApp.Start()
 
 	server.ListenServeWait(handler)
 }

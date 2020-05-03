@@ -4,8 +4,8 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"strconv"
 	"strings"
+	"time"
 
 	authModel "github.com/ViBiOh/auth/v2/pkg/model"
 	"github.com/ViBiOh/httputils/v3/pkg/httperror"
@@ -13,13 +13,18 @@ import (
 	"github.com/ViBiOh/ketchup/pkg/model"
 )
 
-func (a app) publicHandler(w http.ResponseWriter, r *http.Request, status int, message model.Message) {
+func (a app) generateToken() (string, int64) {
 	questionID := a.rand.Int63n(int64(len(colors)))
+	return a.tokenStore.Store(questionID, time.Minute*5), questionID
+}
+
+func (a app) publicHandler(w http.ResponseWriter, r *http.Request, status int, message model.Message) {
+	token, questionID := a.generateToken()
 
 	content := map[string]interface{}{
-		"Version":    a.version,
-		"QuestionID": questionID,
-		"Question":   colors[questionID].Question,
+		"Version":  a.version,
+		"Token":    token,
+		"Question": colors[questionID].Question,
 	}
 
 	if len(message.Content) > 0 {
@@ -42,14 +47,15 @@ func (a app) signup(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	questionID, err := strconv.ParseInt(r.FormValue("question"), 10, 64)
-	if err != nil {
-		a.errorHandler(w, http.StatusBadRequest, err)
+	token := r.FormValue("token")
+	questionID, ok := a.tokenStore.Load(token)
+	if !ok {
+		a.errorHandler(w, http.StatusInternalServerError, errors.New("token has expired"))
 		return
 	}
 
-	if colors[questionID].Answer != strings.TrimSpace(r.FormValue("answer")) {
-		a.errorHandler(w, http.StatusBadRequest, errors.New("invalid answer for question"))
+	if colors[questionID.(int64)].Answer != strings.TrimSpace(r.FormValue("answer")) {
+		a.errorHandler(w, http.StatusInternalServerError, errors.New("invalid question answer"))
 		return
 	}
 
@@ -65,6 +71,8 @@ func (a app) signup(w http.ResponseWriter, r *http.Request) {
 		a.errorHandler(w, http.StatusInternalServerError, err)
 		return
 	}
+
+	a.tokenStore.Delete(token)
 
 	redirectWithMessage(w, r, fmt.Sprintf("https://%s:%s@%s%s/", user.Login.Login, user.Login.Password, a.uiPath, appPath), "Welcome to ketchup!")
 }
