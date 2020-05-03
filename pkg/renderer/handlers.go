@@ -18,33 +18,6 @@ func redirectWithMessage(w http.ResponseWriter, r *http.Request, path, message s
 	http.Redirect(w, r, fmt.Sprintf("%s?messageContent=%s", path, url.QueryEscape(message)), http.StatusFound)
 }
 
-func (a app) getData(r *http.Request) (interface{}, error) {
-	ketchups, _, err := a.ketchupService.List(r.Context(), 1, 100)
-
-	return ketchups, err
-}
-
-func (a app) uiHandler(w http.ResponseWriter, r *http.Request, status int, message model.Message) {
-	ketchups, err := a.getData(r)
-	if err != nil {
-		a.errorHandler(w, http.StatusInternalServerError, err)
-		return
-	}
-
-	content := map[string]interface{}{
-		"Version":  a.version,
-		"Ketchups": ketchups,
-	}
-
-	if len(message.Content) > 0 {
-		content["Message"] = message
-	}
-
-	if err := templates.ResponseHTMLTemplate(a.tpl.Lookup("app"), w, content, status); err != nil {
-		httperror.InternalServerError(w, err)
-	}
-}
-
 func (a app) errorHandler(w http.ResponseWriter, status int, err error) {
 	logger.Error("%s", err)
 

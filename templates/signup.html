@@ -23,6 +23,8 @@
     <legend>Signup</legend>
 
     <form method="POST" action="/signup">
+      <input type="hidden" name="token" value="{{ .Token }}">
+
       <p class="padding no-margin">
         <label for="email" class="block">Email: *</label>
         <input id="email" type="text" name="email" placeholder="nobody@localhost">
@@ -30,16 +32,15 @@
 
       <p class="padding no-margin">
         <label for="login" class="block">Login: *</label>
-        <input id="login" type="text" name="login" placeholder="johndoe">
+        <input id="login" type="text" name="login" placeholder="john_doe">
       </p>
 
       <p class="padding no-margin">
         <label for="password" class="block">Password: *</label>
-        <input id="password" type="password" name="password">
+        <input id="password" type="password" name="password" placeholder="secret">
       </p>
 
       <p class="padding no-margin">
-        <input type="hidden" name="question" value="{{ .QuestionID }}">
         <label for="question" class="block">{{ .Question }}:</label>
         <input id="question" type="text" name="answer">
       </p>
