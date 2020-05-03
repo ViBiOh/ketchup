@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/ViBiOh/auth/v2/pkg/auth"
 	authModel "github.com/ViBiOh/auth/v2/pkg/model"
 	authService "github.com/ViBiOh/auth/v2/pkg/service"
 	"github.com/ViBiOh/httputils/v3/pkg/logger"
@@ -24,17 +23,15 @@ type App interface {
 type app struct {
 	userStore user.App
 
-	authService  authService.App
-	authProvider auth.Provider
+	authService authService.App
 }
 
 // New creates new App from Config
-func New(userStore user.App, authService authService.App, authProvider auth.Provider) App {
+func New(userStore user.App, authService authService.App) App {
 	return app{
 		userStore: userStore,
 
-		authService:  authService,
-		authProvider: authProvider,
+		authService: authService,
 	}
 }
 
@@ -46,7 +43,7 @@ func (a app) StoreInContext(ctx context.Context) context.Context {
 	}
 
 	item, err := a.userStore.GetByLoginID(ctx, id)
-	if err != nil {
+	if err != nil || item == model.NoneUser {
 		logger.Error("unable to get user with login %d: %s", id, err)
 		return ctx
 	}
@@ -78,6 +75,7 @@ func (a app) Create(ctx context.Context, item model.User) (output model.User, er
 	loginUser, err = a.authService.Create(ctx, item.Login)
 	if err != nil {
 		err = service.WrapInternal(fmt.Errorf("unable to create login: %s", err))
+		return
 	}
 
 	item.Login = loginUser.(authModel.User)
@@ -96,11 +94,11 @@ func (a app) Create(ctx context.Context, item model.User) (output model.User, er
 }
 
 func (a app) check(ctx context.Context, old, new model.User) error {
-	output := make([]error, 0)
-
 	if new == model.NoneUser {
-		return service.ConcatError(output)
+		return nil
 	}
+
+	output := make([]error, 0)
 
 	if len(strings.TrimSpace(new.Email)) == 0 {
 		output = append(output, errors.New("email is required"))
