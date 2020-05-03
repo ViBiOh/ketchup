@@ -43,6 +43,83 @@ func TestKetchupByRepositoryID(t *testing.T) {
 	}
 }
 
+func TestKetchupByPriority(t *testing.T) {
+	type args struct {
+		array []Ketchup
+	}
+
+	var cases = []struct {
+		intention string
+		args      args
+		want      []Ketchup
+	}{
+		{
+			"alphabetic",
+			args{
+				array: []Ketchup{
+					{Repository: Repository{Name: "abc"}},
+					{Repository: Repository{Name: "ghi"}},
+					{Repository: Repository{Name: "jkl"}},
+					{Repository: Repository{Name: "def"}},
+				},
+			},
+			[]Ketchup{
+				{Repository: Repository{Name: "abc"}},
+				{Repository: Repository{Name: "def"}},
+				{Repository: Repository{Name: "ghi"}},
+				{Repository: Repository{Name: "jkl"}},
+			},
+		},
+		{
+			"semver",
+			args{
+				array: []Ketchup{
+					{Semver: "Minor", Repository: Repository{Name: "abc"}},
+					{Semver: "Major", Repository: Repository{Name: "ghi"}},
+					{Semver: "Patch", Repository: Repository{Name: "jkl"}},
+					{Semver: "", Repository: Repository{Name: "def"}},
+				},
+			},
+			[]Ketchup{
+				{Semver: "Major", Repository: Repository{Name: "ghi"}},
+				{Semver: "Minor", Repository: Repository{Name: "abc"}},
+				{Semver: "Patch", Repository: Repository{Name: "jkl"}},
+				{Semver: "", Repository: Repository{Name: "def"}},
+			},
+		},
+		{
+			"full",
+			args{
+				array: []Ketchup{
+					{Semver: "Major", Repository: Repository{Name: "abc"}},
+					{Semver: "", Repository: Repository{Name: "abcd"}},
+					{Semver: "Patch", Repository: Repository{Name: "jkl"}},
+					{Semver: "", Repository: Repository{Name: "defg"}},
+					{Semver: "Patch", Repository: Repository{Name: "jjl"}},
+					{Semver: "Major", Repository: Repository{Name: "ghi"}},
+				},
+			},
+			[]Ketchup{
+				{Semver: "Major", Repository: Repository{Name: "abc"}},
+				{Semver: "Major", Repository: Repository{Name: "ghi"}},
+				{Semver: "Patch", Repository: Repository{Name: "jjl"}},
+				{Semver: "Patch", Repository: Repository{Name: "jkl"}},
+				{Semver: "", Repository: Repository{Name: "abcd"}},
+				{Semver: "", Repository: Repository{Name: "defg"}},
+			},
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.intention, func(t *testing.T) {
+			sort.Sort(KetchupByPriority(tc.args.array))
+			if got := tc.args.array; !reflect.DeepEqual(got, tc.want) {
+				t.Errorf("KetchupByPriority() = %+v, want %+v", got, tc.want)
+			}
+		})
+	}
+}
+
 func TestReleaseByRepositoryID(t *testing.T) {
 	type args struct {
 		array []Release

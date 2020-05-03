@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"sort"
 	"strings"
 
 	"github.com/ViBiOh/ketchup/pkg/model"
@@ -40,7 +41,10 @@ func (a app) List(ctx context.Context, page, pageSize uint) ([]model.Ketchup, ui
 		return nil, 0, service.WrapInternal(fmt.Errorf("unable to list: %s", err))
 	}
 
-	return enrichSemver(list), total, nil
+	enrichedList := enrichSemver(list)
+	sort.Sort(model.KetchupByPriority(enrichedList))
+
+	return enrichedList, total, nil
 }
 
 func (a app) ListForRepositories(ctx context.Context, repositories []model.Repository) ([]model.Ketchup, error) {

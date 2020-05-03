@@ -56,7 +56,6 @@ FROM
 WHERE
   user_id = $3
   AND repository_id = id
-ORDER BY r.name
 LIMIT $1
 OFFSET $2
 `
