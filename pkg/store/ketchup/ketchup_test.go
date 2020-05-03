@@ -38,7 +38,7 @@ func TestList(t *testing.T) {
 				page:     1,
 				pageSize: 20,
 			},
-			"SELECT k.version, k.repository_id, r.name, r.version, .+ AS full_count FROM ketchup k, repository r WHERE user_id = .+ AND repository_id = id ORDER BY r.name",
+			"SELECT k.version, k.repository_id, r.name, r.version, .+ AS full_count FROM ketchup k, repository r WHERE user_id = .+ AND repository_id = id",
 			[]model.Ketchup{
 				{
 					Version: "0.9.0",
@@ -74,7 +74,7 @@ func TestList(t *testing.T) {
 				page:     1,
 				pageSize: 20,
 			},
-			"SELECT k.version, k.repository_id, r.name, r.version, .+ AS full_count FROM ketchup k, repository r WHERE user_id = .+ AND repository_id = id ORDER BY r.name",
+			"SELECT k.version, k.repository_id, r.name, r.version, .+ AS full_count FROM ketchup k, repository r WHERE user_id = .+ AND repository_id = id",
 			nil,
 			0,
 			sqlmock.ErrCancelled,
@@ -85,7 +85,7 @@ func TestList(t *testing.T) {
 				page:     1,
 				pageSize: 20,
 			},
-			"SELECT k.version, k.repository_id, r.name, r.version, .+ AS full_count FROM ketchup k, repository r WHERE user_id = .+ AND repository_id = id ORDER BY r.name",
+			"SELECT k.version, k.repository_id, r.name, r.version, .+ AS full_count FROM ketchup k, repository r WHERE user_id = .+ AND repository_id = id",
 			nil,
 			0,
 			errors.New("converting driver.Value type string (\"a\") to a uint64: invalid syntax"),
