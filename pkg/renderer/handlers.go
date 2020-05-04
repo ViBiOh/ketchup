@@ -44,7 +44,6 @@ func (a app) errorHandler(w http.ResponseWriter, status int, err error) {
 		}
 
 		content["Message"] = model.NewErrorMessage(message)
-
 		if len(subMessages) > 0 {
 			content["Errors"] = strings.Split(subMessages, ", ")
 		}

@@ -10,7 +10,6 @@ import (
 
 func (a app) getData(r *http.Request) (interface{}, error) {
 	ketchups, _, err := a.ketchupService.List(r.Context(), 1, 100)
-
 	return ketchups, err
 }
 

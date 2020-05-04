@@ -29,6 +29,10 @@ const (
 	appPath      = "/app"
 )
 
+var (
+	templatesDir = "templates"
+)
+
 // App of package
 type App interface {
 	Start()
@@ -61,7 +65,7 @@ func Flags(fs *flag.FlagSet, prefix string) Config {
 
 // New creates new App from Config
 func New(config Config, ketchupService ketchup.App, userService user.App) (App, error) {
-	filesTemplates, err := templates.GetTemplates("templates", ".html")
+	filesTemplates, err := templates.GetTemplates(templatesDir, ".html")
 	if err != nil {
 		return nil, fmt.Errorf("unable to get templates: %s", err)
 	}

@@ -36,7 +36,12 @@ func WrapInvalid(err error) error {
 	return fmt.Errorf("%s: %w", err, ErrInvalid)
 }
 
-// WrapInternal wraps given error with invalid err
+// WrapInternal wraps given error with internal err
 func WrapInternal(err error) error {
 	return fmt.Errorf("%s: %w", err, ErrInternalError)
+}
+
+// WrapNotFound wraps given error with not found err
+func WrapNotFound(err error) error {
+	return fmt.Errorf("%s: %w", err, ErrNotFound)
 }
