@@ -24,7 +24,7 @@ func TestList(t *testing.T) {
 		args      args
 		expectSQL string
 		want      []model.Repository
-		wantCount uint
+		wantCount uint64
 		wantErr   error
 	}{
 		{
@@ -128,12 +128,14 @@ func TestList(t *testing.T) {
 
 func TestGet(t *testing.T) {
 	type args struct {
-		id uint64
+		id        uint64
+		forUpdate bool
 	}
 
 	var cases = []struct {
 		intention string
 		args      args
+		expectSQL string
 		want      model.Repository
 		wantErr   error
 	}{
@@ -142,6 +144,21 @@ func TestGet(t *testing.T) {
 			args{
 				id: 1,
 			},
+			"SELECT id, name, version FROM repository WHERE id =",
+			model.Repository{
+				ID:      1,
+				Name:    "vibioh/ketchup",
+				Version: "1.0.0",
+			},
+			nil,
+		},
+		{
+			"for update",
+			args{
+				id:        1,
+				forUpdate: true,
+			},
+			"SELECT id, name, version FROM repository WHERE id = .+ FOR UPDATE",
 			model.Repository{
 				ID:      1,
 				Name:    "vibioh/ketchup",
@@ -154,6 +171,7 @@ func TestGet(t *testing.T) {
 			args{
 				id: 1,
 			},
+			"SELECT id, name, version FROM repository WHERE id =",
 			model.NoneRepository,
 			nil,
 		},
@@ -168,12 +186,12 @@ func TestGet(t *testing.T) {
 			defer mockDb.Close()
 
 			rows := sqlmock.NewRows([]string{"id", "email", "login_id"})
-			mock.ExpectQuery("SELECT id, name, version FROM repository WHERE id =").WithArgs(1).WillReturnRows(rows)
+			mock.ExpectQuery(tc.expectSQL).WithArgs(1).WillReturnRows(rows)
 			if tc.intention != "no rows" {
 				rows.AddRow(1, "vibioh/ketchup", "1.0.0")
 			}
 
-			got, gotErr := New(mockDb).Get(context.Background(), tc.args.id)
+			got, gotErr := New(mockDb).Get(context.Background(), tc.args.id, tc.args.forUpdate)
 
 			failed := false
 

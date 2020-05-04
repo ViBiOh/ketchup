@@ -21,8 +21,8 @@ type App interface {
 	StartAtomic(ctx context.Context) (context.Context, error)
 	EndAtomic(ctx context.Context, err error) error
 
-	List(ctx context.Context, page, pageSize uint) ([]model.Repository, uint, error)
-	Get(ctx context.Context, id uint64) (model.Repository, error)
+	List(ctx context.Context, page, pageSize uint) ([]model.Repository, uint64, error)
+	Get(ctx context.Context, id uint64, forUpdate bool) (model.Repository, error)
 	GetByName(ctx context.Context, name string) (model.Repository, error)
 	Create(ctx context.Context, o model.Repository) (uint64, error)
 	Update(ctx context.Context, o model.Repository) error
@@ -60,7 +60,7 @@ LIMIT $1
 OFFSET $2
 `
 
-func (a app) List(ctx context.Context, page, pageSize uint) ([]model.Repository, uint, error) {
+func (a app) List(ctx context.Context, page, pageSize uint) ([]model.Repository, uint64, error) {
 	ctx, cancel := context.WithTimeout(ctx, db.SQLTimeout)
 	defer cancel()
 
@@ -73,7 +73,7 @@ func (a app) List(ctx context.Context, page, pageSize uint) ([]model.Repository,
 		err = db.RowsClose(rows, err)
 	}()
 
-	var totalCount uint
+	var totalCount uint64
 	list := make([]model.Repository, 0)
 
 	for rows.Next() {
@@ -100,7 +100,12 @@ WHERE
   id = $1
 `
 
-func (a app) Get(ctx context.Context, id uint64) (model.Repository, error) {
+func (a app) Get(ctx context.Context, id uint64, forUpdate bool) (model.Repository, error) {
+	query := getQuery
+	if forUpdate {
+		query += " FOR UPDATE"
+	}
+
 	var item model.Repository
 	scanner := func(row db.RowScanner) error {
 		err := row.Scan(&item.ID, &item.Name, &item.Version)
@@ -112,7 +117,7 @@ func (a app) Get(ctx context.Context, id uint64) (model.Repository, error) {
 		return err
 	}
 
-	err := db.GetRow(ctx, a.db, scanner, getQuery, id)
+	err := db.GetRow(ctx, a.db, scanner, query, id)
 	return item, err
 }
 
