@@ -92,3 +92,31 @@ func TestLoad(t *testing.T) {
 		})
 	}
 }
+
+func TestClean(t *testing.T) {
+	tokenStore := NewTokenStore()
+	presentToken := tokenStore.Store("ok", time.Minute)
+	invalidToken := tokenStore.Store("ko", time.Minute*-1)
+
+	var cases = []struct {
+		intention string
+	}{
+		{
+			"simple",
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.intention, func(t *testing.T) {
+			_ = tokenStore.Clean(time.Now())
+
+			if _, ok := tokenStore.Load(presentToken); !ok {
+				t.Errorf("Clean() deleted `%s`, want kept", presentToken)
+			}
+
+			if _, ok := tokenStore.Load(invalidToken); ok {
+				t.Errorf("Clean() deleted `%s`, want deleted", invalidToken)
+			}
+		})
+	}
+}
