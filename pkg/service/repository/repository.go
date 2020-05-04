@@ -19,7 +19,7 @@ var (
 
 // App of package
 type App interface {
-	List(ctx context.Context, page, pageSize uint) ([]model.Repository, uint, error)
+	List(ctx context.Context, page, pageSize uint) ([]model.Repository, uint64, error)
 	GetOrCreate(ctx context.Context, name string) (model.Repository, error)
 	Update(ctx context.Context, item model.Repository) error
 	Clean(ctx context.Context) error
@@ -38,7 +38,7 @@ func New(repositoryStore repository.App, githubApp github.App) App {
 	}
 }
 
-func (a app) List(ctx context.Context, page, pageSize uint) ([]model.Repository, uint, error) {
+func (a app) List(ctx context.Context, page, pageSize uint) ([]model.Repository, uint64, error) {
 	list, total, err := a.repositoryStore.List(ctx, page, pageSize)
 	if err != nil {
 		return nil, 0, service.WrapInternal(fmt.Errorf("unable to list: %s", err))
@@ -48,23 +48,18 @@ func (a app) List(ctx context.Context, page, pageSize uint) ([]model.Repository,
 }
 
 func (a app) GetOrCreate(ctx context.Context, name string) (model.Repository, error) {
-	matches := nameMatcher.FindStringSubmatch(name)
-	if len(matches) > 0 {
-		name = matches[len(matches)-1]
-	}
+	sanitizedName := sanitizeName(name)
 
-	repository, err := a.repositoryStore.GetByName(ctx, name)
+	repository, err := a.repositoryStore.GetByName(ctx, sanitizedName)
 	if err != nil {
-		return model.NoneRepository, err
+		return model.NoneRepository, service.WrapInternal(err)
 	}
 
 	if repository != model.NoneRepository {
 		return repository, nil
 	}
 
-	return a.create(ctx, model.Repository{
-		Name: name,
-	})
+	return a.create(ctx, model.Repository{Name: sanitizedName})
 }
 
 func (a app) create(ctx context.Context, item model.Repository) (model.Repository, error) {
@@ -100,18 +95,24 @@ func (a app) Update(ctx context.Context, item model.Repository) (err error) {
 	}()
 
 	var old model.Repository
-	old, err = a.repositoryStore.Get(ctx, item.ID)
+	old, err = a.repositoryStore.Get(ctx, item.ID, true)
 	if err != nil {
 		err = service.WrapInternal(fmt.Errorf("unable to fetch: %s", err))
 		return
 	}
 
-	if err = a.check(ctx, old, item); err != nil {
+	new := model.Repository{
+		ID:      old.ID,
+		Name:    old.Name,
+		Version: item.Version,
+	}
+
+	if err = a.check(ctx, old, new); err != nil {
 		err = service.WrapInvalid(err)
 		return
 	}
 
-	if err = a.repositoryStore.Update(ctx, item); err != nil {
+	if err = a.repositoryStore.Update(ctx, new); err != nil {
 		err = service.WrapInternal(fmt.Errorf("unable to update: %s", err))
 		return
 	}
@@ -138,6 +139,10 @@ func (a app) check(ctx context.Context, old, new model.Repository) error {
 		output = append(output, errors.New("name is required"))
 	}
 
+	if old != model.NoneRepository && len(strings.TrimSpace(new.Version)) == 0 {
+		output = append(output, errors.New("version is required"))
+	}
+
 	repositoryWithName, err := a.repositoryStore.GetByName(ctx, new.Name)
 	if err != nil {
 		output = append(output, errors.New("unable to check if name already exists"))
@@ -146,4 +151,13 @@ func (a app) check(ctx context.Context, old, new model.Repository) error {
 	}
 
 	return service.ConcatError(output)
+}
+
+func sanitizeName(name string) string {
+	matches := nameMatcher.FindStringSubmatch(name)
+	if len(matches) > 0 {
+		return matches[len(matches)-1]
+	}
+
+	return name
 }

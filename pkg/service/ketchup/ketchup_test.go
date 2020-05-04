@@ -114,7 +114,7 @@ func (tks testKetchupStore) Delete(ctx context.Context, o model.Ketchup) error {
 
 type testRepositoryService struct{}
 
-func (trs testRepositoryService) List(ctx context.Context, page, pageSize uint) ([]model.Repository, uint, error) {
+func (trs testRepositoryService) List(ctx context.Context, page, pageSize uint) ([]model.Repository, uint64, error) {
 	return nil, 0, nil
 }
 

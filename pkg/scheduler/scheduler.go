@@ -134,7 +134,7 @@ func (a app) getNewReleases(ctx context.Context) ([]model.Release, error) {
 			newReleases = append(newReleases, model.NewRelease(repository, release))
 		}
 
-		if (page * pageSize) < totalCount {
+		if uint64(page*pageSize) < totalCount {
 			page++
 		} else {
 			logger.Info("%d repositories checked, %d new releases", count, len(newReleases))

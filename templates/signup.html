@@ -26,22 +26,22 @@
       <input type="hidden" name="token" value="{{ .Token }}">
 
       <p class="padding no-margin">
-        <label for="email" class="block">Email: *</label>
+        <label for="email" class="block">Email: <span class="danger">*</span></label>
         <input id="email" type="text" name="email" placeholder="nobody@localhost">
       </p>
 
       <p class="padding no-margin">
-        <label for="login" class="block">Login: *</label>
+        <label for="login" class="block">Login: <span class="danger">*</span></label>
         <input id="login" type="text" name="login" placeholder="john_doe">
       </p>
 
       <p class="padding no-margin">
-        <label for="password" class="block">Password: *</label>
+        <label for="password" class="block">Password: <span class="danger">*</span></label>
         <input id="password" type="password" name="password" placeholder="secret">
       </p>
 
       <p class="padding no-margin">
-        <label for="question" class="block">{{ .Question }}:</label>
+        <label for="question" class="block">{{ .Question }} <span class="danger">*</span></label>
         <input id="question" type="text" name="answer">
       </p>
 
