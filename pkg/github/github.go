@@ -11,7 +11,7 @@ import (
 	"github.com/ViBiOh/httputils/v3/pkg/request"
 )
 
-const (
+var (
 	apiURL = "https://api.github.com"
 )
 
