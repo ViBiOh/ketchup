@@ -169,14 +169,12 @@ func (a app) getKetchupToNotify(ctx context.Context, releases []model.Release) (
 				break
 			}
 
-			if ketchup.Version == release.Release.TagName {
-				continue
-			}
-
-			if userToNotify[ketchup.User] != nil {
-				userToNotify[ketchup.User] = append(userToNotify[ketchup.User], release)
-			} else {
-				userToNotify[ketchup.User] = []model.Release{release}
+			if ketchup.Version != release.Release.TagName {
+				if userToNotify[ketchup.User] != nil {
+					userToNotify[ketchup.User] = append(userToNotify[ketchup.User], release)
+				} else {
+					userToNotify[ketchup.User] = []model.Release{release}
+				}
 			}
 
 			ketchupsIndex++
