@@ -51,7 +51,6 @@ func (a app) errorHandler(w http.ResponseWriter, status int, err error) {
 
 	if err := templates.ResponseHTMLTemplate(a.tpl.Lookup("error"), w, content, status); err != nil {
 		httperror.InternalServerError(w, err)
-		return
 	}
 }
 

@@ -94,7 +94,7 @@ func (a app) Handler() http.Handler {
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if query.IsRoot(r) {
-			a.appHandler(w, r, http.StatusOK, model.Message{
+			a.appHandler(w, r, model.Message{
 				Level:   r.URL.Query().Get("messageLevel"),
 				Content: r.URL.Query().Get("messageContent"),
 			})
