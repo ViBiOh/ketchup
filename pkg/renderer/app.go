@@ -13,7 +13,7 @@ func (a app) getData(r *http.Request) (interface{}, error) {
 	return ketchups, err
 }
 
-func (a app) appHandler(w http.ResponseWriter, r *http.Request, status int, message model.Message) {
+func (a app) appHandler(w http.ResponseWriter, r *http.Request, message model.Message) {
 	ketchups, err := a.getData(r)
 	if err != nil {
 		a.errorHandler(w, http.StatusInternalServerError, err)
@@ -29,7 +29,7 @@ func (a app) appHandler(w http.ResponseWriter, r *http.Request, status int, mess
 		content["Message"] = message
 	}
 
-	if err := templates.ResponseHTMLTemplate(a.tpl.Lookup("app"), w, content, status); err != nil {
+	if err := templates.ResponseHTMLTemplate(a.tpl.Lookup("app"), w, content, http.StatusOK); err != nil {
 		httperror.InternalServerError(w, err)
 	}
 }
