@@ -30,6 +30,7 @@ const (
 )
 
 var (
+	staticDir    = "static"
 	templatesDir = "templates"
 )
 
@@ -111,7 +112,7 @@ func (a app) PublicHandler() http.Handler {
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if strings.HasPrefix(r.URL.Path, faviconPath) {
-			http.ServeFile(w, r, path.Join("static", r.URL.Path))
+			http.ServeFile(w, r, path.Join(staticDir, r.URL.Path))
 			return
 		}
 
