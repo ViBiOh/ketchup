@@ -13,6 +13,7 @@ import (
 
 	"github.com/ViBiOh/httputils/v3/pkg/cron"
 	"github.com/ViBiOh/httputils/v3/pkg/flags"
+	"github.com/ViBiOh/httputils/v3/pkg/httperror"
 	"github.com/ViBiOh/httputils/v3/pkg/logger"
 	"github.com/ViBiOh/httputils/v3/pkg/query"
 	"github.com/ViBiOh/httputils/v3/pkg/templates"
@@ -111,7 +112,7 @@ func (a app) PublicHandler() http.Handler {
 	svgHandler := http.StripPrefix(svgPath, a.svg())
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if strings.HasPrefix(r.URL.Path, faviconPath) {
+		if strings.HasPrefix(r.URL.Path, faviconPath) || r.URL.Path == "/robots.txt" || r.URL.Path == "/sitemap.xml" {
 			http.ServeFile(w, r, path.Join(staticDir, r.URL.Path))
 			return
 		}
@@ -126,9 +127,14 @@ func (a app) PublicHandler() http.Handler {
 			return
 		}
 
-		a.publicHandler(w, r, http.StatusOK, model.Message{
-			Level:   r.URL.Query().Get("messageLevel"),
-			Content: r.URL.Query().Get("messageContent"),
-		})
+		if query.IsRoot(r) {
+			a.publicHandler(w, r, http.StatusOK, model.Message{
+				Level:   r.URL.Query().Get("messageLevel"),
+				Content: r.URL.Query().Get("messageContent"),
+			})
+			return
+		}
+
+		httperror.NotFound(w)
 	})
 }
