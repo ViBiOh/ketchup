@@ -153,6 +153,24 @@ func TestPublicHandler(t *testing.T) {
 			},
 		},
 		{
+			"robots",
+			httptest.NewRequest(http.MethodGet, "/robots.txt", nil),
+			"User-agent",
+			http.StatusOK,
+			http.Header{
+				"Content-Type": []string{"text/plain; charset=utf-8"},
+			},
+		},
+		{
+			"sitemap",
+			httptest.NewRequest(http.MethodGet, "/sitemap.xml", nil),
+			"<urlset",
+			http.StatusOK,
+			http.Header{
+				"Content-Type": []string{"application/xml"},
+			},
+		},
+		{
 			"svg not found",
 			httptest.NewRequest(http.MethodGet, "/svg/not-found", nil),
 			"¯\\_(ツ)_/¯",
@@ -191,6 +209,15 @@ func TestPublicHandler(t *testing.T) {
 			http.StatusOK,
 			http.Header{
 				"Content-Type": []string{"text/html; charset=UTF-8"},
+			},
+		},
+		{
+			"not found",
+			httptest.NewRequest(http.MethodGet, "/unkown-path", nil),
+			"¯\\_(ツ)_/¯",
+			http.StatusNotFound,
+			http.Header{
+				"Content-Type": []string{"text/plain; charset=utf-8"},
 			},
 		},
 	}
