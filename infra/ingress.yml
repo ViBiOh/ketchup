@@ -3,6 +3,10 @@ apiVersion: traefik.containo.us/v1alpha1
 kind: IngressRoute
 metadata:
   name: ketchup-http
+  labels:
+    app.kubernetes.io/name: ketchup
+    app.kubernetes.io/instance: ketchup
+    app.kubernetes.io/managed-by: kubectl
 spec:
   entryPoints:
     - http
@@ -20,6 +24,10 @@ apiVersion: traefik.containo.us/v1alpha1
 kind: IngressRoute
 metadata:
   name: ketchup-https
+  labels:
+    app.kubernetes.io/name: ketchup
+    app.kubernetes.io/instance: ketchup
+    app.kubernetes.io/managed-by: kubectl
 spec:
   entryPoints:
     - https
