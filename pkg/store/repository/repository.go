@@ -9,7 +9,6 @@ import (
 
 	"github.com/ViBiOh/httputils/v3/pkg/db"
 	"github.com/ViBiOh/ketchup/pkg/model"
-	"github.com/ViBiOh/ketchup/pkg/store"
 )
 
 var (
@@ -18,8 +17,7 @@ var (
 
 // App of package
 type App interface {
-	StartAtomic(ctx context.Context) (context.Context, error)
-	EndAtomic(ctx context.Context, err error) error
+	DoAtomic(ctx context.Context, action func(context.Context) error) error
 
 	List(ctx context.Context, page, pageSize uint) ([]model.Repository, uint64, error)
 	Get(ctx context.Context, id uint64, forUpdate bool) (model.Repository, error)
@@ -40,12 +38,8 @@ func New(db *sql.DB) App {
 	}
 }
 
-func (a app) StartAtomic(ctx context.Context) (context.Context, error) {
-	return store.StartAtomic(ctx, a.db)
-}
-
-func (a app) EndAtomic(ctx context.Context, err error) error {
-	return store.EndAtomic(ctx, err)
+func (a app) DoAtomic(ctx context.Context, action func(context.Context) error) error {
+	return db.DoAtomic(ctx, a.db, action)
 }
 
 const listQuery = `
@@ -144,9 +138,13 @@ func (a app) GetByName(ctx context.Context, name string) (model.Repository, erro
 		return err
 	}
 
-	err := db.GetRow(ctx, a.db, scanner, getByNameQuery, name)
+	err := db.GetRow(ctx, a.db, scanner, getByNameQuery, strings.ToLower(name))
 	return item, err
 }
+
+const insertLock = `
+LOCK repository IN SHARE ROW EXCLUSIVE MODE
+`
 
 const insertQuery = `
 INSERT INTO
@@ -161,7 +159,20 @@ INSERT INTO
 `
 
 func (a app) Create(ctx context.Context, o model.Repository) (uint64, error) {
-	return db.Create(ctx, a.db, insertQuery, strings.ToLower(o.Name), o.Version)
+	if err := db.Exec(ctx, insertLock); err != nil {
+		return 0, err
+	}
+
+	item, err := a.GetByName(ctx, o.Name)
+	if err != nil {
+		return 0, err
+	}
+
+	if item != model.NoneRepository {
+		return item.ID, nil
+	}
+
+	return db.Create(ctx, insertQuery, strings.ToLower(o.Name), o.Version)
 }
 
 const updateRepositoryQuery = `
@@ -174,7 +185,7 @@ WHERE
 `
 
 func (a app) Update(ctx context.Context, o model.Repository) error {
-	return db.Exec(ctx, a.db, updateRepositoryQuery, o.ID, o.Version)
+	return db.Exec(ctx, updateRepositoryQuery, o.ID, o.Version)
 }
 
 const deleteQuery = `
@@ -190,5 +201,5 @@ WHERE
 `
 
 func (a app) DeleteUnused(ctx context.Context) error {
-	return db.Exec(ctx, a.db, deleteQuery)
+	return db.Exec(ctx, deleteQuery)
 }

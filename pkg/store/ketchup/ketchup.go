@@ -7,14 +7,12 @@ import (
 
 	"github.com/ViBiOh/httputils/v3/pkg/db"
 	"github.com/ViBiOh/ketchup/pkg/model"
-	"github.com/ViBiOh/ketchup/pkg/store"
 	"github.com/lib/pq"
 )
 
 // App of package
 type App interface {
-	StartAtomic(ctx context.Context) (context.Context, error)
-	EndAtomic(ctx context.Context, err error) error
+	DoAtomic(ctx context.Context, action func(context.Context) error) error
 
 	List(ctx context.Context, page, pageSize uint) ([]model.Ketchup, uint64, error)
 	ListByRepositoriesID(ctx context.Context, ids []uint64) ([]model.Ketchup, error)
@@ -35,12 +33,8 @@ func New(db *sql.DB) App {
 	}
 }
 
-func (a app) StartAtomic(ctx context.Context) (context.Context, error) {
-	return store.StartAtomic(ctx, a.db)
-}
-
-func (a app) EndAtomic(ctx context.Context, err error) error {
-	return store.EndAtomic(ctx, err)
+func (a app) DoAtomic(ctx context.Context, action func(context.Context) error) error {
+	return db.DoAtomic(ctx, a.db, action)
 }
 
 const listQuery = `
@@ -187,7 +181,7 @@ INSERT INTO
 `
 
 func (a app) Create(ctx context.Context, o model.Ketchup) (uint64, error) {
-	return db.Create(ctx, a.db, insertQuery, o.Version, o.Repository.ID, model.ReadUser(ctx).ID)
+	return db.Create(ctx, insertQuery, o.Version, o.Repository.ID, model.ReadUser(ctx).ID)
 }
 
 const updateQuery = `
@@ -201,7 +195,7 @@ WHERE
 `
 
 func (a app) Update(ctx context.Context, o model.Ketchup) error {
-	return db.Exec(ctx, a.db, updateQuery, o.Repository.ID, model.ReadUser(ctx).ID, o.Version)
+	return db.Exec(ctx, updateQuery, o.Repository.ID, model.ReadUser(ctx).ID, o.Version)
 }
 
 const deleteQuery = `
@@ -213,5 +207,5 @@ WHERE
 `
 
 func (a app) Delete(ctx context.Context, o model.Ketchup) error {
-	return db.Exec(ctx, a.db, deleteQuery, o.Repository.ID, model.ReadUser(ctx).ID)
+	return db.Exec(ctx, deleteQuery, o.Repository.ID, model.ReadUser(ctx).ID)
 }

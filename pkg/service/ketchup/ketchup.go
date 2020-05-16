@@ -61,105 +61,79 @@ func (a app) ListForRepositories(ctx context.Context, repositories []model.Repos
 	return enrichSemver(list), nil
 }
 
-func (a app) Create(ctx context.Context, item model.Ketchup) (output model.Ketchup, err error) {
-	ctx, err = a.ketchupStore.StartAtomic(ctx)
-	if err != nil {
-		return
-	}
+func (a app) Create(ctx context.Context, item model.Ketchup) (model.Ketchup, error) {
+	var output model.Ketchup
 
-	defer func() {
-		err = a.ketchupStore.EndAtomic(ctx, err)
-	}()
+	err := a.ketchupStore.DoAtomic(ctx, func(ctx context.Context) error {
+		repository, err := a.repositoryService.GetOrCreate(ctx, item.Repository.Name)
+		if err != nil {
+			return err
+		}
 
-	var repository model.Repository
-	repository, err = a.repositoryService.GetOrCreate(ctx, item.Repository.Name)
-	if err != nil {
-		return
-	}
+		item.Repository = repository
 
-	item.Repository = repository
+		if err := a.check(ctx, model.NoneKetchup, item); err != nil {
+			return service.WrapInvalid(err)
+		}
 
-	if err = a.check(ctx, model.NoneKetchup, item); err != nil {
-		err = service.WrapInvalid(err)
-		return
-	}
+		if _, err := a.ketchupStore.Create(ctx, item); err != nil {
+			return service.WrapInternal(fmt.Errorf("unable to create: %s", err))
+		}
 
-	if _, err = a.ketchupStore.Create(ctx, item); err != nil {
-		err = service.WrapInternal(fmt.Errorf("unable to create: %s", err))
-		return
-	}
+		output = item
+		return nil
+	})
 
-	output = item
-
-	return
+	return output, err
 }
 
-func (a app) Update(ctx context.Context, item model.Ketchup) (output model.Ketchup, err error) {
-	ctx, err = a.ketchupStore.StartAtomic(ctx)
-	if err != nil {
-		return
-	}
+func (a app) Update(ctx context.Context, item model.Ketchup) (model.Ketchup, error) {
+	var output model.Ketchup
 
-	defer func() {
-		err = a.ketchupStore.EndAtomic(ctx, err)
-	}()
+	err := a.ketchupStore.DoAtomic(ctx, func(ctx context.Context) error {
+		old, err := a.ketchupStore.GetByRepositoryID(ctx, item.Repository.ID, true)
+		if err != nil {
+			return service.WrapInternal(fmt.Errorf("unable to fetch: %s", err))
+		}
 
-	var old model.Ketchup
-	old, err = a.ketchupStore.GetByRepositoryID(ctx, item.Repository.ID, true)
-	if err != nil {
-		err = service.WrapInternal(fmt.Errorf("unable to fetch: %s", err))
-		return
-	}
+		new := model.Ketchup{
+			Version:    item.Version,
+			Repository: old.Repository,
+			User:       old.User,
+		}
 
-	new := model.Ketchup{
-		Version:    item.Version,
-		Repository: old.Repository,
-		User:       old.User,
-	}
+		if err := a.check(ctx, old, new); err != nil {
+			return service.WrapInvalid(err)
+		}
 
-	if err = a.check(ctx, old, new); err != nil {
-		err = service.WrapInvalid(err)
-		return
-	}
+		if err := a.ketchupStore.Update(ctx, new); err != nil {
+			return service.WrapInternal(fmt.Errorf("unable to update: %s", err))
+		}
 
-	if err = a.ketchupStore.Update(ctx, new); err != nil {
-		err = service.WrapInternal(fmt.Errorf("unable to update: %s", err))
-		return
-	}
+		output = new
+		return nil
+	})
 
-	output = new
-
-	return
+	return output, err
 }
 
 func (a app) Delete(ctx context.Context, item model.Ketchup) (err error) {
-	ctx, err = a.ketchupStore.StartAtomic(ctx)
-	if err != nil {
-		return
-	}
+	return a.ketchupStore.DoAtomic(ctx, func(ctx context.Context) error {
+		old, err := a.ketchupStore.GetByRepositoryID(ctx, item.Repository.ID, true)
+		if err != nil {
+			return service.WrapInternal(fmt.Errorf("unable to fetch current: %s", err))
+		}
 
-	defer func() {
-		err = a.ketchupStore.EndAtomic(ctx, err)
-	}()
+		if err = a.check(ctx, old, model.NoneKetchup); err != nil {
+			return service.WrapInvalid(err)
+		}
 
-	var old model.Ketchup
-	old, err = a.ketchupStore.GetByRepositoryID(ctx, item.Repository.ID, true)
-	if err != nil {
-		err = service.WrapInternal(fmt.Errorf("unable to fetch current: %s", err))
-		return
-	}
+		if err = a.ketchupStore.Delete(ctx, old); err != nil {
+			return service.WrapInternal(fmt.Errorf("unable to delete: %s", err))
+		}
 
-	if err = a.check(ctx, old, model.NoneKetchup); err != nil {
-		err = service.WrapInvalid(err)
-		return
-	}
-
-	if err = a.ketchupStore.Delete(ctx, old); err != nil {
-		err = service.WrapInternal(fmt.Errorf("unable to delete: %s", err))
-		return
-	}
-
-	return
+		return nil
+	})
 }
 
 func (a app) check(ctx context.Context, old, new model.Ketchup) error {

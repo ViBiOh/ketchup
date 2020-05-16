@@ -293,7 +293,40 @@ func TestCreate(t *testing.T) {
 		wantErr   error
 	}{
 		{
-			"simple",
+			"error lock",
+			args{
+				o: model.Repository{
+					Name:    "vibioh/ketchup",
+					Version: "1.0.0",
+				},
+			},
+			0,
+			errors.New("unable to obtain lock"),
+		},
+		{
+			"error get",
+			args{
+				o: model.Repository{
+					Name:    "vibioh/ketchup",
+					Version: "1.0.0",
+				},
+			},
+			0,
+			errors.New("unable to read"),
+		},
+		{
+			"found get",
+			args{
+				o: model.Repository{
+					Name:    "vibioh/ketchup",
+					Version: "1.0.0",
+				},
+			},
+			1,
+			nil,
+		},
+		{
+			"no rows",
 			args{
 				o: model.Repository{
 					Name:    "vibioh/ketchup",
@@ -313,15 +346,46 @@ func TestCreate(t *testing.T) {
 			}
 			defer mockDb.Close()
 
+			ctx := context.Background()
 			mock.ExpectBegin()
-			mock.ExpectQuery("INSERT INTO repository").WithArgs("vibioh/ketchup", "1.0.0").WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(1))
-			mock.ExpectCommit()
+			tx, err := mockDb.Begin()
+			if err != nil {
+				t.Errorf("unable to create tx: %s", err)
+			}
+			ctx = db.StoreTx(ctx, tx)
 
-			got, gotErr := New(mockDb).Create(context.Background(), tc.args.o)
+			lockQuery := mock.ExpectExec("LOCK repository IN SHARE ROW EXCLUSIVE MODE")
+			if tc.intention == "error lock" {
+				lockQuery.WillReturnError(errors.New("unable to obtain lock"))
+			} else {
+				lockQuery.WillReturnResult(sqlmock.NewResult(0, 0))
+
+				getQuery := mock.ExpectQuery("SELECT id, name, version FROM repository WHERE name =").WithArgs("vibioh/ketchup")
+
+				if tc.intention == "error get" {
+					getQuery.WillReturnError(errors.New("unable to read"))
+				} else {
+					rows := sqlmock.NewRows([]string{"id", "email", "login_id"})
+					getQuery.WillReturnRows(rows)
+
+					if tc.intention == "no rows" {
+						mock.ExpectQuery("INSERT INTO repository").WithArgs("vibioh/ketchup", "1.0.0").WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(1))
+					} else {
+						rows.AddRow(1, "vibioh/ketchup", "1.0.0")
+					}
+				}
+
+			}
+
+			got, gotErr := New(mockDb).Create(ctx, tc.args.o)
 
 			failed := false
 
-			if !errors.Is(gotErr, tc.wantErr) {
+			if tc.wantErr == nil && gotErr != nil {
+				failed = true
+			} else if tc.wantErr != nil && gotErr == nil {
+				failed = true
+			} else if tc.wantErr != nil && !strings.Contains(gotErr.Error(), tc.wantErr.Error()) {
 				failed = true
 			} else if got != tc.want {
 				failed = true
@@ -369,11 +433,17 @@ func TestUpdate(t *testing.T) {
 			}
 			defer mockDb.Close()
 
+			ctx := context.Background()
 			mock.ExpectBegin()
-			mock.ExpectExec("UPDATE repository SET version").WithArgs(1, "1.0.0").WillReturnResult(sqlmock.NewResult(0, 1))
-			mock.ExpectCommit()
+			tx, err := mockDb.Begin()
+			if err != nil {
+				t.Errorf("unable to create tx: %s", err)
+			}
+			ctx = db.StoreTx(ctx, tx)
 
-			gotErr := New(mockDb).Update(context.Background(), tc.args.o)
+			mock.ExpectExec("UPDATE repository SET version").WithArgs(1, "1.0.0").WillReturnResult(sqlmock.NewResult(0, 1))
+
+			gotErr := New(mockDb).Update(ctx, tc.args.o)
 
 			failed := false
 
@@ -411,11 +481,17 @@ func TestDeleteUnused(t *testing.T) {
 			}
 			defer mockDb.Close()
 
+			ctx := context.Background()
 			mock.ExpectBegin()
-			mock.ExpectExec("DELETE FROM repository WHERE id NOT IN").WillReturnResult(sqlmock.NewResult(0, 1))
-			mock.ExpectCommit()
+			tx, err := mockDb.Begin()
+			if err != nil {
+				t.Errorf("unable to create tx: %s", err)
+			}
+			ctx = db.StoreTx(ctx, tx)
 
-			gotErr := New(mockDb).DeleteUnused(context.Background())
+			mock.ExpectExec("DELETE FROM repository WHERE id NOT IN").WillReturnResult(sqlmock.NewResult(0, 1))
+
+			gotErr := New(mockDb).DeleteUnused(ctx)
 
 			failed := false
 
