@@ -19,15 +19,12 @@ var (
 
 type testRepositoryStore struct{}
 
-func (trs testRepositoryStore) StartAtomic(ctx context.Context) (context.Context, error) {
+func (trs testRepositoryStore) DoAtomic(ctx context.Context, action func(context.Context) error) error {
 	if ctx == context.TODO() {
-		return ctx, errAtomicStart
+		return errAtomicStart
 	}
 
-	return ctx, nil
-}
-
-func (trs testRepositoryStore) EndAtomic(ctx context.Context, err error) error {
+	err := action(ctx)
 	if err != nil && strings.Contains(err.Error(), "duplicate pk") {
 		return errAtomicEnd
 	}
@@ -257,7 +254,7 @@ func TestCreate(t *testing.T) {
 				ctx:  context.Background(),
 				item: model.Repository{Name: "vibioh"},
 			},
-			model.NoneRepository,
+			model.Repository{Name: "vibioh", Version: "1.0.0"},
 			service.ErrInternalError,
 		},
 		{

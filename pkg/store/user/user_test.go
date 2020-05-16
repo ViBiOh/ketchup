@@ -8,6 +8,7 @@ import (
 
 	"github.com/DATA-DOG/go-sqlmock"
 	authModel "github.com/ViBiOh/auth/v2/pkg/model"
+	"github.com/ViBiOh/httputils/v3/pkg/db"
 	"github.com/ViBiOh/ketchup/pkg/model"
 )
 
@@ -185,11 +186,18 @@ func TestCreate(t *testing.T) {
 			}
 			defer mockDb.Close()
 
-			mock.ExpectBegin()
-			mock.ExpectQuery("INSERT INTO \"user\"").WithArgs("nobody@localhost", 1).WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(1))
-			mock.ExpectCommit()
+			ctx := context.Background()
 
-			got, gotErr := New(mockDb).Create(context.Background(), tc.args.o)
+			mock.ExpectBegin()
+			if tx, err := mockDb.Begin(); err != nil {
+				t.Errorf("unable to create tx: %v", err)
+			} else {
+				ctx = db.StoreTx(ctx, tx)
+			}
+
+			mock.ExpectQuery("INSERT INTO \"user\"").WithArgs("nobody@localhost", 1).WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(1))
+
+			got, gotErr := New(mockDb).Create(ctx, tc.args.o)
 
 			failed := false
 

@@ -74,58 +74,52 @@ func (a app) create(ctx context.Context, item model.Repository) (model.Repositor
 
 	item.Version = release.TagName
 
-	id, err := a.repositoryStore.Create(ctx, item)
-	if err != nil {
-		return model.NoneRepository, service.WrapInternal(fmt.Errorf("unable to create: %s", err))
-	}
+	err = a.repositoryStore.DoAtomic(ctx, func(ctx context.Context) error {
+		id, err := a.repositoryStore.Create(ctx, item)
+		if err != nil {
+			return service.WrapInternal(fmt.Errorf("unable to create: %s", err))
+		}
 
-	item.ID = id
+		item.ID = id
+		return nil
+	})
 
-	return item, nil
+	return item, err
 }
 
-func (a app) Update(ctx context.Context, item model.Repository) (err error) {
-	ctx, err = a.repositoryStore.StartAtomic(ctx)
-	if err != nil {
-		return
-	}
+func (a app) Update(ctx context.Context, item model.Repository) error {
+	return a.repositoryStore.DoAtomic(ctx, func(ctx context.Context) error {
+		old, err := a.repositoryStore.Get(ctx, item.ID, true)
+		if err != nil {
+			return service.WrapInternal(fmt.Errorf("unable to fetch: %s", err))
+		}
 
-	defer func() {
-		err = a.repositoryStore.EndAtomic(ctx, err)
-	}()
+		new := model.Repository{
+			ID:      old.ID,
+			Name:    old.Name,
+			Version: item.Version,
+		}
 
-	var old model.Repository
-	old, err = a.repositoryStore.Get(ctx, item.ID, true)
-	if err != nil {
-		err = service.WrapInternal(fmt.Errorf("unable to fetch: %s", err))
-		return
-	}
+		if err := a.check(ctx, old, new); err != nil {
+			return service.WrapInvalid(err)
+		}
 
-	new := model.Repository{
-		ID:      old.ID,
-		Name:    old.Name,
-		Version: item.Version,
-	}
+		if err := a.repositoryStore.Update(ctx, new); err != nil {
+			return service.WrapInternal(fmt.Errorf("unable to update: %s", err))
+		}
 
-	if err = a.check(ctx, old, new); err != nil {
-		err = service.WrapInvalid(err)
-		return
-	}
-
-	if err = a.repositoryStore.Update(ctx, new); err != nil {
-		err = service.WrapInternal(fmt.Errorf("unable to update: %s", err))
-		return
-	}
-
-	return
+		return nil
+	})
 }
 
 func (a app) Clean(ctx context.Context) error {
-	if err := a.repositoryStore.DeleteUnused(ctx); err != nil {
-		return service.WrapInternal(fmt.Errorf("unable to delete: %s", err))
-	}
+	return a.repositoryStore.DoAtomic(ctx, func(ctx context.Context) error {
+		if err := a.repositoryStore.DeleteUnused(ctx); err != nil {
+			return service.WrapInternal(fmt.Errorf("unable to delete: %s", err))
+		}
 
-	return nil
+		return nil
+	})
 }
 
 func (a app) check(ctx context.Context, old, new model.Repository) error {

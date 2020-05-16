@@ -390,10 +390,15 @@ func TestCreate(t *testing.T) {
 			defer mockDb.Close()
 
 			mock.ExpectBegin()
-			mock.ExpectQuery("INSERT INTO ketchup").WithArgs("0.9.0", 1, 3).WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(1))
-			mock.ExpectCommit()
+			tx, err := mockDb.Begin()
+			if err != nil {
+				t.Errorf("unable to create tx: %s", err)
+			}
+			ctx := db.StoreTx(testCtx, tx)
 
-			got, gotErr := New(mockDb).Create(testCtx, tc.args.o)
+			mock.ExpectQuery("INSERT INTO ketchup").WithArgs("0.9.0", 1, 3).WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(1))
+
+			got, gotErr := New(mockDb).Create(ctx, tc.args.o)
 
 			failed := false
 
@@ -447,10 +452,15 @@ func TestUpdate(t *testing.T) {
 			defer mockDb.Close()
 
 			mock.ExpectBegin()
-			mock.ExpectExec("UPDATE ketchup SET version").WithArgs(1, 3, "0.9.0").WillReturnResult(sqlmock.NewResult(0, 1))
-			mock.ExpectCommit()
+			tx, err := mockDb.Begin()
+			if err != nil {
+				t.Errorf("unable to create tx: %s", err)
+			}
+			ctx := db.StoreTx(testCtx, tx)
 
-			gotErr := New(mockDb).Update(testCtx, tc.args.o)
+			mock.ExpectExec("UPDATE ketchup SET version").WithArgs(1, 3, "0.9.0").WillReturnResult(sqlmock.NewResult(0, 1))
+
+			gotErr := New(mockDb).Update(ctx, tc.args.o)
 
 			failed := false
 
@@ -501,10 +511,15 @@ func TestDelete(t *testing.T) {
 			defer mockDb.Close()
 
 			mock.ExpectBegin()
-			mock.ExpectExec("DELETE FROM ketchup").WithArgs(1, 3).WillReturnResult(sqlmock.NewResult(0, 1))
-			mock.ExpectCommit()
+			tx, err := mockDb.Begin()
+			if err != nil {
+				t.Errorf("unable to create tx: %s", err)
+			}
+			ctx := db.StoreTx(testCtx, tx)
 
-			gotErr := New(mockDb).Delete(testCtx, tc.args.o)
+			mock.ExpectExec("DELETE FROM ketchup").WithArgs(1, 3).WillReturnResult(sqlmock.NewResult(0, 1))
+
+			gotErr := New(mockDb).Delete(ctx, tc.args.o)
 
 			failed := false
 

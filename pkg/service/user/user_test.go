@@ -8,7 +8,6 @@ import (
 	"testing"
 
 	authModel "github.com/ViBiOh/auth/v2/pkg/model"
-	"github.com/ViBiOh/httputils/v3/pkg/crud"
 	"github.com/ViBiOh/ketchup/pkg/model"
 	"github.com/ViBiOh/ketchup/pkg/service"
 )
@@ -20,15 +19,12 @@ var (
 
 type testUserStore struct{}
 
-func (tus testUserStore) StartAtomic(ctx context.Context) (context.Context, error) {
+func (tus testUserStore) DoAtomic(ctx context.Context, action func(context.Context) error) error {
 	if ctx == context.TODO() {
-		return ctx, errAtomicStart
+		return errAtomicStart
 	}
 
-	return ctx, nil
-}
-
-func (tus testUserStore) EndAtomic(ctx context.Context, err error) error {
+	err := action(ctx)
 	if err != nil && strings.Contains(err.Error(), "duplicate pk") {
 		return errAtomicEnd
 	}
@@ -76,41 +72,39 @@ func (tus testUserStore) Create(ctx context.Context, o model.User) (uint64, erro
 
 type testAuthService struct{}
 
-func (tas testAuthService) Unmarshal(data []byte, contentType string) (interface{}, error) {
-	return nil, nil
+func (tas testAuthService) Unmarshal(data []byte, contentType string) (authModel.User, error) {
+	return authModel.NoneUser, nil
 }
 
-func (tas testAuthService) Check(ctx context.Context, old, new interface{}) []crud.Error {
-	if new.(authModel.User).ID == 0 {
-		return []crud.Error{
-			crud.NewError("id", "id is invalid"),
-		}
+func (tas testAuthService) Check(ctx context.Context, old, new authModel.User) error {
+	if new.ID == 0 {
+		return errors.New("id is invalid")
 	}
 
 	return nil
 }
 
-func (tas testAuthService) List(ctx context.Context, page, pageSize uint, sortKey string, sortDesc bool, filters map[string][]string) ([]interface{}, uint, error) {
+func (tas testAuthService) List(ctx context.Context, page, pageSize uint, sortKey string, sortDesc bool, filters map[string][]string) ([]authModel.User, uint, error) {
 	return nil, 0, nil
 }
 
-func (tas testAuthService) Get(ctx context.Context, ID uint64) (interface{}, error) {
-	return nil, nil
+func (tas testAuthService) Get(ctx context.Context, ID uint64) (authModel.User, error) {
+	return authModel.NoneUser, nil
 }
 
-func (tas testAuthService) Create(ctx context.Context, o interface{}) (interface{}, error) {
-	if o.(authModel.User).ID == 1 {
-		return nil, errors.New("invalid id")
+func (tas testAuthService) Create(ctx context.Context, o authModel.User) (authModel.User, error) {
+	if o.ID == 1 {
+		return authModel.NoneUser, errors.New("invalid id")
 	}
 
-	return authModel.NewUser(o.(authModel.User).ID, "admin"), nil
+	return authModel.NewUser(o.ID, "admin"), nil
 }
 
-func (tas testAuthService) Update(ctx context.Context, o interface{}) (interface{}, error) {
-	return nil, nil
+func (tas testAuthService) Update(ctx context.Context, o authModel.User) (authModel.User, error) {
+	return authModel.NoneUser, nil
 }
 
-func (tas testAuthService) Delete(ctx context.Context, o interface{}) error {
+func (tas testAuthService) Delete(ctx context.Context, o authModel.User) error {
 	return nil
 }
 

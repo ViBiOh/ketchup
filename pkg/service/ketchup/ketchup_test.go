@@ -18,15 +18,12 @@ var (
 
 type testKetchupStore struct{}
 
-func (tks testKetchupStore) StartAtomic(ctx context.Context) (context.Context, error) {
+func (tks testKetchupStore) DoAtomic(ctx context.Context, action func(context.Context) error) error {
 	if ctx == context.TODO() {
-		return ctx, errAtomicStart
+		return errAtomicStart
 	}
 
-	return ctx, nil
-}
-
-func (tks testKetchupStore) EndAtomic(ctx context.Context, err error) error {
+	err := action(ctx)
 	if err != nil && strings.Contains(err.Error(), "duplicate pk") {
 		return errAtomicEnd
 	}

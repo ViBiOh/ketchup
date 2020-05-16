@@ -51,46 +51,37 @@ func (a app) StoreInContext(ctx context.Context) context.Context {
 	return model.StoreUser(ctx, item)
 }
 
-func (a app) Create(ctx context.Context, item model.User) (output model.User, err error) {
-	if err = a.check(ctx, model.NoneUser, item); err != nil {
-		err = service.WrapInvalid(err)
-		return
+func (a app) Create(ctx context.Context, item model.User) (model.User, error) {
+	if err := a.check(ctx, model.NoneUser, item); err != nil {
+		return model.NoneUser, service.WrapInvalid(err)
 	}
 
-	if errs := a.authService.Check(ctx, nil, item.Login); len(errs) != 0 {
-		err = service.WrapInvalid(fmt.Errorf("auth %s", errs))
-		return
+	if err := a.authService.Check(ctx, authModel.NoneUser, item.Login); err != nil {
+		return model.NoneUser, service.WrapInvalid(err)
 	}
 
-	ctx, err = a.userStore.StartAtomic(ctx)
-	if err != nil {
-		return
-	}
+	var output model.User
 
-	defer func() {
-		err = a.userStore.EndAtomic(ctx, err)
-	}()
+	err := a.userStore.DoAtomic(ctx, func(ctx context.Context) error {
+		loginUser, err := a.authService.Create(ctx, item.Login)
+		if err != nil {
+			return service.WrapInternal(fmt.Errorf("unable to create login: %s", err))
+		}
 
-	var loginUser interface{}
-	loginUser, err = a.authService.Create(ctx, item.Login)
-	if err != nil {
-		err = service.WrapInternal(fmt.Errorf("unable to create login: %s", err))
-		return
-	}
+		item.Login = loginUser
 
-	item.Login = loginUser.(authModel.User)
+		id, err := a.userStore.Create(ctx, item)
+		if err != nil {
+			return service.WrapInternal(fmt.Errorf("unable to create: %s", err))
+		}
 
-	var id uint64
-	id, err = a.userStore.Create(ctx, item)
-	if err != nil {
-		err = service.WrapInternal(fmt.Errorf("unable to create: %s", err))
-		return
-	}
+		item.ID = id
+		output = item
 
-	item.ID = id
-	output = item
+		return nil
+	})
 
-	return
+	return output, err
 }
 
 func (a app) check(ctx context.Context, old, new model.User) error {
