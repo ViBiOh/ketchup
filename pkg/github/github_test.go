@@ -51,7 +51,7 @@ func TestLastRelease(t *testing.T) {
 			return
 		}
 
-		w.Write([]byte(`{"repository": "vibioh/ketchup", "tag_name": "1.0.0", "body": "this is cool"}`))
+		w.Write([]byte(`{"repository": "vibioh/ketchup", "tag_name": "1.0.0"}`))
 	}))
 
 	savedURL := apiURL
@@ -95,7 +95,7 @@ func TestLastRelease(t *testing.T) {
 			args{
 				repository: "vibioh/ketchup",
 			},
-			Release{Repository: "vibioh/ketchup", TagName: "1.0.0", Body: "this is cool"},
+			Release{Repository: "vibioh/ketchup", TagName: "1.0.0"},
 			nil,
 		},
 	}
