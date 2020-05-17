@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"net/http"
 	"regexp"
 	"strconv"
 	"strings"
@@ -145,14 +146,15 @@ func (a app) parseTags(repository string) (Release, error) {
 			}
 		}
 
-		for _, link := range resp.Header.Values("Link") {
-			if strings.Contains(link, `rel="next"`) {
-				page++
-				continue
-			}
+		if !isLastPage(resp) {
+			break
 		}
 
-		break
+		page++
+	}
+
+	if len(release.TagName) == 0 {
+		return release, fmt.Errorf("unable to find semver in tags for %s", repository)
 	}
 
 	return release, nil
@@ -181,4 +183,14 @@ func getSemverValues(matches []string) (major int, minor int, patch int) {
 	}
 
 	return
+}
+
+func isLastPage(resp *http.Response) bool {
+	for _, link := range resp.Header.Values("Link") {
+		if strings.Contains(link, `rel="next"`) {
+			return true
+		}
+	}
+
+	return false
 }
