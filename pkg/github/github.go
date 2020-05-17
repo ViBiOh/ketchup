@@ -6,17 +6,15 @@ import (
 	"flag"
 	"fmt"
 	"net/http"
-	"regexp"
-	"strconv"
 	"strings"
 
 	"github.com/ViBiOh/httputils/v3/pkg/flags"
 	"github.com/ViBiOh/httputils/v3/pkg/request"
+	"github.com/ViBiOh/ketchup/pkg/semver"
 )
 
 var (
-	apiURL        = "https://api.github.com"
-	semverMatcher = regexp.MustCompile(`(?i)^[a-zA-Z]*([0-9]+)\.([0-9]+)(?:\.([0-9]+))?`)
+	apiURL = "https://api.github.com"
 )
 
 // Release describes a Github Release
@@ -105,9 +103,7 @@ func (a app) parseTags(repository string) (Release, error) {
 	}
 
 	page := 1
-	majorValue := 0
-	minorValue := 0
-	patchValue := 0
+	version := semver.Version{}
 
 	req := a.newClient()
 	for {
@@ -127,22 +123,10 @@ func (a app) parseTags(repository string) (Release, error) {
 		}
 
 		for _, tag := range tags {
-			if matches := semverMatcher.FindStringSubmatch(tag.Name); len(matches) > 1 {
-				major, minor, patch := getSemverValues(matches)
-
-				if major > majorValue {
-					majorValue = major
-					minorValue = minor
-					patchValue = patch
-					release.TagName = tag.Name
-				} else if major == majorValue && minor > minorValue {
-					minorValue = minor
-					patchValue = patch
-					release.TagName = tag.Name
-				} else if major == majorValue && minor == minorValue && patch > patchValue {
-					patchValue = patch
-					release.TagName = tag.Name
-				}
+			tagVersion, err := semver.Parse(tag.Name)
+			if err == nil && tagVersion.IsGreater(version) {
+				version = tagVersion
+				release.TagName = tag.Name
 			}
 		}
 
@@ -158,31 +142,6 @@ func (a app) parseTags(repository string) (Release, error) {
 	}
 
 	return release, nil
-}
-
-func getSemverValues(matches []string) (major int, minor int, patch int) {
-	var err error
-
-	major, err = strconv.Atoi(matches[1])
-	if err != nil {
-		return
-	}
-
-	if len(matches[2]) != 0 {
-		minor, err = strconv.Atoi(matches[2])
-		if err != nil {
-			return
-		}
-	}
-
-	if len(matches[3]) != 0 {
-		patch, err = strconv.Atoi(matches[3])
-		if err != nil {
-			return
-		}
-	}
-
-	return
 }
 
 func isLastPage(resp *http.Response) bool {

@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/ViBiOh/ketchup/pkg/model"
+	"github.com/ViBiOh/ketchup/pkg/semver"
 	"github.com/ViBiOh/ketchup/pkg/service"
 	"github.com/ViBiOh/ketchup/pkg/service/repository"
 	"github.com/ViBiOh/ketchup/pkg/store/ketchup"
@@ -161,4 +162,24 @@ func (a app) check(ctx context.Context, old, new model.Ketchup) error {
 	}
 
 	return service.ConcatError(output)
+}
+
+func enrichSemver(list []model.Ketchup) []model.Ketchup {
+	output := make([]model.Ketchup, len(list))
+	for index, item := range list {
+		repositoryVersion, err := semver.Parse(item.Repository.Version)
+		if err != nil {
+			continue
+		}
+
+		ketchupVersion, err := semver.Parse(item.Version)
+		if err != nil {
+			continue
+		}
+
+		item.Semver = repositoryVersion.Compare(ketchupVersion)
+		output[index] = item
+	}
+
+	return output
 }
