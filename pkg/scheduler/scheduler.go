@@ -14,6 +14,7 @@ import (
 	"github.com/ViBiOh/httputils/v3/pkg/logger"
 	"github.com/ViBiOh/ketchup/pkg/github"
 	"github.com/ViBiOh/ketchup/pkg/model"
+	"github.com/ViBiOh/ketchup/pkg/semver"
 	"github.com/ViBiOh/ketchup/pkg/service/ketchup"
 	"github.com/ViBiOh/ketchup/pkg/service/repository"
 	mailer "github.com/ViBiOh/mailer/pkg/client"
@@ -121,6 +122,12 @@ func (a app) getNewReleases(ctx context.Context) ([]model.Release, error) {
 			}
 
 			if release.TagName == repository.Version {
+				continue
+			}
+
+			releaseVersion, releaseErr := semver.Parse(release.TagName)
+			repositoryVersion, repositoryErr := semver.Parse(repository.Version)
+			if releaseErr == nil && repositoryErr == nil && repositoryVersion.IsGreater(releaseVersion) {
 				continue
 			}
 
