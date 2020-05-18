@@ -57,34 +57,25 @@ OFFSET $2
 func (a app) List(ctx context.Context, page, pageSize uint) ([]model.Ketchup, uint64, error) {
 	user := model.ReadUser(ctx)
 
-	ctx, cancel := context.WithTimeout(ctx, db.SQLTimeout)
-	defer cancel()
-
-	rows, err := a.db.QueryContext(ctx, listQuery, pageSize, (page-1)*pageSize, user.ID)
-	if err != nil {
-		return nil, 0, err
-	}
-
-	defer func() {
-		err = db.RowsClose(rows, err)
-	}()
-
 	var totalCount uint64
 	list := make([]model.Ketchup, 0)
 
-	for rows.Next() {
+	scanner := func(rows *sql.Rows) error {
 		item := model.Ketchup{
 			User: user,
 		}
 
 		if err := rows.Scan(&item.Version, &item.Repository.ID, &item.Repository.Name, &item.Repository.Version, &totalCount); err != nil {
-			return nil, 0, err
+			return err
 		}
 
 		list = append(list, item)
+		return nil
 	}
 
-	return list, totalCount, nil
+	err := db.List(ctx, a.db, scanner, listQuery, pageSize, (page-1)*pageSize, user.ID)
+
+	return list, totalCount, err
 }
 
 const listByRepositoriesIDQuery = `
@@ -102,31 +93,24 @@ WHERE
 `
 
 func (a app) ListByRepositoriesID(ctx context.Context, ids []uint64) ([]model.Ketchup, error) {
-	ctx, cancel := context.WithTimeout(ctx, db.SQLTimeout)
-	defer cancel()
+	list := make([]model.Ketchup, 0)
 
-	rows, err := a.db.QueryContext(ctx, listByRepositoriesIDQuery, pq.Array(ids))
+	scanner := func(rows *sql.Rows) error {
+		var item model.Ketchup
+		if err := rows.Scan(&item.Version, &item.Repository.ID, &item.User.ID, &item.User.Email); err != nil {
+			return err
+		}
+
+		list = append(list, item)
+		return nil
+	}
+
+	err := db.List(ctx, a.db, scanner, listByRepositoriesIDQuery, pq.Array(ids))
 	if err != nil {
 		return nil, err
 	}
 
-	defer func() {
-		err = db.RowsClose(rows, err)
-	}()
-
-	list := make([]model.Ketchup, 0)
-
-	for rows.Next() {
-		var item model.Ketchup
-
-		if err := rows.Scan(&item.Version, &item.Repository.ID, &item.User.ID, &item.User.Email); err != nil {
-			return nil, err
-		}
-
-		list = append(list, item)
-	}
-
-	return list, nil
+	return list, err
 }
 
 const getQuery = `
@@ -152,7 +136,7 @@ func (a app) GetByRepositoryID(ctx context.Context, id uint64, forUpdate bool) (
 		User: user,
 	}
 
-	scanner := func(row db.RowScanner) error {
+	scanner := func(row *sql.Row) error {
 		err := row.Scan(&item.Version, &item.Repository.ID, &item.User.ID)
 		if errors.Is(err, sql.ErrNoRows) {
 			item = model.NoneKetchup
@@ -162,7 +146,7 @@ func (a app) GetByRepositoryID(ctx context.Context, id uint64, forUpdate bool) (
 		return err
 	}
 
-	err := db.GetRow(ctx, a.db, scanner, query, id, user.ID)
+	err := db.Get(ctx, a.db, scanner, query, id, user.ID)
 	return item, err
 }
 

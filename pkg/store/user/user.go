@@ -47,7 +47,7 @@ WHERE
 
 func (a app) GetByEmail(ctx context.Context, email string) (model.User, error) {
 	var item model.User
-	scanner := func(row db.RowScanner) error {
+	scanner := func(row *sql.Row) error {
 		err := row.Scan(&item.ID, &item.Email, &item.Login.ID)
 		if errors.Is(err, sql.ErrNoRows) {
 			item = model.NoneUser
@@ -57,7 +57,7 @@ func (a app) GetByEmail(ctx context.Context, email string) (model.User, error) {
 		return err
 	}
 
-	err := db.GetRow(ctx, a.db, scanner, getByEmailQuery, email)
+	err := db.Get(ctx, a.db, scanner, getByEmailQuery, email)
 	return item, err
 }
 
@@ -74,7 +74,7 @@ WHERE
 
 func (a app) GetByLoginID(ctx context.Context, loginID uint64) (model.User, error) {
 	var item model.User
-	scanner := func(row db.RowScanner) error {
+	scanner := func(row *sql.Row) error {
 		err := row.Scan(&item.ID, &item.Email, &item.Login.ID)
 		if errors.Is(err, sql.ErrNoRows) {
 			item = model.NoneUser
@@ -84,7 +84,7 @@ func (a app) GetByLoginID(ctx context.Context, loginID uint64) (model.User, erro
 		return err
 	}
 
-	err := db.GetRow(ctx, a.db, scanner, getByLoginIDQuery, loginID)
+	err := db.Get(ctx, a.db, scanner, getByLoginIDQuery, loginID)
 	return item, err
 }
 
