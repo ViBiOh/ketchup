@@ -55,32 +55,22 @@ OFFSET $2
 `
 
 func (a app) List(ctx context.Context, page, pageSize uint) ([]model.Repository, uint64, error) {
-	ctx, cancel := context.WithTimeout(ctx, db.SQLTimeout)
-	defer cancel()
-
-	rows, err := a.db.QueryContext(ctx, listQuery, pageSize, (page-1)*pageSize)
-	if err != nil {
-		return nil, 0, err
-	}
-
-	defer func() {
-		err = db.RowsClose(rows, err)
-	}()
-
 	var totalCount uint64
 	list := make([]model.Repository, 0)
 
-	for rows.Next() {
+	scanner := func(rows *sql.Rows) error {
 		var item model.Repository
-
 		if err := rows.Scan(&item.ID, &item.Name, &item.Version, &totalCount); err != nil {
-			return nil, 0, err
+			return err
 		}
 
 		list = append(list, item)
+		return nil
 	}
 
-	return list, totalCount, nil
+	err := db.List(ctx, a.db, scanner, listQuery, pageSize, (page-1)*pageSize)
+
+	return list, totalCount, err
 }
 
 const getQuery = `
@@ -101,7 +91,7 @@ func (a app) Get(ctx context.Context, id uint64, forUpdate bool) (model.Reposito
 	}
 
 	var item model.Repository
-	scanner := func(row db.RowScanner) error {
+	scanner := func(row *sql.Row) error {
 		err := row.Scan(&item.ID, &item.Name, &item.Version)
 		if errors.Is(err, sql.ErrNoRows) {
 			item = model.NoneRepository
@@ -111,7 +101,7 @@ func (a app) Get(ctx context.Context, id uint64, forUpdate bool) (model.Reposito
 		return err
 	}
 
-	err := db.GetRow(ctx, a.db, scanner, query, id)
+	err := db.Get(ctx, a.db, scanner, query, id)
 	return item, err
 }
 
@@ -128,7 +118,7 @@ WHERE
 
 func (a app) GetByName(ctx context.Context, name string) (model.Repository, error) {
 	var item model.Repository
-	scanner := func(row db.RowScanner) error {
+	scanner := func(row *sql.Row) error {
 		err := row.Scan(&item.ID, &item.Name, &item.Version)
 		if errors.Is(err, sql.ErrNoRows) {
 			item = model.NoneRepository
@@ -138,7 +128,7 @@ func (a app) GetByName(ctx context.Context, name string) (model.Repository, erro
 		return err
 	}
 
-	err := db.GetRow(ctx, a.db, scanner, getByNameQuery, strings.ToLower(name))
+	err := db.Get(ctx, a.db, scanner, getByNameQuery, strings.ToLower(name))
 	return item, err
 }
 
