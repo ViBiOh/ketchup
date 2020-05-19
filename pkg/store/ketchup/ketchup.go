@@ -73,9 +73,7 @@ func (a app) List(ctx context.Context, page, pageSize uint) ([]model.Ketchup, ui
 		return nil
 	}
 
-	err := db.List(ctx, a.db, scanner, listQuery, pageSize, (page-1)*pageSize, user.ID)
-
-	return list, totalCount, err
+	return list, totalCount, db.List(ctx, a.db, scanner, listQuery, pageSize, (page-1)*pageSize, user.ID)
 }
 
 const listByRepositoriesIDQuery = `
@@ -105,12 +103,7 @@ func (a app) ListByRepositoriesID(ctx context.Context, ids []uint64) ([]model.Ke
 		return nil
 	}
 
-	err := db.List(ctx, a.db, scanner, listByRepositoriesIDQuery, pq.Array(ids))
-	if err != nil {
-		return nil, err
-	}
-
-	return list, err
+	return list, db.List(ctx, a.db, scanner, listByRepositoriesIDQuery, pq.Array(ids))
 }
 
 const getQuery = `
@@ -146,8 +139,7 @@ func (a app) GetByRepositoryID(ctx context.Context, id uint64, forUpdate bool) (
 		return err
 	}
 
-	err := db.Get(ctx, a.db, scanner, query, id, user.ID)
-	return item, err
+	return item, db.Get(ctx, a.db, scanner, query, id, user.ID)
 }
 
 const insertQuery = `

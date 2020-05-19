@@ -193,7 +193,7 @@ func TestListByRepositoriesID(t *testing.T) {
 				ids: []uint64{1, 2},
 			},
 			"SELECT k.version, k.repository_id, k.user_id, u.email FROM ketchup k, \"user\" u WHERE repository_id = ANY .+ AND k.user_id = u.id",
-			nil,
+			make([]model.Ketchup, 0),
 			sqlmock.ErrCancelled,
 		},
 		{
@@ -202,7 +202,7 @@ func TestListByRepositoriesID(t *testing.T) {
 				ids: []uint64{1, 2},
 			},
 			"SELECT k.version, k.repository_id, k.user_id, u.email FROM ketchup k, \"user\" u WHERE repository_id = ANY .+ AND k.user_id = u.id",
-			nil,
+			make([]model.Ketchup, 0),
 			errors.New("converting driver.Value type string (\"a\") to a uint64: invalid syntax"),
 		},
 	}

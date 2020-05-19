@@ -68,9 +68,7 @@ func (a app) List(ctx context.Context, page, pageSize uint) ([]model.Repository,
 		return nil
 	}
 
-	err := db.List(ctx, a.db, scanner, listQuery, pageSize, (page-1)*pageSize)
-
-	return list, totalCount, err
+	return list, totalCount, db.List(ctx, a.db, scanner, listQuery, pageSize, (page-1)*pageSize)
 }
 
 const getQuery = `
@@ -101,8 +99,7 @@ func (a app) Get(ctx context.Context, id uint64, forUpdate bool) (model.Reposito
 		return err
 	}
 
-	err := db.Get(ctx, a.db, scanner, query, id)
-	return item, err
+	return item, db.Get(ctx, a.db, scanner, query, id)
 }
 
 const getByNameQuery = `
