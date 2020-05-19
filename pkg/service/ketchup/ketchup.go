@@ -166,18 +166,14 @@ func (a app) check(ctx context.Context, old, new model.Ketchup) error {
 
 func enrichSemver(list []model.Ketchup) []model.Ketchup {
 	output := make([]model.Ketchup, len(list))
+
 	for index, item := range list {
-		repositoryVersion, err := semver.Parse(item.Repository.Version)
-		if err != nil {
-			continue
+		repositoryVersion, repositoryErr := semver.Parse(item.Repository.Version)
+		ketchupVersion, ketchupErr := semver.Parse(item.Version)
+		if repositoryErr == nil && ketchupErr == nil {
+			item.Semver = repositoryVersion.Compare(ketchupVersion)
 		}
 
-		ketchupVersion, err := semver.Parse(item.Version)
-		if err != nil {
-			continue
-		}
-
-		item.Semver = repositoryVersion.Compare(ketchupVersion)
 		output[index] = item
 	}
 
