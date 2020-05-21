@@ -4,10 +4,12 @@ import (
 	"fmt"
 	"regexp"
 	"strconv"
+	"strings"
 )
 
 var (
-	semverMatcher = regexp.MustCompile(`(?i)^[a-zA-Z]*([0-9]+)\.([0-9]+)(?:\.([0-9]+))?`)
+	semverMatcher       = regexp.MustCompile(`(?i)^[a-zA-Z]*([0-9]+)\.([0-9]+)(?:\.([0-9]+))?(?:$|(?:[+-](.*)))`)
+	ignoredSemverDetail = []string{"rc", "beta"}
 
 	// NoneVersion is the empty semver
 	NoneVersion = Version{}
@@ -59,6 +61,12 @@ func Parse(version string) (Version, error) {
 	matches := semverMatcher.FindStringSubmatch(version)
 	if len(matches) == 0 {
 		return NoneVersion, fmt.Errorf("unable to parse version: %s", version)
+	}
+
+	for _, ignoredDetail := range ignoredSemverDetail {
+		if strings.Contains(matches[4], ignoredDetail) {
+			return NoneVersion, fmt.Errorf("ignoring %s version", ignoredDetail)
+		}
 	}
 
 	semver := Version{}
