@@ -158,9 +158,25 @@ func TestParse(t *testing.T) {
 			errors.New("unable to parse version"),
 		},
 		{
+			"no a semver",
+			args{
+				version: "v2.2.1.0-0.3.rc3",
+			},
+			NoneVersion,
+			errors.New("unable to parse version"),
+		},
+		{
+			"ignore rc or beta",
+			args{
+				version: "v2.27.0-rc1",
+			},
+			NoneVersion,
+			errors.New("ignoring rc version"),
+		},
+		{
 			"major and minor only",
 			args{
-				version: "v1.25.xyz",
+				version: "v1.25+xyz",
 			},
 			Version{1, 25, 0},
 			nil,
