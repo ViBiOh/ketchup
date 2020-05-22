@@ -1,6 +1,8 @@
 package model
 
-import "github.com/ViBiOh/ketchup/pkg/github"
+import (
+	"github.com/ViBiOh/ketchup/pkg/semver"
+)
 
 var (
 	// NoneKetchup is an undefined ketchup
@@ -48,8 +50,8 @@ func (a KetchupByPriority) Swap(i, j int) { a[i], a[j] = a[j], a[i] }
 
 // Release is when new version is out
 type Release struct {
-	Repository Repository
-	Release    github.Release
+	Repository Repository     `json:"repository"`
+	Version    semver.Version `json:"version"`
 }
 
 // ReleaseByRepositoryID sort release by repository ID
@@ -59,10 +61,10 @@ func (a ReleaseByRepositoryID) Len() int           { return len(a) }
 func (a ReleaseByRepositoryID) Less(i, j int) bool { return a[i].Repository.ID < a[j].Repository.ID }
 func (a ReleaseByRepositoryID) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
 
-// NewRelease creates a new release from its objects
-func NewRelease(repository Repository, release github.Release) Release {
+// NewRelease creates a new version from its objects
+func NewRelease(repository Repository, version semver.Version) Release {
 	return Release{
 		Repository: repository,
-		Release:    release,
+		Version:    version,
 	}
 }

@@ -17,12 +17,6 @@ var (
 	apiURL = "https://api.github.com"
 )
 
-// Release describes a Github Release
-type Release struct {
-	Repository string `json:"repository"`
-	TagName    string `json:"tag_name"`
-}
-
 // Tag describes a Github Tag
 type Tag struct {
 	Name string `json:"name"`
@@ -30,7 +24,7 @@ type Tag struct {
 
 // App of package
 type App interface {
-	LastRelease(repository string) (Release, error)
+	LatestVersion(repository string) (semver.Version, error)
 }
 
 // Config of package
@@ -60,73 +54,40 @@ func (a app) newClient() *request.Request {
 	return request.New().Header("Authorization", fmt.Sprintf("token %s", a.token))
 }
 
-func (a app) LastRelease(repository string) (Release, error) {
-	release, latestErr := a.latestRelease(repository)
-	if latestErr == nil {
-		return release, nil
+func (a app) LatestVersion(repository string) (semver.Version, error) {
+	version, err := a.parseTags(repository)
+	if err != nil {
+		return version, fmt.Errorf("unable to retrieve version: %s", err)
 	}
 
-	release, tagsErr := a.parseTags(repository)
-	if tagsErr == nil {
-		return release, nil
-	}
-
-	return Release{}, fmt.Errorf("unable to retrieve release: %s then %s", latestErr, tagsErr)
+	return version, nil
 }
 
-func (a app) latestRelease(repository string) (Release, error) {
-	var release Release
-
-	req := a.newClient()
-	resp, err := req.Get(fmt.Sprintf("%s/repos/%s/releases/latest", apiURL, repository)).Send(context.Background(), nil)
-	if err != nil {
-		return release, fmt.Errorf("unable to get latest release for %s: %s", repository, err)
-	}
-
-	payload, err := request.ReadBodyResponse(resp)
-	if err != nil {
-		return release, fmt.Errorf("unable to read release body for %s: %s", repository, err)
-	}
-
-	if err := json.Unmarshal(payload, &release); err != nil {
-		return release, fmt.Errorf("unable to parse release body for %s: %s", repository, err)
-	}
-
-	release.Repository = repository
-
-	return release, err
-}
-
-func (a app) parseTags(repository string) (Release, error) {
-	release := Release{
-		Repository: repository,
-	}
-
+func (a app) parseTags(repository string) (semver.Version, error) {
 	page := 1
-	version := semver.Version{}
+	var version semver.Version
 
 	req := a.newClient()
 	for {
 		resp, err := req.Get(fmt.Sprintf("%s/repos/%s/tags?per_page=100&page=%d", apiURL, repository, page)).Send(context.Background(), nil)
 		if err != nil {
-			return release, fmt.Errorf("unable to get tags %s: %s", repository, err)
+			return version, fmt.Errorf("unable to list page %d of tags: %s", page, err)
 		}
 
 		payload, err := request.ReadBodyResponse(resp)
 		if err != nil {
-			return release, fmt.Errorf("unable to read tags body for %s: %s", repository, err)
+			return version, fmt.Errorf("unable to read page %d tags body: %s", page, err)
 		}
 
 		var tags []Tag
 		if err := json.Unmarshal(payload, &tags); err != nil {
-			return release, fmt.Errorf("unable to parse tags body for %s: %s", repository, err)
+			return version, fmt.Errorf("unable to parse page %d tags body: %s", page, err)
 		}
 
 		for _, tag := range tags {
 			tagVersion, err := semver.Parse(tag.Name)
 			if err == nil && tagVersion.IsGreater(version) {
 				version = tagVersion
-				release.TagName = tag.Name
 			}
 		}
 
@@ -137,19 +98,13 @@ func (a app) parseTags(repository string) (Release, error) {
 		page++
 	}
 
-	if len(release.TagName) == 0 {
-		return release, fmt.Errorf("unable to find semver in tags for %s", repository)
+	if version == semver.NoneVersion {
+		return version, fmt.Errorf("unable to find semver in tags for %s", repository)
 	}
 
-	return release, nil
+	return version, nil
 }
 
 func isLastPage(resp *http.Response) bool {
-	for _, link := range resp.Header.Values("Link") {
-		if strings.Contains(link, `rel="next"`) {
-			return true
-		}
-	}
-
-	return false
+	return !strings.Contains(resp.Header.Get("Link"), `rel="next"`)
 }

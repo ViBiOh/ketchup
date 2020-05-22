@@ -7,8 +7,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ViBiOh/ketchup/pkg/github"
 	"github.com/ViBiOh/ketchup/pkg/model"
+	"github.com/ViBiOh/ketchup/pkg/semver"
 	"github.com/ViBiOh/ketchup/pkg/service"
 )
 
@@ -93,12 +93,12 @@ func (trs testRepositoryStore) DeleteUnused(ctx context.Context) error {
 
 type testGithubApp struct{}
 
-func (tga testGithubApp) LastRelease(repository string) (github.Release, error) {
+func (tga testGithubApp) LatestVersion(repository string) (semver.Version, error) {
 	if repository == "invalid" {
-		return github.Release{}, errors.New("not found")
+		return semver.Version{}, errors.New("not found")
 	}
 
-	return github.Release{TagName: "1.0.0"}, nil
+	return semver.Version{Name: "1.0.0"}, nil
 }
 
 func TestList(t *testing.T) {
