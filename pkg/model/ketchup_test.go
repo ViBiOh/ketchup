@@ -5,7 +5,7 @@ import (
 	"sort"
 	"testing"
 
-	"github.com/ViBiOh/ketchup/pkg/github"
+	"github.com/ViBiOh/ketchup/pkg/semver"
 )
 
 func TestKetchupByRepositoryID(t *testing.T) {
@@ -134,13 +134,13 @@ func TestReleaseByRepositoryID(t *testing.T) {
 			"simple",
 			args{
 				array: []Release{
-					NewRelease(Repository{ID: 10}, github.Release{}),
-					NewRelease(Repository{ID: 1}, github.Release{}),
+					NewRelease(Repository{ID: 10}, semver.Version{}),
+					NewRelease(Repository{ID: 1}, semver.Version{}),
 				},
 			},
 			[]Release{
-				NewRelease(Repository{ID: 1}, github.Release{}),
-				NewRelease(Repository{ID: 10}, github.Release{}),
+				NewRelease(Repository{ID: 1}, semver.Version{}),
+				NewRelease(Repository{ID: 10}, semver.Version{}),
 			},
 		},
 	}

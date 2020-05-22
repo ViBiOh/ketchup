@@ -8,8 +8,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ViBiOh/ketchup/pkg/github"
 	"github.com/ViBiOh/ketchup/pkg/model"
+	"github.com/ViBiOh/ketchup/pkg/semver"
 )
 
 type testKetchupService struct{}
@@ -89,8 +89,8 @@ func TestFlags(t *testing.T) {
 func TestGetKetchupToNotify(t *testing.T) {
 	firstRelease := []model.Release{
 		{
-			Release: github.Release{
-				TagName: "1.0.1",
+			Version: semver.Version{
+				Name: "1.0.1",
 			},
 			Repository: model.Repository{
 				ID:      1,
@@ -102,8 +102,8 @@ func TestGetKetchupToNotify(t *testing.T) {
 
 	secondRelease := []model.Release{
 		{
-			Release: github.Release{
-				TagName: "1.0.1",
+			Version: semver.Version{
+				Name: "1.0.1",
 			},
 			Repository: model.Repository{
 				ID:      1,
@@ -112,8 +112,8 @@ func TestGetKetchupToNotify(t *testing.T) {
 			},
 		},
 		{
-			Release: github.Release{
-				TagName: "1.0.1",
+			Version: semver.Version{
+				Name: "1.0.1",
 			},
 			Repository: model.Repository{
 				ID:      2,

@@ -67,12 +67,12 @@ func (a app) create(ctx context.Context, item model.Repository) (model.Repositor
 		return model.NoneRepository, service.WrapInvalid(err)
 	}
 
-	release, err := a.githubApp.LastRelease(item.Name)
+	version, err := a.githubApp.LatestVersion(item.Name)
 	if err != nil {
 		return model.NoneRepository, fmt.Errorf("no release found for %s: %w", item.Name, service.ErrNotFound)
 	}
 
-	item.Version = release.TagName
+	item.Version = version.Name
 
 	err = a.repositoryStore.DoAtomic(ctx, func(ctx context.Context) error {
 		id, err := a.repositoryStore.Create(ctx, item)

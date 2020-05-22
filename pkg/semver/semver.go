@@ -17,9 +17,10 @@ var (
 
 // Version describe a semantic version
 type Version struct {
-	Major uint64
-	Minor uint64
-	Patch uint64
+	Name  string `json:"name"`
+	Major uint64 `json:"major"`
+	Minor uint64 `json:"minor"`
+	Patch uint64 `json:"patch"`
 }
 
 // IsGreater check if current version is greater than other
@@ -69,7 +70,9 @@ func Parse(version string) (Version, error) {
 		}
 	}
 
-	semver := Version{}
+	semver := Version{
+		Name: version,
+	}
 	var err error
 
 	semver.Major, err = strconv.ParseUint(matches[1], 10, 64)

@@ -19,57 +19,57 @@ func TestIsGreater(t *testing.T) {
 	}{
 		{
 			"major",
-			Version{2, 0, 0},
+			Version{"", 2, 0, 0},
 			args{
-				other: Version{1, 0, 0},
+				other: Version{"", 1, 0, 0},
 			},
 			true,
 		},
 		{
 			"minor",
-			Version{1, 1, 0},
+			Version{"", 1, 1, 0},
 			args{
-				other: Version{1, 0, 0},
+				other: Version{"", 1, 0, 0},
 			},
 			true,
 		},
 		{
 			"minor with major greater",
-			Version{1, 1, 0},
+			Version{"", 1, 1, 0},
 			args{
-				other: Version{2, 0, 0},
+				other: Version{"", 2, 0, 0},
 			},
 			false,
 		},
 		{
 			"patch",
-			Version{1, 0, 1},
+			Version{"", 1, 0, 1},
 			args{
-				other: Version{1, 0, 0},
+				other: Version{"", 1, 0, 0},
 			},
 			true,
 		},
 		{
 			"patch with major greater",
-			Version{1, 0, 1},
+			Version{"", 1, 0, 1},
 			args{
-				other: Version{2, 0, 0},
+				other: Version{"", 2, 0, 0},
 			},
 			false,
 		},
 		{
 			"patch with minor greater",
-			Version{1, 0, 1},
+			Version{"", 1, 0, 1},
 			args{
-				other: Version{1, 1, 0},
+				other: Version{"", 1, 1, 0},
 			},
 			false,
 		},
 		{
 			"equal",
-			Version{1, 0, 0},
+			Version{"", 1, 0, 0},
 			args{
-				other: Version{1, 0, 0},
+				other: Version{"", 1, 0, 0},
 			},
 			false,
 		},
@@ -97,33 +97,33 @@ func TestCompare(t *testing.T) {
 	}{
 		{
 			"major",
-			Version{1, 0, 0},
+			Version{"", 1, 0, 0},
 			args{
-				other: Version{0, 0, 0},
+				other: Version{"", 0, 0, 0},
 			},
 			"Major",
 		},
 		{
 			"minor",
-			Version{1, 0, 0},
+			Version{"", 1, 0, 0},
 			args{
-				other: Version{1, 2, 0},
+				other: Version{"", 1, 2, 0},
 			},
 			"Minor",
 		},
 		{
 			"patch",
-			Version{1, 0, 1},
+			Version{"", 1, 0, 1},
 			args{
-				other: Version{1, 0, 0},
+				other: Version{"", 1, 0, 0},
 			},
 			"Patch",
 		},
 		{
 			"equal",
-			Version{1, 0, 0},
+			Version{"", 1, 0, 0},
 			args{
-				other: Version{1, 0, 0},
+				other: Version{"", 1, 0, 0},
 			},
 			"",
 		},
@@ -178,7 +178,7 @@ func TestParse(t *testing.T) {
 			args{
 				version: "v1.25+xyz",
 			},
-			Version{1, 25, 0},
+			Version{"v1.25+xyz", 1, 25, 0},
 			nil,
 		},
 		{
@@ -186,7 +186,7 @@ func TestParse(t *testing.T) {
 			args{
 				version: "v1.2.3",
 			},
-			Version{1, 2, 3},
+			Version{"v1.2.3", 1, 2, 3},
 			nil,
 		},
 		{
@@ -194,7 +194,7 @@ func TestParse(t *testing.T) {
 			args{
 				version: "v1.2.3+abcdef123456",
 			},
-			Version{1, 2, 3},
+			Version{"v1.2.3+abcdef123456", 1, 2, 3},
 			nil,
 		},
 	}

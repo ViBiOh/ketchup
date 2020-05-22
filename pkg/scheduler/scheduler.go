@@ -116,29 +116,28 @@ func (a app) getNewReleases(ctx context.Context) ([]model.Release, error) {
 		for _, repository := range repositories {
 			count++
 
-			release, err := a.githubApp.LastRelease(repository.Name)
+			latestVersion, err := a.githubApp.LatestVersion(repository.Name)
 			if err != nil {
-				return nil, err
+				return nil, fmt.Errorf("unable to get latest version of %s: %s", repository.Name, err)
 			}
 
-			if release.TagName == repository.Version {
+			if latestVersion.Name == repository.Version {
 				continue
 			}
 
-			releaseVersion, releaseErr := semver.Parse(release.TagName)
 			repositoryVersion, repositoryErr := semver.Parse(repository.Version)
-			if releaseErr == nil && repositoryErr == nil && repositoryVersion.IsGreater(releaseVersion) {
+			if repositoryErr == nil && repositoryVersion.IsGreater(latestVersion) {
 				continue
 			}
 
-			logger.Info("New version available for %s: %s", repository.Name, release.TagName)
-			repository.Version = release.TagName
+			logger.Info("New version available for %s: %s", repository.Name, latestVersion.Name)
+			repository.Version = latestVersion.Name
 
 			if err := a.repositoryService.Update(ctx, repository); err != nil {
 				return nil, fmt.Errorf("unable to update repository %s: %s", repository.Name, err)
 			}
 
-			newReleases = append(newReleases, model.NewRelease(repository, release))
+			newReleases = append(newReleases, model.NewRelease(repository, latestVersion))
 		}
 
 		if uint64(page*pageSize) < totalCount {
@@ -176,7 +175,7 @@ func (a app) getKetchupToNotify(ctx context.Context, releases []model.Release) (
 				break
 			}
 
-			if ketchup.Version != release.Release.TagName {
+			if ketchup.Version != release.Version.Name {
 				if userToNotify[ketchup.User] != nil {
 					userToNotify[ketchup.User] = append(userToNotify[ketchup.User], release)
 				} else {
@@ -206,13 +205,8 @@ func (a app) sendNotification(ctx context.Context, ketchupToNotify map[model.Use
 	for user, releases := range ketchupToNotify {
 		logger.Info("Sending email to %s for %d releases", user.Email, len(releases))
 
-		githubReleases := make([]github.Release, len(releases))
-		for index, release := range releases {
-			githubReleases[index] = release.Release
-		}
-
 		payload := map[string]interface{}{
-			"releases": githubReleases,
+			"releases": releases,
 		}
 
 		email := mailer.NewEmail(a.mailerApp).Template("ketchup").From("ketchup@vibioh.fr").As("Ketchup").To(user.Email).Data(payload)
