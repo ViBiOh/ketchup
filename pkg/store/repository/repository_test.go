@@ -33,7 +33,7 @@ func TestList(t *testing.T) {
 				page:     1,
 				pageSize: 20,
 			},
-			"SELECT id, name, version, .+ AS full_count FROM repository",
+			"SELECT id, name, version, .+ AS full_count FROM ketchup.repository",
 			[]model.Repository{
 				{
 					ID:      1,
@@ -55,7 +55,7 @@ func TestList(t *testing.T) {
 				page:     1,
 				pageSize: 20,
 			},
-			"SELECT id, name, version, .+ AS full_count FROM repository",
+			"SELECT id, name, version, .+ AS full_count FROM ketchup.repository",
 			[]model.Repository{},
 			0,
 			sqlmock.ErrCancelled,
@@ -66,7 +66,7 @@ func TestList(t *testing.T) {
 				page:     1,
 				pageSize: 20,
 			},
-			"SELECT id, name, version, .+ AS full_count FROM repository",
+			"SELECT id, name, version, .+ AS full_count FROM ketchup.repository",
 			[]model.Repository{},
 			0,
 			errors.New("converting driver.Value type string (\"a\") to a uint64: invalid syntax"),
@@ -144,7 +144,7 @@ func TestGet(t *testing.T) {
 			args{
 				id: 1,
 			},
-			"SELECT id, name, version FROM repository WHERE id =",
+			"SELECT id, name, version FROM ketchup.repository WHERE id =",
 			model.Repository{
 				ID:      1,
 				Name:    "vibioh/ketchup",
@@ -158,7 +158,7 @@ func TestGet(t *testing.T) {
 				id:        1,
 				forUpdate: true,
 			},
-			"SELECT id, name, version FROM repository WHERE id = .+ FOR UPDATE",
+			"SELECT id, name, version FROM ketchup.repository WHERE id = .+ FOR UPDATE",
 			model.Repository{
 				ID:      1,
 				Name:    "vibioh/ketchup",
@@ -171,7 +171,7 @@ func TestGet(t *testing.T) {
 			args{
 				id: 1,
 			},
-			"SELECT id, name, version FROM repository WHERE id =",
+			"SELECT id, name, version FROM ketchup.repository WHERE id =",
 			model.NoneRepository,
 			nil,
 		},
@@ -254,7 +254,7 @@ func TestGetByName(t *testing.T) {
 			defer mockDb.Close()
 
 			rows := sqlmock.NewRows([]string{"id", "email", "login_id"})
-			mock.ExpectQuery("SELECT id, name, version FROM repository WHERE name =").WithArgs("vibioh/ketchup").WillReturnRows(rows)
+			mock.ExpectQuery("SELECT id, name, version FROM ketchup.repository WHERE name =").WithArgs("vibioh/ketchup").WillReturnRows(rows)
 
 			if tc.intention != "no rows" {
 				rows.AddRow(1, "vibioh/ketchup", "1.0.0")
@@ -354,13 +354,13 @@ func TestCreate(t *testing.T) {
 			}
 			ctx = db.StoreTx(ctx, tx)
 
-			lockQuery := mock.ExpectExec("LOCK repository IN SHARE ROW EXCLUSIVE MODE")
+			lockQuery := mock.ExpectExec("LOCK ketchup.repository IN SHARE ROW EXCLUSIVE MODE")
 			if tc.intention == "error lock" {
 				lockQuery.WillReturnError(errors.New("unable to obtain lock"))
 			} else {
 				lockQuery.WillReturnResult(sqlmock.NewResult(0, 0))
 
-				getQuery := mock.ExpectQuery("SELECT id, name, version FROM repository WHERE name =").WithArgs("vibioh/ketchup")
+				getQuery := mock.ExpectQuery("SELECT id, name, version FROM ketchup.repository WHERE name =").WithArgs("vibioh/ketchup")
 
 				if tc.intention == "error get" {
 					getQuery.WillReturnError(errors.New("unable to read"))
@@ -369,7 +369,7 @@ func TestCreate(t *testing.T) {
 					getQuery.WillReturnRows(rows)
 
 					if tc.intention == "no rows" {
-						mock.ExpectQuery("INSERT INTO repository").WithArgs("vibioh/ketchup", "1.0.0").WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(1))
+						mock.ExpectQuery("INSERT INTO ketchup.repository").WithArgs("vibioh/ketchup", "1.0.0").WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(1))
 					} else {
 						rows.AddRow(1, "vibioh/ketchup", "1.0.0")
 					}
@@ -441,7 +441,7 @@ func TestUpdate(t *testing.T) {
 			}
 			ctx = db.StoreTx(ctx, tx)
 
-			mock.ExpectExec("UPDATE repository SET version").WithArgs(1, "1.0.0").WillReturnResult(sqlmock.NewResult(0, 1))
+			mock.ExpectExec("UPDATE ketchup.repository SET version").WithArgs(1, "1.0.0").WillReturnResult(sqlmock.NewResult(0, 1))
 
 			gotErr := New(mockDb).Update(ctx, tc.args.o)
 
@@ -489,7 +489,7 @@ func TestDeleteUnused(t *testing.T) {
 			}
 			ctx = db.StoreTx(ctx, tx)
 
-			mock.ExpectExec("DELETE FROM repository WHERE id NOT IN").WillReturnResult(sqlmock.NewResult(0, 1))
+			mock.ExpectExec("DELETE FROM ketchup.repository WHERE id NOT IN").WillReturnResult(sqlmock.NewResult(0, 1))
 
 			gotErr := New(mockDb).DeleteUnused(ctx)
 

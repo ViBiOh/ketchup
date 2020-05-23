@@ -45,8 +45,8 @@ SELECT
   r.version,
   count(1) OVER() AS full_count
 FROM
-  ketchup k,
-  repository r
+  ketchup.ketchup k,
+  ketchup.repository r
 WHERE
   user_id = $3
   AND repository_id = id
@@ -83,8 +83,8 @@ SELECT
   k.user_id,
   u.email
 FROM
-  ketchup k,
-  "user" u
+  ketchup.ketchup k,
+  ketchup.user u
 WHERE
   repository_id = ANY ($1)
   AND k.user_id = u.id
@@ -112,7 +112,7 @@ SELECT
   repository_id,
   user_id
 FROM
-  ketchup
+  ketchup.ketchup
 WHERE
   repository_id = $1
   AND user_id = $2
@@ -144,7 +144,7 @@ func (a app) GetByRepositoryID(ctx context.Context, id uint64, forUpdate bool) (
 
 const insertQuery = `
 INSERT INTO
-  ketchup
+  ketchup.ketchup
 (
   version,
   repository_id,
@@ -162,7 +162,7 @@ func (a app) Create(ctx context.Context, o model.Ketchup) (uint64, error) {
 
 const updateQuery = `
 UPDATE
-  ketchup
+  ketchup.ketchup
 SET
   version = $3
 WHERE
@@ -176,7 +176,7 @@ func (a app) Update(ctx context.Context, o model.Ketchup) error {
 
 const deleteQuery = `
 DELETE FROM
-  ketchup
+  ketchup.ketchup
 WHERE
   repository_id = $1
   AND user_id = $2
