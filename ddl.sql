@@ -21,7 +21,7 @@ CREATE SEQUENCE ketchup.user_seq;
 CREATE TABLE ketchup.user (
   id BIGINT NOT NULL DEFAULT nextval('ketchup.user_seq'),
   email TEXT NOT NULL,
-  login_id BIGINT NOT NULL REFERENCES login(id) ON DELETE CASCADE,
+  login_id BIGINT NOT NULL REFERENCES auth.login(id) ON DELETE CASCADE,
   creation_date TIMESTAMP WITH TIME ZONE DEFAULT now()
 );
 ALTER SEQUENCE ketchup.user_seq OWNED BY ketchup.user.id;
@@ -58,7 +58,7 @@ DO $$
   DECLARE login_id BIGINT;
   DECLARE profile_id BIGINT;
   BEGIN
-    INSERT INTO login (login, password) VALUES ('scheduler', 'service-account') RETURNING id INTO login_id;
-    INSERT INTO profile (name) VALUES ('admin') RETURNING id INTO profile_id;
-    INSERT INTO login_profile (login_id, profile_id) VALUES (login_id, profile_id);
+    INSERT INTO auth.login (login, password) VALUES ('scheduler', 'service-account') RETURNING id INTO login_id;
+    INSERT INTO auth.profile (name) VALUES ('admin') RETURNING id INTO profile_id;
+    INSERT INTO auth.login_profile (login_id, profile_id) VALUES (login_id, profile_id);
 END $$;
