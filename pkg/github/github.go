@@ -91,7 +91,7 @@ func (a app) parseTags(repository string) (semver.Version, error) {
 			}
 		}
 
-		if !isLastPage(resp) {
+		if !hasNext(resp) {
 			break
 		}
 
@@ -105,6 +105,12 @@ func (a app) parseTags(repository string) (semver.Version, error) {
 	return version, nil
 }
 
-func isLastPage(resp *http.Response) bool {
-	return !strings.Contains(resp.Header.Get("Link"), `rel="next"`)
+func hasNext(resp *http.Response) bool {
+	for _, value := range resp.Header.Values("Link") {
+		if strings.Contains(value, `rel="next"`) {
+			return true
+		}
+	}
+
+	return false
 }
