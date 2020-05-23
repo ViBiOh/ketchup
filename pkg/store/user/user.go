@@ -40,7 +40,7 @@ SELECT
   email,
   login_id
 FROM
-  "user"
+  ketchup.user
 WHERE
   email = $1
 `
@@ -67,7 +67,7 @@ SELECT
   email,
   login_id
 FROM
-  "user"
+  ketchup.user
 WHERE
   login_id = $1
 `
@@ -90,7 +90,7 @@ func (a app) GetByLoginID(ctx context.Context, loginID uint64) (model.User, erro
 
 const insertQuery = `
 INSERT INTO
-  "user"
+  ketchup.user
 (
   email,
   login_id

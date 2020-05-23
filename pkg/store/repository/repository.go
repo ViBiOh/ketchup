@@ -49,7 +49,7 @@ SELECT
   version,
   count(1) OVER() AS full_count
 FROM
-  repository
+  ketchup.repository
 LIMIT $1
 OFFSET $2
 `
@@ -77,7 +77,7 @@ SELECT
   name,
   version
 FROM
-  repository
+  ketchup.repository
 WHERE
   id = $1
 `
@@ -108,7 +108,7 @@ SELECT
   name,
   version
 FROM
-  repository
+  ketchup.repository
 WHERE
   name = $1
 `
@@ -130,12 +130,12 @@ func (a app) GetByName(ctx context.Context, name string) (model.Repository, erro
 }
 
 const insertLock = `
-LOCK repository IN SHARE ROW EXCLUSIVE MODE
+LOCK ketchup.repository IN SHARE ROW EXCLUSIVE MODE
 `
 
 const insertQuery = `
 INSERT INTO
-  repository
+  ketchup.repository
 (
   name,
   version
@@ -164,7 +164,7 @@ func (a app) Create(ctx context.Context, o model.Repository) (uint64, error) {
 
 const updateRepositoryQuery = `
 UPDATE
-  repository
+  ketchup.repository
 SET
   version = $2
 WHERE
@@ -177,7 +177,7 @@ func (a app) Update(ctx context.Context, o model.Repository) error {
 
 const deleteQuery = `
 DELETE FROM
-  repository
+  ketchup.repository
 WHERE
   id NOT IN (
     SELECT

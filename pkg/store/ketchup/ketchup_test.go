@@ -38,7 +38,7 @@ func TestList(t *testing.T) {
 				page:     1,
 				pageSize: 20,
 			},
-			"SELECT k.version, k.repository_id, r.name, r.version, .+ AS full_count FROM ketchup k, repository r WHERE user_id = .+ AND repository_id = id",
+			"SELECT k.version, k.repository_id, r.name, r.version, .+ AS full_count FROM ketchup.ketchup k, ketchup.repository r WHERE user_id = .+ AND repository_id = id",
 			[]model.Ketchup{
 				{
 					Version: "0.9.0",
@@ -74,7 +74,7 @@ func TestList(t *testing.T) {
 				page:     1,
 				pageSize: 20,
 			},
-			"SELECT k.version, k.repository_id, r.name, r.version, .+ AS full_count FROM ketchup k, repository r WHERE user_id = .+ AND repository_id = id",
+			"SELECT k.version, k.repository_id, r.name, r.version, .+ AS full_count FROM ketchup.ketchup k, ketchup.repository r WHERE user_id = .+ AND repository_id = id",
 			[]model.Ketchup{},
 			0,
 			sqlmock.ErrCancelled,
@@ -85,7 +85,7 @@ func TestList(t *testing.T) {
 				page:     1,
 				pageSize: 20,
 			},
-			"SELECT k.version, k.repository_id, r.name, r.version, .+ AS full_count FROM ketchup k, repository r WHERE user_id = .+ AND repository_id = id",
+			"SELECT k.version, k.repository_id, r.name, r.version, .+ AS full_count FROM ketchup.ketchup k, ketchup.repository r WHERE user_id = .+ AND repository_id = id",
 			[]model.Ketchup{},
 			0,
 			errors.New("converting driver.Value type string (\"a\") to a uint64: invalid syntax"),
@@ -162,7 +162,7 @@ func TestListByRepositoriesID(t *testing.T) {
 			args{
 				ids: []uint64{1, 2},
 			},
-			"SELECT k.version, k.repository_id, k.user_id, u.email FROM ketchup k, \"user\" u WHERE repository_id = ANY .+ AND k.user_id = u.id",
+			"SELECT k.version, k.repository_id, k.user_id, u.email FROM ketchup.ketchup k, ketchup.user u WHERE repository_id = ANY .+ AND k.user_id = u.id",
 			[]model.Ketchup{
 				{
 					Version: "0.9.0",
@@ -192,7 +192,7 @@ func TestListByRepositoriesID(t *testing.T) {
 			args{
 				ids: []uint64{1, 2},
 			},
-			"SELECT k.version, k.repository_id, k.user_id, u.email FROM ketchup k, \"user\" u WHERE repository_id = ANY .+ AND k.user_id = u.id",
+			"SELECT k.version, k.repository_id, k.user_id, u.email FROM ketchup.ketchup k, ketchup.user u WHERE repository_id = ANY .+ AND k.user_id = u.id",
 			make([]model.Ketchup, 0),
 			sqlmock.ErrCancelled,
 		},
@@ -201,7 +201,7 @@ func TestListByRepositoriesID(t *testing.T) {
 			args{
 				ids: []uint64{1, 2},
 			},
-			"SELECT k.version, k.repository_id, k.user_id, u.email FROM ketchup k, \"user\" u WHERE repository_id = ANY .+ AND k.user_id = u.id",
+			"SELECT k.version, k.repository_id, k.user_id, u.email FROM ketchup.ketchup k, ketchup.user u WHERE repository_id = ANY .+ AND k.user_id = u.id",
 			make([]model.Ketchup, 0),
 			errors.New("converting driver.Value type string (\"a\") to a uint64: invalid syntax"),
 		},
@@ -276,7 +276,7 @@ func TestGetByRepositoryID(t *testing.T) {
 			args{
 				id: 1,
 			},
-			"SELECT version, repository_id, user_id FROM ketchup WHERE repository_id = .+ AND user_id = .+",
+			"SELECT version, repository_id, user_id FROM ketchup.ketchup WHERE repository_id = .+ AND user_id = .+",
 			model.Ketchup{
 				Version: "0.9.0",
 				Repository: model.Repository{
@@ -294,7 +294,7 @@ func TestGetByRepositoryID(t *testing.T) {
 			args{
 				id: 1,
 			},
-			"SELECT version, repository_id, user_id FROM ketchup WHERE repository_id = .+ AND user_id = .+",
+			"SELECT version, repository_id, user_id FROM ketchup.ketchup WHERE repository_id = .+ AND user_id = .+",
 			model.NoneKetchup,
 			nil,
 		},
@@ -304,7 +304,7 @@ func TestGetByRepositoryID(t *testing.T) {
 				id:        1,
 				forUpdate: true,
 			},
-			"SELECT version, repository_id, user_id FROM ketchup WHERE repository_id = .+ AND user_id = .+ FOR UPDATE",
+			"SELECT version, repository_id, user_id FROM ketchup.ketchup WHERE repository_id = .+ AND user_id = .+ FOR UPDATE",
 			model.Ketchup{
 				Version: "0.9.0",
 				Repository: model.Repository{
@@ -396,7 +396,7 @@ func TestCreate(t *testing.T) {
 			}
 			ctx := db.StoreTx(testCtx, tx)
 
-			mock.ExpectQuery("INSERT INTO ketchup").WithArgs("0.9.0", 1, 3).WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(1))
+			mock.ExpectQuery("INSERT INTO ketchup.ketchup").WithArgs("0.9.0", 1, 3).WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(1))
 
 			got, gotErr := New(mockDb).Create(ctx, tc.args.o)
 
@@ -458,7 +458,7 @@ func TestUpdate(t *testing.T) {
 			}
 			ctx := db.StoreTx(testCtx, tx)
 
-			mock.ExpectExec("UPDATE ketchup SET version").WithArgs(1, 3, "0.9.0").WillReturnResult(sqlmock.NewResult(0, 1))
+			mock.ExpectExec("UPDATE ketchup.ketchup SET version").WithArgs(1, 3, "0.9.0").WillReturnResult(sqlmock.NewResult(0, 1))
 
 			gotErr := New(mockDb).Update(ctx, tc.args.o)
 
@@ -517,7 +517,7 @@ func TestDelete(t *testing.T) {
 			}
 			ctx := db.StoreTx(testCtx, tx)
 
-			mock.ExpectExec("DELETE FROM ketchup").WithArgs(1, 3).WillReturnResult(sqlmock.NewResult(0, 1))
+			mock.ExpectExec("DELETE FROM ketchup.ketchup").WithArgs(1, 3).WillReturnResult(sqlmock.NewResult(0, 1))
 
 			gotErr := New(mockDb).Delete(ctx, tc.args.o)
 
