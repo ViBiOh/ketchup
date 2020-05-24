@@ -183,7 +183,7 @@ WHERE
     SELECT
       DISTINCT repository_id
     FROM
-      ketchup
+      ketchup.ketchup
   )
 `
 
