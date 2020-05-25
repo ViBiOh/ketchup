@@ -7,7 +7,7 @@ var (
 
 // Repository of app
 type Repository struct {
-	ID      uint64
-	Name    string
-	Version string
+	ID      uint64 `json:"id"`
+	Name    string `json:"name"`
+	Version string `json:"version"`
 }
