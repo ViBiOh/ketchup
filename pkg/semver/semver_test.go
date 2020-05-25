@@ -174,6 +174,14 @@ func TestParse(t *testing.T) {
 			errors.New("ignoring rc version"),
 		},
 		{
+			"ignore test",
+			args{
+				version: "1.26.0-test",
+			},
+			NoneVersion,
+			errors.New("ignoring test version"),
+		},
+		{
 			"major and minor only",
 			args{
 				version: "v1.25+xyz",
