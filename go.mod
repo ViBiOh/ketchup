@@ -7,5 +7,5 @@ require (
 	github.com/ViBiOh/auth/v2 v2.5.3
 	github.com/ViBiOh/httputils/v3 v3.20.0
 	github.com/ViBiOh/mailer v1.7.0
-	github.com/lib/pq v1.5.2
+	github.com/lib/pq v1.6.0
 )
