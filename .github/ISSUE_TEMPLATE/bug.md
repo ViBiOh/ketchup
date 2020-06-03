@@ -1,6 +1,6 @@
 ---
 name: Bug report
-about: report a bug to help us improve
+about: Report a bug to help us improve
 title: "[BUG]"
 labels: bug, wait-triage
 assignees: ''

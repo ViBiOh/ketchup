@@ -55,15 +55,6 @@ func (a app) newClient() *request.Request {
 }
 
 func (a app) LatestVersion(repository string) (semver.Version, error) {
-	version, err := a.parseTags(repository)
-	if err != nil {
-		return version, fmt.Errorf("unable to retrieve version: %s", err)
-	}
-
-	return version, nil
-}
-
-func (a app) parseTags(repository string) (semver.Version, error) {
 	page := 1
 	var version semver.Version
 
