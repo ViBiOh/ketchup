@@ -46,9 +46,6 @@ You can configure app by passing CLI args or environment variables (cf. [Usage](
 
 You'll find a Kubernetes exemple (without secrets) in the [`infra/`](infra/) folder.
 
-### Mailer
-
-
 ## Usage
 
 ```bash
@@ -116,6 +113,10 @@ Usage of ketchup:
   -userAgent string
         [alcotest] User-Agent for check {KETCHUP_USER_AGENT} (default "Alcotest")
 ```
+
+## Contributing
+
+Thanks for your interest in contributing! There are many ways to contribute to this project. [Get started here](CONTRIBUTING.md).
 
 ## CI
 
