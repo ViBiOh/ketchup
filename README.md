@@ -18,7 +18,6 @@ Thanks to [FontAwesome](https://fontawesome.com) for icons.
 
 * Timezone aware cron
 * Simple and plain HTML interface, mobile ready
-* Swagger UI documentation available on `/api` endpoint
 * Healthcheck available on `/health` endpoint
 * Version available on `/version` endpoint
 * Prometheus metrics for Golang and HTTP available on `/metrics` endpoint
@@ -32,7 +31,7 @@ Thanks to [FontAwesome](https://fontawesome.com) for icons.
 
 You need a [Github OAuth Token](https://github.com/settings/tokens), with no particular permission, for having a decent rate-limiting when querying Github. Configuration is done by passing `-githubToken` arg or setting equivalent environment variable (cf. [Usage](#usage) section)
 
-You need a Postgres database for storing your datas. I personnaly use free tier of [ElephantSQL](https://www.elephantsql.com). Once setup, you *have to* to create schema with [Auth DDL](https://github.com/ViBiOh/auth/blob/master/ddl.sql) and [Ketchup DDL](ddl.sql). Configuration is done by passing `-dbHost`, `-dbName`, `-dbUser`, `-dbPass` arg or setting equivalent environment variables (cf. [Usage](#usage) section).
+You need a Postgres database for storing your datas. I personnaly use free tier of [ElephantSQL](https://www.elephantsql.com). Once setup, you *have to* to create schema with [Auth DDL](https://github.com/ViBiOh/auth/blob/master/ddl.sql) and [Ketchup DDL](sql/ddl.sql). Configuration is done by passing `-dbHost`, `-dbName`, `-dbUser`, `-dbPass` arg or setting equivalent environment variables (cf. [Usage](#usage) section).
 
 In order to send email, you must configure a [mailer](https://github.com/ViBiOh/mailer#getting-started). Configuration is done by passing `-mailerURL` arg or setting equivalent environment variable (cf. [Usage](#usage) section).
 

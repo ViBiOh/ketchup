@@ -2,7 +2,7 @@
 name: Feature
 about: Feature we can add to the product
 title: "[FEAT]"
-labels: feature, wait-triage
+labels: enhancement, wait-triage
 assignees: ''
 
 ---
