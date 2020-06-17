@@ -3,7 +3,6 @@
 [![Build Status](https://travis-ci.com/ViBiOh/ketchup.svg?branch=master)](https://travis-ci.com/ViBiOh/ketchup)
 [![codecov](https://codecov.io/gh/ViBiOh/ketchup/branch/master/graph/badge.svg)](https://codecov.io/gh/ViBiOh/ketchup)
 [![Go Report Card](https://goreportcard.com/badge/github.com/ViBiOh/ketchup)](https://goreportcard.com/report/github.com/ViBiOh/ketchup)
-[![Dependabot Status](https://api.dependabot.com/badges/status?host=github&repo=ViBiOh/ketchup)](https://dependabot.com)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=ViBiOh_ketchup&metric=alert_status)](https://sonarcloud.io/dashboard?id=ViBiOh_ketchup)
 
 Thanks to [OpenEmoji](https://openmoji.org) for favicon.
