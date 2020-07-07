@@ -84,7 +84,7 @@ func (a app) Create(ctx context.Context, item model.User) (model.User, error) {
 	return output, err
 }
 
-func (a app) check(ctx context.Context, old, new model.User) error {
+func (a app) check(ctx context.Context, _, new model.User) error {
 	if new == model.NoneUser {
 		return nil
 	}

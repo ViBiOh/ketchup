@@ -14,7 +14,7 @@ import (
 
 type testKetchupService struct{}
 
-func (tks testKetchupService) List(ctx context.Context, page, pageSize uint) ([]model.Ketchup, uint64, error) {
+func (tks testKetchupService) List(_ context.Context, _, _ uint) ([]model.Ketchup, uint64, error) {
 	return nil, 0, nil
 }
 
@@ -45,15 +45,15 @@ func (tks testKetchupService) ListForRepositories(ctx context.Context, repositor
 	return nil, nil
 }
 
-func (tks testKetchupService) Create(ctx context.Context, item model.Ketchup) (model.Ketchup, error) {
+func (tks testKetchupService) Create(_ context.Context, _ model.Ketchup) (model.Ketchup, error) {
 	return model.NoneKetchup, nil
 }
 
-func (tks testKetchupService) Update(ctx context.Context, item model.Ketchup) (model.Ketchup, error) {
+func (tks testKetchupService) Update(_ context.Context, _ model.Ketchup) (model.Ketchup, error) {
 	return model.NoneKetchup, nil
 }
 
-func (tks testKetchupService) Delete(ctx context.Context, item model.Ketchup) error {
+func (tks testKetchupService) Delete(_ context.Context, _ model.Ketchup) error {
 	return nil
 }
 

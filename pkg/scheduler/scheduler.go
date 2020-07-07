@@ -113,31 +113,31 @@ func (a app) getNewReleases(ctx context.Context) ([]model.Release, error) {
 			return nil, fmt.Errorf("unable to fetch page %d of repositories: %s", page, err)
 		}
 
-		for _, repository := range repositories {
+		for _, repo := range repositories {
 			count++
 
-			latestVersion, err := a.githubApp.LatestVersion(repository.Name)
+			latestVersion, err := a.githubApp.LatestVersion(repo.Name)
 			if err != nil {
-				return nil, fmt.Errorf("unable to get latest version of %s: %s", repository.Name, err)
+				return nil, fmt.Errorf("unable to get latest version of %s: %s", repo.Name, err)
 			}
 
-			if latestVersion.Name == repository.Version {
+			if latestVersion.Name == repo.Version {
 				continue
 			}
 
-			repositoryVersion, repositoryErr := semver.Parse(repository.Version)
+			repositoryVersion, repositoryErr := semver.Parse(repo.Version)
 			if repositoryErr == nil && repositoryVersion.IsGreater(latestVersion) {
 				continue
 			}
 
-			logger.Info("New version available for %s: %s", repository.Name, latestVersion.Name)
-			repository.Version = latestVersion.Name
+			logger.Info("New version available for %s: %s", repo.Name, latestVersion.Name)
+			repo.Version = latestVersion.Name
 
-			if err := a.repositoryService.Update(ctx, repository); err != nil {
-				return nil, fmt.Errorf("unable to update repository %s: %s", repository.Name, err)
+			if err := a.repositoryService.Update(ctx, repo); err != nil {
+				return nil, fmt.Errorf("unable to update repo %s: %s", repo.Name, err)
 			}
 
-			newReleases = append(newReleases, model.NewRelease(repository, latestVersion))
+			newReleases = append(newReleases, model.NewRelease(repo, latestVersion))
 		}
 
 		if uint64(page*pageSize) < totalCount {
@@ -170,16 +170,16 @@ func (a app) getKetchupToNotify(ctx context.Context, releases []model.Release) (
 
 	for _, release := range releases {
 		for ketchupsIndex < ketchupsSize {
-			ketchup := ketchups[ketchupsIndex]
-			if release.Repository.ID < ketchup.Repository.ID {
+			current := ketchups[ketchupsIndex]
+			if release.Repository.ID < current.Repository.ID {
 				break
 			}
 
-			if ketchup.Version != release.Version.Name {
-				if userToNotify[ketchup.User] != nil {
-					userToNotify[ketchup.User] = append(userToNotify[ketchup.User], release)
+			if current.Version != release.Version.Name {
+				if userToNotify[current.User] != nil {
+					userToNotify[current.User] = append(userToNotify[current.User], release)
 				} else {
-					userToNotify[ketchup.User] = []model.Release{release}
+					userToNotify[current.User] = []model.Release{release}
 				}
 			}
 

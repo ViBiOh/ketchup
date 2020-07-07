@@ -31,7 +31,7 @@ func (tks testKetchupStore) DoAtomic(ctx context.Context, action func(context.Co
 	return err
 }
 
-func (tks testKetchupStore) List(ctx context.Context, page, pageSize uint) ([]model.Ketchup, uint64, error) {
+func (tks testKetchupStore) List(_ context.Context, page, _ uint) ([]model.Ketchup, uint64, error) {
 	if page == 0 {
 		return nil, 0, errors.New("invalid page size")
 	}
@@ -42,7 +42,7 @@ func (tks testKetchupStore) List(ctx context.Context, page, pageSize uint) ([]mo
 	}, 2, nil
 }
 
-func (tks testKetchupStore) ListByRepositoriesID(ctx context.Context, ids []uint64) ([]model.Ketchup, error) {
+func (tks testKetchupStore) ListByRepositoriesID(_ context.Context, ids []uint64) ([]model.Ketchup, error) {
 	if len(ids) == 0 {
 		return nil, errors.New("empty request")
 	}
@@ -53,7 +53,7 @@ func (tks testKetchupStore) ListByRepositoriesID(ctx context.Context, ids []uint
 	}, nil
 }
 
-func (tks testKetchupStore) GetByRepositoryID(ctx context.Context, id uint64, forUpdate bool) (model.Ketchup, error) {
+func (tks testKetchupStore) GetByRepositoryID(_ context.Context, id uint64, _ bool) (model.Ketchup, error) {
 	if id == 0 {
 		return model.NoneKetchup, errors.New("invalid id")
 	}
@@ -73,7 +73,7 @@ func (tks testKetchupStore) GetByRepositoryID(ctx context.Context, id uint64, fo
 	return model.NoneKetchup, nil
 }
 
-func (tks testKetchupStore) Create(ctx context.Context, o model.Ketchup) (uint64, error) {
+func (tks testKetchupStore) Create(_ context.Context, o model.Ketchup) (uint64, error) {
 	if o.Version == "0" {
 		return 0, errors.New("duplicate pk")
 	}
@@ -85,7 +85,7 @@ func (tks testKetchupStore) Create(ctx context.Context, o model.Ketchup) (uint64
 	return 0, nil
 }
 
-func (tks testKetchupStore) Update(ctx context.Context, o model.Ketchup) error {
+func (tks testKetchupStore) Update(_ context.Context, o model.Ketchup) error {
 	if o.Version == "0" {
 		return errors.New("duplicate pk")
 	}
@@ -97,7 +97,7 @@ func (tks testKetchupStore) Update(ctx context.Context, o model.Ketchup) error {
 	return nil
 }
 
-func (tks testKetchupStore) Delete(ctx context.Context, o model.Ketchup) error {
+func (tks testKetchupStore) Delete(_ context.Context, o model.Ketchup) error {
 	if o.Version == "0" {
 		return errors.New("duplicate pk")
 	}
@@ -111,11 +111,11 @@ func (tks testKetchupStore) Delete(ctx context.Context, o model.Ketchup) error {
 
 type testRepositoryService struct{}
 
-func (trs testRepositoryService) List(ctx context.Context, page, pageSize uint) ([]model.Repository, uint64, error) {
+func (trs testRepositoryService) List(_ context.Context, _, _ uint) ([]model.Repository, uint64, error) {
 	return nil, 0, nil
 }
 
-func (trs testRepositoryService) GetOrCreate(ctx context.Context, name string) (model.Repository, error) {
+func (trs testRepositoryService) GetOrCreate(_ context.Context, name string) (model.Repository, error) {
 	if len(name) == 0 {
 		return model.NoneRepository, service.WrapInvalid(errors.New("invalid name"))
 	}
@@ -123,11 +123,11 @@ func (trs testRepositoryService) GetOrCreate(ctx context.Context, name string) (
 	return model.Repository{ID: 1, Name: "vibioh/ketchup", Version: "1.2.3"}, nil
 }
 
-func (trs testRepositoryService) Update(ctx context.Context, item model.Repository) error {
+func (trs testRepositoryService) Update(_ context.Context, _ model.Repository) error {
 	return nil
 }
 
-func (trs testRepositoryService) Clean(ctx context.Context) error {
+func (trs testRepositoryService) Clean(_ context.Context) error {
 	return nil
 }
 

@@ -18,7 +18,7 @@ func (a app) generateToken() (string, int64) {
 	return a.tokenStore.Store(questionID, time.Minute*5), questionID
 }
 
-func (a app) publicHandler(w http.ResponseWriter, r *http.Request, status int, message model.Message) {
+func (a app) publicHandler(w http.ResponseWriter, _ *http.Request, status int, message model.Message) {
 	token, questionID := a.generateToken()
 
 	content := map[string]interface{}{

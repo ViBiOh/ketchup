@@ -12,7 +12,7 @@ import (
 
 type testUserService struct{}
 
-func (tus testUserService) Create(ctx context.Context, o model.User) (model.User, error) {
+func (tus testUserService) Create(_ context.Context, _ model.User) (model.User, error) {
 	return model.NoneUser, nil
 }
 

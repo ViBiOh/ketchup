@@ -66,12 +66,12 @@ func (a app) Create(ctx context.Context, item model.Ketchup) (model.Ketchup, err
 	var output model.Ketchup
 
 	err := a.ketchupStore.DoAtomic(ctx, func(ctx context.Context) error {
-		repository, err := a.repositoryService.GetOrCreate(ctx, item.Repository.Name)
+		repo, err := a.repositoryService.GetOrCreate(ctx, item.Repository.Name)
 		if err != nil {
 			return err
 		}
 
-		item.Repository = repository
+		item.Repository = repo
 
 		if err := a.check(ctx, model.NoneKetchup, item); err != nil {
 			return service.WrapInvalid(err)
@@ -97,21 +97,21 @@ func (a app) Update(ctx context.Context, item model.Ketchup) (model.Ketchup, err
 			return service.WrapInternal(fmt.Errorf("unable to fetch: %s", err))
 		}
 
-		new := model.Ketchup{
+		current := model.Ketchup{
 			Version:    item.Version,
 			Repository: old.Repository,
 			User:       old.User,
 		}
 
-		if err := a.check(ctx, old, new); err != nil {
+		if err := a.check(ctx, old, current); err != nil {
 			return service.WrapInvalid(err)
 		}
 
-		if err := a.ketchupStore.Update(ctx, new); err != nil {
+		if err := a.ketchupStore.Update(ctx, current); err != nil {
 			return service.WrapInternal(fmt.Errorf("unable to update: %s", err))
 		}
 
-		output = new
+		output = current
 		return nil
 	})
 
@@ -153,10 +153,10 @@ func (a app) check(ctx context.Context, old, new model.Ketchup) error {
 	}
 
 	if old == model.NoneKetchup {
-		ketchup, err := a.ketchupStore.GetByRepositoryID(ctx, new.Repository.ID, false)
+		o, err := a.ketchupStore.GetByRepositoryID(ctx, new.Repository.ID, false)
 		if err != nil {
 			output = append(output, errors.New("unable to check if ketchup already exists"))
-		} else if ketchup != model.NoneKetchup {
+		} else if o != model.NoneKetchup {
 			output = append(output, fmt.Errorf("ketchup for %s already exists", new.Repository.Name))
 		}
 	}

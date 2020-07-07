@@ -4,15 +4,10 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"regexp"
 	"strings"
 
 	"github.com/ViBiOh/httputils/v3/pkg/db"
 	"github.com/ViBiOh/ketchup/pkg/model"
-)
-
-var (
-	sortKeyMatcher = regexp.MustCompile(`[A-Za-z0-9]+`)
 )
 
 // App of package

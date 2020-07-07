@@ -50,13 +50,13 @@ func (a app) List(ctx context.Context, page, pageSize uint) ([]model.Repository,
 func (a app) GetOrCreate(ctx context.Context, name string) (model.Repository, error) {
 	sanitizedName := sanitizeName(name)
 
-	repository, err := a.repositoryStore.GetByName(ctx, sanitizedName)
+	repo, err := a.repositoryStore.GetByName(ctx, sanitizedName)
 	if err != nil {
 		return model.NoneRepository, service.WrapInternal(err)
 	}
 
-	if repository != model.NoneRepository {
-		return repository, nil
+	if repo != model.NoneRepository {
+		return repo, nil
 	}
 
 	return a.create(ctx, model.Repository{Name: sanitizedName})
@@ -94,17 +94,17 @@ func (a app) Update(ctx context.Context, item model.Repository) error {
 			return service.WrapInternal(fmt.Errorf("unable to fetch: %s", err))
 		}
 
-		new := model.Repository{
+		current := model.Repository{
 			ID:      old.ID,
 			Name:    old.Name,
 			Version: item.Version,
 		}
 
-		if err := a.check(ctx, old, new); err != nil {
+		if err := a.check(ctx, old, current); err != nil {
 			return service.WrapInvalid(err)
 		}
 
-		if err := a.repositoryStore.Update(ctx, new); err != nil {
+		if err := a.repositoryStore.Update(ctx, current); err != nil {
 			return service.WrapInternal(fmt.Errorf("unable to update: %s", err))
 		}
 

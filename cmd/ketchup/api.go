@@ -70,7 +70,7 @@ func main() {
 	logger.Fatal(err)
 	server.Health(ketchupDb.Ping)
 
-	authServiceApp, authMiddleware := initAuth(ketchupDb)
+	authServiceApp, authMiddlewareApp := initAuth(ketchupDb)
 
 	githubApp := github.New(githubConfig)
 	mailerApp := mailer.New(mailerConfig)
@@ -85,7 +85,7 @@ func main() {
 	logger.Fatal(err)
 
 	publicHandler := rendererApp.PublicHandler()
-	protectedhandler := httputils.ChainMiddlewares(http.StripPrefix(appPath, rendererApp.Handler()), authMiddleware.Middleware, middleware.New(userServiceApp).Middleware)
+	protectedhandler := httputils.ChainMiddlewares(http.StripPrefix(appPath, rendererApp.Handler()), authMiddlewareApp.Middleware, middleware.New(userServiceApp).Middleware)
 
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if strings.HasPrefix(r.URL.Path, appPath) {

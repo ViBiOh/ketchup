@@ -32,9 +32,9 @@ func (trs testRepositoryStore) DoAtomic(ctx context.Context, action func(context
 	return err
 }
 
-func (trs testRepositoryStore) List(ctx context.Context, page, pageSize uint) ([]model.Repository, uint64, error) {
+func (trs testRepositoryStore) List(_ context.Context, page, _ uint) ([]model.Repository, uint64, error) {
 	if page == 0 {
-		return nil, 0, errors.New(("invalid page"))
+		return nil, 0, errors.New("invalid page")
 	}
 
 	return []model.Repository{
@@ -43,7 +43,7 @@ func (trs testRepositoryStore) List(ctx context.Context, page, pageSize uint) ([
 	}, 2, nil
 }
 
-func (trs testRepositoryStore) Get(ctx context.Context, id uint64, forUpdate bool) (model.Repository, error) {
+func (trs testRepositoryStore) Get(_ context.Context, id uint64, _ bool) (model.Repository, error) {
 	if id == 0 {
 		return model.NoneRepository, errors.New("invalid id")
 	}
@@ -51,7 +51,7 @@ func (trs testRepositoryStore) Get(ctx context.Context, id uint64, forUpdate boo
 	return model.Repository{ID: id, Name: "vibioh/ketchup", Version: "1.0.0"}, nil
 }
 
-func (trs testRepositoryStore) GetByName(ctx context.Context, name string) (model.Repository, error) {
+func (trs testRepositoryStore) GetByName(_ context.Context, name string) (model.Repository, error) {
 	if name == "error" {
 		return model.NoneRepository, errors.New("invalid name")
 	}
@@ -63,7 +63,7 @@ func (trs testRepositoryStore) GetByName(ctx context.Context, name string) (mode
 	return model.NoneRepository, nil
 }
 
-func (trs testRepositoryStore) Create(ctx context.Context, o model.Repository) (uint64, error) {
+func (trs testRepositoryStore) Create(_ context.Context, o model.Repository) (uint64, error) {
 	if o.Name == "vibioh" {
 		return 0, errors.New("invalid name")
 	}
@@ -71,7 +71,7 @@ func (trs testRepositoryStore) Create(ctx context.Context, o model.Repository) (
 	return 1, nil
 }
 
-func (trs testRepositoryStore) Update(ctx context.Context, o model.Repository) error {
+func (trs testRepositoryStore) Update(_ context.Context, o model.Repository) error {
 	if o.ID == 1 {
 		return errors.New("invalid id")
 	}

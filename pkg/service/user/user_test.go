@@ -32,7 +32,7 @@ func (tus testUserStore) DoAtomic(ctx context.Context, action func(context.Conte
 	return err
 }
 
-func (tus testUserStore) GetByEmail(ctx context.Context, email string) (model.User, error) {
+func (tus testUserStore) GetByEmail(_ context.Context, email string) (model.User, error) {
 	if email == "guest@nowhere" {
 		return model.NoneUser, errors.New("invalid email")
 	}
@@ -46,7 +46,7 @@ func (tus testUserStore) GetByEmail(ctx context.Context, email string) (model.Us
 	return model.NoneUser, nil
 }
 
-func (tus testUserStore) GetByLoginID(ctx context.Context, loginID uint64) (model.User, error) {
+func (tus testUserStore) GetByLoginID(_ context.Context, loginID uint64) (model.User, error) {
 	if loginID == 0 {
 		return model.NoneUser, errors.New("invalid login id")
 	}
@@ -58,7 +58,7 @@ func (tus testUserStore) GetByLoginID(ctx context.Context, loginID uint64) (mode
 	return model.User{Email: "nobody@localhost"}, nil
 }
 
-func (tus testUserStore) Create(ctx context.Context, o model.User) (uint64, error) {
+func (tus testUserStore) Create(_ context.Context, o model.User) (uint64, error) {
 	if o.Login.ID == 2 {
 		return 0, errors.New("invalid id")
 	}
@@ -72,11 +72,11 @@ func (tus testUserStore) Create(ctx context.Context, o model.User) (uint64, erro
 
 type testAuthService struct{}
 
-func (tas testAuthService) Unmarshal(data []byte, contentType string) (authModel.User, error) {
+func (tas testAuthService) Unmarshal(_ []byte, _ string) (authModel.User, error) {
 	return authModel.NoneUser, nil
 }
 
-func (tas testAuthService) Check(ctx context.Context, old, new authModel.User) error {
+func (tas testAuthService) Check(_ context.Context, _, new authModel.User) error {
 	if new.ID == 0 {
 		return errors.New("id is invalid")
 	}
@@ -84,15 +84,15 @@ func (tas testAuthService) Check(ctx context.Context, old, new authModel.User) e
 	return nil
 }
 
-func (tas testAuthService) List(ctx context.Context, page, pageSize uint, sortKey string, sortDesc bool, filters map[string][]string) ([]authModel.User, uint, error) {
+func (tas testAuthService) List(_ context.Context, _, _ uint, _ string, _ bool, _ map[string][]string) ([]authModel.User, uint, error) {
 	return nil, 0, nil
 }
 
-func (tas testAuthService) Get(ctx context.Context, ID uint64) (authModel.User, error) {
+func (tas testAuthService) Get(_ context.Context, _ uint64) (authModel.User, error) {
 	return authModel.NoneUser, nil
 }
 
-func (tas testAuthService) Create(ctx context.Context, o authModel.User) (authModel.User, error) {
+func (tas testAuthService) Create(_ context.Context, o authModel.User) (authModel.User, error) {
 	if o.ID == 1 {
 		return authModel.NoneUser, errors.New("invalid id")
 	}
@@ -100,15 +100,15 @@ func (tas testAuthService) Create(ctx context.Context, o authModel.User) (authMo
 	return authModel.NewUser(o.ID, "admin"), nil
 }
 
-func (tas testAuthService) Update(ctx context.Context, o authModel.User) (authModel.User, error) {
+func (tas testAuthService) Update(_ context.Context, _ authModel.User) (authModel.User, error) {
 	return authModel.NoneUser, nil
 }
 
-func (tas testAuthService) Delete(ctx context.Context, o authModel.User) error {
+func (tas testAuthService) Delete(_ context.Context, _ authModel.User) error {
 	return nil
 }
 
-func (tas testAuthService) CheckRights(ctx context.Context, id uint64) error {
+func (tas testAuthService) CheckRights(_ context.Context, _ uint64) error {
 	return nil
 }
 
