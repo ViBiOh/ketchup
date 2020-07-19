@@ -10,6 +10,7 @@ import (
 
 	"github.com/ViBiOh/ketchup/pkg/model"
 	"github.com/ViBiOh/ketchup/pkg/semver"
+	"github.com/ViBiOh/mailer/pkg/client/clienttest"
 )
 
 type testKetchupService struct{}
@@ -194,6 +195,156 @@ func TestGetKetchupToNotify(t *testing.T) {
 
 			if failed {
 				t.Errorf("getKetchupToNotify() = (%+v, `%s`), want (%+v, `%s`)", got, gotErr, tc.want, tc.wantErr)
+			}
+		})
+	}
+}
+
+func TestSendNotification(t *testing.T) {
+	type args struct {
+		ctx             context.Context
+		ketchupToNotify map[model.User][]model.Release
+	}
+
+	var cases = []struct {
+		intention string
+		instance  app
+		args      args
+		wantErr   error
+	}{
+		{
+			"empty",
+			app{},
+			args{
+				ctx:             context.Background(),
+				ketchupToNotify: nil,
+			},
+			nil,
+		},
+		{
+			"no mailer",
+			app{},
+			args{
+				ctx: context.Background(),
+				ketchupToNotify: map[model.User][]model.Release{
+					{
+						ID:    1,
+						Email: "nobody@localhost",
+					}: {
+						{
+							Repository: model.Repository{
+								Name: "vibioh/ketchup",
+							},
+							Version: semver.Version{
+								Name: "1.0.0",
+							},
+						},
+					},
+				},
+			},
+			nil,
+		},
+		{
+			"mailer disabled",
+			app{
+				mailerApp: clienttest.New(false),
+			},
+			args{
+				ctx: context.Background(),
+				ketchupToNotify: map[model.User][]model.Release{
+					{
+						ID:    1,
+						Email: "nobody@localhost",
+					}: {
+						{
+							Repository: model.Repository{
+								Name: "vibioh/ketchup",
+							},
+							Version: semver.Version{
+								Name: "1.0.0",
+							},
+						},
+					},
+				},
+			},
+			nil,
+		},
+		{
+			"mailer error",
+			app{
+				mailerApp: clienttest.New(true),
+			},
+			args{
+				ctx: context.TODO(),
+				ketchupToNotify: map[model.User][]model.Release{
+					{
+						ID:    1,
+						Email: "nobody@localhost",
+					}: {
+						{
+							Repository: model.Repository{
+								Name: "vibioh/ketchup",
+							},
+							Version: semver.Version{
+								Name: "1.0.0",
+							},
+						},
+					},
+				},
+			},
+			errors.New("unable to send email to nobody@localhost: invalid context"),
+		},
+		{
+			"multiple releases",
+			app{
+				mailerApp: clienttest.New(true),
+			},
+			args{
+				ctx: context.Background(),
+				ketchupToNotify: map[model.User][]model.Release{
+					{
+						ID:    1,
+						Email: "nobody@localhost",
+					}: {
+						{
+							Repository: model.Repository{
+								Name: "vibioh/ketchup",
+							},
+							Version: semver.Version{
+								Name: "1.0.0",
+							},
+						},
+						{
+							Repository: model.Repository{
+								Name: "vibioh/viws",
+							},
+							Version: semver.Version{
+								Name: "1.0.0",
+							},
+						},
+					},
+				},
+			},
+			nil,
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.intention, func(t *testing.T) {
+			gotErr := tc.instance.sendNotification(tc.args.ctx, tc.args.ketchupToNotify)
+
+			failed := false
+
+			if tc.wantErr == nil && gotErr != nil {
+				failed = true
+			} else if tc.wantErr != nil && gotErr == nil {
+				failed = true
+			} else if tc.wantErr != nil && !strings.Contains(gotErr.Error(), tc.wantErr.Error()) {
+				failed = true
+			}
+
+			if failed {
+				t.Errorf("sendNotification() = `%s`, want `%s`", gotErr, tc.wantErr)
 			}
 		})
 	}
