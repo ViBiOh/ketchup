@@ -5,6 +5,7 @@ import (
 	"errors"
 	"flag"
 	"reflect"
+	"regexp"
 	"strings"
 	"testing"
 
@@ -58,6 +59,74 @@ func (tks testKetchupService) Delete(_ context.Context, _ model.Ketchup) error {
 	return nil
 }
 
+type testRepositoryService struct {
+	Multiple bool
+}
+
+func (trs testRepositoryService) List(ctx context.Context, page, pageSize uint) ([]model.Repository, uint64, error) {
+	if ctx == context.TODO() {
+		return nil, 0, errors.New("invalid context")
+	}
+
+	if trs.Multiple {
+		if page == 1 {
+			return []model.Repository{
+				{
+					ID:      1,
+					Name:    "vibioh/viws",
+					Version: "1.1.0",
+				},
+			}, 2, nil
+		} else if page == 2 {
+			return []model.Repository{
+				{
+					ID:      2,
+					Name:    "vibioh/ketchup",
+					Version: "1.0.0",
+				},
+			}, 2, nil
+		}
+	}
+
+	return []model.Repository{
+		{
+			ID:      1,
+			Name:    "vibioh/ketchup",
+			Version: "1.0.0",
+		},
+	}, 1, nil
+}
+
+func (trs testRepositoryService) GetOrCreate(_ context.Context, name string) (model.Repository, error) {
+	return model.NoneRepository, nil
+}
+
+func (trs testRepositoryService) Update(_ context.Context, item model.Repository) error {
+	if item.Version == "1.0.1" {
+		return errors.New("update error")
+	}
+
+	return nil
+}
+
+func (trs testRepositoryService) Clean(_ context.Context) error {
+	return nil
+}
+
+type testGithubApp struct {
+	Name    *regexp.Regexp
+	Version string
+}
+
+func (tga testGithubApp) LatestVersion(repository string) (semver.Version, error) {
+	if tga.Name.MatchString(repository) {
+		version, _ := semver.Parse(tga.Version)
+		return version, nil
+	}
+
+	return semver.NoneVersion, errors.New("unknown repository")
+}
+
 func TestFlags(t *testing.T) {
 	var cases = []struct {
 		intention string
@@ -82,6 +151,124 @@ func TestFlags(t *testing.T) {
 
 			if result != testCase.want {
 				t.Errorf("Flags() = `%s`, want `%s`", result, testCase.want)
+			}
+		})
+	}
+}
+
+func TestGetNewReleases(t *testing.T) {
+	type args struct {
+		ctx context.Context
+	}
+
+	var cases = []struct {
+		intention string
+		instance  app
+		args      args
+		want      []model.Release
+		wantErr   error
+	}{
+		{
+			"list error",
+			app{
+				repositoryService: testRepositoryService{},
+			},
+			args{
+				ctx: context.TODO(),
+			},
+			nil,
+			errors.New("unable to fetch page 1 of repositories"),
+		},
+		{
+			"github error",
+			app{
+				repositoryService: testRepositoryService{},
+				githubApp:         testGithubApp{Name: regexp.MustCompile("unknown")},
+			},
+			args{
+				ctx: context.Background(),
+			},
+			nil,
+			errors.New("unable to get latest version of"),
+		},
+		{
+			"same version",
+			app{
+				repositoryService: testRepositoryService{},
+				githubApp:         testGithubApp{Name: regexp.MustCompile("vibioh/ketchup"), Version: "1.0.0"},
+			},
+			args{
+				ctx: context.Background(),
+			},
+			nil,
+			nil,
+		},
+		{
+			"update error",
+			app{
+				repositoryService: testRepositoryService{},
+				githubApp:         testGithubApp{Name: regexp.MustCompile("vibioh/ketchup"), Version: "1.0.1"},
+			},
+			args{
+				ctx: context.Background(),
+			},
+			nil,
+			errors.New("unable to update repo vibioh/ketchup"),
+		},
+		{
+			"success",
+			app{
+				repositoryService: testRepositoryService{},
+				githubApp:         testGithubApp{Name: regexp.MustCompile("vibioh/ketchup"), Version: "1.1.0"},
+			},
+			args{
+				ctx: context.Background(),
+			},
+			[]model.Release{model.NewRelease(model.Repository{
+				ID:      1,
+				Name:    "vibioh/ketchup",
+				Version: "1.1.0",
+			}, semver.Version{Name: "1.1.0", Major: 1, Minor: 1, Patch: 0})},
+			nil,
+		},
+		{
+			"paginate",
+			app{
+				repositoryService: testRepositoryService{Multiple: true},
+				githubApp:         testGithubApp{Name: regexp.MustCompile("vibioh/(ketchup|viws)"), Version: "1.1.0"},
+			},
+			args{
+				ctx: context.Background(),
+			},
+			[]model.Release{model.NewRelease(model.Repository{
+				ID:      2,
+				Name:    "vibioh/ketchup",
+				Version: "1.1.0",
+			}, semver.Version{Name: "1.1.0", Major: 1, Minor: 1, Patch: 0})},
+			nil,
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.intention, func(t *testing.T) {
+			pageSize = 1
+			got, gotErr := tc.instance.getNewReleases(tc.args.ctx)
+			pageSize = 20
+
+			failed := false
+
+			if tc.wantErr == nil && gotErr != nil {
+				failed = true
+			} else if tc.wantErr != nil && gotErr == nil {
+				failed = true
+			} else if tc.wantErr != nil && !strings.Contains(gotErr.Error(), tc.wantErr.Error()) {
+				failed = true
+			} else if !reflect.DeepEqual(got, tc.want) {
+				failed = true
+			}
+
+			if failed {
+				t.Errorf("getNewReleases() = (%+v, `%s`), want (%+v, `%s`)", got, gotErr, tc.want, tc.wantErr)
 			}
 		})
 	}

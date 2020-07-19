@@ -24,7 +24,7 @@ type Tag struct {
 
 // App of package
 type App interface {
-	LatestVersion(repository string) (semver.Version, error)
+	LatestVersion(string) (semver.Version, error)
 }
 
 // Config of package
