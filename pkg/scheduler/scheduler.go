@@ -20,8 +20,8 @@ import (
 	mailer "github.com/ViBiOh/mailer/pkg/client"
 )
 
-const (
-	pageSize = 20
+var (
+	pageSize = uint(20)
 )
 
 // App of package
@@ -103,7 +103,7 @@ func (a app) ketchupNotify(_ time.Time) error {
 }
 
 func (a app) getNewReleases(ctx context.Context) ([]model.Release, error) {
-	newReleases := make([]model.Release, 0)
+	var newReleases []model.Release
 	count := 0
 	page := uint(1)
 
