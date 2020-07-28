@@ -10,14 +10,14 @@ Ketchup is an open source project and we love to receive contributions from our 
 
 Responsibilities
 
-* Ensure cross-platform compatibility for every change that's accepted. Windows, Mac, Debian & Ubuntu Linux.
-* Create issues for any major changes and enhancements that you wish to make. Discuss things transparently and get community feedback.
-* Keep feature versions as small as possible, preferably one new feature per version.
-* Be welcoming to newcomers and encourage diverse new contributors from all backgrounds.
+- Ensure cross-platform compatibility for every change that's accepted. Windows, Mac, Debian & Ubuntu Linux.
+- Create issues for any major changes and enhancements that you wish to make. Discuss things transparently and get community feedback.
+- Keep feature versions as small as possible, preferably one new feature per version.
+- Be welcoming to newcomers and encourage diverse new contributors from all backgrounds.
 
 # Your First Contribution
 
-Working on your first Pull Request? You can learn how from this *free* series, [How to Contribute to an Open Source Project on GitHub](https://egghead.io/series/how-to-contribute-to-an-open-source-project-on-github).
+Working on your first Pull Request? You can learn how from this _free_ series, [How to Contribute to an Open Source Project on GitHub](https://egghead.io/series/how-to-contribute-to-an-open-source-project-on-github).
 
 At this point, you're ready to make your changes! Feel free to ask for help; everyone is a beginner at first :smile_cat:
 
@@ -34,8 +34,9 @@ For larger contribution, refer to our [LICENSE](LICENSE) for intellectual proper
 If you find a security vulnerability, do NOT open an issue. Email ketchup@vibioh.fr instead.
 
 In order to determine whether you are dealing with a security issue, ask yourself these two questions:
-* Can I access something that's not mine, or something I shouldn't have access to?
-* Can I disable something for other people?
+
+- Can I access something that's not mine, or something I shouldn't have access to?
+- Can I disable something for other people?
 
 If the answer to either of those two questions are "yes", then you're probably dealing with a security issue. Note that even if you answer "no" to both questions, you may still be dealing with a security issue, so if you're unsure, just email us.
 

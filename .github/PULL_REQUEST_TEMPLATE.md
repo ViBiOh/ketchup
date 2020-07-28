@@ -7,7 +7,7 @@
 
 # In order to validate the pull request, I do:
 
-- *List steps to help reviewers*
+- _List steps to help reviewers_
 
 # My pull-request respond to given issues:
 
