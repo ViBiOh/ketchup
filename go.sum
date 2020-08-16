@@ -2,6 +2,8 @@ cloud.google.com/go v0.26.0/go.mod h1:aQUYkXzVsufM+DwF1aE+0xfcU+56JwCaLick0ClmMT
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
 github.com/DATA-DOG/go-sqlmock v1.4.1 h1:ThlnYciV1iM/V0OSF/dtkqWb6xo5qITT1TJBG1MRDJM=
 github.com/DATA-DOG/go-sqlmock v1.4.1/go.mod h1:f/Ixk793poVmq4qj/V1dPUg2JEAKC73Q5eFN3EC/SaM=
+github.com/DATA-DOG/go-sqlmock v1.5.0 h1:Shsta01QNfFxHCfpW6YH2STWB0MudeXXEWMr20OEh60=
+github.com/DATA-DOG/go-sqlmock v1.5.0/go.mod h1:f/Ixk793poVmq4qj/V1dPUg2JEAKC73Q5eFN3EC/SaM=
 github.com/ViBiOh/auth v1.6.0 h1:5dH3g9mfiOJcPOg2y9E43O2IEyd5VYxnX7qxX4xEdRY=
 github.com/ViBiOh/auth/v2 v2.5.3 h1:FisivpGiutKpvIBbTjuZhAWWdC/ewTvuwvZ9EqmTl6I=
 github.com/ViBiOh/auth/v2 v2.5.3/go.mod h1:VxqOoSQX8ef03esVsr5YMbVRBV6919rNgn+mFhkl9ok=
