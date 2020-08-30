@@ -86,6 +86,16 @@ Usage of ketchup:
         [owasp] Indicate Strict Transport Security {KETCHUP_HSTS} (default true)
   -key string
         [http] Key file {KETCHUP_KEY}
+  -loggerJson
+        [logger] Log format as JSON {KETCHUP_LOGGER_JSON}
+  -loggerLevel string
+        [logger] Logger level {KETCHUP_LOGGER_LEVEL} (default "INFO")
+  -loggerLevelKey string
+        [logger] Key for level in JSON {KETCHUP_LOGGER_LEVEL_KEY} (default "level")
+  -loggerMessageKey string
+        [logger] Key for message in JSON {KETCHUP_LOGGER_MESSAGE_KEY} (default "message")
+  -loggerTimeKey string
+        [logger] Key for timestam in JSON {KETCHUP_LOGGER_TIME_KEY} (default "time")
   -mailerPass string
         [mailer] Pass {KETCHUP_MAILER_PASS}
   -mailerURL string
