@@ -95,7 +95,7 @@ Usage of ketchup:
   -loggerMessageKey string
         [logger] Key for message in JSON {KETCHUP_LOGGER_MESSAGE_KEY} (default "message")
   -loggerTimeKey string
-        [logger] Key for timestam in JSON {KETCHUP_LOGGER_TIME_KEY} (default "time")
+        [logger] Key for timestamp in JSON {KETCHUP_LOGGER_TIME_KEY} (default "time")
   -mailerPass string
         [mailer] Pass {KETCHUP_MAILER_PASS}
   -mailerURL string
