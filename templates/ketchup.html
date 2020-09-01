@@ -186,8 +186,8 @@
       {{ end }}
 
       <div class="ketchup__version">
-        <span class="{{ if ne .Version .Repository.Version }}danger{{ else }}success{{ end }}">
-          {{ .Version }}
+        <span>
+          <a class="{{ if ne .Version .Repository.Version }}danger{{ else }}success{{ end }}" href="https://github.com/{{ .Repository.Name }}/releases/tag/{{ .Version }}" target="_blank" rel="noopener noreferrer">{{ .Version }}</a>
         </span>
 
         {{ if ne .Version .Repository.Version }}
