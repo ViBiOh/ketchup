@@ -35,6 +35,9 @@ spec:
       containers:
         - name: ketchup
           image: vibioh/ketchup
+          env:
+            - name: KETCHUP_LOGGER_JSON
+              value: "true"
           envFrom:
             - configMapRef:
                 name: ketchup
