@@ -182,6 +182,14 @@ func TestParse(t *testing.T) {
 			errors.New("ignoring test version"),
 		},
 		{
+			"ignore alpha",
+			args{
+				version: "v0.14.0-alpha20200910",
+			},
+			NoneVersion,
+			errors.New("ignoring alpha version"),
+		},
+		{
 			"major and minor only",
 			args{
 				version: "v1.25+xyz",
