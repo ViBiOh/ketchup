@@ -42,7 +42,7 @@ A Docker image is available for `amd64`, `arm` and `arm64` platforms on Docker H
 
 You can configure app by passing CLI args or environment variables (cf. [Usage](#usage) section). CLI override environment variables.
 
-You'll find a Kubernetes exemple (without secrets) in the [`infra/`](infra/) folder.
+You'll find a Kubernetes exemple (without secrets) in the [`infra/`](infra/) folder, using my [`app chart`](https://github.com/ViBiOh/charts/tree/master/app)
 
 ## Usage
 

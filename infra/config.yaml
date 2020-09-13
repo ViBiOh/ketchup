@@ -1,0 +1,16 @@
+---
+nameOverride: ketchup
+
+image:
+  repository: vibioh/ketchup
+
+config:
+  KETCHUP_LOGGER_JSON: "true"
+  KETCHUP_MAILER_URL: http://mailer
+
+secretRef: ketchup
+
+ingress:
+  enabled: true
+  hosts:
+    - ketchup.vibioh.fr
