@@ -150,8 +150,8 @@ func (a app) check(ctx context.Context, old, new model.Repository) error {
 func sanitizeName(name string) string {
 	matches := nameMatcher.FindStringSubmatch(name)
 	if len(matches) > 0 {
-		return matches[len(matches)-1]
+		return strings.TrimSpace(matches[len(matches)-1])
 	}
 
-	return name
+	return strings.TrimSpace(name)
 }
