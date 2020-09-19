@@ -7,8 +7,10 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/ViBiOh/httputils/v3/pkg/flags"
+	"github.com/ViBiOh/httputils/v3/pkg/logger"
 	"github.com/ViBiOh/httputils/v3/pkg/request"
 	"github.com/ViBiOh/ketchup/pkg/semver"
 )
@@ -51,7 +53,13 @@ func New(config Config) App {
 }
 
 func (a app) newClient() *request.Request {
-	return request.New().Header("Authorization", fmt.Sprintf("token %s", a.token))
+	return request.New().Header("Authorization", fmt.Sprintf("token %s", a.token)).WithClient(http.Client{
+		Timeout: 30 * time.Second,
+		CheckRedirect: func(r *http.Request, via []*http.Request) error {
+			logger.Info("Redirect from %s to %s", via[len(via)-1].URL.Path, r.URL.Path)
+			return nil
+		},
+	})
 }
 
 func (a app) LatestVersion(repository string) (semver.Version, error) {
@@ -67,7 +75,7 @@ func (a app) LatestVersion(repository string) (semver.Version, error) {
 
 		payload, err := request.ReadBodyResponse(resp)
 		if err != nil {
-			return version, fmt.Errorf("unable to read page %d tags body: %s", page, err)
+			return version, fmt.Errorf("unable to read page %d tags body `%s`: %s", page, payload, err)
 		}
 
 		var tags []Tag

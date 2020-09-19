@@ -118,7 +118,8 @@ func (a app) getNewReleases(ctx context.Context) ([]model.Release, error) {
 
 			latestVersion, err := a.githubApp.LatestVersion(repo.Name)
 			if err != nil {
-				return nil, fmt.Errorf("unable to get latest version of %s: %s", repo.Name, err)
+				logger.Error("unable to get latest version of %s: %s", repo.Name, err)
+				continue
 			}
 
 			if latestVersion.Name == repo.Version {
