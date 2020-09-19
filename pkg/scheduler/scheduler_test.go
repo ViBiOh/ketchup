@@ -189,7 +189,7 @@ func TestGetNewReleases(t *testing.T) {
 				ctx: context.Background(),
 			},
 			nil,
-			errors.New("unable to get latest version of"),
+			nil,
 		},
 		{
 			"same version",
