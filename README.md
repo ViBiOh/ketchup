@@ -81,7 +81,7 @@ Usage of ketchup:
   -githubToken string
         [github] OAuth Token {KETCHUP_GITHUB_TOKEN}
   -graceDuration string
-        [http] Grace duration when SIGTERM received {KETCHUP_GRACE_DURATION} (default "15s")
+        [http] Grace duration when SIGTERM received {KETCHUP_GRACE_DURATION} (default "30s")
   -hsts
         [owasp] Indicate Strict Transport Security {KETCHUP_HSTS} (default true)
   -key string
