@@ -62,6 +62,7 @@ func main() {
 
 	alcotest.DoAndExit(alcotestConfig)
 	logger.Global(logger.New(loggerConfig))
+	defer logger.Close()
 
 	server := httputils.New(serverConfig)
 	server.Middleware(prometheus.New(prometheusConfig).Middleware)
