@@ -16,6 +16,7 @@ import (
 	"github.com/ViBiOh/httputils/v3/pkg/db"
 	"github.com/ViBiOh/httputils/v3/pkg/httputils"
 	"github.com/ViBiOh/httputils/v3/pkg/logger"
+	"github.com/ViBiOh/httputils/v3/pkg/model"
 	"github.com/ViBiOh/httputils/v3/pkg/owasp"
 	"github.com/ViBiOh/httputils/v3/pkg/prometheus"
 	"github.com/ViBiOh/ketchup/pkg/github"
@@ -64,14 +65,8 @@ func main() {
 	logger.Global(logger.New(loggerConfig))
 	defer logger.Close()
 
-	server := httputils.New(serverConfig)
-	server.Middleware(prometheus.New(prometheusConfig).Middleware)
-	server.Middleware(owasp.New(owaspConfig).Middleware)
-	server.Middleware(cors.New(corsConfig).Middleware)
-
 	ketchupDb, err := db.New(dbConfig)
 	logger.Fatal(err)
-	server.Health(ketchupDb.Ping)
 
 	authServiceApp, authMiddlewareApp := initAuth(ketchupDb)
 
@@ -88,7 +83,7 @@ func main() {
 	logger.Fatal(err)
 
 	publicHandler := rendererApp.PublicHandler()
-	protectedhandler := httputils.ChainMiddlewares(http.StripPrefix(appPath, rendererApp.Handler()), authMiddlewareApp.Middleware, middleware.New(userServiceApp).Middleware)
+	protectedhandler := authMiddlewareApp.Middleware(middleware.New(userServiceApp).Middleware(http.StripPrefix(appPath, rendererApp.Handler())))
 
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if strings.HasPrefix(r.URL.Path, appPath) {
@@ -102,5 +97,9 @@ func main() {
 	go schedulerApp.Start()
 	go rendererApp.Start()
 
-	server.ListenServeWait(handler)
+	httputils.New(serverConfig).ListenAndServe(handler, []model.Middleware{
+		prometheus.New(prometheusConfig).Middleware,
+		owasp.New(owaspConfig).Middleware,
+		cors.New(corsConfig).Middleware,
+	}, ketchupDb.Ping)
 }

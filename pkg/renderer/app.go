@@ -23,6 +23,7 @@ func (a app) appHandler(w http.ResponseWriter, r *http.Request, message model.Me
 	content := map[string]interface{}{
 		"Version":  a.version,
 		"Ketchups": ketchups,
+		"Root":     "app/",
 	}
 
 	if len(message.Content) > 0 {
