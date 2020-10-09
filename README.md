@@ -84,6 +84,8 @@ Usage of ketchup:
         [http] Grace duration when SIGTERM received {KETCHUP_GRACE_DURATION} (default "30s")
   -hsts
         [owasp] Indicate Strict Transport Security {KETCHUP_HSTS} (default true)
+  -idleTimeout string
+        [http] Idle Timeout {KETCHUP_IDLE_TIMEOUT} (default "2m")
   -key string
         [http] Key file {KETCHUP_KEY}
   -loggerJson
@@ -108,18 +110,24 @@ Usage of ketchup:
         [http] Listen port {KETCHUP_PORT} (default 1080)
   -prometheusPath string
         [prometheus] Path for exposing metrics {KETCHUP_PROMETHEUS_PATH} (default "/metrics")
+  -readTimeout string
+        [http] Read Timeout {KETCHUP_READ_TIMEOUT} (default "5s")
   -schedulerHour string
         [scheduler] Hour of cron, 24-hour format {KETCHUP_SCHEDULER_HOUR} (default "08:00")
   -schedulerLoginID uint
         [scheduler] Scheduler user ID {KETCHUP_SCHEDULER_LOGIN_ID} (default 1)
   -schedulerTimezone string
         [scheduler] Timezone {KETCHUP_SCHEDULER_TIMEZONE} (default "Europe/Paris")
+  -shutdownTimeout string
+        [http] Shutdown Timeout {KETCHUP_SHUTDOWN_TIMEOUT} (default "10s")
   -uiPublicPath string
         [ui] Public path {KETCHUP_UI_PUBLIC_PATH} (default "ketchup.vibioh.fr")
   -url string
         [alcotest] URL to check {KETCHUP_URL}
   -userAgent string
         [alcotest] User-Agent for check {KETCHUP_USER_AGENT} (default "Alcotest")
+  -writeTimeout string
+        [http] Write Timeout {KETCHUP_WRITE_TIMEOUT} (default "10s")
 ```
 
 ## Contributing
