@@ -1,10 +1,9 @@
 FROM vibioh/scratch
 
 ENV ZONEINFO zoneinfo.zip
-EXPOSE 1080
-
-ENV KETCHUP_CSP "default-src 'self'; base-uri 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'"
 ENV KETCHUP_PORT 1080
+
+EXPOSE 1080
 
 COPY templates/ /templates
 COPY static/ /static

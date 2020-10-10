@@ -63,7 +63,7 @@ Usage of ketchup:
   -corsOrigin string
         [cors] Access-Control-Allow-Origin {KETCHUP_CORS_ORIGIN} (default "*")
   -csp string
-        [owasp] Content-Security-Policy {KETCHUP_CSP} (default "default-src 'self'; base-uri 'self'")
+        [owasp] Content-Security-Policy {KETCHUP_CSP} (default "default-src 'self'; base-uri 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'")
   -dbHost string
         [db] Host {KETCHUP_DB_HOST}
   -dbName string

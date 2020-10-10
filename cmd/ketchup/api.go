@@ -14,6 +14,7 @@ import (
 	"github.com/ViBiOh/httputils/v3/pkg/alcotest"
 	"github.com/ViBiOh/httputils/v3/pkg/cors"
 	"github.com/ViBiOh/httputils/v3/pkg/db"
+	"github.com/ViBiOh/httputils/v3/pkg/flags"
 	"github.com/ViBiOh/httputils/v3/pkg/httputils"
 	"github.com/ViBiOh/httputils/v3/pkg/logger"
 	"github.com/ViBiOh/httputils/v3/pkg/model"
@@ -50,7 +51,7 @@ func main() {
 	alcotestConfig := alcotest.Flags(fs, "")
 	loggerConfig := logger.Flags(fs, "logger")
 	prometheusConfig := prometheus.Flags(fs, "prometheus")
-	owaspConfig := owasp.Flags(fs, "")
+	owaspConfig := owasp.Flags(fs, "", flags.NewOverride("Csp", "default-src 'self'; base-uri 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'"))
 	corsConfig := cors.Flags(fs, "cors")
 
 	dbConfig := db.Flags(fs, "db")
@@ -97,9 +98,5 @@ func main() {
 	go schedulerApp.Start()
 	go rendererApp.Start()
 
-	httputils.New(serverConfig).ListenAndServe(handler, []model.Middleware{
-		prometheus.New(prometheusConfig).Middleware,
-		owasp.New(owaspConfig).Middleware,
-		cors.New(corsConfig).Middleware,
-	}, ketchupDb.Ping)
+	httputils.New(serverConfig).ListenAndServe(handler, []model.Pinger{ketchupDb.Ping}, prometheus.New(prometheusConfig).Middleware, owasp.New(owaspConfig).Middleware, cors.New(corsConfig).Middleware)
 }
