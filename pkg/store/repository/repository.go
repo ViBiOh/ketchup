@@ -8,6 +8,7 @@ import (
 
 	"github.com/ViBiOh/httputils/v3/pkg/db"
 	"github.com/ViBiOh/ketchup/pkg/model"
+	"github.com/lib/pq"
 )
 
 // App of package
@@ -15,6 +16,7 @@ type App interface {
 	DoAtomic(ctx context.Context, action func(context.Context) error) error
 
 	List(ctx context.Context, page, pageSize uint) ([]model.Repository, uint64, error)
+	Suggest(ctx context.Context, ignoreIds []uint64, count uint64) ([]model.Repository, error)
 	Get(ctx context.Context, id uint64, forUpdate bool) (model.Repository, error)
 	GetByName(ctx context.Context, name string) (model.Repository, error)
 	Create(ctx context.Context, o model.Repository) (uint64, error)
@@ -64,6 +66,44 @@ func (a app) List(ctx context.Context, page, pageSize uint) ([]model.Repository,
 	}
 
 	return list, totalCount, db.List(ctx, a.db, scanner, listQuery, pageSize, (page-1)*pageSize)
+}
+
+const suggestQuery = `
+SELECT
+  id,
+  name,
+  version,
+  (
+    SELECT
+      COUNT(1)
+    FROM
+      ketchup.ketchup
+    WHERE
+      repository_id = id
+  ) as count
+FROM
+  ketchup.repository
+WHERE
+  id != ALL($2)
+ORDER BY
+  count
+LIMIT $1
+`
+
+func (a app) Suggest(ctx context.Context, ignoreIds []uint64, count uint64) ([]model.Repository, error) {
+	list := make([]model.Repository, 0)
+
+	scanner := func(rows *sql.Rows) error {
+		var item model.Repository
+		if err := rows.Scan(&item.ID, &item.Name, &item.Version); err != nil {
+			return err
+		}
+
+		list = append(list, item)
+		return nil
+	}
+
+	return list, db.List(ctx, a.db, scanner, suggestQuery, count, pq.Array(ignoreIds))
 }
 
 const getQuery = `

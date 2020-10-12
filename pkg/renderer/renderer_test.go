@@ -10,6 +10,7 @@ import (
 
 	"github.com/ViBiOh/httputils/v3/pkg/request"
 	"github.com/ViBiOh/ketchup/pkg/model"
+	"github.com/ViBiOh/ketchup/pkg/service/repository/repositorytest"
 )
 
 type testKetchupService struct{}
@@ -43,7 +44,7 @@ func (tks testKetchupService) Delete(_ context.Context, _ model.Ketchup) error {
 func TestHandler(t *testing.T) {
 	publicPath := "http:/localhost:1080"
 	templatesDir = "../../templates"
-	testInterface, err := New(Config{uiPath: &publicPath}, testKetchupService{}, nil)
+	testInterface, err := New(Config{uiPath: &publicPath}, testKetchupService{}, nil, repositorytest.NewApp(false))
 	if err != nil {
 		t.Errorf("unable to create app: %s", err)
 	}
@@ -121,7 +122,7 @@ func TestPublicHandler(t *testing.T) {
 	publicPath := "http:/localhost:1080"
 	templatesDir = "../../templates"
 	staticDir = "../../static"
-	testInterface, err := New(Config{uiPath: &publicPath}, testKetchupService{}, nil)
+	testInterface, err := New(Config{uiPath: &publicPath}, testKetchupService{}, nil, nil)
 	if err != nil {
 		t.Errorf("unable to create app: %s", err)
 	}
