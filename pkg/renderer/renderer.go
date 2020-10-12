@@ -19,6 +19,7 @@ import (
 	"github.com/ViBiOh/httputils/v3/pkg/templates"
 	"github.com/ViBiOh/ketchup/pkg/model"
 	"github.com/ViBiOh/ketchup/pkg/service/ketchup"
+	"github.com/ViBiOh/ketchup/pkg/service/repository"
 	"github.com/ViBiOh/ketchup/pkg/service/user"
 )
 
@@ -54,8 +55,9 @@ type app struct {
 	uiPath     string
 	version    string
 
-	ketchupService ketchup.App
-	userService    user.App
+	ketchupService    ketchup.App
+	userService       user.App
+	repositoryService repository.App
 }
 
 // Flags adds flags for configuring package
@@ -66,7 +68,7 @@ func Flags(fs *flag.FlagSet, prefix string) Config {
 }
 
 // New creates new App from Config
-func New(config Config, ketchupService ketchup.App, userService user.App) (App, error) {
+func New(config Config, ketchupService ketchup.App, userService user.App, repositoryService repository.App) (App, error) {
 	filesTemplates, err := templates.GetTemplates(templatesDir, ".html")
 	if err != nil {
 		return nil, fmt.Errorf("unable to get templates: %s", err)
@@ -79,8 +81,9 @@ func New(config Config, ketchupService ketchup.App, userService user.App) (App, 
 		rand:       rand.New(rand.NewSource(time.Now().UnixNano())),
 		tokenStore: NewTokenStore(),
 
-		ketchupService: ketchupService,
-		userService:    userService,
+		ketchupService:    ketchupService,
+		userService:       userService,
+		repositoryService: repositoryService,
 	}, nil
 }
 

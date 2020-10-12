@@ -8,9 +8,45 @@ import (
 	"github.com/ViBiOh/ketchup/pkg/model"
 )
 
+const (
+	suggestThresold = uint64(10)
+	suggestCount    = uint64(5)
+)
+
+func min(a, b uint64) uint64 {
+	if a < b {
+		return a
+	}
+	return b
+}
+
 func (a app) getData(r *http.Request) (interface{}, error) {
 	ketchups, _, err := a.ketchupService.List(r.Context(), 1, 100)
-	return ketchups, err
+	if err != nil {
+		return nil, err
+	}
+
+	datas := map[string]interface{}{
+		"Ketchups": ketchups,
+	}
+
+	ketchupsCount := uint64(len(ketchups))
+
+	if ketchupsCount <= suggestThresold {
+		ketchupIds := make([]uint64, ketchupsCount)
+		for index, ketchup := range ketchups {
+			ketchupIds[index] = ketchup.Repository.ID
+		}
+
+		suggests, err := a.repositoryService.Suggest(r.Context(), ketchupIds, min(suggestThresold-ketchupsCount, suggestCount))
+		if err != nil {
+			return nil, err
+		}
+
+		datas["Suggests"] = suggests
+	}
+
+	return datas, nil
 }
 
 func (a app) appHandler(w http.ResponseWriter, r *http.Request, message model.Message) {
@@ -21,9 +57,9 @@ func (a app) appHandler(w http.ResponseWriter, r *http.Request, message model.Me
 	}
 
 	content := map[string]interface{}{
-		"Version":  a.version,
-		"Ketchups": ketchups,
-		"Root":     "app/",
+		"Version": a.version,
+		"Data":    ketchups,
+		"Root":    "app/",
 	}
 
 	if len(message.Content) > 0 {

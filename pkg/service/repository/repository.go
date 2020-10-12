@@ -20,6 +20,7 @@ var (
 // App of package
 type App interface {
 	List(ctx context.Context, page, pageSize uint) ([]model.Repository, uint64, error)
+	Suggest(ctx context.Context, ignoreIds []uint64, count uint64) ([]model.Repository, error)
 	GetOrCreate(ctx context.Context, name string) (model.Repository, error)
 	Update(ctx context.Context, item model.Repository) error
 	Clean(ctx context.Context) error
@@ -45,6 +46,15 @@ func (a app) List(ctx context.Context, page, pageSize uint) ([]model.Repository,
 	}
 
 	return list, total, nil
+}
+
+func (a app) Suggest(ctx context.Context, ignoreIds []uint64, count uint64) ([]model.Repository, error) {
+	list, err := a.repositoryStore.Suggest(ctx, ignoreIds, count)
+	if err != nil {
+		return nil, service.WrapInternal(fmt.Errorf("unable to suggest: %s", err))
+	}
+
+	return list, nil
 }
 
 func (a app) GetOrCreate(ctx context.Context, name string) (model.Repository, error) {

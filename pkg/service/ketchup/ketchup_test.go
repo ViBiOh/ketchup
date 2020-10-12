@@ -9,6 +9,7 @@ import (
 
 	"github.com/ViBiOh/ketchup/pkg/model"
 	"github.com/ViBiOh/ketchup/pkg/service"
+	"github.com/ViBiOh/ketchup/pkg/service/repository/repositorytest"
 )
 
 var (
@@ -106,28 +107,6 @@ func (tks testKetchupStore) Delete(_ context.Context, o model.Ketchup) error {
 		return errors.New("invalid version")
 	}
 
-	return nil
-}
-
-type testRepositoryService struct{}
-
-func (trs testRepositoryService) List(_ context.Context, _, _ uint) ([]model.Repository, uint64, error) {
-	return nil, 0, nil
-}
-
-func (trs testRepositoryService) GetOrCreate(_ context.Context, name string) (model.Repository, error) {
-	if len(name) == 0 {
-		return model.NoneRepository, service.WrapInvalid(errors.New("invalid name"))
-	}
-
-	return model.Repository{ID: 1, Name: "vibioh/ketchup", Version: "1.2.3"}, nil
-}
-
-func (trs testRepositoryService) Update(_ context.Context, _ model.Repository) error {
-	return nil
-}
-
-func (trs testRepositoryService) Clean(_ context.Context) error {
 	return nil
 }
 
@@ -312,7 +291,7 @@ func TestCreate(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.intention, func(t *testing.T) {
-			got, gotErr := New(testKetchupStore{}, testRepositoryService{}).Create(tc.args.ctx, tc.args.item)
+			got, gotErr := New(testKetchupStore{}, repositorytest.NewApp(false)).Create(tc.args.ctx, tc.args.item)
 
 			failed := false
 
@@ -399,7 +378,7 @@ func TestUpdate(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.intention, func(t *testing.T) {
-			got, gotErr := New(testKetchupStore{}, testRepositoryService{}).Update(tc.args.ctx, tc.args.item)
+			got, gotErr := New(testKetchupStore{}, repositorytest.NewApp((false))).Update(tc.args.ctx, tc.args.item)
 
 			failed := false
 
@@ -479,7 +458,7 @@ func TestDelete(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.intention, func(t *testing.T) {
-			gotErr := New(testKetchupStore{}, testRepositoryService{}).Delete(tc.args.ctx, tc.args.item)
+			gotErr := New(testKetchupStore{}, repositorytest.NewApp((false))).Delete(tc.args.ctx, tc.args.item)
 
 			failed := false
 

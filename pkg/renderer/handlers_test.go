@@ -14,7 +14,7 @@ import (
 func TestErrorHandler(t *testing.T) {
 	publicPath := "http:/localhost:1080"
 	templatesDir = "../../templates"
-	testInterface, err := New(Config{uiPath: &publicPath}, nil, nil)
+	testInterface, err := New(Config{uiPath: &publicPath}, nil, nil, nil)
 	if err != nil {
 		t.Errorf("unable to create app: %s", err)
 	}

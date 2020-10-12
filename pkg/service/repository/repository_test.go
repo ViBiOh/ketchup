@@ -43,6 +43,13 @@ func (trs testRepositoryStore) List(_ context.Context, page, _ uint) ([]model.Re
 	}, 2, nil
 }
 
+func (trs testRepositoryStore) Suggest(_ context.Context, _ []uint64, _ uint64) ([]model.Repository, error) {
+	return []model.Repository{
+		{ID: 1, Name: "vibioh/ketchup", Version: "1.0.0"},
+		{ID: 2, Name: "vibioh/viws", Version: "1.2.3"},
+	}, nil
+}
+
 func (trs testRepositoryStore) Get(_ context.Context, id uint64, _ bool) (model.Repository, error) {
 	if id == 0 {
 		return model.NoneRepository, errors.New("invalid id")

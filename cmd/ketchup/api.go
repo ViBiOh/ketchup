@@ -80,7 +80,7 @@ func main() {
 
 	schedulerApp := scheduler.New(schedulerConfig, repositoryServiceApp, ketchupServiceApp, githubApp, mailerApp)
 
-	rendererApp, err := renderer.New(rendererConfig, ketchupServiceApp, userServiceApp)
+	rendererApp, err := renderer.New(rendererConfig, ketchupServiceApp, userServiceApp, repositoryServiceApp)
 	logger.Fatal(err)
 
 	publicHandler := rendererApp.PublicHandler()

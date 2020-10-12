@@ -11,6 +11,7 @@ import (
 
 	"github.com/ViBiOh/ketchup/pkg/model"
 	"github.com/ViBiOh/ketchup/pkg/semver"
+	"github.com/ViBiOh/ketchup/pkg/service/repository/repositorytest"
 	"github.com/ViBiOh/mailer/pkg/client/clienttest"
 )
 
@@ -56,60 +57,6 @@ func (tks testKetchupService) Update(_ context.Context, _ model.Ketchup) (model.
 }
 
 func (tks testKetchupService) Delete(_ context.Context, _ model.Ketchup) error {
-	return nil
-}
-
-type testRepositoryService struct {
-	Multiple bool
-}
-
-func (trs testRepositoryService) List(ctx context.Context, page, pageSize uint) ([]model.Repository, uint64, error) {
-	if ctx == context.TODO() {
-		return nil, 0, errors.New("invalid context")
-	}
-
-	if trs.Multiple {
-		if page == 1 {
-			return []model.Repository{
-				{
-					ID:      1,
-					Name:    "vibioh/viws",
-					Version: "1.1.0",
-				},
-			}, 2, nil
-		} else if page == 2 {
-			return []model.Repository{
-				{
-					ID:      2,
-					Name:    "vibioh/ketchup",
-					Version: "1.0.0",
-				},
-			}, 2, nil
-		}
-	}
-
-	return []model.Repository{
-		{
-			ID:      1,
-			Name:    "vibioh/ketchup",
-			Version: "1.0.0",
-		},
-	}, 1, nil
-}
-
-func (trs testRepositoryService) GetOrCreate(_ context.Context, name string) (model.Repository, error) {
-	return model.NoneRepository, nil
-}
-
-func (trs testRepositoryService) Update(_ context.Context, item model.Repository) error {
-	if item.Version == "1.0.1" {
-		return errors.New("update error")
-	}
-
-	return nil
-}
-
-func (trs testRepositoryService) Clean(_ context.Context) error {
 	return nil
 }
 
@@ -171,7 +118,7 @@ func TestGetNewReleases(t *testing.T) {
 		{
 			"list error",
 			app{
-				repositoryService: testRepositoryService{},
+				repositoryService: repositorytest.NewApp(false),
 			},
 			args{
 				ctx: context.TODO(),
@@ -182,7 +129,7 @@ func TestGetNewReleases(t *testing.T) {
 		{
 			"github error",
 			app{
-				repositoryService: testRepositoryService{},
+				repositoryService: repositorytest.NewApp(false),
 				githubApp:         testGithubApp{Name: regexp.MustCompile("unknown")},
 			},
 			args{
@@ -194,7 +141,7 @@ func TestGetNewReleases(t *testing.T) {
 		{
 			"same version",
 			app{
-				repositoryService: testRepositoryService{},
+				repositoryService: repositorytest.NewApp(false),
 				githubApp:         testGithubApp{Name: regexp.MustCompile("vibioh/ketchup"), Version: "1.0.0"},
 			},
 			args{
@@ -206,7 +153,7 @@ func TestGetNewReleases(t *testing.T) {
 		{
 			"update error",
 			app{
-				repositoryService: testRepositoryService{},
+				repositoryService: repositorytest.NewApp(false),
 				githubApp:         testGithubApp{Name: regexp.MustCompile("vibioh/ketchup"), Version: "1.0.1"},
 			},
 			args{
@@ -218,7 +165,7 @@ func TestGetNewReleases(t *testing.T) {
 		{
 			"success",
 			app{
-				repositoryService: testRepositoryService{},
+				repositoryService: repositorytest.NewApp(false),
 				githubApp:         testGithubApp{Name: regexp.MustCompile("vibioh/ketchup"), Version: "1.1.0"},
 			},
 			args{
@@ -234,7 +181,7 @@ func TestGetNewReleases(t *testing.T) {
 		{
 			"paginate",
 			app{
-				repositoryService: testRepositoryService{Multiple: true},
+				repositoryService: repositorytest.NewApp(true),
 				githubApp:         testGithubApp{Name: regexp.MustCompile("vibioh/(ketchup|viws)"), Version: "1.1.0"},
 			},
 			args{
