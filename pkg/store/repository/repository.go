@@ -91,11 +91,12 @@ LIMIT $1
 `
 
 func (a app) Suggest(ctx context.Context, ignoreIds []uint64, count uint64) ([]model.Repository, error) {
+	var ketchupCount uint64
 	list := make([]model.Repository, 0)
 
 	scanner := func(rows *sql.Rows) error {
 		var item model.Repository
-		if err := rows.Scan(&item.ID, &item.Name, &item.Version); err != nil {
+		if err := rows.Scan(&item.ID, &item.Name, &item.Version, &ketchupCount); err != nil {
 			return err
 		}
 
