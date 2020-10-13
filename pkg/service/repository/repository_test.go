@@ -4,11 +4,12 @@ import (
 	"context"
 	"errors"
 	"reflect"
+	"regexp"
 	"strings"
 	"testing"
 
+	"github.com/ViBiOh/ketchup/pkg/github/githubtest"
 	"github.com/ViBiOh/ketchup/pkg/model"
-	"github.com/ViBiOh/ketchup/pkg/semver"
 	"github.com/ViBiOh/ketchup/pkg/service"
 )
 
@@ -96,16 +97,6 @@ func (trs testRepositoryStore) DeleteUnused(ctx context.Context) error {
 	}
 
 	return nil
-}
-
-type testGithubApp struct{}
-
-func (tga testGithubApp) LatestVersion(repository string) (semver.Version, error) {
-	if repository == "invalid" {
-		return semver.Version{}, errors.New("not found")
-	}
-
-	return semver.Version{Name: "1.0.0"}, nil
 }
 
 func TestList(t *testing.T) {
@@ -208,7 +199,7 @@ func TestGetOrCreate(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.intention, func(t *testing.T) {
-			got, gotErr := New(testRepositoryStore{}, testGithubApp{}).GetOrCreate(tc.args.ctx, tc.args.name)
+			got, gotErr := New(testRepositoryStore{}, githubtest.NewApp(regexp.MustCompile("not found"), "1.0.0")).GetOrCreate(tc.args.ctx, tc.args.name)
 
 			failed := false
 
@@ -277,7 +268,7 @@ func TestCreate(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.intention, func(t *testing.T) {
-			got, gotErr := app{testRepositoryStore{}, testGithubApp{}}.create(tc.args.ctx, tc.args.item)
+			got, gotErr := app{testRepositoryStore{}, githubtest.NewApp(regexp.MustCompile("vibioh"), "1.0.0")}.create(tc.args.ctx, tc.args.item)
 
 			failed := false
 

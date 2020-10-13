@@ -9,70 +9,13 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/ViBiOh/ketchup/pkg/github/githubtest"
 	"github.com/ViBiOh/ketchup/pkg/model"
 	"github.com/ViBiOh/ketchup/pkg/semver"
+	"github.com/ViBiOh/ketchup/pkg/service/ketchup/ketchuptest"
 	"github.com/ViBiOh/ketchup/pkg/service/repository/repositorytest"
 	"github.com/ViBiOh/mailer/pkg/client/clienttest"
 )
-
-type testKetchupService struct{}
-
-func (tks testKetchupService) List(_ context.Context, _, _ uint) ([]model.Ketchup, uint64, error) {
-	return nil, 0, nil
-}
-
-func (tks testKetchupService) ListForRepositories(ctx context.Context, repositories []model.Repository) ([]model.Ketchup, error) {
-	if ctx == context.TODO() {
-		return nil, errors.New("invalid context")
-	}
-
-	if len(repositories) == 0 {
-		return nil, nil
-	}
-
-	if repositories[0].Name == "vibioh/ketchup" {
-		return []model.Ketchup{
-			{Repository: repositories[0], User: model.User{ID: 1, Email: "nobody@localhost"}},
-			{Repository: repositories[0], User: model.User{ID: 2, Email: "guest@nowhere"}},
-		}, nil
-	}
-
-	if repositories[0].Name == "vibioh/viws" {
-		return []model.Ketchup{
-			{Repository: repositories[0], User: model.User{ID: 1, Email: "nobody@localhost"}},
-			{Repository: repositories[0], User: model.User{ID: 2, Email: "guest@nowhere"}},
-			{Repository: repositories[1], User: model.User{ID: 2, Email: "guest@nowhere"}},
-		}, nil
-	}
-
-	return nil, nil
-}
-
-func (tks testKetchupService) Create(_ context.Context, _ model.Ketchup) (model.Ketchup, error) {
-	return model.NoneKetchup, nil
-}
-
-func (tks testKetchupService) Update(_ context.Context, _ model.Ketchup) (model.Ketchup, error) {
-	return model.NoneKetchup, nil
-}
-
-func (tks testKetchupService) Delete(_ context.Context, _ model.Ketchup) error {
-	return nil
-}
-
-type testGithubApp struct {
-	Name    *regexp.Regexp
-	Version string
-}
-
-func (tga testGithubApp) LatestVersion(repository string) (semver.Version, error) {
-	if tga.Name.MatchString(repository) {
-		version, _ := semver.Parse(tga.Version)
-		return version, nil
-	}
-
-	return semver.NoneVersion, errors.New("unknown repository")
-}
 
 func TestFlags(t *testing.T) {
 	var cases = []struct {
@@ -130,7 +73,7 @@ func TestGetNewReleases(t *testing.T) {
 			"github error",
 			app{
 				repositoryService: repositorytest.NewApp(false),
-				githubApp:         testGithubApp{Name: regexp.MustCompile("unknown")},
+				githubApp:         githubtest.NewApp(regexp.MustCompile("unknown"), ""),
 			},
 			args{
 				ctx: context.Background(),
@@ -142,7 +85,7 @@ func TestGetNewReleases(t *testing.T) {
 			"same version",
 			app{
 				repositoryService: repositorytest.NewApp(false),
-				githubApp:         testGithubApp{Name: regexp.MustCompile("vibioh/ketchup"), Version: "1.0.0"},
+				githubApp:         githubtest.NewApp(regexp.MustCompile("vibioh/ketchup"), "1.0.0"),
 			},
 			args{
 				ctx: context.Background(),
@@ -154,7 +97,7 @@ func TestGetNewReleases(t *testing.T) {
 			"update error",
 			app{
 				repositoryService: repositorytest.NewApp(false),
-				githubApp:         testGithubApp{Name: regexp.MustCompile("vibioh/ketchup"), Version: "1.0.1"},
+				githubApp:         githubtest.NewApp(regexp.MustCompile("vibioh/ketchup"), "1.0.1"),
 			},
 			args{
 				ctx: context.Background(),
@@ -166,7 +109,7 @@ func TestGetNewReleases(t *testing.T) {
 			"success",
 			app{
 				repositoryService: repositorytest.NewApp(false),
-				githubApp:         testGithubApp{Name: regexp.MustCompile("vibioh/ketchup"), Version: "1.1.0"},
+				githubApp:         githubtest.NewApp(regexp.MustCompile("vibioh/ketchup"), "1.1.0"),
 			},
 			args{
 				ctx: context.Background(),
@@ -182,7 +125,7 @@ func TestGetNewReleases(t *testing.T) {
 			"paginate",
 			app{
 				repositoryService: repositorytest.NewApp(true),
-				githubApp:         testGithubApp{Name: regexp.MustCompile("vibioh/(ketchup|viws)"), Version: "1.1.0"},
+				githubApp:         githubtest.NewApp(regexp.MustCompile("vibioh/(ketchup|viws)"), "1.1.0"),
 			},
 			args{
 				ctx: context.Background(),
@@ -313,7 +256,7 @@ func TestGetKetchupToNotify(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.intention, func(t *testing.T) {
-			got, gotErr := app{ketchupService: testKetchupService{}}.getKetchupToNotify(tc.args.ctx, tc.args.releases)
+			got, gotErr := app{ketchupService: ketchuptest.NewApp()}.getKetchupToNotify(tc.args.ctx, tc.args.releases)
 
 			failed := false
 

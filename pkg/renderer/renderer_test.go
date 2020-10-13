@@ -2,7 +2,6 @@ package renderer
 
 import (
 	"context"
-	"errors"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -10,41 +9,14 @@ import (
 
 	"github.com/ViBiOh/httputils/v3/pkg/request"
 	"github.com/ViBiOh/ketchup/pkg/model"
+	"github.com/ViBiOh/ketchup/pkg/service/ketchup/ketchuptest"
 	"github.com/ViBiOh/ketchup/pkg/service/repository/repositorytest"
 )
-
-type testKetchupService struct{}
-
-func (tks testKetchupService) List(ctx context.Context, _, _ uint) ([]model.Ketchup, uint64, error) {
-	if model.ReadUser(ctx) == model.NoneUser {
-		return nil, 0, errors.New("user not found")
-	}
-
-	return []model.Ketchup{
-		{Version: "1.0.0", Repository: model.Repository{ID: 1, Name: "vibioh/ketchup", Version: "1.0.0"}, User: model.User{ID: 1, Email: "nobody@localhost"}},
-	}, 0, nil
-}
-
-func (tks testKetchupService) ListForRepositories(_ context.Context, _ []model.Repository) ([]model.Ketchup, error) {
-	return nil, nil
-}
-
-func (tks testKetchupService) Create(_ context.Context, _ model.Ketchup) (model.Ketchup, error) {
-	return model.NoneKetchup, nil
-}
-
-func (tks testKetchupService) Update(_ context.Context, _ model.Ketchup) (model.Ketchup, error) {
-	return model.NoneKetchup, nil
-}
-
-func (tks testKetchupService) Delete(_ context.Context, _ model.Ketchup) error {
-	return nil
-}
 
 func TestHandler(t *testing.T) {
 	publicPath := "http:/localhost:1080"
 	templatesDir = "../../templates"
-	testInterface, err := New(Config{uiPath: &publicPath}, testKetchupService{}, nil, repositorytest.NewApp(false))
+	testInterface, err := New(Config{uiPath: &publicPath}, ketchuptest.NewApp(), nil, repositorytest.NewApp(false))
 	if err != nil {
 		t.Errorf("unable to create app: %s", err)
 	}
@@ -122,7 +94,7 @@ func TestPublicHandler(t *testing.T) {
 	publicPath := "http:/localhost:1080"
 	templatesDir = "../../templates"
 	staticDir = "../../static"
-	testInterface, err := New(Config{uiPath: &publicPath}, testKetchupService{}, nil, nil)
+	testInterface, err := New(Config{uiPath: &publicPath}, ketchuptest.NewApp(), nil, nil)
 	if err != nil {
 		t.Errorf("unable to create app: %s", err)
 	}
