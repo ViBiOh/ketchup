@@ -14,7 +14,7 @@ import (
 )
 
 var (
-	nameMatcher = regexp.MustCompile(`(?i)(?:github.com/)?([^/\n]+/[^/\n]+)`)
+	nameMatcher = regexp.MustCompile(`(?i)(?:github\.com/)?([^/\n]+/[^/\n]+)`)
 )
 
 // App of package
