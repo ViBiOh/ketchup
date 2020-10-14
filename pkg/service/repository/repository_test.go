@@ -44,9 +44,12 @@ func (trs testRepositoryStore) List(_ context.Context, page, _ uint) ([]model.Re
 	}, 2, nil
 }
 
-func (trs testRepositoryStore) Suggest(_ context.Context, _ []uint64, _ uint64) ([]model.Repository, error) {
+func (trs testRepositoryStore) Suggest(ctx context.Context, _ []uint64, _ uint64) ([]model.Repository, error) {
+	if ctx == context.TODO() {
+		return nil, errors.New("invalid context")
+	}
+
 	return []model.Repository{
-		{ID: 1, Name: "vibioh/ketchup", Version: "1.0.0"},
 		{ID: 2, Name: "vibioh/viws", Version: "1.2.3"},
 	}, nil
 }
@@ -151,6 +154,58 @@ func TestList(t *testing.T) {
 
 			if failed {
 				t.Errorf("List() = (%+v, %d, `%s`), want (%+v, %d, `%s`)", got, gotCount, gotErr, tc.want, tc.wantCount, tc.wantErr)
+			}
+		})
+	}
+}
+
+func TestSuggest(t *testing.T) {
+	type args struct {
+		ctx       context.Context
+		ignoreIds []uint64
+		count     uint64
+	}
+
+	var cases = []struct {
+		intention string
+		args      args
+		want      []model.Repository
+		wantErr   error
+	}{
+		{
+			"simple",
+			args{
+				ctx: context.Background(),
+			},
+			[]model.Repository{
+				{ID: 2, Name: "vibioh/viws", Version: "1.2.3"},
+			},
+			nil,
+		},
+		{
+			"error",
+			args{
+				ctx: context.TODO(),
+			},
+			nil,
+			service.ErrInternalError,
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.intention, func(t *testing.T) {
+			got, gotErr := New(testRepositoryStore{}, nil).Suggest(tc.args.ctx, tc.args.ignoreIds, tc.args.count)
+
+			failed := false
+
+			if !errors.Is(gotErr, tc.wantErr) {
+				failed = true
+			} else if !reflect.DeepEqual(got, tc.want) {
+				failed = true
+			}
+
+			if failed {
+				t.Errorf("Suggest() = (%+v,`%s`), want (%+v,`%s`)", got, gotErr, tc.want, tc.wantErr)
 			}
 		})
 	}
