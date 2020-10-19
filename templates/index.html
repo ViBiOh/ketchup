@@ -276,7 +276,18 @@
   {{ template "header" . }}
   {{ template "message" .Message }}
 
-  {{ template "signup" . }}
+  <article class="center">
+    <h2>Receive an email digest of your Github dependencies updates every day at 8am.</h2>
+
+    <em>
+      No ads, free. Because being update-to-date must be accessible to everyone.
+    </em>
+
+    <h3>Suggestions</h3>
+    {{ template "suggests" . }}
+
+    {{ template "signup" . }}
+  </article>
 
   {{ template "footer" . }}
 {{ end }}

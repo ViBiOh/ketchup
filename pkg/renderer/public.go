@@ -9,6 +9,7 @@ import (
 
 	authModel "github.com/ViBiOh/auth/v2/pkg/model"
 	"github.com/ViBiOh/httputils/v3/pkg/httperror"
+	"github.com/ViBiOh/httputils/v3/pkg/logger"
 	"github.com/ViBiOh/httputils/v3/pkg/templates"
 	"github.com/ViBiOh/ketchup/pkg/model"
 )
@@ -18,13 +19,19 @@ func (a app) generateToken() (string, int64) {
 	return a.tokenStore.Store(questionID, time.Minute*5), questionID
 }
 
-func (a app) publicHandler(w http.ResponseWriter, _ *http.Request, status int, message model.Message) {
+func (a app) publicHandler(w http.ResponseWriter, r *http.Request, status int, message model.Message) {
 	token, questionID := a.generateToken()
+
+	suggests, err := a.repositoryService.Suggest(r.Context(), []uint64{0}, 3)
+	if err != nil {
+		logger.Warn("unable to get suggest repositories: %s", err)
+	}
 
 	content := map[string]interface{}{
 		"Version":  a.version,
 		"Token":    token,
 		"Question": colors[questionID].Question,
+		"Suggests": suggests,
 	}
 
 	if len(message.Content) > 0 {
