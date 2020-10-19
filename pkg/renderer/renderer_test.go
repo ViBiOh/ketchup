@@ -94,7 +94,7 @@ func TestPublicHandler(t *testing.T) {
 	publicPath := "http:/localhost:1080"
 	templatesDir = "../../templates"
 	staticDir = "../../static"
-	testInterface, err := New(Config{uiPath: &publicPath}, ketchuptest.NewApp(), nil, nil)
+	testInterface, err := New(Config{uiPath: &publicPath}, ketchuptest.NewApp(), nil, repositorytest.NewApp(false))
 	if err != nil {
 		t.Errorf("unable to create app: %s", err)
 	}
