@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/ViBiOh/httputils/v3/pkg/httperror"
+	"github.com/ViBiOh/httputils/v3/pkg/logger"
 	"github.com/ViBiOh/httputils/v3/pkg/templates"
 	"github.com/ViBiOh/ketchup/pkg/model"
 )
@@ -40,10 +41,10 @@ func (a app) getData(r *http.Request) (interface{}, error) {
 
 		suggests, err := a.repositoryService.Suggest(r.Context(), ketchupIds, min(suggestThresold-ketchupsCount, suggestCount))
 		if err != nil {
-			return nil, err
+			logger.Warn("unable to get suggest repositories: %s", err)
+		} else {
+			datas["Suggests"] = suggests
 		}
-
-		datas["Suggests"] = suggests
 	}
 
 	return datas, nil

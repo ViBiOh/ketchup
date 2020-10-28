@@ -24,7 +24,7 @@ func (a app) publicHandler(w http.ResponseWriter, r *http.Request, status int, m
 
 	suggests, err := a.repositoryService.Suggest(r.Context(), []uint64{0}, 3)
 	if err != nil {
-		logger.Warn("unable to get suggest repositories: %s", err)
+		logger.Warn("unable to get publics suggestions: %s", err)
 	}
 
 	content := map[string]interface{}{

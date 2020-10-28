@@ -1,39 +1,43 @@
 {{ define "suggests" }}
-  <style type="text/css">
-    .ketchups {
-      align-items: center;
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      margin: .5rem;
-    }
+  {{ if .Suggests }}
+    <style type="text/css">
+      .ketchups {
+        align-items: center;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        margin: .5rem;
+      }
 
-    .ketchup {
-      border: 1px dashed var(--success);
-      display: inline-flex;
-      flex-direction: column;
-      height: 15rem;
-      width: 24rem;
-    }
+      .ketchup {
+        border: 1px dashed var(--success);
+        display: inline-flex;
+        flex-direction: column;
+        height: 15rem;
+        width: 24rem;
+      }
 
-    .ellipsis {
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-  </style>
+      .ellipsis {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+    </style>
 
-  <aside class="ketchups">
-    {{ range .Suggests }}
-      <div class="ketchup center">
-        <h2 class="header small ellipsis">{{ .Name }}</h2>
+    <h3>Suggestions</h3>
 
-        <div class="ketchup__version">
-          <span>
-            <a href="https://github.com/{{ .Name }}/releases/tag/{{ .Version }}" target="_blank" rel="noopener noreferrer">{{ .Version }}</a>
-          </span>
+    <aside class="ketchups">
+      {{ range .Suggests }}
+        <div class="ketchup center">
+          <h2 class="header small ellipsis">{{ .Name }}</h2>
+
+          <div class="ketchup__version">
+            <span>
+              <a href="https://github.com/{{ .Name }}/releases/tag/{{ .Version }}" target="_blank" rel="noopener noreferrer">{{ .Version }}</a>
+            </span>
+          </div>
         </div>
-      </div>
-    {{ end }}
-  </aside>
+      {{ end }}
+    </aside>
+  {{ end }}
 {{ end }}
