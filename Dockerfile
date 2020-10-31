@@ -5,8 +5,7 @@ EXPOSE 1080
 
 ENV ZONEINFO /zoneinfo.zip
 COPY zoneinfo.zip /zoneinfo.zip
-
-COPY cacert.pem /etc/ssl/certs/ca-certificates.crt
+COPY ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
 
 COPY templates/ /templates
 COPY static/ /static
