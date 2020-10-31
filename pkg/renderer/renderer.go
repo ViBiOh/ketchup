@@ -89,7 +89,7 @@ func New(config Config, ketchupService ketchup.App, userService user.App, reposi
 
 func (a app) Start() {
 	cron.New().Each(time.Hour).Start(a.tokenStore.Clean, func(err error) {
-		logger.Error("error while running ketchup notify: %s", err)
+		logger.Error("error while running token store cleanup: %s", err)
 	})
 }
 

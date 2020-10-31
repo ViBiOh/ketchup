@@ -71,7 +71,18 @@ func New(config Config, repositoryService repository.App, ketchupService ketchup
 }
 
 func (a app) Start() {
-	cron.New().At(a.hour).In(a.timezone).Days().Start(a.ketchupNotify, func(err error) {
+	notifier := cron.New().At(a.hour).In(a.timezone).Days()
+	logger.Info("time.Now: %s", time.Now())
+
+	if loc, err := time.LoadLocation(a.timezone); err != nil {
+		logger.Error("%s", err)
+	} else {
+		logger.Info("Time in %s: %s", a.timezone, time.Now().In(loc))
+	}
+
+	logger.Info("Notifier configuration: %s", notifier)
+
+	notifier.Start(a.ketchupNotify, func(err error) {
 		logger.Error("error while running ketchup notify: %s", err)
 	})
 }
