@@ -3,6 +3,11 @@ FROM vibioh/scratch
 ENV KETCHUP_PORT 1080
 EXPOSE 1080
 
+ENV ZONEINFO /zoneinfo.zip
+COPY zoneinfo.zip /zoneinfo.zip
+
+COPY cacert.pem /etc/ssl/certs/ca-certificates.crt
+
 COPY templates/ /templates
 COPY static/ /static
 
@@ -15,5 +20,4 @@ ENV VERSION=${VERSION}
 ARG TARGETOS
 ARG TARGETARCH
 
-COPY cacert.pem /etc/ssl/certs/ca-certificates.crt
 COPY release/ketchup_${TARGETOS}_${TARGETARCH} /ketchup
