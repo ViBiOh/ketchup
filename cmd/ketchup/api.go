@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"time"
 
 	authIdent "github.com/ViBiOh/auth/v2/pkg/ident/basic"
 	authMiddleware "github.com/ViBiOh/auth/v2/pkg/middleware"
@@ -65,6 +66,13 @@ func main() {
 	alcotest.DoAndExit(alcotestConfig)
 	logger.Global(logger.New(loggerConfig))
 	defer logger.Close()
+
+	logger.Info("time.Now: %s", time.Now())
+	if loc, err := time.LoadLocation("Europe/Paris"); err != nil {
+		logger.Error("%s", err)
+	} else {
+		logger.Info("Time in %s: %s", "Europe/Paris", time.Now().In(loc))
+	}
 
 	ketchupDb, err := db.New(dbConfig)
 	logger.Fatal(err)
