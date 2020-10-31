@@ -1,10 +1,13 @@
+FROM golang:alpine as build
+RUN apk --no-cache add tzdata ca-certificates
+
 FROM vibioh/scratch
 
-ENV ZONEINFO zoneinfo.zip
-ENV TZ UTC
 ENV KETCHUP_PORT 1080
-
 EXPOSE 1080
+
+COPY --from=build /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
+COPY --from=build /usr/share/zoneinfo /usr/share/zoneinfo
 
 COPY templates/ /templates
 COPY static/ /static
@@ -18,6 +21,4 @@ ENV VERSION=${VERSION}
 ARG TARGETOS
 ARG TARGETARCH
 
-COPY cacert.pem /etc/ssl/certs/ca-certificates.crt
-COPY zoneinfo.zip /
 COPY release/ketchup_${TARGETOS}_${TARGETARCH} /ketchup

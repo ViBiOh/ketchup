@@ -4,8 +4,6 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	"log"
-	"os"
 	"sort"
 	"strings"
 	"time"
@@ -69,17 +67,6 @@ func New(config Config, repositoryService repository.App, ketchupService ketchup
 		ketchupService:    ketchupService,
 		githubApp:         githubApp,
 		mailerApp:         mailerApp,
-	}
-}
-
-func init() {
-	// manually set time zone
-	if tz := os.Getenv("TZ"); tz != "" {
-		var err error
-		time.Local, err = time.LoadLocation(tz)
-		if err != nil {
-			log.Printf("error loading location '%s': %v\n", tz, err)
-		}
 	}
 }
 
