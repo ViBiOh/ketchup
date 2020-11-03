@@ -48,7 +48,7 @@ jobs:
       - name: Build
         run: |
           curl -q -sSL --max-time 30 "https://raw.githubusercontent.com/ViBiOh/scripts/master/bootstrap" | bash -s "release"
-          DOCKER_IMAGE="${{ secrets.DOCKER_USER }}/scratch" IMAGE_VERSION="$(make version)" ./scripts/release build docker
+          DOCKER_IMAGE="${{ secrets.DOCKER_USER }}/$(make name)" IMAGE_VERSION="$(make version)" ./scripts/release build docker
 
   publish:
     name: Publish
@@ -63,7 +63,7 @@ jobs:
           DOCKER_PASS: ${{ secrets.DOCKER_PASS }}
         run: |
           curl -q -sSL --max-time 30 "https://raw.githubusercontent.com/ViBiOh/scripts/master/bootstrap" | bash -s "docker_promote"
-          scripts/docker_promote "${{ secrets.DOCKER_USER }}/scratch" "$(make version)"
+          scripts/docker_promote "${{ secrets.DOCKER_USER }}/$(make name)" "$(make version)"
       - name: GoReport
         run: |
           curl -q -sSL --max-time 30 -X POST https://goreportcard.com/checks?repo=github.com/${GITHUB_REPOSITORY}
