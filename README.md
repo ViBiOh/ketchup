@@ -108,6 +108,8 @@ Usage of ketchup:
         [http] Healthy HTTP Status code {KETCHUP_OK_STATUS} (default 204)
   -port uint
         [http] Listen port {KETCHUP_PORT} (default 1080)
+  -prometheusIgnore string
+        [prometheus] Ignored path prefixes for metrics, comma separated {KETCHUP_PROMETHEUS_IGNORE}
   -prometheusPath string
         [prometheus] Path for exposing metrics {KETCHUP_PROMETHEUS_PATH} (default "/metrics")
   -readTimeout string
