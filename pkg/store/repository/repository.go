@@ -86,7 +86,7 @@ FROM
 WHERE
   id != ALL($2)
 ORDER BY
-  count
+  count DESC
 LIMIT $1
 `
 
