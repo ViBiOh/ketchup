@@ -182,6 +182,14 @@ func TestParse(t *testing.T) {
 			errors.New("ignoring test version"),
 		},
 		{
+			"ignore canary",
+			args{
+				version: "v10.0.4-canary.1",
+			},
+			NoneVersion,
+			errors.New("ignoring canary version"),
+		},
+		{
 			"ignore alpha",
 			args{
 				version: "v0.14.0-alpha20200910",

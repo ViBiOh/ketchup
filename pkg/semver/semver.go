@@ -9,7 +9,7 @@ import (
 
 var (
 	semverMatcher       = regexp.MustCompile(`(?i)^[a-zA-Z]*([0-9]+)\.([0-9]+)(?:\.([0-9]+))?(?:$|(?:[+-](.*)))`)
-	ignoredSemverDetail = []string{"rc", "beta", "test", "alpha"}
+	ignoredSemverDetail = []string{"rc", "beta", "test", "canary", "alpha"}
 
 	// NoneVersion is the empty semver
 	NoneVersion = Version{}
