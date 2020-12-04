@@ -225,7 +225,7 @@ func TestGetKetchupToNotify(t *testing.T) {
 			args{
 				ctx: context.Background(),
 			},
-			make(map[model.User][]model.Release, 0),
+			make(map[model.User][]model.Release),
 			nil,
 		},
 		{

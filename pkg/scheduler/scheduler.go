@@ -161,7 +161,7 @@ func (a app) getKetchupToNotify(ctx context.Context, releases []model.Release) (
 		return nil, fmt.Errorf("unable to get ketchups for repositories: %s", err)
 	}
 
-	userToNotify := make(map[model.User][]model.Release, 0)
+	userToNotify := make(map[model.User][]model.Release)
 
 	sort.Sort(model.ReleaseByRepositoryID(releases))
 	sort.Sort(model.KetchupByRepositoryID(ketchups))
