@@ -37,14 +37,14 @@ type Config struct {
 }
 
 type app struct {
-	timezone string
-	hour     string
-	loginID  uint64
-
 	repositoryService repository.App
 	ketchupService    ketchup.App
 	githubApp         github.App
 	mailerApp         mailer.App
+
+	timezone string
+	hour     string
+	loginID  uint64
 }
 
 // Flags adds flags for configuring package

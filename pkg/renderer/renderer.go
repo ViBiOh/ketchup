@@ -49,15 +49,16 @@ type Config struct {
 }
 
 type app struct {
-	tpl        *template.Template
-	rand       *rand.Rand
-	tokenStore TokenStore
-	uiPath     string
-	version    string
+	tpl  *template.Template
+	rand *rand.Rand
 
 	ketchupService    ketchup.App
 	userService       user.App
 	repositoryService repository.App
+	tokenStore        TokenStore
+
+	version string
+	uiPath  string
 }
 
 // Flags adds flags for configuring package

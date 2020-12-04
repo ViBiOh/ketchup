@@ -11,10 +11,10 @@ var (
 
 // Ketchup of app
 type Ketchup struct {
-	Version    string
-	Semver     string
-	Repository Repository
 	User       User
+	Semver     string
+	Version    string
+	Repository Repository
 }
 
 // KetchupByRepositoryID sort ketchup by repository ID

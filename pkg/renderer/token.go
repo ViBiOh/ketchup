@@ -16,8 +16,8 @@ type TokenStore interface {
 }
 
 type tokenStore struct {
-	store sync.Map
 	rand  *rand.Rand
+	store sync.Map
 }
 
 // NewTokenStore creates a new token store

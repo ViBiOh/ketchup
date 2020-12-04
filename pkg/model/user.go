@@ -19,9 +19,9 @@ var (
 
 // User of app
 type User struct {
-	ID    uint64
 	Email string
 	Login authModel.User
+	ID    uint64
 }
 
 // StoreUser stores given User in context
