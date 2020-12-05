@@ -191,19 +191,19 @@
 
       <div class="ketchup__version">
         <span>
-          <a class="{{ if ne .Version .Repository.Version }}danger{{ else }}success{{ end }}" href="https://github.com/{{ .Repository.Name }}/releases/tag/{{ .Version }}" target="_blank" rel="noopener noreferrer">{{ .Version }}</a>
+          <a class="{{ if ne .Version .Repository.Version }}danger{{ else }}success{{ end }}" href="https://github.com/{{ .Repository.Name }}/releases/tag/{{ .Version }}">{{ .Version }}</a>
         </span>
 
         {{ if ne .Version .Repository.Version }}
           <span>
-            &nbsp;->&nbsp;<a class="success" href="https://github.com/{{ .Repository.Name }}/releases/tag/{{ .Repository.Version }}" target="_blank" rel="noopener noreferrer">{{ .Repository.Version }}</a>
+            &nbsp;->&nbsp;<a class="success" href="https://github.com/{{ .Repository.Name }}/releases/tag/{{ .Repository.Version }}">{{ .Repository.Version }}</a>
           </span>
         {{ end }}
       </div>
 
       <div>
         {{ if ne .Version .Repository.Version }}
-          <a href="https://github.com/{{ .Repository.Name }}/compare/{{ .Version }}...{{ .Repository.Version }}" target="_blank" rel="noreferrer noopener" class="button button-icon" title="Compare">
+          <a href="https://github.com/{{ .Repository.Name }}/compare/{{ .Version }}...{{ .Repository.Version }}" class="button button-icon" title="Compare">
             <img class="icon" src="/svg/eyes?fill=silver" alt="Compare icon">
           </a>
 
@@ -233,7 +233,7 @@
 
       <div class="ketchup__version">
         <span>
-          <a href="https://github.com/{{ .Name }}/releases/tag/{{ .Version }}" target="_blank" rel="noopener noreferrer">{{ .Version }}</a>
+          <a href="https://github.com/{{ .Name }}/releases/tag/{{ .Version }}">{{ .Version }}</a>
         </span>
       </div>
 
