@@ -91,7 +91,7 @@
         }
 
         .primary {
-          color: var(--success);
+          color: var(--primary);
         }
 
         .success {
@@ -206,12 +206,25 @@
           text-align: left;
         }
 
+        .flex {
+          align-items: center;
+          display: flex;
+        }
+
+        .flex-grow {
+          flex: 1 1;
+        }
+
         .center {
           text-align: center;
         }
 
         .padding {
           padding: var(--space-size);
+        }
+
+        .padding-half {
+          padding: calc(var(--space-size) / 2);
         }
 
         .no-padding {
@@ -222,8 +235,23 @@
           margin: var(--space-size);
         }
 
+        .margin-half {
+          margin: calc(var(--space-size) / 2);
+        }
+
         .no-margin {
           margin: 0;
+        }
+
+        .ellipsis {
+          overflow: hidden;
+          text-align: left;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+
+        .full {
+          width: 100%;
         }
 
         @media print {
@@ -236,14 +264,41 @@
           }
         }
       </style>
+
+      <script>
+          /**
+           * Go back from state.
+           */
+          function goBack() {
+            const previousHash = document.location.hash;
+            document.location.hash = '';
+
+            if (/success$/gim.test(previousHash)) {
+              window.location.reload(true);
+            }
+          }
+
+          /**
+           * Handle Previous/next.
+           */
+          window.onkeyup = e => {
+            switch(e.key) {
+              case 'Escape':
+                goBack();
+                break;
+            }
+          };
+      </script>
     </head>
 
     <body class="no-margin">
       <div class="content">
-        <header class="padding">
+        <header class="flex padding">
           <h1 class="no-margin no-padding">
-            <a href="/{{- if .Root -}}{{- .Root -}}{{- end -}}" class="no-style clear">Ketchup</a>
+            <a href="/{{ with .Root }}{{ . }}{{ end }}" class="no-style clear">Ketchup</a>
           </h1>
+          <span class="flex-grow"></span>
+          {{ template "header-part" . }}
         </header>
 {{ end }}
 
@@ -262,14 +317,6 @@
       </p>
     {{ end }}
   {{ end }}
-{{ end }}
-
-{{ define "app" }}
-  {{ template "header" . }}
-
-  {{- template "ketchups" . -}}
-
-  {{ template "footer" . }}
 {{ end }}
 
 {{ define "public" }}
