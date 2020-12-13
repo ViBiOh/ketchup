@@ -9,7 +9,7 @@ spec:
   chart:
     spec:
       chart: app
-      version: "0.0.30"
+      version: "0.0.32"
       sourceRef:
         kind: HelmRepository
         name: vibioh
@@ -20,7 +20,7 @@ spec:
     nameOverride: ketchup
 
     image:
-      repository: vibioh/ketchup
+      repository: vibioh/ketchup # {"$imagepolicy": "default:ketchup"}
 
     config:
       KETCHUP_LOGGER_JSON: "true"
