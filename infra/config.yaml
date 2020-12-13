@@ -1,4 +1,3 @@
----
 apiVersion: helm.toolkit.fluxcd.io/v2beta1
 kind: HelmRelease
 metadata:
@@ -15,13 +14,10 @@ spec:
         name: vibioh
         namespace: flux-system
       interval: 120m
-
   values:
     nameOverride: ketchup
-
     image:
-      repository: vibioh/ketchup # {"$imagepolicy": "default:ketchup"}
-
+      repository: vibioh/ketchup:latest # {"$imagepolicy": "default:ketchup"}
     config:
       KETCHUP_LOGGER_JSON: "true"
       KETCHUP_MAILER_URL: http://mailer
@@ -29,16 +25,13 @@ spec:
       KETCHUP_DB_PORT: "80"
       KETCHUP_DB_NAME: ketchup
       KETCHUP_DB_USER: ketchup
-
     secrets:
       KETCHUP_DB_PASS: AgDOK5Ph8WD8SbBi+Mn/ywPirM59KRfhAjkAqaOqDePJJDd3uIQhoJCKN5HCwYsUoux173go8RrPtyhc5CxKm+/sc6JiqeajZVv/mc/EVPa0MyNpCN376jXIvo0P+joasjBGys/rtqEauhdn7hWGr87PnJbL5A2k+XD3kMauzcKJtMXSYkz2QSTx7TW1kW+5zJs/Cgp3FS9qHZ8buvktggnKeffhd0paYJJrLmtyKxKzmkXcyL8Q3i3QnAbXC3u4vSPxP5PMFMEqDZNrmmYiEJVOmNcW+R0jO7u6q3gwWkATL7E0bbtWuanp6/FXgUhlgpmD+i9BSwTEzrglFHEGPESlg+uYDqXDXOKGBzmQPcq7aAU+/jcEyh5ozkF8aVod7fVxFo+g1nGCbwAhXK5E+iT+KZ1Q50mFkhRIOYSQ9aesHONBPpiaLp8y00OJ6oEmbCSmuDNOBTYXo/JIjUnJ5LFIIskcT5MWKPkYV3hlSzshQBR9JPXLqdaiIEiRicjnfU/qWrwel0PlEaU2L1FL1qsikxPkfGu1HHwj0CusGpGduD3DKC1mTEc1U4zAVvmqSMpoSguyfOYf/2C/m+jcd5YTkiS9JpTGUx4OVFvBD6Ug9uT7igLI8nNFZeTHMCnCerG7GES0wapWehYX/wYFaqw9K1ym0Jz2fHByCVNEt8XH0GxFszdTw2iF6Q4AIH4D8lLB9umdTPP91L5hYVSIOpv9qQPUa9pxB5aNwEG9Q+BQt31mM/zNEglv033PqYOAM12KsGqwew9HJBAUFQU=
       KETCHUP_GITHUB_TOKEN: AgBEoZ8xF/zzNAK+DVcj7HbmKzlhtrkQiQdTc3cnwi5LPhuTqFbo1VkGg16wTq03Z/D6wUE2a+K/O3Jz140KEpmBFqfj62/R2tAZaFVafdjjL/jyOSTReA59BnyvvZ5BLzxyhGsfK+ntgkUj5ENCiZaHXdGvscQbzZlYWU5w80CvHOPjxLCHUMq1ElQN1SaV34qpaPg3o4r0KKH9mksxuVT58Sda5zXNKvASmA4iQGcBDaeBsdD/TOtX8S2Hzr4tEz88hz5euf5FS6DevX78qN27bW9XwaeANmoqGJeWyJrStEsV37kVAwZGZ8URlvU+Z0acnYzpEfz4C0DbiqELkcpz+q02gFPF2rEDjJLgYnYj9hhP7vuwMNtGezjc1vbRqJtrzCoxNvu1+YgY5ytXVfXOVTzCYzeZUv6s3Zenxh7xMLbwReQZbSIJNttngu/4FaMAVlsxzl4KeHnVf3vXaelr5sT4mwmVpI41I61wG5f+c1CLtRzdr8oR7JhN8+XZhaVoKWZiOoFvFD0gXXJXKDDaHoM4nzxg3OoTx9Bcq/sw9Uw63kTL/L15nEN470ACv7cfnApX52M9/teed1nglqsDRkAlxHsw8VkZrMD6mKaLP4yFCXJep9mgV1rU+8570whdFUHAmdoi+DF27DfMC8DdbqVtCfQs5GLH5AYeti3903Oke3C1ZqhilSckvwukI5yCfQyMpw0DfdhbLSKGJJxHMGT3yPB3yWe3J7bbn+Y79bsJnn4yqmIK
-
     ingress:
       enabled: true
       hosts:
-        - ketchup.vibioh.fr
-
+      - ketchup.vibioh.fr
 ---
 apiVersion: helm.toolkit.fluxcd.io/v2beta1
 kind: HelmRelease
@@ -56,7 +49,6 @@ spec:
         name: vibioh
         namespace: flux-system
       interval: 120m
-
   values:
     nameOverride: ketchup-db
     config:
