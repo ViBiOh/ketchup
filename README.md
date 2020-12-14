@@ -112,6 +112,8 @@ Usage of ketchup:
         [prometheus] Ignored path prefixes for metrics, comma separated {KETCHUP_PROMETHEUS_IGNORE}
   -prometheusPath string
         [prometheus] Path for exposing metrics {KETCHUP_PROMETHEUS_PATH} (default "/metrics")
+  -publicURL string
+        [] Public URL {KETCHUP_PUBLIC_URL} (default "https://ketchup.vibioh.fr")
   -readTimeout string
         [http] Read Timeout {KETCHUP_READ_TIMEOUT} (default "5s")
   -schedulerHour string
@@ -122,8 +124,12 @@ Usage of ketchup:
         [scheduler] Timezone {KETCHUP_SCHEDULER_TIMEZONE} (default "Europe/Paris")
   -shutdownTimeout string
         [http] Shutdown Timeout {KETCHUP_SHUTDOWN_TIMEOUT} (default "10s")
-  -uiPublicPath string
-        [ui] Public path {KETCHUP_UI_PUBLIC_PATH} (default "ketchup.vibioh.fr")
+  -static string
+        [] Static folder, content served directly {KETCHUP_STATIC} (default "./static/")
+  -templates string
+        [] HTML Templates folder {KETCHUP_TEMPLATES} (default "./templates/")
+  -title string
+        [] Application title {KETCHUP_TITLE} (default "Ketchup")
   -url string
         [alcotest] URL to check {KETCHUP_URL}
   -userAgent string

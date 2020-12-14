@@ -20,9 +20,10 @@ import (
 	"github.com/ViBiOh/httputils/v3/pkg/model"
 	"github.com/ViBiOh/httputils/v3/pkg/owasp"
 	"github.com/ViBiOh/httputils/v3/pkg/prometheus"
+	"github.com/ViBiOh/httputils/v3/pkg/renderer"
 	"github.com/ViBiOh/ketchup/pkg/github"
+	"github.com/ViBiOh/ketchup/pkg/ketchup"
 	"github.com/ViBiOh/ketchup/pkg/middleware"
-	"github.com/ViBiOh/ketchup/pkg/renderer"
 	"github.com/ViBiOh/ketchup/pkg/scheduler"
 	ketchupService "github.com/ViBiOh/ketchup/pkg/service/ketchup"
 	repositoryService "github.com/ViBiOh/ketchup/pkg/service/repository"
@@ -53,11 +54,11 @@ func main() {
 	prometheusConfig := prometheus.Flags(fs, "prometheus")
 	owaspConfig := owasp.Flags(fs, "", flags.NewOverride("Csp", "default-src 'self'; base-uri 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'"))
 	corsConfig := cors.Flags(fs, "cors")
+	rendererConfig := renderer.Flags(fs, "", flags.NewOverride("Title", "Ketchup"), flags.NewOverride("PublicURL", "https://ketchup.vibioh.fr"))
 
 	dbConfig := db.Flags(fs, "db")
 	mailerConfig := mailer.Flags(fs, "mailer")
 	githubConfig := github.Flags(fs, "github")
-	rendererConfig := renderer.Flags(fs, "ui")
 	schedulerConfig := scheduler.Flags(fs, "scheduler")
 
 	logger.Fatal(fs.Parse(os.Args[1:]))
@@ -80,11 +81,13 @@ func main() {
 
 	schedulerApp := scheduler.New(schedulerConfig, repositoryServiceApp, ketchupServiceApp, githubApp, mailerApp)
 
-	rendererApp, err := renderer.New(rendererConfig, ketchupServiceApp, userServiceApp, repositoryServiceApp)
+	publicRendererApp, err := renderer.New(rendererConfig, ketchup.FuncMap)
 	logger.Fatal(err)
 
-	publicHandler := rendererApp.PublicHandler()
-	protectedhandler := authMiddlewareApp.Middleware(middleware.New(userServiceApp).Middleware(http.StripPrefix(appPath, rendererApp.Handler())))
+	ketchupApp := ketchup.New(publicRendererApp, ketchupServiceApp, userServiceApp, repositoryServiceApp)
+
+	publicHandler := publicRendererApp.Handler(ketchupApp.PublicTemplateFunc)
+	protectedhandler := authMiddlewareApp.Middleware(middleware.New(userServiceApp).Middleware(http.StripPrefix(appPath, ketchupApp.Handler())))
 
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if strings.HasPrefix(r.URL.Path, appPath) {
@@ -96,7 +99,7 @@ func main() {
 	})
 
 	go schedulerApp.Start()
-	go rendererApp.Start()
+	go ketchupApp.Start()
 
 	httputils.New(serverConfig).ListenAndServe(handler, []model.Pinger{ketchupDb.Ping}, prometheus.New(prometheusConfig).Middleware, owasp.New(owaspConfig).Middleware, cors.New(corsConfig).Middleware)
 }

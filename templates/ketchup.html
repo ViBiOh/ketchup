@@ -61,24 +61,18 @@
   </div>
 {{ end }}
 
-{{ define "header-part" }}
-  {{ if .Root }}
-    <a href="#create-modal" class="button bg-primary">Create</a>
-  {{ end }}
-{{ end }}
-
-{{ define "app" }}
+{{ define "ketchup" }}
   {{ template "header" . }}
   {{ template "message" .Message }}
 
-  {{- template "ketchups" . -}}
+  {{ template "ketchups" . }}
 
   {{ template "footer" . }}
 {{ end }}
 
 {{ define "ketchups" }}
   <style>
-    {{ range .Data.Ketchups }}
+    {{ range .Ketchups }}
       #delete-modal-{{ .Repository.ID }}:target,
       #edit-modal-{{ .Repository.ID }}:target,
     {{ end }}
@@ -87,7 +81,7 @@
       z-index: 5;
     }
 
-    {{ range .Data.Ketchups }}
+    {{ range .Ketchups }}
       #delete-modal-{{ .Repository.ID }}:target ~ .content,
       #edit-modal-{{ .Repository.ID }}:target ~ .content,
     {{ end }}
@@ -142,7 +136,7 @@
   {{ template "create-modal" }}
 
   <article class="ketchups">
-    {{ range .Data.Ketchups }}
+    {{ range .Ketchups }}
       {{ template "edit-modal" . }}
       {{ template "delete-modal" . }}
 
@@ -193,7 +187,7 @@
       </div>
     {{ end }}
 
-    {{ range .Data.Suggests }}
+    {{ range .Suggests }}
       <div class="ketchup center suggest">
         <h2 class="header small ellipsis">{{ .Name }}</h2>
 

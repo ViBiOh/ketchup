@@ -1,4 +1,4 @@
-package renderer
+package ketchup
 
 // SecurityQuestion is a question for fighting against bot
 type SecurityQuestion struct {

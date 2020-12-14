@@ -1,0 +1,105 @@
+{{ define "seo" }}
+  {{ $description := "Check Updates of your Github dependencies with ease" }}
+
+  <title>{{ .Title }}</title>
+  <meta name="description" content="{{ $description }}">
+  <link rel="canonical" href="https://ketchup.vibioh.fr">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:creator" content="@ViBiOh">
+  <meta name="twitter:site" content="https://ketchup.vibioh.fr">
+  <meta name="twitter:image" content="https://ketchup.vibioh.fr/favicon/android-chrome-512x512.png?v={{ .Version }}">
+  <meta name="twitter:title" content="{{ .Title }}">
+  <meta name="twitter:description" content="{{ $description }}">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://ketchup.vibioh.fr">
+  <meta property="og:title" content="{{ .Title }}">
+  <meta property="og:description" content="{{ $description }}">
+  <meta property="og:image" content="https://ketchup.vibioh.fr/favicon/android-chrome-512x512.png?v={{ .Version }}">
+  <meta property="og:image:height" content="512">
+  <meta property="og:image:width" content="512">
+{{ end }}
+
+{{ define "favicon" }}
+  <link rel="apple-touch-icon" sizes="180x180" href="/favicon/apple-touch-icon.png?v={{ .Version }}">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon/favicon-32x32.png?v={{ .Version }}">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon/favicon-16x16.png?v={{ .Version }}">
+  <link rel="manifest" href="/favicon/site.webmanifest?v={{ .Version }}">
+  <link rel="mask-icon" href="/favicon/safari-pinned-tab.svg?v={{ .Version }}" color="#5bbad5">
+  <meta name="theme-color" content="#f8f8f8">
+{{ end}}
+
+{{ define "header-part" }}
+  {{ if .Root }}
+    <a href="#create-modal" class="button bg-primary">Create</a>
+  {{ end }}
+{{ end }}
+
+{{ define "signup" }}
+  <style>
+    .active-link {
+      color: var(--primary);
+    }
+
+    #signup {
+      border: 1px solid var(--primary);
+      display: none;
+      margin: 0 auto;
+      width: 25rem;
+    }
+
+    #signup:target {
+      display: block;
+    }
+  </style>
+
+  <h2 class="center">
+    <a href="/app/" class="active-link">Login</a> or <a href="#signup" class="active-link">Signup</a>
+  </h2>
+
+  <fieldset id="signup">
+    <legend>Signup</legend>
+
+    <form method="POST" action="/signup">
+      <input type="hidden" name="token" value="{{ .Token }}">
+
+      <p class="padding no-margin">
+        <label for="email" class="block">Email: <span class="danger">*</span></label>
+        <input id="email" type="text" name="email" placeholder="nobody@localhost">
+      </p>
+
+      <p class="padding no-margin">
+        <label for="login" class="block">Login: <span class="danger">*</span></label>
+        <input id="login" type="text" name="login" placeholder="john_doe">
+      </p>
+
+      <p class="padding no-margin">
+        <label for="password" class="block">Password: <span class="danger">*</span></label>
+        <input id="password" type="password" name="password" placeholder="secret">
+      </p>
+
+      <p class="padding no-margin">
+        <label for="question" class="block">{{ .Question }} <span class="danger">*</span></label>
+        <input id="question" type="text" name="answer" placeholder="color">
+      </p>
+
+      <p class="padding no-margin center">
+        <a href="#" class="button">Cancel</a>
+        <button type="submit" class="button bg-primary">Signup</button>
+      </p>
+    </form>
+  </fieldset>
+{{ end }}
+
+{{ define "app" }}
+  <article class="padding center">
+    <h2>Receive an email digest of your Github dependencies updates every day at 8am.</h2>
+
+    <em>
+      No ads, free. Because being update-to-date must be accessible to everyone.
+    </em>
+
+    {{ template "suggests" . }}
+
+    {{ template "signup" . }}
+  </article>
+{{ end }}
