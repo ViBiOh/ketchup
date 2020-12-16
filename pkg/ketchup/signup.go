@@ -50,6 +50,6 @@ func (a app) signup() http.Handler {
 
 		a.tokenStore.Delete(token)
 
-		a.rendererApp.Redirect(w, r, fmt.Sprintf("/%s", appPath), "Welcome to ketchup!")
+		a.rendererApp.Redirect(w, r, fmt.Sprintf("/%s", appPath), rendererModel.NewSuccessMessage("Welcome to ketchup!"))
 	})
 }
