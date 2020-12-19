@@ -44,6 +44,12 @@ You can configure app by passing CLI args or environment variables (cf. [Usage](
 
 You'll find a Kubernetes exemple in the [`infra/`](infra/) folder, using my [`app chart`](https://github.com/ViBiOh/charts/tree/master/app)
 
+## Endpoints
+
+- `GET /health`: healthcheck of server, respond [`okStatus (default 204)`](#usage) or `503` during [`graceDuration`](#usage) when SIGTERM is received
+- `GET /version`: value of `VERSION` environment variable
+- `GET /metrics`: Prometheus metrics values
+
 ## Usage
 
 ```bash
