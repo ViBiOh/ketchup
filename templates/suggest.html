@@ -38,12 +38,12 @@
           <h2 class="header small ellipsis">{{ .Name }}</h2>
 
           <div>
-            <img class="icon" src="/svg/github?fill=silver" alt="Github icon">
+            <img class="icon" src="/svg/{{ .Type.String }}?fill=silver" alt="{{ .Type.String }} icon">
           </div>
 
           <div class="ketchup__version">
             <span>
-              <a href="https://github.com/{{ .Name }}/releases/tag/{{ .Version }}">{{ .Version }}</a>
+              <a href="{{ .URL }}">{{ .Version }}</a>
             </span>
           </div>
         </div>

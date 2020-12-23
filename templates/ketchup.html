@@ -144,7 +144,7 @@
         <h2 class="header small ellipsis">{{ .Repository.Name }}</h2>
 
         <div>
-          <img class="icon" src="/svg/github?fill=silver" alt="Github icon">
+          <img class="icon" src="/svg/{{ .Repository.Type.String }}?fill=silver" alt="{{ .Repository.Type.String }} icon">
         </div>
 
         {{ if .Semver }}
@@ -155,19 +155,19 @@
 
         <div class="ketchup__version">
           <span>
-            <a class="{{ if ne .Version .Repository.Version }}danger{{ else }}success{{ end }}" href="https://github.com/{{ .Repository.Name }}/releases/tag/{{ .Version }}">{{ .Version }}</a>
+            <a class="{{ if ne .Version .Repository.Version }}danger{{ else }}success{{ end }}" href="{{ .Repository.URL }}">{{ .Version }}</a>
           </span>
 
           {{ if ne .Version .Repository.Version }}
             <span>
-              &nbsp;->&nbsp;<a class="success" href="https://github.com/{{ .Repository.Name }}/releases/tag/{{ .Repository.Version }}">{{ .Repository.Version }}</a>
+              &nbsp;->&nbsp;<a class="success" href="{{ .Repository.URL }}">{{ .Repository.Version }}</a>
             </span>
           {{ end }}
         </div>
 
         <div>
           {{ if ne .Version .Repository.Version }}
-            <a href="https://github.com/{{ .Repository.Name }}/compare/{{ .Version }}...{{ .Repository.Version }}" class="button button-icon" title="Compare">
+            <a href="{{ .Repository.CompareURL .Version }}" class="button button-icon" title="Compare">
               <img class="icon" src="/svg/eyes?fill=silver" alt="Compare icon">
             </a>
 
@@ -197,7 +197,7 @@
 
         <div class="ketchup__version">
           <span>
-            <a href="https://github.com/{{ .Name }}/releases/tag/{{ .Version }}">{{ .Version }}</a>
+            <a href="{{ .URL }}">{{ .Version }}</a>
           </span>
         </div>
 
