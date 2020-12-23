@@ -39,6 +39,53 @@ func (a app) DoAtomic(ctx context.Context, action func(context.Context) error) e
 	return db.DoAtomic(ctx, a.db, action)
 }
 
+func (a app) list(ctx context.Context, query string, args ...interface{}) ([]model.Repository, uint64, error) {
+	var count uint64
+	list := make([]model.Repository, 0)
+
+	scanner := func(rows *sql.Rows) error {
+		var item model.Repository
+		var rawRepositoryType string
+
+		if err := rows.Scan(&item.ID, &item.Name, &item.Version, &rawRepositoryType, &count); err != nil {
+			return err
+		}
+
+		repositoryType, err := model.ParseRepositoryType(rawRepositoryType)
+		if err != nil {
+			return err
+		}
+		item.Type = repositoryType
+
+		list = append(list, item)
+		return nil
+	}
+
+	return list, count, db.List(ctx, a.db, scanner, query, args...)
+}
+
+func (a app) get(ctx context.Context, query string, args ...interface{}) (model.Repository, error) {
+	var item model.Repository
+	var rawRepositoryType string
+
+	scanner := func(row *sql.Row) error {
+		err := row.Scan(&item.ID, &item.Name, &item.Version, &rawRepositoryType)
+		if errors.Is(err, sql.ErrNoRows) {
+			item = model.NoneRepository
+			return nil
+		}
+
+		if err != nil {
+			return err
+		}
+
+		item.Type, err = model.ParseRepositoryType(rawRepositoryType)
+		return err
+	}
+
+	return item, db.Get(ctx, a.db, scanner, query, args...)
+}
+
 const listQuery = `
 SELECT
   id,
@@ -53,28 +100,7 @@ OFFSET $2
 `
 
 func (a app) List(ctx context.Context, page, pageSize uint) ([]model.Repository, uint64, error) {
-	var totalCount uint64
-	list := make([]model.Repository, 0)
-
-	scanner := func(rows *sql.Rows) error {
-		var item model.Repository
-		var rawRepositoryType string
-
-		if err := rows.Scan(&item.ID, &item.Name, &item.Version, &rawRepositoryType, &totalCount); err != nil {
-			return err
-		}
-
-		repositoryType, err := model.ParseRepositoryType(rawRepositoryType)
-		if err != nil {
-			return err
-		}
-		item.Type = repositoryType
-
-		list = append(list, item)
-		return nil
-	}
-
-	return list, totalCount, db.List(ctx, a.db, scanner, listQuery, pageSize, (page-1)*pageSize)
+	return a.list(ctx, listQuery, pageSize, (page-1)*pageSize)
 }
 
 const suggestQuery = `
@@ -101,28 +127,8 @@ LIMIT $1
 `
 
 func (a app) Suggest(ctx context.Context, ignoreIds []uint64, count uint64) ([]model.Repository, error) {
-	var ketchupCount uint64
-	list := make([]model.Repository, 0)
-
-	scanner := func(rows *sql.Rows) error {
-		var item model.Repository
-		var rawRepositoryType string
-
-		if err := rows.Scan(&item.ID, &item.Name, &item.Version, &rawRepositoryType, &ketchupCount); err != nil {
-			return err
-		}
-
-		repositoryType, err := model.ParseRepositoryType(rawRepositoryType)
-		if err != nil {
-			return err
-		}
-		item.Type = repositoryType
-
-		list = append(list, item)
-		return nil
-	}
-
-	return list, db.List(ctx, a.db, scanner, suggestQuery, count, pq.Array(ignoreIds))
+	list, _, err := a.list(ctx, suggestQuery, count, pq.Array(ignoreIds))
+	return list, err
 }
 
 const getQuery = `
@@ -143,25 +149,7 @@ func (a app) Get(ctx context.Context, id uint64, forUpdate bool) (model.Reposito
 		query += " FOR UPDATE"
 	}
 
-	var item model.Repository
-	var rawRepositoryType string
-
-	scanner := func(row *sql.Row) error {
-		err := row.Scan(&item.ID, &item.Name, &item.Version, &rawRepositoryType)
-		if errors.Is(err, sql.ErrNoRows) {
-			item = model.NoneRepository
-			return nil
-		}
-
-		if err != nil {
-			return err
-		}
-
-		item.Type, err = model.ParseRepositoryType(rawRepositoryType)
-		return err
-	}
-
-	return item, db.Get(ctx, a.db, scanner, query, id)
+	return a.get(ctx, query, id)
 }
 
 const getByNameQuery = `
@@ -177,26 +165,7 @@ WHERE
 `
 
 func (a app) GetByName(ctx context.Context, name string) (model.Repository, error) {
-	var item model.Repository
-	var rawRepositoryType string
-
-	scanner := func(row *sql.Row) error {
-		err := row.Scan(&item.ID, &item.Name, &item.Version, &rawRepositoryType)
-		if errors.Is(err, sql.ErrNoRows) {
-			item = model.NoneRepository
-			return nil
-		}
-
-		if err != nil {
-			return err
-		}
-
-		item.Type, err = model.ParseRepositoryType(rawRepositoryType)
-		return err
-	}
-
-	err := db.Get(ctx, a.db, scanner, getByNameQuery, strings.ToLower(name))
-	return item, err
+	return a.get(ctx, getByNameQuery, strings.ToLower(name))
 }
 
 const insertLock = `
