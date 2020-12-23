@@ -16,6 +16,18 @@
         height: 15rem;
         width: 24rem;
       }
+
+      .ketchup__version {
+        align-items: center;
+        display: flex;
+        flex: 1 1;
+        flex-basis: auto;
+        justify-content: center;
+      }
+
+      .small {
+        font-size: 1.6rem;
+      }
     </style>
 
     <h3>Suggestions</h3>
@@ -24,6 +36,10 @@
       {{ range .Suggests }}
         <div class="ketchup center">
           <h2 class="header small ellipsis">{{ .Name }}</h2>
+
+          <div>
+            <img class="icon" src="/svg/github?fill=silver" alt="Github icon">
+          </div>
 
           <div class="ketchup__version">
             <span>

@@ -44,6 +44,7 @@ SELECT
   id,
   name,
   version,
+  type,
   count(1) OVER() AS full_count
 FROM
   ketchup.repository
@@ -57,9 +58,17 @@ func (a app) List(ctx context.Context, page, pageSize uint) ([]model.Repository,
 
 	scanner := func(rows *sql.Rows) error {
 		var item model.Repository
-		if err := rows.Scan(&item.ID, &item.Name, &item.Version, &totalCount); err != nil {
+		var rawRepositoryType string
+
+		if err := rows.Scan(&item.ID, &item.Name, &item.Version, &rawRepositoryType, &totalCount); err != nil {
 			return err
 		}
+
+		repositoryType, err := model.ParseRepositoryType(rawRepositoryType)
+		if err != nil {
+			return err
+		}
+		item.Type = repositoryType
 
 		list = append(list, item)
 		return nil
@@ -73,6 +82,7 @@ SELECT
   id,
   name,
   version,
+  type,
   (
     SELECT
       COUNT(1)
@@ -96,9 +106,17 @@ func (a app) Suggest(ctx context.Context, ignoreIds []uint64, count uint64) ([]m
 
 	scanner := func(rows *sql.Rows) error {
 		var item model.Repository
-		if err := rows.Scan(&item.ID, &item.Name, &item.Version, &ketchupCount); err != nil {
+		var rawRepositoryType string
+
+		if err := rows.Scan(&item.ID, &item.Name, &item.Version, &rawRepositoryType, &ketchupCount); err != nil {
 			return err
 		}
+
+		repositoryType, err := model.ParseRepositoryType(rawRepositoryType)
+		if err != nil {
+			return err
+		}
+		item.Type = repositoryType
 
 		list = append(list, item)
 		return nil
@@ -111,7 +129,8 @@ const getQuery = `
 SELECT
   id,
   name,
-  version
+  version,
+  type
 FROM
   ketchup.repository
 WHERE
@@ -125,13 +144,20 @@ func (a app) Get(ctx context.Context, id uint64, forUpdate bool) (model.Reposito
 	}
 
 	var item model.Repository
+	var rawRepositoryType string
+
 	scanner := func(row *sql.Row) error {
-		err := row.Scan(&item.ID, &item.Name, &item.Version)
+		err := row.Scan(&item.ID, &item.Name, &item.Version, &rawRepositoryType)
 		if errors.Is(err, sql.ErrNoRows) {
 			item = model.NoneRepository
 			return nil
 		}
 
+		if err != nil {
+			return err
+		}
+
+		item.Type, err = model.ParseRepositoryType(rawRepositoryType)
 		return err
 	}
 
@@ -142,7 +168,8 @@ const getByNameQuery = `
 SELECT
   id,
   name,
-  version
+  version,
+  type
 FROM
   ketchup.repository
 WHERE
@@ -151,13 +178,20 @@ WHERE
 
 func (a app) GetByName(ctx context.Context, name string) (model.Repository, error) {
 	var item model.Repository
+	var rawRepositoryType string
+
 	scanner := func(row *sql.Row) error {
-		err := row.Scan(&item.ID, &item.Name, &item.Version)
+		err := row.Scan(&item.ID, &item.Name, &item.Version, &rawRepositoryType)
 		if errors.Is(err, sql.ErrNoRows) {
 			item = model.NoneRepository
 			return nil
 		}
 
+		if err != nil {
+			return err
+		}
+
+		item.Type, err = model.ParseRepositoryType(rawRepositoryType)
 		return err
 	}
 
@@ -174,10 +208,12 @@ INSERT INTO
   ketchup.repository
 (
   name,
-  version
+  version,
+  type
 ) VALUES (
   $1,
-  $2
+  $2,
+  $3
 ) RETURNING id
 `
 
@@ -195,7 +231,7 @@ func (a app) Create(ctx context.Context, o model.Repository) (uint64, error) {
 		return item.ID, nil
 	}
 
-	return db.Create(ctx, insertQuery, strings.ToLower(o.Name), o.Version)
+	return db.Create(ctx, insertQuery, strings.ToLower(o.Name), o.Version, o.Type.String())
 }
 
 const updateRepositoryQuery = `

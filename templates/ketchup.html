@@ -143,6 +143,10 @@
       <div class="ketchup center {{ if ne .Version .Repository.Version }}ketchup--outdated{{ end }}">
         <h2 class="header small ellipsis">{{ .Repository.Name }}</h2>
 
+        <div>
+          <img class="icon" src="/svg/github?fill=silver" alt="Github icon">
+        </div>
+
         {{ if .Semver }}
           <p class="no-margin padding">
             {{ .Semver }}

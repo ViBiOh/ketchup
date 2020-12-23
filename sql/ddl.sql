@@ -3,6 +3,8 @@ DROP TABLE IF EXISTS ketchup.ketchup;
 DROP TABLE IF EXISTS ketchup.repository;
 DROP TABLE IF EXISTS ketchup.user;
 
+DROP TYPE IF EXISTS ketchup.repository_type;
+
 DROP INDEX IF EXISTS ketchup_user;
 DROP INDEX IF EXISTS repository_id;
 DROP INDEX IF EXISTS repository_repository;
@@ -30,12 +32,16 @@ CREATE UNIQUE INDEX user_id ON ketchup.user(id);
 CREATE UNIQUE INDEX user_login_id ON ketchup.user(login_id);
 CREATE UNIQUE INDEX user_email ON ketchup.user(email);
 
+-- repository_type
+CREATE TYPE ketchup.repository_type AS ENUM ('github', 'helm');
+
 -- repository
 CREATE SEQUENCE ketchup.repository_seq;
 CREATE TABLE ketchup.repository (
   id BIGINT NOT NULL DEFAULT nextval('ketchup.repository_seq'),
   name TEXT NOT NULL,
   version TEXT NOT NULL,
+  type ketchup.repository_type NOT NULL,
   creation_date TIMESTAMP WITH TIME ZONE DEFAULT now()
 );
 ALTER SEQUENCE ketchup.repository_seq OWNED BY ketchup.repository.id;
