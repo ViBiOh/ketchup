@@ -12,7 +12,6 @@ import (
 	"github.com/ViBiOh/httputils/v3/pkg/cron"
 	"github.com/ViBiOh/httputils/v3/pkg/flags"
 	"github.com/ViBiOh/httputils/v3/pkg/logger"
-	"github.com/ViBiOh/ketchup/pkg/github"
 	"github.com/ViBiOh/ketchup/pkg/model"
 	"github.com/ViBiOh/ketchup/pkg/semver"
 	"github.com/ViBiOh/ketchup/pkg/service/ketchup"
@@ -39,7 +38,6 @@ type Config struct {
 type app struct {
 	repositoryService repository.App
 	ketchupService    ketchup.App
-	githubApp         github.App
 	mailerApp         mailer.App
 
 	timezone string
@@ -57,7 +55,7 @@ func Flags(fs *flag.FlagSet, prefix string) Config {
 }
 
 // New creates new App from Config
-func New(config Config, repositoryService repository.App, ketchupService ketchup.App, githubApp github.App, mailerApp mailer.App) App {
+func New(config Config, repositoryService repository.App, ketchupService ketchup.App, mailerApp mailer.App) App {
 	return app{
 		timezone: strings.TrimSpace(*config.timezone),
 		hour:     strings.TrimSpace(*config.hour),
@@ -65,7 +63,6 @@ func New(config Config, repositoryService repository.App, ketchupService ketchup
 
 		repositoryService: repositoryService,
 		ketchupService:    ketchupService,
-		githubApp:         githubApp,
 		mailerApp:         mailerApp,
 	}
 }
@@ -116,7 +113,7 @@ func (a app) getNewReleases(ctx context.Context) ([]model.Release, error) {
 		for _, repo := range repositories {
 			count++
 
-			latestVersion, err := a.githubApp.LatestVersion(repo.Name)
+			latestVersion, err := a.repositoryService.LatestVersion(repo)
 			if err != nil {
 				logger.Error("unable to get latest version of %s: %s", repo.Name, err)
 				continue

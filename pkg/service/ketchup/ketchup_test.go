@@ -291,7 +291,7 @@ func TestCreate(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.intention, func(t *testing.T) {
-			got, gotErr := New(testKetchupStore{}, repositorytest.NewApp(false)).Create(tc.args.ctx, tc.args.item)
+			got, gotErr := New(testKetchupStore{}, repositorytest.NewApp(false, nil, "")).Create(tc.args.ctx, tc.args.item)
 
 			failed := false
 
@@ -378,7 +378,7 @@ func TestUpdate(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.intention, func(t *testing.T) {
-			got, gotErr := New(testKetchupStore{}, repositorytest.NewApp((false))).Update(tc.args.ctx, tc.args.item)
+			got, gotErr := New(testKetchupStore{}, repositorytest.NewApp(false, nil, "")).Update(tc.args.ctx, tc.args.item)
 
 			failed := false
 
@@ -458,7 +458,7 @@ func TestDelete(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.intention, func(t *testing.T) {
-			gotErr := New(testKetchupStore{}, repositorytest.NewApp((false))).Delete(tc.args.ctx, tc.args.item)
+			gotErr := New(testKetchupStore{}, repositorytest.NewApp(false, nil, "")).Delete(tc.args.ctx, tc.args.item)
 
 			failed := false
 

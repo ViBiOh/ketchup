@@ -140,7 +140,7 @@ func TestList(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.intention, func(t *testing.T) {
-			got, gotCount, gotErr := New(testRepositoryStore{}, nil).List(context.Background(), tc.args.page, tc.args.pageSize)
+			got, gotCount, gotErr := New(testRepositoryStore{}, nil, nil).List(context.Background(), tc.args.page, tc.args.pageSize)
 
 			failed := false
 
@@ -194,7 +194,7 @@ func TestSuggest(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.intention, func(t *testing.T) {
-			got, gotErr := New(testRepositoryStore{}, nil).Suggest(tc.args.ctx, tc.args.ignoreIds, tc.args.count)
+			got, gotErr := New(testRepositoryStore{}, nil, nil).Suggest(tc.args.ctx, tc.args.ignoreIds, tc.args.count)
 
 			failed := false
 
@@ -254,7 +254,7 @@ func TestGetOrCreate(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.intention, func(t *testing.T) {
-			got, gotErr := New(testRepositoryStore{}, githubtest.NewApp(regexp.MustCompile("not found"), "1.0.0")).GetOrCreate(tc.args.ctx, tc.args.name)
+			got, gotErr := New(testRepositoryStore{}, githubtest.NewApp(regexp.MustCompile("not found"), "1.0.0"), nil).GetOrCreate(tc.args.ctx, tc.args.name)
 
 			failed := false
 
@@ -323,7 +323,7 @@ func TestCreate(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.intention, func(t *testing.T) {
-			got, gotErr := app{testRepositoryStore{}, githubtest.NewApp(regexp.MustCompile("vibioh"), "1.0.0")}.create(tc.args.ctx, tc.args.item)
+			got, gotErr := app{testRepositoryStore{}, githubtest.NewApp(regexp.MustCompile("vibioh"), "1.0.0"), nil}.create(tc.args.ctx, tc.args.item)
 
 			failed := false
 
@@ -403,7 +403,7 @@ func TestUpdate(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.intention, func(t *testing.T) {
-			gotErr := New(testRepositoryStore{}, nil).Update(tc.args.ctx, tc.args.item)
+			gotErr := New(testRepositoryStore{}, nil, nil).Update(tc.args.ctx, tc.args.item)
 
 			failed := false
 
@@ -446,7 +446,7 @@ func TestClean(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.intention, func(t *testing.T) {
-			gotErr := New(testRepositoryStore{}, nil).Clean(tc.args.ctx)
+			gotErr := New(testRepositoryStore{}, nil, nil).Clean(tc.args.ctx)
 
 			failed := false
 

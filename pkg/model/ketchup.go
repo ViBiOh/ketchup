@@ -32,6 +32,10 @@ func (a KetchupByPriority) Less(i, j int) bool {
 	first := a[i]
 	second := a[j]
 
+	if first.Repository.Type != second.Repository.Type {
+		return first.Repository.Type < second.Repository.Type
+	}
+
 	if first.Semver == second.Semver {
 		return first.Repository.Name < second.Repository.Name
 	}

@@ -9,7 +9,6 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ViBiOh/ketchup/pkg/github/githubtest"
 	"github.com/ViBiOh/ketchup/pkg/model"
 	"github.com/ViBiOh/ketchup/pkg/semver"
 	"github.com/ViBiOh/ketchup/pkg/service/ketchup/ketchuptest"
@@ -61,7 +60,7 @@ func TestGetNewReleases(t *testing.T) {
 		{
 			"list error",
 			app{
-				repositoryService: repositorytest.NewApp(false),
+				repositoryService: repositorytest.NewApp(false, nil, ""),
 			},
 			args{
 				ctx: context.TODO(),
@@ -72,8 +71,7 @@ func TestGetNewReleases(t *testing.T) {
 		{
 			"github error",
 			app{
-				repositoryService: repositorytest.NewApp(false),
-				githubApp:         githubtest.NewApp(regexp.MustCompile("unknown"), ""),
+				repositoryService: repositorytest.NewApp(false, regexp.MustCompile("unknown"), ""),
 			},
 			args{
 				ctx: context.Background(),
@@ -84,8 +82,7 @@ func TestGetNewReleases(t *testing.T) {
 		{
 			"same version",
 			app{
-				repositoryService: repositorytest.NewApp(false),
-				githubApp:         githubtest.NewApp(regexp.MustCompile("vibioh/ketchup"), "1.0.0"),
+				repositoryService: repositorytest.NewApp(false, regexp.MustCompile("vibioh/ketchup"), "1.0.0"),
 			},
 			args{
 				ctx: context.Background(),
@@ -96,8 +93,7 @@ func TestGetNewReleases(t *testing.T) {
 		{
 			"update error",
 			app{
-				repositoryService: repositorytest.NewApp(false),
-				githubApp:         githubtest.NewApp(regexp.MustCompile("vibioh/ketchup"), "1.0.1"),
+				repositoryService: repositorytest.NewApp(false, regexp.MustCompile("vibioh/ketchup"), "1.0.1"),
 			},
 			args{
 				ctx: context.Background(),
@@ -108,8 +104,7 @@ func TestGetNewReleases(t *testing.T) {
 		{
 			"success",
 			app{
-				repositoryService: repositorytest.NewApp(false),
-				githubApp:         githubtest.NewApp(regexp.MustCompile("vibioh/ketchup"), "1.1.0"),
+				repositoryService: repositorytest.NewApp(false, regexp.MustCompile("vibioh/ketchup"), "1.1.0"),
 			},
 			args{
 				ctx: context.Background(),
@@ -124,8 +119,7 @@ func TestGetNewReleases(t *testing.T) {
 		{
 			"paginate",
 			app{
-				repositoryService: repositorytest.NewApp(true),
-				githubApp:         githubtest.NewApp(regexp.MustCompile("vibioh/(ketchup|viws)"), "1.1.0"),
+				repositoryService: repositorytest.NewApp(true, regexp.MustCompile("vibioh/(ketchup|viws)"), "1.1.0"),
 			},
 			args{
 				ctx: context.Background(),

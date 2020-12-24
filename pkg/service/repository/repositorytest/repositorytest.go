@@ -3,23 +3,29 @@ package repositorytest
 import (
 	"context"
 	"errors"
+	"regexp"
 
 	"github.com/ViBiOh/ketchup/pkg/model"
+	"github.com/ViBiOh/ketchup/pkg/semver"
 	"github.com/ViBiOh/ketchup/pkg/service"
 	"github.com/ViBiOh/ketchup/pkg/service/repository"
 )
 
 var _ repository.App = app{}
 
-// NewApp creates mock
-func NewApp(multiple bool) repository.App {
-	return app{
-		multiple: multiple,
-	}
-}
-
 type app struct {
 	multiple bool
+	name     *regexp.Regexp
+	version  string
+}
+
+// NewApp creates mock
+func NewApp(multiple bool, name *regexp.Regexp, version string) repository.App {
+	return app{
+		multiple: multiple,
+		name:     name,
+		version:  version,
+	}
 }
 
 func (a app) List(ctx context.Context, page, _ uint) ([]model.Repository, uint64, error) {
@@ -78,4 +84,13 @@ func (a app) Update(_ context.Context, item model.Repository) error {
 
 func (a app) Clean(_ context.Context) error {
 	return nil
+}
+
+func (a app) LatestVersion(repo model.Repository) (semver.Version, error) {
+	if a.name.MatchString(repo.Name) {
+		version, _ := semver.Parse(a.version)
+		return version, nil
+	}
+
+	return semver.NoneVersion, errors.New("unknown repository")
 }

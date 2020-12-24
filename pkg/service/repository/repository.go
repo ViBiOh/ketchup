@@ -8,7 +8,9 @@ import (
 	"strings"
 
 	"github.com/ViBiOh/ketchup/pkg/github"
+	"github.com/ViBiOh/ketchup/pkg/helm"
 	"github.com/ViBiOh/ketchup/pkg/model"
+	"github.com/ViBiOh/ketchup/pkg/semver"
 	"github.com/ViBiOh/ketchup/pkg/service"
 	"github.com/ViBiOh/ketchup/pkg/store/repository"
 )
@@ -24,18 +26,21 @@ type App interface {
 	GetOrCreate(ctx context.Context, name string) (model.Repository, error)
 	Update(ctx context.Context, item model.Repository) error
 	Clean(ctx context.Context) error
+	LatestVersion(repo model.Repository) (semver.Version, error)
 }
 
 type app struct {
 	repositoryStore repository.App
 	githubApp       github.App
+	helmApp         helm.App
 }
 
 // New creates new App from Config
-func New(repositoryStore repository.App, githubApp github.App) App {
+func New(repositoryStore repository.App, githubApp github.App, helmApp helm.App) App {
 	return app{
 		repositoryStore: repositoryStore,
 		githubApp:       githubApp,
+		helmApp:         helmApp,
 	}
 }
 
@@ -77,7 +82,7 @@ func (a app) create(ctx context.Context, item model.Repository) (model.Repositor
 		return model.NoneRepository, service.WrapInvalid(err)
 	}
 
-	version, err := a.githubApp.LatestVersion(item.Name)
+	version, err := a.LatestVersion(item)
 	if err != nil {
 		return model.NoneRepository, fmt.Errorf("no release found for %s: %w", item.Name, service.ErrNotFound)
 	}
@@ -155,6 +160,17 @@ func (a app) check(ctx context.Context, old, new model.Repository) error {
 	}
 
 	return service.ConcatError(output)
+}
+
+func (a app) LatestVersion(repo model.Repository) (semver.Version, error) {
+	switch repo.Type {
+	case model.Github:
+		return a.githubApp.LatestVersion(repo.Name)
+	case model.Helm:
+		return a.helmApp.LatestVersion(repo.Name)
+	default:
+		return semver.NoneVersion, fmt.Errorf("unknown repository type %d", repo.Type)
+	}
 }
 
 func sanitizeName(name string) string {

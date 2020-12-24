@@ -22,6 +22,7 @@ import (
 	"github.com/ViBiOh/httputils/v3/pkg/prometheus"
 	"github.com/ViBiOh/httputils/v3/pkg/renderer"
 	"github.com/ViBiOh/ketchup/pkg/github"
+	"github.com/ViBiOh/ketchup/pkg/helm"
 	"github.com/ViBiOh/ketchup/pkg/ketchup"
 	"github.com/ViBiOh/ketchup/pkg/middleware"
 	"github.com/ViBiOh/ketchup/pkg/scheduler"
@@ -72,14 +73,11 @@ func main() {
 
 	authServiceApp, authMiddlewareApp := initAuth(ketchupDb)
 
-	githubApp := github.New(githubConfig)
-	mailerApp := mailer.New(mailerConfig)
-
 	userServiceApp := userService.New(userStore.New(ketchupDb), authServiceApp)
-	repositoryServiceApp := repositoryService.New(repositoryStore.New(ketchupDb), githubApp)
+	repositoryServiceApp := repositoryService.New(repositoryStore.New(ketchupDb), github.New(githubConfig), helm.New())
 	ketchupServiceApp := ketchupService.New(ketchupStore.New(ketchupDb), repositoryServiceApp)
 
-	schedulerApp := scheduler.New(schedulerConfig, repositoryServiceApp, ketchupServiceApp, githubApp, mailerApp)
+	schedulerApp := scheduler.New(schedulerConfig, repositoryServiceApp, ketchupServiceApp, mailer.New(mailerConfig))
 
 	publicRendererApp, err := renderer.New(rendererConfig, ketchup.FuncMap)
 	logger.Fatal(err)
