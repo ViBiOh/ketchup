@@ -36,7 +36,8 @@ import (
 )
 
 const (
-	appPath = "/app"
+	appPath    = "/app"
+	signupPath = "/signup"
 )
 
 func initAuth(db *sql.DB) (authService.App, authMiddleware.App) {
@@ -85,11 +86,17 @@ func main() {
 	ketchupApp := ketchup.New(publicRendererApp, ketchupServiceApp, userServiceApp, repositoryServiceApp)
 
 	publicHandler := publicRendererApp.Handler(ketchupApp.PublicTemplateFunc)
+	signupHandler := http.StripPrefix(signupPath, ketchupApp.Signup())
 	protectedhandler := authMiddlewareApp.Middleware(middleware.New(userServiceApp).Middleware(http.StripPrefix(appPath, ketchupApp.Handler())))
 
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if strings.HasPrefix(r.URL.Path, appPath) {
 			protectedhandler.ServeHTTP(w, r)
+			return
+		}
+
+		if strings.HasPrefix(r.URL.Path, signupPath) {
+			signupHandler.ServeHTTP(w, r)
 			return
 		}
 

@@ -13,7 +13,7 @@ DROP INDEX IF EXISTS user_id;
 DROP SEQUENCE IF EXISTS ketchup.repository_seq;
 DROP SEQUENCE IF EXISTS ketchup.user_seq;
 
-DROP SCHEMA IF EXISTS ketchup;
+DROP SCHEMA IF EXISTS ketchup CASCADE;
 
 -- schema
 CREATE SCHEMA ketchup;

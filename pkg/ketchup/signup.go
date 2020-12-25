@@ -11,7 +11,7 @@ import (
 	"github.com/ViBiOh/ketchup/pkg/model"
 )
 
-func (a app) signup() http.Handler {
+func (a app) Signup() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodPost {
 			a.rendererApp.Error(w, rendererModel.WrapMethodNotAllowed(fmt.Errorf("invalid method %s", r.Method)))

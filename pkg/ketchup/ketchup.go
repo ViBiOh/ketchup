@@ -16,7 +16,6 @@ import (
 )
 
 const (
-	signupPath   = "/signup"
 	ketchupsPath = "/ketchups"
 	appPath      = "/app"
 )
@@ -30,6 +29,7 @@ var (
 type App interface {
 	Start()
 	Handler() http.Handler
+	Signup() http.Handler
 	PublicTemplateFunc(*http.Request) (string, int, map[string]interface{}, error)
 	AppTemplateFunc(*http.Request) (string, int, map[string]interface{}, error)
 }
@@ -66,15 +66,9 @@ func (a app) Start() {
 // Handler for request. Should be use with net/http
 func (a app) Handler() http.Handler {
 	rendererHandler := a.rendererApp.Handler(a.AppTemplateFunc)
-	signupHandler := http.StripPrefix(signupPath, a.signup())
 	ketchupHandler := http.StripPrefix(ketchupsPath, a.ketchups())
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if strings.HasPrefix(r.URL.Path, signupPath) {
-			signupHandler.ServeHTTP(w, r)
-			return
-		}
-
 		if strings.HasPrefix(r.URL.Path, ketchupsPath) {
 			ketchupHandler.ServeHTTP(w, r)
 			return
