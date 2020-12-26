@@ -23,7 +23,7 @@ var (
 type App interface {
 	List(ctx context.Context, page, pageSize uint) ([]model.Repository, uint64, error)
 	Suggest(ctx context.Context, ignoreIds []uint64, count uint64) ([]model.Repository, error)
-	GetOrCreate(ctx context.Context, name string) (model.Repository, error)
+	GetOrCreate(ctx context.Context, name string, repositoryType model.RepositoryType) (model.Repository, error)
 	Update(ctx context.Context, item model.Repository) error
 	Clean(ctx context.Context) error
 	LatestVersion(repo model.Repository) (semver.Version, error)
@@ -62,10 +62,13 @@ func (a app) Suggest(ctx context.Context, ignoreIds []uint64, count uint64) ([]m
 	return list, nil
 }
 
-func (a app) GetOrCreate(ctx context.Context, name string) (model.Repository, error) {
-	sanitizedName := sanitizeName(name)
+func (a app) GetOrCreate(ctx context.Context, name string, repositoryType model.RepositoryType) (model.Repository, error) {
+	sanitizedName := name
+	if repositoryType == model.Github {
+		sanitizedName = sanitizeName(name)
+	}
 
-	repo, err := a.repositoryStore.GetByName(ctx, sanitizedName)
+	repo, err := a.repositoryStore.GetByName(ctx, sanitizedName, repositoryType)
 	if err != nil {
 		return model.NoneRepository, service.WrapInternal(err)
 	}
@@ -74,7 +77,7 @@ func (a app) GetOrCreate(ctx context.Context, name string) (model.Repository, er
 		return repo, nil
 	}
 
-	return a.create(ctx, model.Repository{Name: sanitizedName})
+	return a.create(ctx, model.Repository{Name: sanitizedName, Type: repositoryType})
 }
 
 func (a app) create(ctx context.Context, item model.Repository) (model.Repository, error) {
@@ -152,7 +155,7 @@ func (a app) check(ctx context.Context, old, new model.Repository) error {
 		output = append(output, errors.New("version is required"))
 	}
 
-	repositoryWithName, err := a.repositoryStore.GetByName(ctx, new.Name)
+	repositoryWithName, err := a.repositoryStore.GetByName(ctx, new.Name, new.Type)
 	if err != nil {
 		output = append(output, errors.New("unable to check if name already exists"))
 	} else if repositoryWithName != model.NoneRepository && repositoryWithName.ID != new.ID {

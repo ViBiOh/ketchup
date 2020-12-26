@@ -38,15 +38,23 @@ func (a app) ketchups() http.Handler {
 }
 
 func (a app) handleCreate(w http.ResponseWriter, r *http.Request) {
+	repositoryType, err := model.ParseRepositoryType(r.FormValue("type"))
+	if err != nil {
+		a.rendererApp.Error(w, rendererModel.WrapInvalid(err))
+		return
+	}
+
 	item := model.Ketchup{
 		Version: r.FormValue("version"),
 		Repository: model.Repository{
 			Name: r.FormValue("repository"),
+			Type: repositoryType,
 		},
 	}
 
 	created, err := a.ketchupService.Create(r.Context(), item)
 	if err != nil {
+		fmt.Println(err)
 		a.rendererApp.Error(w, err)
 		return
 	}

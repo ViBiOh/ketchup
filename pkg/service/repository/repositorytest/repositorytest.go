@@ -66,7 +66,7 @@ func (a app) Suggest(_ context.Context, _ []uint64, _ uint64) ([]model.Repositor
 	return nil, nil
 }
 
-func (a app) GetOrCreate(_ context.Context, name string) (model.Repository, error) {
+func (a app) GetOrCreate(_ context.Context, name string, repositoryType model.RepositoryType) (model.Repository, error) {
 	if len(name) == 0 {
 		return model.NoneRepository, service.WrapInvalid(errors.New("invalid name"))
 	}

@@ -18,7 +18,7 @@ type App interface {
 	List(ctx context.Context, page, pageSize uint) ([]model.Repository, uint64, error)
 	Suggest(ctx context.Context, ignoreIds []uint64, count uint64) ([]model.Repository, error)
 	Get(ctx context.Context, id uint64, forUpdate bool) (model.Repository, error)
-	GetByName(ctx context.Context, name string) (model.Repository, error)
+	GetByName(ctx context.Context, name string, repositoryType model.RepositoryType) (model.Repository, error)
 	Create(ctx context.Context, o model.Repository) (uint64, error)
 	Update(ctx context.Context, o model.Repository) error
 	DeleteUnused(ctx context.Context) error
@@ -162,10 +162,11 @@ FROM
   ketchup.repository
 WHERE
   name = $1
+  AND type = $2
 `
 
-func (a app) GetByName(ctx context.Context, name string) (model.Repository, error) {
-	return a.get(ctx, getByNameQuery, strings.ToLower(name))
+func (a app) GetByName(ctx context.Context, name string, repositoryType model.RepositoryType) (model.Repository, error) {
+	return a.get(ctx, getByNameQuery, strings.ToLower(name), repositoryType.String())
 }
 
 const insertLock = `
@@ -191,7 +192,7 @@ func (a app) Create(ctx context.Context, o model.Repository) (uint64, error) {
 		return 0, err
 	}
 
-	item, err := a.GetByName(ctx, o.Name)
+	item, err := a.GetByName(ctx, o.Name, o.Type)
 	if err != nil {
 		return 0, err
 	}

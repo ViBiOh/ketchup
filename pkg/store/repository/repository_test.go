@@ -216,7 +216,8 @@ func TestGet(t *testing.T) {
 
 func TestGetByName(t *testing.T) {
 	type args struct {
-		name string
+		name           string
+		repositoryType model.RepositoryType
 	}
 
 	var cases = []struct {
@@ -270,7 +271,7 @@ func TestGetByName(t *testing.T) {
 			defer mockDb.Close()
 
 			rows := sqlmock.NewRows([]string{"id", "name", "version", "type"})
-			mock.ExpectQuery("SELECT id, name, version, type FROM ketchup.repository WHERE name =").WithArgs("vibioh/ketchup").WillReturnRows(rows)
+			mock.ExpectQuery("SELECT id, name, version, type FROM ketchup.repository WHERE name =").WithArgs("vibioh/ketchup", "github").WillReturnRows(rows)
 
 			if tc.intention != "no rows" {
 				repositoryType := "github"
@@ -280,7 +281,7 @@ func TestGetByName(t *testing.T) {
 				rows.AddRow(1, "vibioh/ketchup", "1.0.0", repositoryType)
 			}
 
-			got, gotErr := New(mockDb).GetByName(context.Background(), tc.args.name)
+			got, gotErr := New(mockDb).GetByName(context.Background(), tc.args.name, tc.args.repositoryType)
 
 			failed := false
 
@@ -388,7 +389,7 @@ func TestCreate(t *testing.T) {
 			} else {
 				lockQuery.WillReturnResult(sqlmock.NewResult(0, 0))
 
-				getQuery := mock.ExpectQuery("SELECT id, name, version, type FROM ketchup.repository WHERE name =").WithArgs("vibioh/ketchup")
+				getQuery := mock.ExpectQuery("SELECT id, name, version, type FROM ketchup.repository WHERE name = .+ AND type = .+").WithArgs("vibioh/ketchup", tc.args.o.Type.String())
 
 				if tc.intention == "error get" {
 					getQuery.WillReturnError(errors.New("unable to read"))
