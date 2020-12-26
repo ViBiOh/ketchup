@@ -44,6 +44,11 @@ type Repository struct {
 // URL format the URL of given repository with current version
 func (r Repository) URL() string {
 	if r.Type == Helm {
+		parts := strings.SplitN(r.Name, "@", 2)
+		if len(parts) > 1 {
+			return parts[1]
+		}
+
 		return r.Name
 	}
 
