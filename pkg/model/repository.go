@@ -48,7 +48,6 @@ func (r Repository) URL() string {
 		if len(parts) > 1 {
 			return parts[1]
 		}
-
 		return r.Name
 	}
 
@@ -58,7 +57,7 @@ func (r Repository) URL() string {
 // CompareURL format the URL of given repository compared against given version
 func (r Repository) CompareURL(version string) string {
 	if r.Type == Helm {
-		return r.Name
+		return r.URL()
 	}
 
 	return fmt.Sprintf("%s/%s/compare/%s...%s", githubURL, r.Name, version, r.Version)

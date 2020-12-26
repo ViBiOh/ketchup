@@ -91,6 +91,17 @@ func TestList(t *testing.T) {
 			0,
 			errors.New("converting driver.Value type string (\"a\") to a uint64: invalid syntax"),
 		},
+		{
+			"invalid type",
+			args{
+				page:     1,
+				pageSize: 20,
+			},
+			"SELECT k.version, k.repository_id, r.name, r.version, r.type, .+ AS full_count FROM ketchup.ketchup k, ketchup.repository r WHERE user_id = .+ AND repository_id = id",
+			[]model.Ketchup{},
+			1,
+			errors.New("invalid value `wrong` for repository type"),
+		},
 	}
 
 	for _, tc := range cases {
@@ -105,7 +116,11 @@ func TestList(t *testing.T) {
 			expectedQuery := mock.ExpectQuery(tc.expectSQL).WithArgs(20, 0, 3).WillReturnRows(rows)
 
 			if tc.intention != "invalid rows" {
-				rows.AddRow("0.9.0", 1, "vibioh/ketchup", "1.0.0", "github", 2).AddRow("1.0.0", 2, "vibioh/viws", "1.2.3", "helm", 2)
+				if tc.intention == "invalid type" {
+					rows.AddRow("1.0.0", 2, "vibioh/viws", "1.2.3", "wrong", 1)
+				} else {
+					rows.AddRow("0.9.0", 1, "vibioh/ketchup", "1.0.0", "github", 2).AddRow("1.0.0", 2, "vibioh/viws", "1.2.3", "helm", 2)
+				}
 			} else {
 				rows.AddRow("0.9.0", "a", "vibioh/ketchup", "1.0.0", "github", 2)
 			}

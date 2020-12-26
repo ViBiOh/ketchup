@@ -116,7 +116,7 @@ SELECT
       ketchup.ketchup
     WHERE
       repository_id = id
-  ) as count
+  ) AS count
 FROM
   ketchup.repository
 WHERE

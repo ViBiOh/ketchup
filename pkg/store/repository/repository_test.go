@@ -11,6 +11,7 @@ import (
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/ViBiOh/httputils/v3/pkg/db"
 	"github.com/ViBiOh/ketchup/pkg/model"
+	"github.com/lib/pq"
 )
 
 func TestList(t *testing.T) {
@@ -71,6 +72,17 @@ func TestList(t *testing.T) {
 			0,
 			errors.New("converting driver.Value type string (\"a\") to a uint64: invalid syntax"),
 		},
+		{
+			"invalid type",
+			args{
+				page:     1,
+				pageSize: 20,
+			},
+			"SELECT id, name, version, type, .+ AS full_count FROM ketchup.repository",
+			[]model.Repository{},
+			1,
+			errors.New("invalid value `wrong` for repository type"),
+		},
 	}
 
 	for _, tc := range cases {
@@ -85,7 +97,12 @@ func TestList(t *testing.T) {
 			expectedQuery := mock.ExpectQuery(tc.expectSQL).WithArgs(20, 0).WillReturnRows(rows)
 
 			if tc.intention != "invalid rows" {
-				rows.AddRow(1, "vibioh/ketchup", "1.0.0", "github", 2).AddRow(2, "vibioh/viws", "1.2.3", "github", 2)
+				if tc.intention == "invalid type" {
+					rows.AddRow(1, "vibioh/viws", "1.2.3", "wrong", 1)
+				} else {
+					rows.AddRow(1, "vibioh/ketchup", "1.0.0", "github", 2).AddRow(2, "vibioh/viws", "1.2.3", "github", 2)
+
+				}
 			} else {
 				rows.AddRow("a", "vibioh/ketchup", "1.0.0", "github", 2)
 			}
@@ -117,6 +134,79 @@ func TestList(t *testing.T) {
 
 			if failed {
 				t.Errorf("List() = (%+v, %d, `%s`), want (%+v, %d, `%s`)", got, gotCount, gotErr, tc.want, tc.wantCount, tc.wantErr)
+			}
+
+			if err := mock.ExpectationsWereMet(); err != nil {
+				t.Errorf("sqlmock unfilled expectations: %s", err)
+			}
+		})
+	}
+}
+
+func TestSuggest(t *testing.T) {
+	type args struct {
+		ignoreIds []uint64
+		count     uint64
+	}
+
+	var cases = []struct {
+		intention string
+		args      args
+		expectSQL string
+		want      []model.Repository
+		wantErr   error
+	}{
+		{
+			"simple",
+			args{
+				ignoreIds: []uint64{8000},
+				count:     2,
+			},
+			"SELECT id, name, version, type, \\( SELECT COUNT\\(1\\) FROM ketchup.ketchup WHERE repository_id = id \\) AS count FROM ketchup.repository",
+			[]model.Repository{
+				{
+					ID:      1,
+					Name:    "vibioh/ketchup",
+					Version: "1.0.0",
+				},
+				{
+					ID:      2,
+					Name:    "vibioh/viws",
+					Version: "1.2.3",
+					Type:    model.Helm,
+				},
+			},
+			nil,
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.intention, func(t *testing.T) {
+			mockDb, mock, err := sqlmock.New()
+			if err != nil {
+				t.Fatalf("unable to create mock database: %s", err)
+			}
+			defer mockDb.Close()
+
+			rows := sqlmock.NewRows([]string{"id", "email", "login_id", "type", "full_count"})
+			mock.ExpectQuery(tc.expectSQL).WithArgs(tc.args.count, pq.Array(tc.args.ignoreIds)).WillReturnRows(rows)
+			rows.AddRow(1, "vibioh/ketchup", "1.0.0", "github", 2).AddRow(2, "vibioh/viws", "1.2.3", "helm", 2)
+
+			got, gotErr := New(mockDb).Suggest(context.Background(), tc.args.ignoreIds, tc.args.count)
+			failed := false
+
+			if tc.wantErr == nil && gotErr != nil {
+				failed = true
+			} else if tc.wantErr != nil && gotErr == nil {
+				failed = true
+			} else if tc.wantErr != nil && !strings.Contains(gotErr.Error(), tc.wantErr.Error()) {
+				failed = true
+			} else if !reflect.DeepEqual(got, tc.want) {
+				failed = true
+			}
+
+			if failed {
+				t.Errorf("Suggest() = (%+v, `%s`), want (%+v, `%s`)", got, gotErr, tc.want, tc.wantErr)
 			}
 
 			if err := mock.ExpectationsWereMet(); err != nil {
