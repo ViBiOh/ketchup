@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/ViBiOh/httputils/v3/pkg/renderer"
 	rendererModel "github.com/ViBiOh/httputils/v3/pkg/renderer/model"
 	"github.com/ViBiOh/ketchup/pkg/model"
 )
@@ -59,7 +60,7 @@ func (a app) handleCreate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	a.rendererApp.Redirect(w, r, fmt.Sprintf("%s/", appPath), rendererModel.NewSuccessMessage(fmt.Sprintf("%s created with success!", created.Repository.Name)))
+	renderer.Redirect(w, r, fmt.Sprintf("%s/", appPath), rendererModel.NewSuccessMessage(fmt.Sprintf("%s created with success!", created.Repository.Name)))
 }
 
 func (a app) handleUpdate(w http.ResponseWriter, r *http.Request) {
@@ -82,7 +83,7 @@ func (a app) handleUpdate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	a.rendererApp.Redirect(w, r, fmt.Sprintf("%s/", appPath), rendererModel.NewSuccessMessage(fmt.Sprintf("Updated %s with success!", updated.Version)))
+	renderer.Redirect(w, r, fmt.Sprintf("%s/", appPath), rendererModel.NewSuccessMessage(fmt.Sprintf("Updated %s with success!", updated.Version)))
 }
 
 func (a app) handleDelete(w http.ResponseWriter, r *http.Request) {
@@ -103,5 +104,5 @@ func (a app) handleDelete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	a.rendererApp.Redirect(w, r, fmt.Sprintf("%s/", appPath), rendererModel.NewSuccessMessage("Deleted with success!"))
+	renderer.Redirect(w, r, fmt.Sprintf("%s/", appPath), rendererModel.NewSuccessMessage("Deleted with success!"))
 }
