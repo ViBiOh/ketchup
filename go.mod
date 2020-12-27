@@ -8,5 +8,5 @@ require (
 	github.com/ViBiOh/httputils/v3 v3.34.1
 	github.com/ViBiOh/mailer v1.9.2
 	github.com/lib/pq v1.9.0
-	gopkg.in/yaml.v2 v2.3.0
+	gopkg.in/yaml.v2 v2.4.0
 )
