@@ -3,7 +3,7 @@
     <div class="modal-content">
       <h2 class="header">Create ketchup</h2>
 
-      <form method="POST" action="/app/ketchups/">
+      <form method="POST" action="/app/ketchups/" class="create-form">
         <input type="hidden" name="method" value="POST">
 
         <p class="padding no-margin flex">
@@ -23,12 +23,12 @@
 
         <p class="padding no-margin">
           <label for="create-name" class="block">Name:</label>
-          <input id="create-name" type="text" name="repository" placeholder="ViBiOh/ketchup" value="{{ .Version }}">
+          <input id="create-name" type="text" name="repository" placeholder="ViBiOh/ketchup" value="{{ .Version }}" class="full">
         </p>
 
         <p class="padding no-margin">
           <label for="create-version" class="block">My version:</label>
-          <input id="create-version" type="text" name="version" placeholder="1.0.0">
+          <input id="create-version" type="text" name="version" placeholder="1.0.0" class="full">
         </p>
 
         {{ template "form_buttons" "Create" }}
@@ -165,6 +165,10 @@
 
     .clickable {
       cursor: pointer;
+    }
+
+    .create-form {
+      width: 25rem;
     }
   </style>
 
