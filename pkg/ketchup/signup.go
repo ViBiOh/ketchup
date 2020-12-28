@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	authModel "github.com/ViBiOh/auth/v2/pkg/model"
-	"github.com/ViBiOh/httputils/v3/pkg/renderer"
 	rendererModel "github.com/ViBiOh/httputils/v3/pkg/renderer/model"
 	"github.com/ViBiOh/ketchup/pkg/model"
 )
@@ -51,6 +50,6 @@ func (a app) Signup() http.Handler {
 
 		a.tokenStore.Delete(token)
 
-		renderer.Redirect(w, r, fmt.Sprintf("/%s", appPath), rendererModel.NewSuccessMessage("Welcome to ketchup!"))
+		a.rendererApp.Redirect(w, r, fmt.Sprintf("/%s", appPath), rendererModel.NewSuccessMessage("Welcome to ketchup!"))
 	})
 }
