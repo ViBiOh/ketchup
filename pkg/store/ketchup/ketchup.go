@@ -43,7 +43,7 @@ SELECT
   k.repository_id,
   r.name,
   r.version,
-  r.type,
+  r.kind,
   count(1) OVER() AS full_count
 FROM
   ketchup.ketchup k,
@@ -65,17 +65,17 @@ func (a app) List(ctx context.Context, page, pageSize uint) ([]model.Ketchup, ui
 		item := model.Ketchup{
 			User: user,
 		}
-		var rawRepositoryType string
+		var rawRepositoryKind string
 
-		if err := rows.Scan(&item.Version, &item.Repository.ID, &item.Repository.Name, &item.Repository.Version, &rawRepositoryType, &totalCount); err != nil {
+		if err := rows.Scan(&item.Version, &item.Repository.ID, &item.Repository.Name, &item.Repository.Version, &rawRepositoryKind, &totalCount); err != nil {
 			return err
 		}
 
-		repositoryType, err := model.ParseRepositoryType(rawRepositoryType)
+		repositoryKind, err := model.ParseRepositoryKind(rawRepositoryKind)
 		if err != nil {
 			return err
 		}
-		item.Repository.Type = repositoryType
+		item.Repository.Kind = repositoryKind
 
 		list = append(list, item)
 		return nil

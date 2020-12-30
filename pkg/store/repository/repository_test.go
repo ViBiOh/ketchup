@@ -34,7 +34,7 @@ func TestList(t *testing.T) {
 				page:     1,
 				pageSize: 20,
 			},
-			"SELECT id, name, version, type, .+ AS full_count FROM ketchup.repository",
+			"SELECT id, name, version, kind, .+ AS full_count FROM ketchup.repository",
 			[]model.Repository{
 				{
 					ID:      1,
@@ -56,7 +56,7 @@ func TestList(t *testing.T) {
 				page:     1,
 				pageSize: 20,
 			},
-			"SELECT id, name, version, type, .+ AS full_count FROM ketchup.repository",
+			"SELECT id, name, version, kind, .+ AS full_count FROM ketchup.repository",
 			[]model.Repository{},
 			0,
 			sqlmock.ErrCancelled,
@@ -67,21 +67,21 @@ func TestList(t *testing.T) {
 				page:     1,
 				pageSize: 20,
 			},
-			"SELECT id, name, version, type, .+ AS full_count FROM ketchup.repository",
+			"SELECT id, name, version, kind, .+ AS full_count FROM ketchup.repository",
 			[]model.Repository{},
 			0,
 			errors.New("converting driver.Value type string (\"a\") to a uint64: invalid syntax"),
 		},
 		{
-			"invalid type",
+			"invalid kind",
 			args{
 				page:     1,
 				pageSize: 20,
 			},
-			"SELECT id, name, version, type, .+ AS full_count FROM ketchup.repository",
+			"SELECT id, name, version, kind, .+ AS full_count FROM ketchup.repository",
 			[]model.Repository{},
 			1,
-			errors.New("invalid value `wrong` for repository type"),
+			errors.New("invalid value `wrong` for repository kind"),
 		},
 	}
 
@@ -93,11 +93,11 @@ func TestList(t *testing.T) {
 			}
 			defer mockDb.Close()
 
-			rows := sqlmock.NewRows([]string{"id", "email", "login_id", "type", "full_count"})
+			rows := sqlmock.NewRows([]string{"id", "email", "login_id", "kind", "full_count"})
 			expectedQuery := mock.ExpectQuery(tc.expectSQL).WithArgs(20, 0).WillReturnRows(rows)
 
 			if tc.intention != "invalid rows" {
-				if tc.intention == "invalid type" {
+				if tc.intention == "invalid kind" {
 					rows.AddRow(1, "vibioh/viws", "1.2.3", "wrong", 1)
 				} else {
 					rows.AddRow(1, "vibioh/ketchup", "1.0.0", "github", 2).AddRow(2, "vibioh/viws", "1.2.3", "github", 2)
@@ -162,7 +162,7 @@ func TestSuggest(t *testing.T) {
 				ignoreIds: []uint64{8000},
 				count:     2,
 			},
-			"SELECT id, name, version, type, \\( SELECT COUNT\\(1\\) FROM ketchup.ketchup WHERE repository_id = id \\) AS count FROM ketchup.repository",
+			"SELECT id, name, version, kind, \\( SELECT COUNT\\(1\\) FROM ketchup.ketchup WHERE repository_id = id \\) AS count FROM ketchup.repository",
 			[]model.Repository{
 				{
 					ID:      1,
@@ -173,7 +173,7 @@ func TestSuggest(t *testing.T) {
 					ID:      2,
 					Name:    "vibioh/viws",
 					Version: "1.2.3",
-					Type:    model.Helm,
+					Kind:    model.Helm,
 				},
 			},
 			nil,
@@ -188,7 +188,7 @@ func TestSuggest(t *testing.T) {
 			}
 			defer mockDb.Close()
 
-			rows := sqlmock.NewRows([]string{"id", "email", "login_id", "type", "full_count"})
+			rows := sqlmock.NewRows([]string{"id", "email", "login_id", "kind", "full_count"})
 			mock.ExpectQuery(tc.expectSQL).WithArgs(tc.args.count, pq.Array(tc.args.ignoreIds)).WillReturnRows(rows)
 			rows.AddRow(1, "vibioh/ketchup", "1.0.0", "github", 2).AddRow(2, "vibioh/viws", "1.2.3", "helm", 2)
 
@@ -234,12 +234,12 @@ func TestGet(t *testing.T) {
 			args{
 				id: 1,
 			},
-			"SELECT id, name, version, type FROM ketchup.repository WHERE id =",
+			"SELECT id, name, version, kind FROM ketchup.repository WHERE id =",
 			model.Repository{
 				ID:      1,
 				Name:    "vibioh/ketchup",
 				Version: "1.0.0",
-				Type:    model.Helm,
+				Kind:    model.Helm,
 			},
 			nil,
 		},
@@ -249,12 +249,12 @@ func TestGet(t *testing.T) {
 				id:        1,
 				forUpdate: true,
 			},
-			"SELECT id, name, version, type FROM ketchup.repository WHERE id = .+ FOR UPDATE",
+			"SELECT id, name, version, kind FROM ketchup.repository WHERE id = .+ FOR UPDATE",
 			model.Repository{
 				ID:      1,
 				Name:    "vibioh/ketchup",
 				Version: "1.0.0",
-				Type:    model.Helm,
+				Kind:    model.Helm,
 			},
 			nil,
 		},
@@ -263,7 +263,7 @@ func TestGet(t *testing.T) {
 			args{
 				id: 1,
 			},
-			"SELECT id, name, version, type FROM ketchup.repository WHERE id =",
+			"SELECT id, name, version, kind FROM ketchup.repository WHERE id =",
 			model.NoneRepository,
 			nil,
 		},
@@ -277,7 +277,7 @@ func TestGet(t *testing.T) {
 			}
 			defer mockDb.Close()
 
-			rows := sqlmock.NewRows([]string{"id", "name", "version", "type"})
+			rows := sqlmock.NewRows([]string{"id", "name", "version", "kind"})
 			mock.ExpectQuery(tc.expectSQL).WithArgs(1).WillReturnRows(rows)
 			if tc.intention != "no rows" {
 				rows.AddRow(1, "vibioh/ketchup", "1.0.0", "helm")
@@ -307,7 +307,7 @@ func TestGet(t *testing.T) {
 func TestGetByName(t *testing.T) {
 	type args struct {
 		name           string
-		repositoryType model.RepositoryType
+		repositoryKind model.RepositoryKind
 	}
 
 	var cases = []struct {
@@ -325,7 +325,7 @@ func TestGetByName(t *testing.T) {
 				ID:      1,
 				Name:    "vibioh/ketchup",
 				Version: "1.0.0",
-				Type:    model.Github,
+				Kind:    model.Github,
 			},
 			nil,
 		},
@@ -338,7 +338,7 @@ func TestGetByName(t *testing.T) {
 			nil,
 		},
 		{
-			"invalid type",
+			"invalid kind",
 			args{
 				name: "vibioh/ketchup",
 			},
@@ -346,9 +346,9 @@ func TestGetByName(t *testing.T) {
 				ID:      1,
 				Name:    "vibioh/ketchup",
 				Version: "1.0.0",
-				Type:    model.Github,
+				Kind:    model.Github,
 			},
-			errors.New("invalid value `wrong` for repository type"),
+			errors.New("invalid value `wrong` for repository kind"),
 		},
 	}
 
@@ -360,18 +360,18 @@ func TestGetByName(t *testing.T) {
 			}
 			defer mockDb.Close()
 
-			rows := sqlmock.NewRows([]string{"id", "name", "version", "type"})
-			mock.ExpectQuery("SELECT id, name, version, type FROM ketchup.repository WHERE name =").WithArgs("vibioh/ketchup", "github").WillReturnRows(rows)
+			rows := sqlmock.NewRows([]string{"id", "name", "version", "kind"})
+			mock.ExpectQuery("SELECT id, name, version, kind FROM ketchup.repository WHERE name =").WithArgs("vibioh/ketchup", "github").WillReturnRows(rows)
 
 			if tc.intention != "no rows" {
-				repositoryType := "github"
-				if tc.intention == "invalid type" {
-					repositoryType = "wrong"
+				repositoryKind := "github"
+				if tc.intention == "invalid kind" {
+					repositoryKind = "wrong"
 				}
-				rows.AddRow(1, "vibioh/ketchup", "1.0.0", repositoryType)
+				rows.AddRow(1, "vibioh/ketchup", "1.0.0", repositoryKind)
 			}
 
-			got, gotErr := New(mockDb).GetByName(context.Background(), tc.args.name, tc.args.repositoryType)
+			got, gotErr := New(mockDb).GetByName(context.Background(), tc.args.name, tc.args.repositoryKind)
 
 			failed := false
 
@@ -413,7 +413,7 @@ func TestCreate(t *testing.T) {
 				o: model.Repository{
 					Name:    "vibioh/ketchup",
 					Version: "1.0.0",
-					Type:    model.Helm,
+					Kind:    model.Helm,
 				},
 			},
 			0,
@@ -425,7 +425,7 @@ func TestCreate(t *testing.T) {
 				o: model.Repository{
 					Name:    "vibioh/ketchup",
 					Version: "1.0.0",
-					Type:    model.Helm,
+					Kind:    model.Helm,
 				},
 			},
 			0,
@@ -437,7 +437,7 @@ func TestCreate(t *testing.T) {
 				o: model.Repository{
 					Name:    "vibioh/ketchup",
 					Version: "1.0.0",
-					Type:    model.Helm,
+					Kind:    model.Helm,
 				},
 			},
 			1,
@@ -449,7 +449,7 @@ func TestCreate(t *testing.T) {
 				o: model.Repository{
 					Name:    "vibioh/ketchup",
 					Version: "1.0.0",
-					Type:    model.Helm,
+					Kind:    model.Helm,
 				},
 			},
 			1,
@@ -479,12 +479,12 @@ func TestCreate(t *testing.T) {
 			} else {
 				lockQuery.WillReturnResult(sqlmock.NewResult(0, 0))
 
-				getQuery := mock.ExpectQuery("SELECT id, name, version, type FROM ketchup.repository WHERE name = .+ AND type = .+").WithArgs("vibioh/ketchup", tc.args.o.Type.String())
+				getQuery := mock.ExpectQuery("SELECT id, name, version, kind FROM ketchup.repository WHERE name = .+ AND kind = .+").WithArgs("vibioh/ketchup", tc.args.o.Kind.String())
 
 				if tc.intention == "error get" {
 					getQuery.WillReturnError(errors.New("unable to read"))
 				} else {
-					rows := sqlmock.NewRows([]string{"id", "name", "version", "type"})
+					rows := sqlmock.NewRows([]string{"id", "name", "version", "kind"})
 					getQuery.WillReturnRows(rows)
 
 					if tc.intention == "no rows" {

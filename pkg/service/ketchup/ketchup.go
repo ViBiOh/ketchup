@@ -67,7 +67,7 @@ func (a app) Create(ctx context.Context, item model.Ketchup) (model.Ketchup, err
 	var output model.Ketchup
 
 	err := a.ketchupStore.DoAtomic(ctx, func(ctx context.Context) error {
-		repo, err := a.repositoryService.GetOrCreate(ctx, item.Repository.Name, item.Repository.Type)
+		repo, err := a.repositoryService.GetOrCreate(ctx, item.Repository.Name, item.Repository.Kind)
 		if err != nil {
 			return err
 		}

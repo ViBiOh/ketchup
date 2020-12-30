@@ -24,7 +24,7 @@ var (
 type App interface {
 	List(ctx context.Context, page, pageSize uint) ([]model.Repository, uint64, error)
 	Suggest(ctx context.Context, ignoreIds []uint64, count uint64) ([]model.Repository, error)
-	GetOrCreate(ctx context.Context, name string, repositoryType model.RepositoryType) (model.Repository, error)
+	GetOrCreate(ctx context.Context, name string, repositoryKind model.RepositoryKind) (model.Repository, error)
 	Update(ctx context.Context, item model.Repository) error
 	Clean(ctx context.Context) error
 	LatestVersion(repo model.Repository) (semver.Version, error)
@@ -63,13 +63,13 @@ func (a app) Suggest(ctx context.Context, ignoreIds []uint64, count uint64) ([]m
 	return list, nil
 }
 
-func (a app) GetOrCreate(ctx context.Context, name string, repositoryType model.RepositoryType) (model.Repository, error) {
+func (a app) GetOrCreate(ctx context.Context, name string, repositoryKind model.RepositoryKind) (model.Repository, error) {
 	sanitizedName := name
-	if repositoryType == model.Github {
+	if repositoryKind == model.Github {
 		sanitizedName = sanitizeName(name)
 	}
 
-	repo, err := a.repositoryStore.GetByName(ctx, sanitizedName, repositoryType)
+	repo, err := a.repositoryStore.GetByName(ctx, sanitizedName, repositoryKind)
 	if err != nil {
 		return model.NoneRepository, rendererModel.WrapInternal(err)
 	}
@@ -78,7 +78,7 @@ func (a app) GetOrCreate(ctx context.Context, name string, repositoryType model.
 		return repo, nil
 	}
 
-	return a.create(ctx, model.Repository{Name: sanitizedName, Type: repositoryType})
+	return a.create(ctx, model.Repository{Name: sanitizedName, Kind: repositoryKind})
 }
 
 func (a app) create(ctx context.Context, item model.Repository) (model.Repository, error) {
@@ -156,7 +156,7 @@ func (a app) check(ctx context.Context, old, new model.Repository) error {
 		output = append(output, errors.New("version is required"))
 	}
 
-	repositoryWithName, err := a.repositoryStore.GetByName(ctx, new.Name, new.Type)
+	repositoryWithName, err := a.repositoryStore.GetByName(ctx, new.Name, new.Kind)
 	if err != nil {
 		output = append(output, errors.New("unable to check if name already exists"))
 	} else if repositoryWithName != model.NoneRepository && repositoryWithName.ID != new.ID {
@@ -167,13 +167,13 @@ func (a app) check(ctx context.Context, old, new model.Repository) error {
 }
 
 func (a app) LatestVersion(repo model.Repository) (semver.Version, error) {
-	switch repo.Type {
+	switch repo.Kind {
 	case model.Github:
 		return a.githubApp.LatestVersion(repo.Name)
 	case model.Helm:
 		return a.helmApp.LatestVersion(repo.Name)
 	default:
-		return semver.NoneVersion, fmt.Errorf("unknown repository type %d", repo.Type)
+		return semver.NoneVersion, fmt.Errorf("unknown repository kind %d", repo.Kind)
 	}
 }
 

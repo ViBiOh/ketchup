@@ -38,7 +38,7 @@ func TestList(t *testing.T) {
 				page:     1,
 				pageSize: 20,
 			},
-			"SELECT k.version, k.repository_id, r.name, r.version, r.type, .+ AS full_count FROM ketchup.ketchup k, ketchup.repository r WHERE user_id = .+ AND repository_id = id",
+			"SELECT k.version, k.repository_id, r.name, r.version, r.kind, .+ AS full_count FROM ketchup.ketchup k, ketchup.repository r WHERE user_id = .+ AND repository_id = id",
 			[]model.Ketchup{
 				{
 					Version: "0.9.0",
@@ -58,7 +58,7 @@ func TestList(t *testing.T) {
 						ID:      2,
 						Name:    "vibioh/viws",
 						Version: "1.2.3",
-						Type:    model.Helm,
+						Kind:    model.Helm,
 					},
 					User: model.User{
 						ID:    3,
@@ -75,7 +75,7 @@ func TestList(t *testing.T) {
 				page:     1,
 				pageSize: 20,
 			},
-			"SELECT k.version, k.repository_id, r.name, r.version, r.type, .+ AS full_count FROM ketchup.ketchup k, ketchup.repository r WHERE user_id = .+ AND repository_id = id",
+			"SELECT k.version, k.repository_id, r.name, r.version, r.kind, .+ AS full_count FROM ketchup.ketchup k, ketchup.repository r WHERE user_id = .+ AND repository_id = id",
 			[]model.Ketchup{},
 			0,
 			sqlmock.ErrCancelled,
@@ -86,21 +86,21 @@ func TestList(t *testing.T) {
 				page:     1,
 				pageSize: 20,
 			},
-			"SELECT k.version, k.repository_id, r.name, r.version, r.type, .+ AS full_count FROM ketchup.ketchup k, ketchup.repository r WHERE user_id = .+ AND repository_id = id",
+			"SELECT k.version, k.repository_id, r.name, r.version, r.kind, .+ AS full_count FROM ketchup.ketchup k, ketchup.repository r WHERE user_id = .+ AND repository_id = id",
 			[]model.Ketchup{},
 			0,
 			errors.New("converting driver.Value type string (\"a\") to a uint64: invalid syntax"),
 		},
 		{
-			"invalid type",
+			"invalid kind",
 			args{
 				page:     1,
 				pageSize: 20,
 			},
-			"SELECT k.version, k.repository_id, r.name, r.version, r.type, .+ AS full_count FROM ketchup.ketchup k, ketchup.repository r WHERE user_id = .+ AND repository_id = id",
+			"SELECT k.version, k.repository_id, r.name, r.version, r.kind, .+ AS full_count FROM ketchup.ketchup k, ketchup.repository r WHERE user_id = .+ AND repository_id = id",
 			[]model.Ketchup{},
 			1,
-			errors.New("invalid value `wrong` for repository type"),
+			errors.New("invalid value `wrong` for repository kind"),
 		},
 	}
 
@@ -112,11 +112,11 @@ func TestList(t *testing.T) {
 			}
 			defer mockDb.Close()
 
-			rows := sqlmock.NewRows([]string{"version", "repository_id", "name", "version", "type", "full_count"})
+			rows := sqlmock.NewRows([]string{"version", "repository_id", "name", "version", "kind", "full_count"})
 			expectedQuery := mock.ExpectQuery(tc.expectSQL).WithArgs(20, 0, 3).WillReturnRows(rows)
 
 			if tc.intention != "invalid rows" {
-				if tc.intention == "invalid type" {
+				if tc.intention == "invalid kind" {
 					rows.AddRow("1.0.0", 2, "vibioh/viws", "1.2.3", "wrong", 1)
 				} else {
 					rows.AddRow("0.9.0", 1, "vibioh/ketchup", "1.0.0", "github", 2).AddRow("1.0.0", 2, "vibioh/viws", "1.2.3", "helm", 2)

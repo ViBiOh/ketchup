@@ -62,7 +62,7 @@ func (trs testRepositoryStore) Get(_ context.Context, id uint64, _ bool) (model.
 	return model.Repository{ID: id, Name: "vibioh/ketchup", Version: "1.0.0"}, nil
 }
 
-func (trs testRepositoryStore) GetByName(_ context.Context, name string, repositoryType model.RepositoryType) (model.Repository, error) {
+func (trs testRepositoryStore) GetByName(_ context.Context, name string, repositoryKind model.RepositoryKind) (model.Repository, error) {
 	if name == "error" {
 		return model.NoneRepository, errors.New("invalid name")
 	}
@@ -215,7 +215,7 @@ func TestGetOrCreate(t *testing.T) {
 	type args struct {
 		ctx            context.Context
 		name           string
-		repositoryType model.RepositoryType
+		repositoryKind model.RepositoryKind
 	}
 
 	var cases = []struct {
@@ -255,7 +255,7 @@ func TestGetOrCreate(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.intention, func(t *testing.T) {
-			got, gotErr := New(testRepositoryStore{}, githubtest.NewApp(regexp.MustCompile("not found"), "1.0.0"), nil).GetOrCreate(tc.args.ctx, tc.args.name, tc.args.repositoryType)
+			got, gotErr := New(testRepositoryStore{}, githubtest.NewApp(regexp.MustCompile("not found"), "1.0.0"), nil).GetOrCreate(tc.args.ctx, tc.args.name, tc.args.repositoryKind)
 
 			failed := false
 

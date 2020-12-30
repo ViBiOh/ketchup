@@ -9,7 +9,7 @@ import (
 func TestString(t *testing.T) {
 	var cases = []struct {
 		intention string
-		instance  RepositoryType
+		instance  RepositoryKind
 		want      string
 	}{
 		{
@@ -42,7 +42,7 @@ func TestURL(t *testing.T) {
 		{
 			"helm",
 			Repository{
-				Type: Helm,
+				Kind: Helm,
 				Name: "app@https://charts.vibioh.fr",
 			},
 			"https://charts.vibioh.fr",
@@ -50,7 +50,7 @@ func TestURL(t *testing.T) {
 		{
 			"invalid",
 			Repository{
-				Type: Helm,
+				Kind: Helm,
 				Name: "charts.fr",
 			},
 			"charts.fr",
@@ -58,7 +58,7 @@ func TestURL(t *testing.T) {
 		{
 			"github",
 			Repository{
-				Type:    Github,
+				Kind:    Github,
 				Name:    "vibioh/ketchup",
 				Version: "1.0.0",
 			},
@@ -89,7 +89,7 @@ func TestCompareURL(t *testing.T) {
 		{
 			"helm",
 			Repository{
-				Type: Helm,
+				Kind: Helm,
 				Name: "app@https://charts.vibioh.fr",
 			},
 			args{},
@@ -98,7 +98,7 @@ func TestCompareURL(t *testing.T) {
 		{
 			"github",
 			Repository{
-				Type:    Github,
+				Kind:    Github,
 				Name:    "vibioh/ketchup",
 				Version: "1.0.0",
 			},
@@ -118,7 +118,7 @@ func TestCompareURL(t *testing.T) {
 	}
 }
 
-func TestParseRepositoryType(t *testing.T) {
+func TestParseRepositoryKind(t *testing.T) {
 	type args struct {
 		value string
 	}
@@ -126,7 +126,7 @@ func TestParseRepositoryType(t *testing.T) {
 	var cases = []struct {
 		intention string
 		args      args
-		want      RepositoryType
+		want      RepositoryKind
 		wantErr   error
 	}{
 		{
@@ -143,13 +143,13 @@ func TestParseRepositoryType(t *testing.T) {
 				value: "wrong",
 			},
 			Github,
-			errors.New("invalid value `wrong` for repository type"),
+			errors.New("invalid value `wrong` for repository kind"),
 		},
 	}
 
 	for _, tc := range cases {
 		t.Run(tc.intention, func(t *testing.T) {
-			got, gotErr := ParseRepositoryType(tc.args.value)
+			got, gotErr := ParseRepositoryKind(tc.args.value)
 
 			failed := false
 
@@ -164,7 +164,7 @@ func TestParseRepositoryType(t *testing.T) {
 			}
 
 			if failed {
-				t.Errorf("ParseRepositoryType() = (`%s`, `%s`), want (`%s`, `%s`)", got, gotErr, tc.want, tc.wantErr)
+				t.Errorf("ParseRepositoryKind() = (`%s`, `%s`), want (`%s`, `%s`)", got, gotErr, tc.want, tc.wantErr)
 			}
 		})
 	}

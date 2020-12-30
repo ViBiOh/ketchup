@@ -18,7 +18,7 @@ type App interface {
 	List(ctx context.Context, page, pageSize uint) ([]model.Repository, uint64, error)
 	Suggest(ctx context.Context, ignoreIds []uint64, count uint64) ([]model.Repository, error)
 	Get(ctx context.Context, id uint64, forUpdate bool) (model.Repository, error)
-	GetByName(ctx context.Context, name string, repositoryType model.RepositoryType) (model.Repository, error)
+	GetByName(ctx context.Context, name string, repositoryKind model.RepositoryKind) (model.Repository, error)
 	Create(ctx context.Context, o model.Repository) (uint64, error)
 	Update(ctx context.Context, o model.Repository) error
 	DeleteUnused(ctx context.Context) error
@@ -45,17 +45,17 @@ func (a app) list(ctx context.Context, query string, args ...interface{}) ([]mod
 
 	scanner := func(rows *sql.Rows) error {
 		var item model.Repository
-		var rawRepositoryType string
+		var rawRepositoryKind string
 
-		if err := rows.Scan(&item.ID, &item.Name, &item.Version, &rawRepositoryType, &count); err != nil {
+		if err := rows.Scan(&item.ID, &item.Name, &item.Version, &rawRepositoryKind, &count); err != nil {
 			return err
 		}
 
-		repositoryType, err := model.ParseRepositoryType(rawRepositoryType)
+		repositoryKind, err := model.ParseRepositoryKind(rawRepositoryKind)
 		if err != nil {
 			return err
 		}
-		item.Type = repositoryType
+		item.Kind = repositoryKind
 
 		list = append(list, item)
 		return nil
@@ -66,10 +66,10 @@ func (a app) list(ctx context.Context, query string, args ...interface{}) ([]mod
 
 func (a app) get(ctx context.Context, query string, args ...interface{}) (model.Repository, error) {
 	var item model.Repository
-	var rawRepositoryType string
+	var rawRepositoryKind string
 
 	scanner := func(row *sql.Row) error {
-		err := row.Scan(&item.ID, &item.Name, &item.Version, &rawRepositoryType)
+		err := row.Scan(&item.ID, &item.Name, &item.Version, &rawRepositoryKind)
 		if errors.Is(err, sql.ErrNoRows) {
 			item = model.NoneRepository
 			return nil
@@ -79,7 +79,7 @@ func (a app) get(ctx context.Context, query string, args ...interface{}) (model.
 			return err
 		}
 
-		item.Type, err = model.ParseRepositoryType(rawRepositoryType)
+		item.Kind, err = model.ParseRepositoryKind(rawRepositoryKind)
 		return err
 	}
 
@@ -91,7 +91,7 @@ SELECT
   id,
   name,
   version,
-  type,
+  kind,
   count(1) OVER() AS full_count
 FROM
   ketchup.repository
@@ -108,7 +108,7 @@ SELECT
   id,
   name,
   version,
-  type,
+  kind,
   (
     SELECT
       COUNT(1)
@@ -136,7 +136,7 @@ SELECT
   id,
   name,
   version,
-  type
+  kind
 FROM
   ketchup.repository
 WHERE
@@ -157,16 +157,16 @@ SELECT
   id,
   name,
   version,
-  type
+  kind
 FROM
   ketchup.repository
 WHERE
   name = $1
-  AND type = $2
+  AND kind = $2
 `
 
-func (a app) GetByName(ctx context.Context, name string, repositoryType model.RepositoryType) (model.Repository, error) {
-	return a.get(ctx, getByNameQuery, strings.ToLower(name), repositoryType.String())
+func (a app) GetByName(ctx context.Context, name string, repositoryKind model.RepositoryKind) (model.Repository, error) {
+	return a.get(ctx, getByNameQuery, strings.ToLower(name), repositoryKind.String())
 }
 
 const insertLock = `
@@ -179,7 +179,7 @@ INSERT INTO
 (
   name,
   version,
-  type
+  kind
 ) VALUES (
   $1,
   $2,
@@ -192,7 +192,7 @@ func (a app) Create(ctx context.Context, o model.Repository) (uint64, error) {
 		return 0, err
 	}
 
-	item, err := a.GetByName(ctx, o.Name, o.Type)
+	item, err := a.GetByName(ctx, o.Name, o.Kind)
 	if err != nil {
 		return 0, err
 	}
@@ -201,7 +201,7 @@ func (a app) Create(ctx context.Context, o model.Repository) (uint64, error) {
 		return item.ID, nil
 	}
 
-	return db.Create(ctx, insertQuery, strings.ToLower(o.Name), o.Version, o.Type.String())
+	return db.Create(ctx, insertQuery, strings.ToLower(o.Name), o.Version, o.Kind.String())
 }
 
 const updateRepositoryQuery = `

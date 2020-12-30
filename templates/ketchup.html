@@ -8,16 +8,16 @@
 
         <p class="padding no-margin flex">
           <span class="flex-grow center">
-            <label for="create-type-github" class="block">
+            <label for="create-kind-github" class="block">
               <img class="icon icon-large clickable" src="/svg/github?fill=silver" alt="Github icon">
             </label>
-            <input id="create-type-github" type="radio" name="type" value="github" checked>
+            <input id="create-kind-github" type="radio" name="kind" value="github" checked>
           </span>
           <span class="flex-grow center">
-            <label for="create-type-helm" class="block">
+            <label for="create-kind-helm" class="block">
               <img class="icon icon-large clickable" src="/svg/helm?fill=silver" alt="Helm icon">
             </label>
-            <input id="create-type-helm" type="radio" name="type" value="helm">
+            <input id="create-kind-helm" type="radio" name="kind" value="helm">
           </span>
         </p>
 
@@ -39,13 +39,13 @@
   <script type="text/javascript">
     const nameInput = document.getElementById('create-name');
 
-    document.getElementById('create-type-github').addEventListener('change', (e) => {
+    document.getElementById('create-kind-github').addEventListener('change', (e) => {
       if (e.target.value === 'github') {
         nameInput.placeholder = 'ViBiOh/ketchup';
       }
     });
 
-    document.getElementById('create-type-helm').addEventListener('change', (e) => {
+    document.getElementById('create-kind-helm').addEventListener('change', (e) => {
       if (e.target.value === 'helm') {
         nameInput.placeholder = 'app@https://charts.vibioh.fr';
       }
@@ -183,7 +183,7 @@
         <h2 class="header small ellipsis">{{ .Repository.Name }}</h2>
 
         <div>
-          <img class="icon" src="/svg/{{ .Repository.Type.String }}?fill=silver" alt="{{ .Repository.Type.String }} icon">
+          <img class="icon" src="/svg/{{ .Repository.Kind.String }}?fill=silver" alt="{{ .Repository.Kind.String }} icon">
         </div>
 
         {{ if .Semver }}

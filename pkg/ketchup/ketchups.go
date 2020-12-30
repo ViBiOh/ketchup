@@ -38,7 +38,7 @@ func (a app) ketchups() http.Handler {
 }
 
 func (a app) handleCreate(w http.ResponseWriter, r *http.Request) {
-	repositoryType, err := model.ParseRepositoryType(r.FormValue("type"))
+	repositoryKind, err := model.ParseRepositoryKind(r.FormValue("kind"))
 	if err != nil {
 		a.rendererApp.Error(w, rendererModel.WrapInvalid(err))
 		return
@@ -48,7 +48,7 @@ func (a app) handleCreate(w http.ResponseWriter, r *http.Request) {
 		Version: r.FormValue("version"),
 		Repository: model.Repository{
 			Name: r.FormValue("repository"),
-			Type: repositoryType,
+			Kind: repositoryKind,
 		},
 	}
 

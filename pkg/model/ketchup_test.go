@@ -96,7 +96,7 @@ func TestKetchupByPriority(t *testing.T) {
 					{Semver: "Patch", Repository: Repository{Name: "jkl"}},
 					{Semver: "", Repository: Repository{Name: "defg"}},
 					{Semver: "Patch", Repository: Repository{Name: "jjl"}},
-					{Semver: "Patch", Repository: Repository{Name: "jjl", Type: 1}},
+					{Semver: "Patch", Repository: Repository{Name: "jjl", Kind: 1}},
 					{Semver: "Major", Repository: Repository{Name: "ghi"}},
 				},
 			},
@@ -107,7 +107,7 @@ func TestKetchupByPriority(t *testing.T) {
 				{Semver: "Patch", Repository: Repository{Name: "jkl"}},
 				{Semver: "", Repository: Repository{Name: "abcd"}},
 				{Semver: "", Repository: Repository{Name: "defg"}},
-				{Semver: "Patch", Repository: Repository{Name: "jjl", Type: 1}},
+				{Semver: "Patch", Repository: Repository{Name: "jjl", Kind: 1}},
 			},
 		},
 	}

@@ -5,23 +5,23 @@ import (
 	"strings"
 )
 
-// RepositoryType defines constant for repository types
-type RepositoryType int
+// RepositoryKind defines constant for repository types
+type RepositoryKind int
 
 const (
 	githubURL = "https://github.com"
 )
 
 const (
-	// Github repository type
-	Github RepositoryType = iota
-	// Helm repository type
+	// Github repository kind
+	Github RepositoryKind = iota
+	// Helm repository kind
 	Helm
 )
 
 var (
-	// RepositoryTypeValues string values
-	RepositoryTypeValues = []string{"github", "helm"}
+	// RepositoryKindValues string values
+	RepositoryKindValues = []string{"github", "helm"}
 )
 
 var (
@@ -29,8 +29,8 @@ var (
 	NoneRepository = Repository{}
 )
 
-func (r RepositoryType) String() string {
-	return RepositoryTypeValues[r]
+func (r RepositoryKind) String() string {
+	return RepositoryKindValues[r]
 }
 
 // Repository of app
@@ -38,12 +38,12 @@ type Repository struct {
 	Name    string         `json:"name"`
 	Version string         `json:"version"`
 	ID      uint64         `json:"id"`
-	Type    RepositoryType `json:"type"`
+	Kind    RepositoryKind `json:"kind"`
 }
 
 // URL format the URL of given repository with current version
 func (r Repository) URL() string {
-	if r.Type == Helm {
+	if r.Kind == Helm {
 		parts := strings.SplitN(r.Name, "@", 2)
 		if len(parts) > 1 {
 			return parts[1]
@@ -56,20 +56,20 @@ func (r Repository) URL() string {
 
 // CompareURL format the URL of given repository compared against given version
 func (r Repository) CompareURL(version string) string {
-	if r.Type == Helm {
+	if r.Kind == Helm {
 		return r.URL()
 	}
 
 	return fmt.Sprintf("%s/%s/compare/%s...%s", githubURL, r.Name, version, r.Version)
 }
 
-// ParseRepositoryType parse raw string into a RepositoryType
-func ParseRepositoryType(value string) (RepositoryType, error) {
-	for i, short := range RepositoryTypeValues {
+// ParseRepositoryKind parse raw string into a RepositoryKind
+func ParseRepositoryKind(value string) (RepositoryKind, error) {
+	for i, short := range RepositoryKindValues {
 		if strings.EqualFold(short, value) {
-			return RepositoryType(i), nil
+			return RepositoryKind(i), nil
 		}
 	}
 
-	return Github, fmt.Errorf("invalid value `%s` for repository type", value)
+	return Github, fmt.Errorf("invalid value `%s` for repository kind", value)
 }
