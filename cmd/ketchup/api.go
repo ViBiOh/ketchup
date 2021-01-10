@@ -78,11 +78,14 @@ func main() {
 	repositoryServiceApp := repositoryService.New(repositoryStore.New(ketchupDb), github.New(githubConfig), helm.New())
 	ketchupServiceApp := ketchupService.New(ketchupStore.New(ketchupDb), repositoryServiceApp)
 
-	schedulerApp := scheduler.New(schedulerConfig, repositoryServiceApp, ketchupServiceApp, mailer.New(mailerConfig))
+	mailerApp, err := mailer.New(mailerConfig)
+	logger.Fatal(err)
+	defer mailerApp.Close()
 
 	publicRendererApp, err := renderer.New(rendererConfig, ketchup.FuncMap)
 	logger.Fatal(err)
 
+	schedulerApp := scheduler.New(schedulerConfig, repositoryServiceApp, ketchupServiceApp, mailerApp)
 	ketchupApp := ketchup.New(publicRendererApp, ketchupServiceApp, userServiceApp, repositoryServiceApp)
 
 	publicHandler := publicRendererApp.Handler(ketchupApp.PublicTemplateFunc)

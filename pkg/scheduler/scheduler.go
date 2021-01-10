@@ -17,6 +17,7 @@ import (
 	"github.com/ViBiOh/ketchup/pkg/service/ketchup"
 	"github.com/ViBiOh/ketchup/pkg/service/repository"
 	mailer "github.com/ViBiOh/mailer/pkg/client"
+	mailerModel "github.com/ViBiOh/mailer/pkg/model"
 )
 
 var (
@@ -207,14 +208,14 @@ func (a app) sendNotification(ctx context.Context, ketchupToNotify map[model.Use
 			"releases": releases,
 		}
 
-		email := mailer.NewEmail().Template("ketchup").From("ketchup@vibioh.fr").As("Ketchup").To(user.Email).Data(payload)
+		mailRequest := mailerModel.NewMailRequest().Template("ketchup").From("ketchup@vibioh.fr").As("Ketchup").To(user.Email).Data(payload)
 		if len(releases) > 1 {
-			email.WithSubject("Ketchup - New releases")
+			mailRequest.WithSubject("Ketchup - New releases")
 		} else {
-			email.WithSubject("Ketchup - New release")
+			mailRequest.WithSubject("Ketchup - New release")
 		}
 
-		if err := email.Send(ctx, a.mailerApp); err != nil {
+		if err := a.mailerApp.Send(ctx, *mailRequest); err != nil {
 			return fmt.Errorf("unable to send email to %s: %s", user.Email, err)
 		}
 	}
