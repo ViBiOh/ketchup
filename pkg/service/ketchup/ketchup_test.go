@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	rendererModel "github.com/ViBiOh/httputils/v3/pkg/renderer/model"
+	httpModel "github.com/ViBiOh/httputils/v3/pkg/model"
 	"github.com/ViBiOh/ketchup/pkg/model"
 	"github.com/ViBiOh/ketchup/pkg/service/repository/repositorytest"
 )
@@ -142,7 +142,7 @@ func TestList(t *testing.T) {
 			},
 			nil,
 			0,
-			rendererModel.ErrInternalError,
+			httpModel.ErrInternalError,
 		},
 	}
 
@@ -196,7 +196,7 @@ func TestListForRepositories(t *testing.T) {
 			"error",
 			args{},
 			nil,
-			rendererModel.ErrInternalError,
+			httpModel.ErrInternalError,
 		},
 	}
 
@@ -247,7 +247,7 @@ func TestCreate(t *testing.T) {
 				item: model.NoneKetchup,
 			},
 			model.NoneKetchup,
-			rendererModel.ErrInvalid,
+			httpModel.ErrInvalid,
 		},
 		{
 			"check error",
@@ -258,7 +258,7 @@ func TestCreate(t *testing.T) {
 				},
 			},
 			model.NoneKetchup,
-			rendererModel.ErrInvalid,
+			httpModel.ErrInvalid,
 		},
 		{
 			"create error",
@@ -267,7 +267,7 @@ func TestCreate(t *testing.T) {
 				item: model.Ketchup{Version: "0.0.0", Repository: model.Repository{ID: 1, Name: "vibioh/ketchup"}},
 			},
 			model.NoneKetchup,
-			rendererModel.ErrInternalError,
+			httpModel.ErrInternalError,
 		},
 		{
 			"end atomic error",
@@ -336,7 +336,7 @@ func TestUpdate(t *testing.T) {
 				item: model.NoneKetchup,
 			},
 			model.NoneKetchup,
-			rendererModel.ErrInternalError,
+			httpModel.ErrInternalError,
 		},
 		{
 			"check error",
@@ -345,7 +345,7 @@ func TestUpdate(t *testing.T) {
 				item: model.Ketchup{Repository: model.Repository{ID: 1}},
 			},
 			model.NoneKetchup,
-			rendererModel.ErrInvalid,
+			httpModel.ErrInvalid,
 		},
 		{
 			"update error",
@@ -354,7 +354,7 @@ func TestUpdate(t *testing.T) {
 				item: model.Ketchup{Version: "0.0.0", Repository: model.Repository{ID: 2}},
 			},
 			model.NoneKetchup,
-			rendererModel.ErrInternalError,
+			httpModel.ErrInternalError,
 		},
 		{
 			"end atomic error",
@@ -420,7 +420,7 @@ func TestDelete(t *testing.T) {
 				ctx:  context.Background(),
 				item: model.Ketchup{Repository: model.Repository{ID: 0}},
 			},
-			rendererModel.ErrInternalError,
+			httpModel.ErrInternalError,
 		},
 		{
 			"check error",
@@ -428,7 +428,7 @@ func TestDelete(t *testing.T) {
 				ctx:  context.Background(),
 				item: model.Ketchup{Repository: model.Repository{ID: 1}},
 			},
-			rendererModel.ErrInvalid,
+			httpModel.ErrInvalid,
 		},
 		{
 			"delete error",
@@ -436,7 +436,7 @@ func TestDelete(t *testing.T) {
 				ctx:  model.StoreUser(context.Background(), model.User{ID: 1}),
 				item: model.Ketchup{Repository: model.Repository{ID: 3}},
 			},
-			rendererModel.ErrInternalError,
+			httpModel.ErrInternalError,
 		},
 		{
 			"end atomic error",

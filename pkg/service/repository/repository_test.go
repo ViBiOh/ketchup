@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	rendererModel "github.com/ViBiOh/httputils/v3/pkg/renderer/model"
+	httpModel "github.com/ViBiOh/httputils/v3/pkg/model"
 	"github.com/ViBiOh/ketchup/pkg/github/githubtest"
 	"github.com/ViBiOh/ketchup/pkg/model"
 )
@@ -134,7 +134,7 @@ func TestList(t *testing.T) {
 			},
 			nil,
 			0,
-			rendererModel.ErrInternalError,
+			httpModel.ErrInternalError,
 		},
 	}
 
@@ -188,7 +188,7 @@ func TestSuggest(t *testing.T) {
 				ctx: context.TODO(),
 			},
 			nil,
-			rendererModel.ErrInternalError,
+			httpModel.ErrInternalError,
 		},
 	}
 
@@ -231,7 +231,7 @@ func TestGetOrCreate(t *testing.T) {
 				name: "error",
 			},
 			model.NoneRepository,
-			rendererModel.ErrInternalError,
+			httpModel.ErrInternalError,
 		},
 		{
 			"exist",
@@ -291,7 +291,7 @@ func TestCreate(t *testing.T) {
 				item: model.Repository{ID: 1},
 			},
 			model.NoneRepository,
-			rendererModel.ErrInvalid,
+			httpModel.ErrInvalid,
 		},
 		{
 			"release error",
@@ -300,7 +300,7 @@ func TestCreate(t *testing.T) {
 				item: model.Repository{Name: "invalid"},
 			},
 			model.NoneRepository,
-			rendererModel.ErrNotFound,
+			httpModel.ErrNotFound,
 		},
 		{
 			"create error",
@@ -309,7 +309,7 @@ func TestCreate(t *testing.T) {
 				item: model.Repository{Name: "vibioh"},
 			},
 			model.Repository{Name: "vibioh", Version: "1.0.0"},
-			rendererModel.ErrInternalError,
+			httpModel.ErrInternalError,
 		},
 		{
 			"success",
@@ -366,7 +366,7 @@ func TestUpdate(t *testing.T) {
 				ctx:  context.Background(),
 				item: model.Repository{ID: 0},
 			},
-			rendererModel.ErrInternalError,
+			httpModel.ErrInternalError,
 		},
 		{
 			"invalid check",
@@ -374,7 +374,7 @@ func TestUpdate(t *testing.T) {
 				ctx:  context.Background(),
 				item: model.Repository{ID: 1},
 			},
-			rendererModel.ErrInvalid,
+			httpModel.ErrInvalid,
 		},
 		{
 			"update error",
@@ -382,7 +382,7 @@ func TestUpdate(t *testing.T) {
 				ctx:  context.Background(),
 				item: model.Repository{ID: 1, Version: "1.2.3"},
 			},
-			rendererModel.ErrInternalError,
+			httpModel.ErrInternalError,
 		},
 		{
 			"end atomic error",
@@ -434,7 +434,7 @@ func TestClean(t *testing.T) {
 			args{
 				ctx: context.Background(),
 			},
-			rendererModel.ErrInternalError,
+			httpModel.ErrInternalError,
 		},
 		{
 			"success",

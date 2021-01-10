@@ -8,7 +8,7 @@ import (
 	"testing"
 
 	authModel "github.com/ViBiOh/auth/v2/pkg/model"
-	rendererModel "github.com/ViBiOh/httputils/v3/pkg/renderer/model"
+	httpModel "github.com/ViBiOh/httputils/v3/pkg/model"
 	"github.com/ViBiOh/ketchup/pkg/model"
 )
 
@@ -184,7 +184,7 @@ func TestCreate(t *testing.T) {
 				},
 			},
 			model.NoneUser,
-			rendererModel.ErrInvalid,
+			httpModel.ErrInvalid,
 		},
 		{
 			"invalid auth",
@@ -198,7 +198,7 @@ func TestCreate(t *testing.T) {
 				},
 			},
 			model.NoneUser,
-			rendererModel.ErrInvalid,
+			httpModel.ErrInvalid,
 		},
 		{
 			"start atomic error",
@@ -226,7 +226,7 @@ func TestCreate(t *testing.T) {
 				},
 			},
 			model.NoneUser,
-			rendererModel.ErrInternalError,
+			httpModel.ErrInternalError,
 		},
 		{
 			"user create error",
@@ -240,7 +240,7 @@ func TestCreate(t *testing.T) {
 				},
 			},
 			model.NoneUser,
-			rendererModel.ErrInternalError,
+			httpModel.ErrInternalError,
 		},
 		{
 			"end atomic error",

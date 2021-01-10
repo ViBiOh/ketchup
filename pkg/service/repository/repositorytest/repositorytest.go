@@ -5,7 +5,7 @@ import (
 	"errors"
 	"regexp"
 
-	rendererModel "github.com/ViBiOh/httputils/v3/pkg/renderer/model"
+	httpModel "github.com/ViBiOh/httputils/v3/pkg/model"
 	"github.com/ViBiOh/ketchup/pkg/model"
 	"github.com/ViBiOh/ketchup/pkg/semver"
 	"github.com/ViBiOh/ketchup/pkg/service/repository"
@@ -68,7 +68,7 @@ func (a app) Suggest(_ context.Context, _ []uint64, _ uint64) ([]model.Repositor
 
 func (a app) GetOrCreate(_ context.Context, name string, repositoryKind model.RepositoryKind) (model.Repository, error) {
 	if len(name) == 0 {
-		return model.NoneRepository, rendererModel.WrapInvalid(errors.New("invalid name"))
+		return model.NoneRepository, httpModel.WrapInvalid(errors.New("invalid name"))
 	}
 
 	return model.Repository{ID: 1, Name: "vibioh/ketchup", Version: "1.2.3"}, nil
