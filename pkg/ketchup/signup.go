@@ -7,19 +7,20 @@ import (
 	"strings"
 
 	authModel "github.com/ViBiOh/auth/v2/pkg/model"
-	rendererModel "github.com/ViBiOh/httputils/v3/pkg/renderer/model"
+	httpModel "github.com/ViBiOh/httputils/v3/pkg/model"
+	"github.com/ViBiOh/httputils/v3/pkg/renderer"
 	"github.com/ViBiOh/ketchup/pkg/model"
 )
 
 func (a app) Signup() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodPost {
-			a.rendererApp.Error(w, rendererModel.WrapMethodNotAllowed(fmt.Errorf("invalid method %s", r.Method)))
+			a.rendererApp.Error(w, httpModel.WrapMethodNotAllowed(fmt.Errorf("invalid method %s", r.Method)))
 			return
 		}
 
 		if err := r.ParseForm(); err != nil {
-			a.rendererApp.Error(w, rendererModel.WrapInvalid(err))
+			a.rendererApp.Error(w, httpModel.WrapInvalid(err))
 			return
 		}
 
@@ -50,6 +51,6 @@ func (a app) Signup() http.Handler {
 
 		a.tokenStore.Delete(token)
 
-		a.rendererApp.Redirect(w, r, fmt.Sprintf("%s/", appPath), rendererModel.NewSuccessMessage("Welcome to ketchup!"))
+		renderer.Redirect(w, r, fmt.Sprintf("%s/", appPath), renderer.NewSuccessMessage("Welcome to ketchup!"))
 	})
 }

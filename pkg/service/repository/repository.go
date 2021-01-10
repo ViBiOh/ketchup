@@ -7,7 +7,7 @@ import (
 	"regexp"
 	"strings"
 
-	rendererModel "github.com/ViBiOh/httputils/v3/pkg/renderer/model"
+	httpModel "github.com/ViBiOh/httputils/v3/pkg/model"
 	"github.com/ViBiOh/ketchup/pkg/github"
 	"github.com/ViBiOh/ketchup/pkg/helm"
 	"github.com/ViBiOh/ketchup/pkg/model"
@@ -48,7 +48,7 @@ func New(repositoryStore repository.App, githubApp github.App, helmApp helm.App)
 func (a app) List(ctx context.Context, page, pageSize uint) ([]model.Repository, uint64, error) {
 	list, total, err := a.repositoryStore.List(ctx, page, pageSize)
 	if err != nil {
-		return nil, 0, rendererModel.WrapInternal(fmt.Errorf("unable to list: %s", err))
+		return nil, 0, httpModel.WrapInternal(fmt.Errorf("unable to list: %s", err))
 	}
 
 	return list, total, nil
@@ -57,7 +57,7 @@ func (a app) List(ctx context.Context, page, pageSize uint) ([]model.Repository,
 func (a app) Suggest(ctx context.Context, ignoreIds []uint64, count uint64) ([]model.Repository, error) {
 	list, err := a.repositoryStore.Suggest(ctx, ignoreIds, count)
 	if err != nil {
-		return nil, rendererModel.WrapInternal(fmt.Errorf("unable to suggest: %s", err))
+		return nil, httpModel.WrapInternal(fmt.Errorf("unable to suggest: %s", err))
 	}
 
 	return list, nil
@@ -71,7 +71,7 @@ func (a app) GetOrCreate(ctx context.Context, name string, repositoryKind model.
 
 	repo, err := a.repositoryStore.GetByName(ctx, sanitizedName, repositoryKind)
 	if err != nil {
-		return model.NoneRepository, rendererModel.WrapInternal(err)
+		return model.NoneRepository, httpModel.WrapInternal(err)
 	}
 
 	if repo != model.NoneRepository {
@@ -83,12 +83,12 @@ func (a app) GetOrCreate(ctx context.Context, name string, repositoryKind model.
 
 func (a app) create(ctx context.Context, item model.Repository) (model.Repository, error) {
 	if err := a.check(ctx, model.NoneRepository, item); err != nil {
-		return model.NoneRepository, rendererModel.WrapInvalid(err)
+		return model.NoneRepository, httpModel.WrapInvalid(err)
 	}
 
 	version, err := a.LatestVersion(item)
 	if err != nil {
-		return model.NoneRepository, rendererModel.WrapNotFound(fmt.Errorf("no release found for %s: %s", item.Name, err))
+		return model.NoneRepository, httpModel.WrapNotFound(fmt.Errorf("no release found for %s: %s", item.Name, err))
 	}
 
 	item.Version = version.Name
@@ -96,7 +96,7 @@ func (a app) create(ctx context.Context, item model.Repository) (model.Repositor
 	err = a.repositoryStore.DoAtomic(ctx, func(ctx context.Context) error {
 		id, err := a.repositoryStore.Create(ctx, item)
 		if err != nil {
-			return rendererModel.WrapInternal(fmt.Errorf("unable to create: %s", err))
+			return httpModel.WrapInternal(fmt.Errorf("unable to create: %s", err))
 		}
 
 		item.ID = id
@@ -110,7 +110,7 @@ func (a app) Update(ctx context.Context, item model.Repository) error {
 	return a.repositoryStore.DoAtomic(ctx, func(ctx context.Context) error {
 		old, err := a.repositoryStore.Get(ctx, item.ID, true)
 		if err != nil {
-			return rendererModel.WrapInternal(fmt.Errorf("unable to fetch: %s", err))
+			return httpModel.WrapInternal(fmt.Errorf("unable to fetch: %s", err))
 		}
 
 		current := model.Repository{
@@ -120,11 +120,11 @@ func (a app) Update(ctx context.Context, item model.Repository) error {
 		}
 
 		if err := a.check(ctx, old, current); err != nil {
-			return rendererModel.WrapInvalid(err)
+			return httpModel.WrapInvalid(err)
 		}
 
 		if err := a.repositoryStore.Update(ctx, current); err != nil {
-			return rendererModel.WrapInternal(fmt.Errorf("unable to update: %s", err))
+			return httpModel.WrapInternal(fmt.Errorf("unable to update: %s", err))
 		}
 
 		return nil
@@ -134,7 +134,7 @@ func (a app) Update(ctx context.Context, item model.Repository) error {
 func (a app) Clean(ctx context.Context) error {
 	return a.repositoryStore.DoAtomic(ctx, func(ctx context.Context) error {
 		if err := a.repositoryStore.DeleteUnused(ctx); err != nil {
-			return rendererModel.WrapInternal(fmt.Errorf("unable to delete: %s", err))
+			return httpModel.WrapInternal(fmt.Errorf("unable to delete: %s", err))
 		}
 
 		return nil

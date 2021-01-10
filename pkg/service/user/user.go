@@ -9,7 +9,7 @@ import (
 	authModel "github.com/ViBiOh/auth/v2/pkg/model"
 	authService "github.com/ViBiOh/auth/v2/pkg/service"
 	"github.com/ViBiOh/httputils/v3/pkg/logger"
-	rendererModel "github.com/ViBiOh/httputils/v3/pkg/renderer/model"
+	httpModel "github.com/ViBiOh/httputils/v3/pkg/model"
 	"github.com/ViBiOh/ketchup/pkg/model"
 	"github.com/ViBiOh/ketchup/pkg/service"
 	"github.com/ViBiOh/ketchup/pkg/store/user"
@@ -54,11 +54,11 @@ func (a app) StoreInContext(ctx context.Context) context.Context {
 
 func (a app) Create(ctx context.Context, item model.User) (model.User, error) {
 	if err := a.check(ctx, model.NoneUser, item); err != nil {
-		return model.NoneUser, rendererModel.WrapInvalid(err)
+		return model.NoneUser, httpModel.WrapInvalid(err)
 	}
 
 	if err := a.authService.Check(ctx, authModel.NoneUser, item.Login); err != nil {
-		return model.NoneUser, rendererModel.WrapInvalid(err)
+		return model.NoneUser, httpModel.WrapInvalid(err)
 	}
 
 	var output model.User
@@ -66,14 +66,14 @@ func (a app) Create(ctx context.Context, item model.User) (model.User, error) {
 	err := a.userStore.DoAtomic(ctx, func(ctx context.Context) error {
 		loginUser, err := a.authService.Create(ctx, item.Login)
 		if err != nil {
-			return rendererModel.WrapInternal(fmt.Errorf("unable to create login: %s", err))
+			return httpModel.WrapInternal(fmt.Errorf("unable to create login: %s", err))
 		}
 
 		item.Login = loginUser
 
 		id, err := a.userStore.Create(ctx, item)
 		if err != nil {
-			return rendererModel.WrapInternal(fmt.Errorf("unable to create: %s", err))
+			return httpModel.WrapInternal(fmt.Errorf("unable to create: %s", err))
 		}
 
 		item.ID = id
