@@ -12,8 +12,8 @@ github.com/ViBiOh/httputils/v3 v3.35.1 h1:CJ3BcpYzxlI2MoxJbUwqzBXTe7BHXoAFkFDwCO
 github.com/ViBiOh/httputils/v3 v3.35.1/go.mod h1:l4sdVJfRu99dY7rNJfMinJHYb0pJZU9FEz7C83dX6gE=
 github.com/ViBiOh/httputils/v3 v3.36.4 h1:ddehKRmFWe0x7rjVAVEiG/E9hszEQEe4K7ssdMjht6Q=
 github.com/ViBiOh/httputils/v3 v3.36.4/go.mod h1:l4sdVJfRu99dY7rNJfMinJHYb0pJZU9FEz7C83dX6gE=
-github.com/ViBiOh/mailer v1.11.1 h1:J1+c2tD8lx+aTNEu/orooee4rigfo1qvxu6MMeaCjqE=
-github.com/ViBiOh/mailer v1.11.1/go.mod h1:D+VW012tqsf8RKLGDRMJ9BOWvzQYFSCg8amsh3ce1rk=
+github.com/ViBiOh/mailer v1.11.2 h1:HabPbaJuKNLjRz7CV49Ks+0eCE333PyqfbxZRa6z1Bs=
+github.com/ViBiOh/mailer v1.11.2/go.mod h1:D+VW012tqsf8RKLGDRMJ9BOWvzQYFSCg8amsh3ce1rk=
 github.com/VividCortex/gohistogram v1.0.0/go.mod h1:Pf5mBqqDxYaXu3hDrrU+w6nw50o/4+TcAqDqk/vUH7g=
 github.com/afex/hystrix-go v0.0.0-20180502004556-fa1af6a1f4f5/go.mod h1:SkGFH1ia65gfNATL8TAiHDNxPzPdmEL5uirI2Uyuz6c=
 github.com/alecthomas/template v0.0.0-20160405071501-a0175ee3bccc/go.mod h1:LOuyumcjzFXgccqObfd/Ljyb9UuFJ6TxHnclSeseNhc=
