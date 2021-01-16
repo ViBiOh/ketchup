@@ -9,13 +9,13 @@
         <p class="padding no-margin flex">
           <span class="flex-grow center">
             <label for="create-kind-github" class="block">
-              <img class="icon icon-large clickable" src="/svg/github?fill=silver" alt="Github icon">
+              <img class="icon icon-large clickable" src="/svg/github?fill=whitesmoke" alt="Github icon">
             </label>
             <input id="create-kind-github" type="radio" name="kind" value="github" checked>
           </span>
           <span class="flex-grow center">
             <label for="create-kind-helm" class="block">
-              <img class="icon icon-large clickable" src="/svg/helm?fill=silver" alt="Helm icon">
+              <img class="icon icon-large clickable" src="/svg/helm?fill=whitesmoke" alt="Helm icon">
             </label>
             <input id="create-kind-helm" type="radio" name="kind" value="helm">
           </span>
@@ -183,7 +183,7 @@
         <h2 class="header small ellipsis">{{ .Repository.Name }}</h2>
 
         <div>
-          <img class="icon" src="/svg/{{ .Repository.Kind.String }}?fill=silver" alt="{{ .Repository.Kind.String }} icon">
+          <img class="icon" src="/svg/{{ .Repository.Kind.String }}?fill=whitesmoke" alt="{{ .Repository.Kind.String }} icon">
         </div>
 
         {{ if .Semver }}
@@ -207,7 +207,7 @@
         <div>
           {{ if ne .Version .Repository.Version }}
             <a href="{{ .Repository.CompareURL .Version }}" class="button button-icon" title="Compare">
-              <img class="icon" src="/svg/eyes?fill=silver" alt="Compare icon">
+              <img class="icon" src="/svg/eyes?fill=whitesmoke" alt="Compare icon">
             </a>
 
             <form method="POST" action="/app/ketchups/{{ .Repository.ID }}" class="inline">
@@ -215,16 +215,16 @@
               <input type="hidden" name="version" value="{{ .Repository.Version }}">
 
               <button type="submit" class="button button-icon" title="Update to latest">
-                <img class="icon" src="/svg/circle-up?fill=silver" alt="Update icon">
+                <img class="icon" src="/svg/circle-up?fill=whitesmoke" alt="Update icon">
               </button>
             </form>
           {{ end }}
 
           <a href="#edit-modal-{{ .Repository.ID }}" class="button button-icon" title="Edit">
-            <img class="icon" src="/svg/edit?fill=silver" alt="Edit icon">
+            <img class="icon" src="/svg/edit?fill=whitesmoke" alt="Edit icon">
           </a>
           <a href="#delete-modal-{{ .Repository.ID }}" class="button button-icon" title="Delete">
-            <img class="icon" src="/svg/times?fill=silver" alt="Delete icon">
+            <img class="icon" src="/svg/times?fill=whitesmoke" alt="Delete icon">
           </a>
         </div>
       </div>
@@ -247,7 +247,7 @@
             <input type="hidden" name="version" value="{{ .Version }}">
 
             <button type="submit" class="button button-icon" title="Add suggestion">
-              <img class="icon" src="/svg/add?fill=silver" alt="Add icon">
+              <img class="icon" src="/svg/add?fill=whitesmoke" alt="Add icon">
               Add suggestion
             </a>
           </form>
