@@ -6,7 +6,7 @@ require (
 	github.com/DATA-DOG/go-sqlmock v1.5.0
 	github.com/ViBiOh/auth/v2 v2.6.4
 	github.com/ViBiOh/httputils/v3 v3.36.5
-	github.com/ViBiOh/mailer v1.11.2
+	github.com/ViBiOh/mailer v1.12.0
 	github.com/lib/pq v1.9.0
 	gopkg.in/yaml.v2 v2.4.0
 )
