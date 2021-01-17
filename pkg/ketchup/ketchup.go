@@ -27,7 +27,7 @@ var (
 
 // App of package
 type App interface {
-	Start()
+	Start(<-chan struct{})
 	Handler() http.Handler
 	Signup() http.Handler
 	PublicTemplateFunc(*http.Request) (string, int, map[string]interface{}, error)
@@ -57,10 +57,10 @@ func New(rendererApp renderer.App, ketchupService ketchup.App, userService user.
 	}
 }
 
-func (a app) Start() {
-	cron.New().Each(time.Hour).Start(a.tokenStore.Clean, func(err error) {
+func (a app) Start(done <-chan struct{}) {
+	cron.New().Each(time.Hour).OnError(func(err error) {
 		logger.Error("error while running token store cleanup: %s", err)
-	})
+	}).Start(a.tokenStore.Clean, done)
 }
 
 // Handler for request. Should be use with net/http

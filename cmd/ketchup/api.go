@@ -106,8 +106,10 @@ func main() {
 		publicHandler.ServeHTTP(w, r)
 	})
 
-	go schedulerApp.Start()
-	go ketchupApp.Start()
+	server := httputils.New(serverConfig)
 
-	httputils.New(serverConfig).ListenAndServe(handler, []model.Pinger{ketchupDb.Ping}, prometheus.New(prometheusConfig).Middleware, owasp.New(owaspConfig).Middleware, cors.New(corsConfig).Middleware)
+	go schedulerApp.Start(server.GetDone())
+	go ketchupApp.Start(server.GetDone())
+
+	server.ListenAndServe(handler, []model.Pinger{ketchupDb.Ping}, prometheus.New(prometheusConfig).Middleware, owasp.New(owaspConfig).Middleware, cors.New(corsConfig).Middleware)
 }
