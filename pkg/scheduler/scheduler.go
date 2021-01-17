@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"sort"
 	"strings"
+	"syscall"
 	"time"
 
 	authModel "github.com/ViBiOh/auth/v2/pkg/model"
@@ -26,7 +27,7 @@ var (
 
 // App of package
 type App interface {
-	Start()
+	Start(<-chan struct{})
 }
 
 // Config of package
@@ -68,10 +69,10 @@ func New(config Config, repositoryService repository.App, ketchupService ketchup
 	}
 }
 
-func (a app) Start() {
-	cron.New().At(a.hour).In(a.timezone).Days().Start(a.ketchupNotify, func(err error) {
+func (a app) Start(done <-chan struct{}) {
+	cron.New().At(a.hour).In(a.timezone).Days().OnError(func(err error) {
 		logger.Error("error while running ketchup notify: %s", err)
-	})
+	}).OnSignal(syscall.SIGUSR1).Start(a.ketchupNotify, done)
 }
 
 func (a app) ketchupNotify(_ time.Time) error {
