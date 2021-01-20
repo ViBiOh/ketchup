@@ -12,8 +12,6 @@ github.com/ViBiOh/httputils/v3 v3.36.5 h1:SdhmLyZ0GGTyG+gpqJp3kl3bGz4Ci/q6snE67O
 github.com/ViBiOh/httputils/v3 v3.36.5/go.mod h1:l4sdVJfRu99dY7rNJfMinJHYb0pJZU9FEz7C83dX6gE=
 github.com/ViBiOh/httputils/v3 v3.37.0 h1:HBtHb3ARB0P/Rk0Jri4W5rNiTxNwDD7PhJkaNX+wI/I=
 github.com/ViBiOh/httputils/v3 v3.37.0/go.mod h1:l4sdVJfRu99dY7rNJfMinJHYb0pJZU9FEz7C83dX6gE=
-github.com/ViBiOh/mailer v1.12.0 h1:3UEuMIRdKMnnfEMykYwDgHKMPqdwOEtipZ/8zsFreE0=
-github.com/ViBiOh/mailer v1.12.0/go.mod h1:OSSN8UMKQhjkZmp894MT+XPRmT2mQP8YcRgj8RwwwuI=
 github.com/ViBiOh/mailer v1.12.2 h1:biEuyHC2388kSOAKQL9UMHESYjfehLg6zr3VZqwp19Q=
 github.com/ViBiOh/mailer v1.12.2/go.mod h1:OSSN8UMKQhjkZmp894MT+XPRmT2mQP8YcRgj8RwwwuI=
 github.com/VividCortex/gohistogram v1.0.0/go.mod h1:Pf5mBqqDxYaXu3hDrrU+w6nw50o/4+TcAqDqk/vUH7g=
@@ -370,6 +368,8 @@ golang.org/x/sys v0.0.0-20200625212154-ddb9806d33ae/go.mod h1:h1NjWce9XRLGQEsW7w
 golang.org/x/sys v0.0.0-20200724161237-0e2f3a69832c/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
 golang.org/x/sys v0.0.0-20201214210602-f9fddec55a1e h1:AyodaIpKjppX+cBfTASF2E1US3H2JFBj920Ot3rtDjs=
 golang.org/x/sys v0.0.0-20201214210602-f9fddec55a1e/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
+golang.org/x/sys v0.0.0-20210119212857-b64e53b001e4 h1:myAQVi0cGEoqQVR5POX+8RR2mrocKqNN1hmeMqhX27k=
+golang.org/x/sys v0.0.0-20210119212857-b64e53b001e4/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
 golang.org/x/term v0.0.0-20201117132131-f5c789dd3221/go.mod h1:Nr5EML6q2oocZ2LXRh80K7BxOlk5/8JxuGnuhpl+muw=
 golang.org/x/text v0.3.0/go.mod h1:NqM8EUOU14njkJ3fqMW+pc6Ldnwhi/IjpwHt7yyuwOQ=
 golang.org/x/text v0.3.2/go.mod h1:bEr9sfX3Q8Zfm5fL9x+3itogRgK3+ptLWKqgva+5dAk=

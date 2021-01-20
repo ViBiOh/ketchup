@@ -126,7 +126,7 @@ func (a app) getNewReleases(ctx context.Context) ([]model.Release, error) {
 			}
 
 			repositoryVersion, repositoryErr := semver.Parse(repo.Version)
-			if repositoryErr == nil && repositoryVersion.IsGreater(latestVersion) {
+			if repositoryErr == nil && repositoryVersion.Suffix == 0 && repositoryVersion.IsGreater(latestVersion) {
 				continue
 			}
 

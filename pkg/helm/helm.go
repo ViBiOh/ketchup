@@ -36,36 +36,35 @@ func New() App {
 }
 
 func (a app) LatestVersion(repository string) (semver.Version, error) {
-	var version semver.Version
-
 	parts := strings.SplitN(repository, "@", 2)
 	if len(parts) != 2 {
-		return version, errors.New("invalid name for helm chart")
+		return semver.NoneVersion, errors.New("invalid name for helm chart")
 	}
 
 	resp, err := request.New().Get(fmt.Sprintf("%s/%s", parts[1], indexName)).Send(context.Background(), nil)
 	if err != nil {
-		return version, fmt.Errorf("unable to request repository: %s", err)
+		return semver.NoneVersion, fmt.Errorf("unable to request repository: %s", err)
 	}
 
 	payload, err := request.ReadBodyResponse(resp)
 	if err != nil {
-		return version, fmt.Errorf("unable to read body `%s`: %s", payload, err)
+		return semver.NoneVersion, fmt.Errorf("unable to read body `%s`: %s", payload, err)
 	}
 
 	var index charts
 	if err := yaml.Unmarshal(payload, &index); err != nil {
-		return version, fmt.Errorf("unable to parse index: %s", err)
+		return semver.NoneVersion, fmt.Errorf("unable to parse index: %s", err)
 	}
 
 	charts, ok := index.Entries[parts[0]]
 	if !ok {
-		return version, fmt.Errorf("no chart `%s` in repository", parts[0])
+		return semver.NoneVersion, fmt.Errorf("no chart `%s` in repository", parts[0])
 	}
 
+	var version semver.Version
 	for _, chart := range charts {
 		chartVersion, err := semver.Parse(chart.Version)
-		if err == nil && chartVersion.IsGreater(version) {
+		if err == nil && chartVersion.Suffix == 0 && chartVersion.IsGreater(version) {
 			version = chartVersion
 		}
 	}
