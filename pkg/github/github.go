@@ -64,7 +64,7 @@ func (a app) newClient() *request.Request {
 
 func (a app) LatestVersion(repository string) (semver.Version, error) {
 	page := 1
-	var version semver.Version
+	version := semver.NoneVersion
 
 	req := a.newClient()
 	for {
@@ -85,7 +85,7 @@ func (a app) LatestVersion(repository string) (semver.Version, error) {
 
 		for _, tag := range tags {
 			tagVersion, err := semver.Parse(tag.Name)
-			if err == nil && tagVersion.IsGreater(version) {
+			if err == nil && tagVersion.Suffix == 0 && tagVersion.IsGreater(version) {
 				version = tagVersion
 			}
 		}

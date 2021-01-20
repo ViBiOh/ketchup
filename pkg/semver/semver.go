@@ -7,34 +7,51 @@ import (
 	"strings"
 )
 
+// NonFinalVersion is a detail for temporary version
+type NonFinalVersion int
+
+// Version describe a semantic version
+type Version struct {
+	Name   string          `json:"name"`
+	Major  uint64          `json:"major"`
+	Minor  uint64          `json:"minor"`
+	Patch  uint64          `json:"patch"`
+	Suffix NonFinalVersion `json:"-"`
+}
+
+const (
+	alpha NonFinalVersion = iota + 1
+	beta
+	rc
+	canary
+	test
+)
+
 var (
-	semverMatcher       = regexp.MustCompile(`(?i)^[a-zA-Z]*([0-9]+)\.([0-9]+)(?:\.([0-9]+))?(?:$|(?:[+-](.*)))`)
-	ignoredSemverDetail = []string{"rc", "beta", "test", "canary", "alpha"}
+	semverMatcher = regexp.MustCompile(`(?i)^[a-zA-Z]*([0-9]+)\.([0-9]+)(?:\.([0-9]+))?(?:$|(?:[+-](.*)))`)
+
+	nonFinalVersions = []string{"alpha", "beta", "rc", "canary", "test"}
 
 	// NoneVersion is the empty semver
 	NoneVersion = Version{}
 )
 
-// Version describe a semantic version
-type Version struct {
-	Name  string `json:"name"`
-	Major uint64 `json:"major"`
-	Minor uint64 `json:"minor"`
-	Patch uint64 `json:"patch"`
-}
-
 // IsGreater check if current version is greater than other
 func (s Version) IsGreater(other Version) bool {
-	if s.Major > other.Major {
-		return true
+	if s.Major != other.Major {
+		return s.Major > other.Major
 	}
 
-	if s.Major == other.Major && s.Minor > other.Minor {
-		return true
+	if s.Minor != other.Minor {
+		return s.Minor > other.Minor
 	}
 
-	if s.Major == other.Major && s.Minor == other.Minor && s.Patch > other.Patch {
-		return true
+	if s.Patch != other.Patch {
+		return s.Patch > other.Patch
+	}
+
+	if s.Suffix != other.Suffix {
+		return s.Suffix > other.Suffix
 	}
 
 	return false
@@ -54,6 +71,10 @@ func (s Version) Compare(other Version) string {
 		return "Patch"
 	}
 
+	if s.Suffix != other.Suffix {
+		return "Suffix"
+	}
+
 	return ""
 }
 
@@ -62,12 +83,6 @@ func Parse(version string) (Version, error) {
 	matches := semverMatcher.FindStringSubmatch(version)
 	if len(matches) == 0 {
 		return NoneVersion, fmt.Errorf("unable to parse version: %s", version)
-	}
-
-	for _, ignoredDetail := range ignoredSemverDetail {
-		if strings.Contains(matches[4], ignoredDetail) {
-			return NoneVersion, fmt.Errorf("ignoring %s version", ignoredDetail)
-		}
 	}
 
 	semver := Version{
@@ -91,6 +106,14 @@ func Parse(version string) (Version, error) {
 		semver.Patch, err = strconv.ParseUint(matches[3], 10, 64)
 		if err != nil {
 			return NoneVersion, fmt.Errorf("version patch is not numeric")
+		}
+	}
+
+	if len(matches[4]) != 0 {
+		for index, nonFinalVersion := range nonFinalVersions {
+			if strings.Contains(matches[4], nonFinalVersion) {
+				semver.Suffix = NonFinalVersion(index + 1)
+			}
 		}
 	}
 

@@ -19,57 +19,65 @@ func TestIsGreater(t *testing.T) {
 	}{
 		{
 			"major",
-			Version{"", 2, 0, 0},
+			Version{"", 2, 0, 0, 0},
 			args{
-				other: Version{"", 1, 0, 0},
+				other: Version{"", 1, 0, 0, 0},
 			},
 			true,
 		},
 		{
 			"minor",
-			Version{"", 1, 1, 0},
+			Version{"", 1, 1, 0, 0},
 			args{
-				other: Version{"", 1, 0, 0},
+				other: Version{"", 1, 0, 0, 0},
+			},
+			true,
+		},
+		{
+			"patch",
+			Version{"", 1, 1, 1, 0},
+			args{
+				other: Version{"", 1, 1, 0, 0},
 			},
 			true,
 		},
 		{
 			"minor with major greater",
-			Version{"", 1, 1, 0},
+			Version{"", 2, 0, 0, 0},
 			args{
-				other: Version{"", 2, 0, 0},
-			},
-			false,
-		},
-		{
-			"patch",
-			Version{"", 1, 0, 1},
-			args{
-				other: Version{"", 1, 0, 0},
+				other: Version{"", 1, 2, 0, 0},
 			},
 			true,
 		},
 		{
 			"patch with major greater",
-			Version{"", 1, 0, 1},
+			Version{"", 2, 0, 1, 0},
 			args{
-				other: Version{"", 2, 0, 0},
+				other: Version{"", 1, 0, 2, 0},
 			},
-			false,
+			true,
 		},
 		{
 			"patch with minor greater",
-			Version{"", 1, 0, 1},
+			Version{"", 1, 2, 1, 0},
 			args{
-				other: Version{"", 1, 1, 0},
+				other: Version{"", 1, 1, 2, 0},
 			},
-			false,
+			true,
+		},
+		{
+			"patch with suffix greater",
+			Version{"", 1, 1, 1, canary},
+			args{
+				other: Version{"", 1, 1, 1, beta},
+			},
+			true,
 		},
 		{
 			"equal",
-			Version{"", 1, 0, 0},
+			Version{"", 1, 0, 0, 0},
 			args{
-				other: Version{"", 1, 0, 0},
+				other: Version{"", 1, 0, 0, 0},
 			},
 			false,
 		},
@@ -97,33 +105,41 @@ func TestCompare(t *testing.T) {
 	}{
 		{
 			"major",
-			Version{"", 1, 0, 0},
+			Version{"", 1, 0, 0, 0},
 			args{
-				other: Version{"", 0, 0, 0},
+				other: Version{"", 0, 0, 0, 0},
 			},
 			"Major",
 		},
 		{
 			"minor",
-			Version{"", 1, 0, 0},
+			Version{"", 1, 0, 0, 0},
 			args{
-				other: Version{"", 1, 2, 0},
+				other: Version{"", 1, 2, 0, 0},
 			},
 			"Minor",
 		},
 		{
 			"patch",
-			Version{"", 1, 0, 1},
+			Version{"", 1, 0, 1, 0},
 			args{
-				other: Version{"", 1, 0, 0},
+				other: Version{"", 1, 0, 0, 0},
 			},
 			"Patch",
 		},
 		{
-			"equal",
-			Version{"", 1, 0, 0},
+			"suffix",
+			Version{"", 1, 0, 1, alpha},
 			args{
-				other: Version{"", 1, 0, 0},
+				other: Version{"", 1, 0, 1, beta},
+			},
+			"Suffix",
+		},
+		{
+			"equal",
+			Version{"", 1, 0, 0, 0},
+			args{
+				other: Version{"", 1, 0, 0, 0},
 			},
 			"",
 		},
@@ -166,43 +182,43 @@ func TestParse(t *testing.T) {
 			errors.New("unable to parse version"),
 		},
 		{
-			"ignore rc or beta",
+			"flag rc version",
 			args{
 				version: "v2.27.0-rc1",
 			},
-			NoneVersion,
-			errors.New("ignoring rc version"),
+			Version{"v2.27.0-rc1", 2, 27, 0, rc},
+			nil,
 		},
 		{
 			"ignore test",
 			args{
 				version: "1.26.0-test",
 			},
-			NoneVersion,
-			errors.New("ignoring test version"),
+			Version{"1.26.0-test", 1, 26, 0, test},
+			nil,
 		},
 		{
 			"ignore canary",
 			args{
 				version: "v10.0.4-canary.1",
 			},
-			NoneVersion,
-			errors.New("ignoring canary version"),
+			Version{"v10.0.4-canary.1", 10, 0, 4, canary},
+			nil,
 		},
 		{
 			"ignore alpha",
 			args{
 				version: "v0.14.0-alpha20200910",
 			},
-			NoneVersion,
-			errors.New("ignoring alpha version"),
+			Version{"v0.14.0-alpha20200910", 0, 14, 0, alpha},
+			nil,
 		},
 		{
 			"major and minor only",
 			args{
 				version: "v1.25+xyz",
 			},
-			Version{"v1.25+xyz", 1, 25, 0},
+			Version{"v1.25+xyz", 1, 25, 0, 0},
 			nil,
 		},
 		{
@@ -210,7 +226,7 @@ func TestParse(t *testing.T) {
 			args{
 				version: "v1.2.3",
 			},
-			Version{"v1.2.3", 1, 2, 3},
+			Version{"v1.2.3", 1, 2, 3, 0},
 			nil,
 		},
 		{
@@ -218,7 +234,7 @@ func TestParse(t *testing.T) {
 			args{
 				version: "v1.2.3+abcdef123456",
 			},
-			Version{"v1.2.3+abcdef123456", 1, 2, 3},
+			Version{"v1.2.3+abcdef123456", 1, 2, 3, 0},
 			nil,
 		},
 	}
