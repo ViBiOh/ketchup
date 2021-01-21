@@ -23,7 +23,7 @@ func (tks app) List(ctx context.Context, _, _ uint) ([]model.Ketchup, uint64, er
 	}
 
 	return []model.Ketchup{
-		{Version: "1.0.0", Repository: model.Repository{ID: 1, Name: "vibioh/ketchup", Version: "1.0.0"}, User: model.User{ID: 1, Email: "nobody@localhost"}},
+		{Current: "1.0.0", Repository: model.Repository{ID: 1, Name: "vibioh/ketchup", Version: "1.0.0"}, User: model.User{ID: 1, Email: "nobody@localhost"}},
 	}, 0, nil
 }
 
@@ -51,6 +51,10 @@ func (tks app) ListForRepositories(ctx context.Context, repositories []model.Rep
 		}, nil
 	}
 
+	return nil, nil
+}
+
+func (tks app) ListKindsByRepositoryID(ctx context.Context, repository model.Repository) ([]string, error) {
 	return nil, nil
 }
 

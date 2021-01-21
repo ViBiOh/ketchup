@@ -53,7 +53,9 @@ CREATE UNIQUE INDEX repository_repository ON ketchup.repository(name);
 CREATE TABLE ketchup.ketchup (
   user_id BIGINT NOT NULL REFERENCES ketchup.user(id),
   repository_id BIGINT NOT NULL REFERENCES ketchup.repository(id),
-  version TEXT NOT NULL,
+  kind TEXT NOT NULL DEFAULT 'release',
+  upstream TEXT NOT NULL,
+  current TEXT NOT NULL,
   creation_date TIMESTAMP WITH TIME ZONE DEFAULT now()
 );
 

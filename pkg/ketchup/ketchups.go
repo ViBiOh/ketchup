@@ -46,7 +46,8 @@ func (a app) handleCreate(w http.ResponseWriter, r *http.Request) {
 	}
 
 	item := model.Ketchup{
-		Version: r.FormValue("version"),
+		Kind:    "release",
+		Current: r.FormValue("version"),
 		Repository: model.Repository{
 			Name: r.FormValue("repository"),
 			Kind: repositoryKind,
@@ -71,7 +72,7 @@ func (a app) handleUpdate(w http.ResponseWriter, r *http.Request) {
 	}
 
 	item := model.Ketchup{
-		Version: r.FormValue("version"),
+		Current: r.FormValue("version"),
 		Repository: model.Repository{
 			ID: id,
 		},
@@ -83,7 +84,7 @@ func (a app) handleUpdate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	renderer.Redirect(w, r, fmt.Sprintf("%s/", appPath), renderer.NewSuccessMessage(fmt.Sprintf("Updated %s with success!", updated.Version)))
+	renderer.Redirect(w, r, fmt.Sprintf("%s/", appPath), renderer.NewSuccessMessage(fmt.Sprintf("Updated %s with success!", updated.Current)))
 }
 
 func (a app) handleDelete(w http.ResponseWriter, r *http.Request) {

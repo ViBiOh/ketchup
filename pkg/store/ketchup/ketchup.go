@@ -17,8 +17,10 @@ type App interface {
 	List(ctx context.Context, page, pageSize uint) ([]model.Ketchup, uint64, error)
 	ListByRepositoriesID(ctx context.Context, ids []uint64) ([]model.Ketchup, error)
 	GetByRepositoryID(ctx context.Context, id uint64, forUpdate bool) (model.Ketchup, error)
+	ListKindsByRepositoryID(ctx context.Context, id uint64) ([]string, error)
 	Create(ctx context.Context, o model.Ketchup) (uint64, error)
-	Update(ctx context.Context, o model.Ketchup) error
+	UpdateCurrent(ctx context.Context, o model.Ketchup) error
+	UpdateUpstream(ctx context.Context, o model.Ketchup) error
 	Delete(ctx context.Context, o model.Ketchup) error
 }
 
@@ -39,7 +41,9 @@ func (a app) DoAtomic(ctx context.Context, action func(context.Context) error) e
 
 const listQuery = `
 SELECT
-  k.version,
+  k.kind,
+  k.upstream,
+  k.current,
   k.repository_id,
   r.name,
   r.version,
@@ -67,7 +71,7 @@ func (a app) List(ctx context.Context, page, pageSize uint) ([]model.Ketchup, ui
 		}
 		var rawRepositoryKind string
 
-		if err := rows.Scan(&item.Version, &item.Repository.ID, &item.Repository.Name, &item.Repository.Version, &rawRepositoryKind, &totalCount); err != nil {
+		if err := rows.Scan(&item.Kind, &item.Upstream, &item.Current, &item.Repository.ID, &item.Repository.Name, &item.Repository.Version, &rawRepositoryKind, &totalCount); err != nil {
 			return err
 		}
 
@@ -86,7 +90,9 @@ func (a app) List(ctx context.Context, page, pageSize uint) ([]model.Ketchup, ui
 
 const listByRepositoriesIDQuery = `
 SELECT
-  k.version,
+  k.kind,
+  k.upstream,
+  k.current,
   k.repository_id,
   k.user_id,
   u.email
@@ -103,7 +109,7 @@ func (a app) ListByRepositoriesID(ctx context.Context, ids []uint64) ([]model.Ke
 
 	scanner := func(rows *sql.Rows) error {
 		var item model.Ketchup
-		if err := rows.Scan(&item.Version, &item.Repository.ID, &item.User.ID, &item.User.Email); err != nil {
+		if err := rows.Scan(&item.Kind, &item.Upstream, &item.Current, &item.Repository.ID, &item.User.ID, &item.User.Email); err != nil {
 			return err
 		}
 
@@ -116,7 +122,9 @@ func (a app) ListByRepositoriesID(ctx context.Context, ids []uint64) ([]model.Ke
 
 const getQuery = `
 SELECT
-  version,
+  kind,
+  upstream,
+  current,
   repository_id,
   user_id
 FROM
@@ -138,7 +146,7 @@ func (a app) GetByRepositoryID(ctx context.Context, id uint64, forUpdate bool) (
 	}
 
 	scanner := func(row *sql.Row) error {
-		err := row.Scan(&item.Version, &item.Repository.ID, &item.User.ID)
+		err := row.Scan(&item.Kind, &item.Upstream, &item.Current, &item.Repository.ID, &item.User.ID)
 		if errors.Is(err, sql.ErrNoRows) {
 			item = model.NoneKetchup
 			return nil
@@ -150,11 +158,39 @@ func (a app) GetByRepositoryID(ctx context.Context, id uint64, forUpdate bool) (
 	return item, db.Get(ctx, a.db, scanner, query, id, user.ID)
 }
 
+const listKindQuery = `
+SELECT
+  DISTINCT kind
+FROM
+  ketchup.ketchup
+WHERE
+  repository_id = $1
+`
+
+func (a app) ListKindsByRepositoryID(ctx context.Context, id uint64) ([]string, error) {
+	list := make([]string, 0)
+
+	scanner := func(rows *sql.Rows) error {
+		var kind string
+
+		if err := rows.Scan(&kind); err != nil {
+			return err
+		}
+
+		list = append(list, kind)
+		return nil
+	}
+
+	return list, db.List(ctx, a.db, scanner, listKindQuery, id)
+}
+
 const insertQuery = `
 INSERT INTO
   ketchup.ketchup
 (
-  version,
+  kind,
+  upstream,
+  current,
   repository_id,
   user_id
 ) VALUES (
@@ -165,21 +201,36 @@ INSERT INTO
 `
 
 func (a app) Create(ctx context.Context, o model.Ketchup) (uint64, error) {
-	return db.Create(ctx, insertQuery, o.Version, o.Repository.ID, model.ReadUser(ctx).ID)
+	return db.Create(ctx, insertQuery, o.Kind, o.Upstream, o.Current, o.Repository.ID, model.ReadUser(ctx).ID)
 }
 
-const updateQuery = `
+const updateCurrentQuery = `
 UPDATE
   ketchup.ketchup
 SET
-  version = $3
+  kind = $3,
+  current = $4
 WHERE
   repository_id = $1
   AND user_id = $2
 `
 
-func (a app) Update(ctx context.Context, o model.Ketchup) error {
-	return db.Exec(ctx, updateQuery, o.Repository.ID, model.ReadUser(ctx).ID, o.Version)
+func (a app) UpdateCurrent(ctx context.Context, o model.Ketchup) error {
+	return db.Exec(ctx, updateCurrentQuery, o.Repository.ID, model.ReadUser(ctx).ID, o.Kind, o.Current)
+}
+
+const updateUpstreamQuery = `
+UPDATE
+  ketchup.ketchup
+SET
+  upstream = $3
+WHERE
+  repository_id = $1
+  AND user_id = $2
+`
+
+func (a app) UpdateUpstream(ctx context.Context, o model.Ketchup) error {
+	return db.Exec(ctx, updateUpstreamQuery, o.Repository.ID, model.ReadUser(ctx).ID, o.Current)
 }
 
 const deleteQuery = `

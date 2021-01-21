@@ -38,8 +38,8 @@ func (tks testKetchupStore) List(_ context.Context, page, _ uint) ([]model.Ketch
 	}
 
 	return []model.Ketchup{
-		{Version: "1.0.0", Repository: model.Repository{Version: "1.0.2"}},
-		{Version: "1.2.3", Repository: model.Repository{Version: "1.2.3"}},
+		{Current: "1.0.0", Repository: model.Repository{Version: "1.0.2"}},
+		{Current: "1.2.3", Repository: model.Repository{Version: "1.2.3"}},
 	}, 2, nil
 }
 
@@ -49,9 +49,13 @@ func (tks testKetchupStore) ListByRepositoriesID(_ context.Context, ids []uint64
 	}
 
 	return []model.Ketchup{
-		{Version: "1.0.0", Repository: model.Repository{ID: 1, Name: "vibioh/ketchup", Version: "1.0.2"}},
-		{Version: "1.2.3", Repository: model.Repository{ID: 2, Name: "vibioh/viws", Version: "1.2.3"}},
+		{Current: "1.0.0", Repository: model.Repository{ID: 1, Name: "vibioh/ketchup", Version: "1.0.2"}},
+		{Current: "1.2.3", Repository: model.Repository{ID: 2, Name: "vibioh/viws", Version: "1.2.3"}},
 	}, nil
+}
+
+func (tks testKetchupStore) ListKindsByRepositoryID(ctx context.Context, id uint64) ([]string, error) {
+	return nil, nil
 }
 
 func (tks testKetchupStore) GetByRepositoryID(_ context.Context, id uint64, _ bool) (model.Ketchup, error) {
@@ -60,50 +64,54 @@ func (tks testKetchupStore) GetByRepositoryID(_ context.Context, id uint64, _ bo
 	}
 
 	if id == 2 {
-		return model.Ketchup{Version: "1.0.0", Repository: model.Repository{ID: 2, Name: "vibioh/ketchup", Version: "1.2.3"}}, nil
+		return model.Ketchup{Current: "1.0.0", Repository: model.Repository{ID: 2, Name: "vibioh/ketchup", Version: "1.2.3"}}, nil
 	}
 
 	if id == 3 {
-		return model.Ketchup{Version: "0.0.0"}, nil
+		return model.Ketchup{Current: "0.0.0"}, nil
 	}
 
 	if id == 4 {
-		return model.Ketchup{Version: "0"}, nil
+		return model.Ketchup{Current: "0"}, nil
 	}
 
 	return model.NoneKetchup, nil
 }
 
 func (tks testKetchupStore) Create(_ context.Context, o model.Ketchup) (uint64, error) {
-	if o.Version == "0" {
+	if o.Current == "0" {
 		return 0, errors.New("duplicate pk")
 	}
 
-	if o.Version == "0.0.0" {
+	if o.Current == "0.0.0" {
 		return 0, errors.New("invalid version")
 	}
 
 	return 0, nil
 }
 
-func (tks testKetchupStore) Update(_ context.Context, o model.Ketchup) error {
-	if o.Version == "0" {
+func (tks testKetchupStore) UpdateCurrent(_ context.Context, o model.Ketchup) error {
+	if o.Current == "0" {
 		return errors.New("duplicate pk")
 	}
 
-	if o.Version == "0.0.0" {
+	if o.Current == "0.0.0" {
 		return errors.New("invalid version")
 	}
 
 	return nil
 }
 
+func (tks testKetchupStore) UpdateUpstream(_ context.Context, o model.Ketchup) error {
+	return nil
+}
+
 func (tks testKetchupStore) Delete(_ context.Context, o model.Ketchup) error {
-	if o.Version == "0" {
+	if o.Current == "0" {
 		return errors.New("duplicate pk")
 	}
 
-	if o.Version == "0.0.0" {
+	if o.Current == "0.0.0" {
 		return errors.New("invalid version")
 	}
 
@@ -129,8 +137,8 @@ func TestList(t *testing.T) {
 				page: 1,
 			},
 			[]model.Ketchup{
-				{Version: "1.0.0", Semver: "Patch", Repository: model.Repository{Version: "1.0.2"}},
-				{Version: "1.2.3", Repository: model.Repository{Version: "1.2.3"}},
+				{Current: "1.0.0", Semver: "Patch", Repository: model.Repository{Version: "1.0.2"}},
+				{Current: "1.2.3", Repository: model.Repository{Version: "1.2.3"}},
 			},
 			2,
 			nil,
@@ -187,8 +195,8 @@ func TestListForRepositories(t *testing.T) {
 				},
 			},
 			[]model.Ketchup{
-				{Version: "1.0.0", Semver: "Patch", Repository: model.Repository{ID: 1, Name: "vibioh/ketchup", Version: "1.0.2"}},
-				{Version: "1.2.3", Repository: model.Repository{ID: 2, Name: "vibioh/viws", Version: "1.2.3"}},
+				{Current: "1.0.0", Semver: "Patch", Repository: model.Repository{ID: 1, Name: "vibioh/ketchup", Version: "1.0.2"}},
+				{Current: "1.2.3", Repository: model.Repository{ID: 2, Name: "vibioh/viws", Version: "1.2.3"}},
 			},
 			nil,
 		},
@@ -264,7 +272,7 @@ func TestCreate(t *testing.T) {
 			"create error",
 			args{
 				ctx:  model.StoreUser(context.Background(), model.User{ID: 1}),
-				item: model.Ketchup{Version: "0.0.0", Repository: model.Repository{ID: 1, Name: "vibioh/ketchup"}},
+				item: model.Ketchup{Kind: "release", Current: "0.0.0", Repository: model.Repository{ID: 1, Name: "vibioh/ketchup"}},
 			},
 			model.NoneKetchup,
 			httpModel.ErrInternalError,
@@ -273,7 +281,7 @@ func TestCreate(t *testing.T) {
 			"end atomic error",
 			args{
 				ctx:  model.StoreUser(context.Background(), model.User{ID: 1}),
-				item: model.Ketchup{Version: "0", Repository: model.Repository{Name: "vibioh/ketchup"}},
+				item: model.Ketchup{Kind: "release", Current: "0", Repository: model.Repository{Name: "vibioh/ketchup"}},
 			},
 			model.NoneKetchup,
 			errAtomicEnd,
@@ -282,9 +290,9 @@ func TestCreate(t *testing.T) {
 			"success",
 			args{
 				ctx:  model.StoreUser(context.Background(), model.User{ID: 1}),
-				item: model.Ketchup{Version: "1.0.0", Repository: model.Repository{Name: "vibioh/ketchup"}},
+				item: model.Ketchup{Kind: "release", Current: "1.0.0", Repository: model.Repository{Name: "vibioh/ketchup"}},
 			},
-			model.Ketchup{Version: "1.0.0", Repository: model.Repository{ID: 1, Name: "vibioh/ketchup", Version: "1.2.3"}},
+			model.Ketchup{Kind: "release", Current: "1.0.0", Repository: model.Repository{ID: 1, Name: "vibioh/ketchup", Version: "1.2.3"}},
 			nil,
 		},
 	}
@@ -351,7 +359,7 @@ func TestUpdate(t *testing.T) {
 			"update error",
 			args{
 				ctx:  model.StoreUser(context.Background(), model.User{ID: 1}),
-				item: model.Ketchup{Version: "0.0.0", Repository: model.Repository{ID: 2}},
+				item: model.Ketchup{Kind: "release", Current: "0.0.0", Repository: model.Repository{ID: 2}},
 			},
 			model.NoneKetchup,
 			httpModel.ErrInternalError,
@@ -360,7 +368,7 @@ func TestUpdate(t *testing.T) {
 			"end atomic error",
 			args{
 				ctx:  model.StoreUser(context.Background(), model.User{ID: 1}),
-				item: model.Ketchup{Version: "0", Repository: model.Repository{ID: 2}},
+				item: model.Ketchup{Kind: "release", Current: "0", Repository: model.Repository{ID: 2}},
 			},
 			model.NoneKetchup,
 			errAtomicEnd,
@@ -369,9 +377,9 @@ func TestUpdate(t *testing.T) {
 			"success",
 			args{
 				ctx:  model.StoreUser(context.Background(), model.User{ID: 1}),
-				item: model.Ketchup{Version: "1.0.0", Repository: model.Repository{ID: 2}},
+				item: model.Ketchup{Kind: "release", Current: "1.0.0", Repository: model.Repository{ID: 2}},
 			},
-			model.Ketchup{Version: "1.0.0", Repository: model.Repository{ID: 2, Name: "vibioh/ketchup", Version: "1.2.3"}},
+			model.Ketchup{Kind: "release", Current: "1.0.0", Repository: model.Repository{ID: 2, Name: "vibioh/ketchup", Version: "1.2.3"}},
 			nil,
 		},
 	}
@@ -496,7 +504,7 @@ func TestCheck(t *testing.T) {
 			"delete",
 			args{
 				ctx: model.StoreUser(context.Background(), model.User{ID: 1}),
-				old: model.Ketchup{Version: "1.0.0"},
+				old: model.Ketchup{Current: "1.0.0"},
 				new: model.NoneKetchup,
 			},
 			nil,
@@ -505,8 +513,8 @@ func TestCheck(t *testing.T) {
 			"no version",
 			args{
 				ctx: model.StoreUser(context.Background(), model.User{ID: 1}),
-				old: model.Ketchup{Version: "1.0.0"},
-				new: model.Ketchup{Version: "", Repository: model.Repository{ID: 1}},
+				old: model.Ketchup{Current: "1.0.0"},
+				new: model.Ketchup{Current: "", Repository: model.Repository{ID: 1}},
 			},
 			errors.New("version is required"),
 		},
@@ -514,7 +522,7 @@ func TestCheck(t *testing.T) {
 			"create error",
 			args{
 				ctx: model.StoreUser(context.Background(), model.User{ID: 1}),
-				new: model.Ketchup{Version: "1.0.0", Repository: model.Repository{ID: 0}},
+				new: model.Ketchup{Current: "1.0.0", Repository: model.Repository{ID: 0}},
 			},
 			errors.New("unable to check if ketchup already exists"),
 		},
@@ -522,7 +530,7 @@ func TestCheck(t *testing.T) {
 			"create already exists",
 			args{
 				ctx: model.StoreUser(context.Background(), model.User{ID: 1}),
-				new: model.Ketchup{Version: "1.0.0", Repository: model.Repository{ID: 2, Name: "vibioh/ketchup"}},
+				new: model.Ketchup{Current: "1.0.0", Repository: model.Repository{ID: 2, Name: "vibioh/ketchup"}},
 			},
 			errors.New("ketchup for vibioh/ketchup already exists"),
 		},

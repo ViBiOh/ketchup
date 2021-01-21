@@ -18,6 +18,7 @@ import (
 // App of package
 type App interface {
 	List(ctx context.Context, page, pageSize uint) ([]model.Ketchup, uint64, error)
+	ListKindsByRepositoryID(ctx context.Context, repository model.Repository) ([]string, error)
 	ListForRepositories(ctx context.Context, repositories []model.Repository) ([]model.Ketchup, error)
 	Create(ctx context.Context, item model.Ketchup) (model.Ketchup, error)
 	Update(ctx context.Context, item model.Ketchup) (model.Ketchup, error)
@@ -63,6 +64,10 @@ func (a app) ListForRepositories(ctx context.Context, repositories []model.Repos
 	return enrichSemver(list), nil
 }
 
+func (a app) ListKindsByRepositoryID(ctx context.Context, repository model.Repository) ([]string, error) {
+	return a.ketchupStore.ListKindsByRepositoryID(ctx, repository.ID)
+}
+
 func (a app) Create(ctx context.Context, item model.Ketchup) (model.Ketchup, error) {
 	var output model.Ketchup
 
@@ -99,7 +104,8 @@ func (a app) Update(ctx context.Context, item model.Ketchup) (model.Ketchup, err
 		}
 
 		current := model.Ketchup{
-			Version:    item.Version,
+			Kind:       item.Kind,
+			Current:    item.Current,
 			Repository: old.Repository,
 			User:       old.User,
 		}
@@ -108,7 +114,7 @@ func (a app) Update(ctx context.Context, item model.Ketchup) (model.Ketchup, err
 			return httpModel.WrapInvalid(err)
 		}
 
-		if err := a.ketchupStore.Update(ctx, current); err != nil {
+		if err := a.ketchupStore.UpdateCurrent(ctx, current); err != nil {
 			return httpModel.WrapInternal(fmt.Errorf("unable to update: %s", err))
 		}
 
@@ -149,8 +155,12 @@ func (a app) check(ctx context.Context, old, new model.Ketchup) error {
 		return service.ConcatError(output)
 	}
 
-	if len(strings.TrimSpace(new.Version)) == 0 {
-		output = append(output, errors.New("version is required"))
+	if len(strings.TrimSpace(new.Kind)) == 0 {
+		output = append(output, errors.New("ketchup kind is required"))
+	}
+
+	if len(strings.TrimSpace(new.Current)) == 0 {
+		output = append(output, errors.New("current version is required"))
 	}
 
 	if old == model.NoneKetchup {
@@ -170,7 +180,7 @@ func enrichSemver(list []model.Ketchup) []model.Ketchup {
 
 	for index, item := range list {
 		repositoryVersion, repositoryErr := semver.Parse(item.Repository.Version)
-		ketchupVersion, ketchupErr := semver.Parse(item.Version)
+		ketchupVersion, ketchupErr := semver.Parse(item.Current)
 		if repositoryErr == nil && ketchupErr == nil {
 			item.Semver = repositoryVersion.Compare(ketchupVersion)
 		}

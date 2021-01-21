@@ -101,6 +101,29 @@ func (a app) ketchupNotify(_ time.Time) error {
 	return nil
 }
 
+func (a app) notifyUser(ctx context.Context) error {
+	var repositories []model.Repository
+	var err error
+	totalCount := uint64(0)
+
+	for page := uint(1); err == nil && uint64(page*pageSize) <= totalCount; page++ {
+		repositories, totalCount, err = a.repositoryService.List(ctx, page, pageSize)
+		if err != nil {
+			return fmt.Errorf("unable to fetch page %d of repositories: %s", page, err)
+		}
+
+		for _, repo := range repositories {
+			kinds, err := a.ketchupService.ListKindsByRepositoryID(ctx, repo)
+			if err != nil {
+				return fmt.Errorf("unable to list kinds for repository `%s`: %s", repo.Name, err)
+			}
+			fmt.Println(kinds)
+		}
+	}
+
+	return nil
+}
+
 func (a app) getNewReleases(ctx context.Context) ([]model.Release, error) {
 	var newReleases []model.Release
 	count := 0
@@ -175,7 +198,7 @@ func (a app) getKetchupToNotify(ctx context.Context, releases []model.Release) (
 				break
 			}
 
-			if current.Version != release.Version.Name {
+			if current.Current != release.Version.Name {
 				if userToNotify[current.User] != nil {
 					userToNotify[current.User] = append(userToNotify[current.User], release)
 				} else {
