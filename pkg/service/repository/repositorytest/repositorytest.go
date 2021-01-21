@@ -37,17 +37,15 @@ func (a app) List(ctx context.Context, page, _ uint) ([]model.Repository, uint64
 		if page == 1 {
 			return []model.Repository{
 				{
-					ID:      1,
-					Name:    "vibioh/viws",
-					Version: "1.1.0",
+					ID:   1,
+					Name: "vibioh/viws",
 				},
 			}, 2, nil
 		} else if page == 2 {
 			return []model.Repository{
 				{
-					ID:      2,
-					Name:    "vibioh/ketchup",
-					Version: "1.0.0",
+					ID:   2,
+					Name: "vibioh/ketchup",
 				},
 			}, 2, nil
 		}
@@ -55,9 +53,8 @@ func (a app) List(ctx context.Context, page, _ uint) ([]model.Repository, uint64
 
 	return []model.Repository{
 		{
-			ID:      1,
-			Name:    "vibioh/ketchup",
-			Version: "1.0.0",
+			ID:   1,
+			Name: "vibioh/ketchup",
 		},
 	}, 1, nil
 }
@@ -71,11 +68,11 @@ func (a app) GetOrCreate(_ context.Context, name string, repositoryKind model.Re
 		return model.NoneRepository, httpModel.WrapInvalid(errors.New("invalid name"))
 	}
 
-	return model.Repository{ID: 1, Name: "vibioh/ketchup", Version: "1.2.3"}, nil
+	return model.Repository{ID: 1, Name: "vibioh/ketchup"}, nil
 }
 
 func (a app) Update(_ context.Context, item model.Repository) error {
-	if item.Version == "1.0.1" {
+	if item.Name == "1.0.1" {
 		return errors.New("update error")
 	}
 

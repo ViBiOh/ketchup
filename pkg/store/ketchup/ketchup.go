@@ -46,7 +46,6 @@ SELECT
   k.current,
   k.repository_id,
   r.name,
-  r.version,
   r.kind,
   count(1) OVER() AS full_count
 FROM
@@ -71,7 +70,7 @@ func (a app) List(ctx context.Context, page, pageSize uint) ([]model.Ketchup, ui
 		}
 		var rawRepositoryKind string
 
-		if err := rows.Scan(&item.Kind, &item.Upstream, &item.Current, &item.Repository.ID, &item.Repository.Name, &item.Repository.Version, &rawRepositoryKind, &totalCount); err != nil {
+		if err := rows.Scan(&item.Kind, &item.Upstream, &item.Current, &item.Repository.ID, &item.Repository.Name, &rawRepositoryKind, &totalCount); err != nil {
 			return err
 		}
 

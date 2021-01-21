@@ -39,8 +39,8 @@ func (trs testRepositoryStore) List(_ context.Context, page, _ uint) ([]model.Re
 	}
 
 	return []model.Repository{
-		{ID: 1, Name: "vibioh/ketchup", Version: "1.0.0"},
-		{ID: 2, Name: "vibioh/viws", Version: "1.2.3"},
+		{ID: 1, Name: "vibioh/ketchup"},
+		{ID: 2, Name: "vibioh/viws"},
 	}, 2, nil
 }
 
@@ -50,7 +50,7 @@ func (trs testRepositoryStore) Suggest(ctx context.Context, _ []uint64, _ uint64
 	}
 
 	return []model.Repository{
-		{ID: 2, Name: "vibioh/viws", Version: "1.2.3"},
+		{ID: 2, Name: "vibioh/viws"},
 	}, nil
 }
 
@@ -59,7 +59,7 @@ func (trs testRepositoryStore) Get(_ context.Context, id uint64, _ bool) (model.
 		return model.NoneRepository, errors.New("invalid id")
 	}
 
-	return model.Repository{ID: id, Name: "vibioh/ketchup", Version: "1.0.0"}, nil
+	return model.Repository{ID: id, Name: "vibioh/ketchup"}, nil
 }
 
 func (trs testRepositoryStore) GetByName(_ context.Context, name string, repositoryKind model.RepositoryKind) (model.Repository, error) {
@@ -80,18 +80,6 @@ func (trs testRepositoryStore) Create(_ context.Context, o model.Repository) (ui
 	}
 
 	return 1, nil
-}
-
-func (trs testRepositoryStore) Update(_ context.Context, o model.Repository) error {
-	if o.ID == 1 {
-		return errors.New("invalid id")
-	}
-
-	if o.ID == 2 {
-		return errors.New("duplicate pk")
-	}
-
-	return nil
 }
 
 func (trs testRepositoryStore) DeleteUnused(ctx context.Context) error {
@@ -121,8 +109,8 @@ func TestList(t *testing.T) {
 				page: 1,
 			},
 			[]model.Repository{
-				{ID: 1, Name: "vibioh/ketchup", Version: "1.0.0"},
-				{ID: 2, Name: "vibioh/viws", Version: "1.2.3"},
+				{ID: 1, Name: "vibioh/ketchup"},
+				{ID: 2, Name: "vibioh/viws"},
 			},
 			2,
 			nil,
@@ -178,7 +166,7 @@ func TestSuggest(t *testing.T) {
 				ctx: context.Background(),
 			},
 			[]model.Repository{
-				{ID: 2, Name: "vibioh/viws", Version: "1.2.3"},
+				{ID: 2, Name: "vibioh/viws"},
 			},
 			nil,
 		},
@@ -248,7 +236,7 @@ func TestGetOrCreate(t *testing.T) {
 				ctx:  context.Background(),
 				name: "not found",
 			},
-			model.Repository{ID: 1, Name: "not found", Version: "1.0.0"},
+			model.Repository{ID: 1, Name: "not found"},
 			nil,
 		},
 	}
@@ -294,21 +282,12 @@ func TestCreate(t *testing.T) {
 			httpModel.ErrInvalid,
 		},
 		{
-			"release error",
-			args{
-				ctx:  context.Background(),
-				item: model.Repository{Name: "invalid"},
-			},
-			model.NoneRepository,
-			httpModel.ErrNotFound,
-		},
-		{
 			"create error",
 			args{
 				ctx:  context.Background(),
 				item: model.Repository{Name: "vibioh"},
 			},
-			model.Repository{Name: "vibioh", Version: "1.0.0"},
+			model.Repository{Name: "vibioh"},
 			httpModel.ErrInternalError,
 		},
 		{
@@ -317,7 +296,7 @@ func TestCreate(t *testing.T) {
 				ctx:  context.Background(),
 				item: model.Repository{Name: "vibioh/ketchup"},
 			},
-			model.Repository{ID: 1, Name: "vibioh/ketchup", Version: "1.0.0"},
+			model.Repository{ID: 1, Name: "vibioh/ketchup"},
 			nil,
 		},
 	}
@@ -336,84 +315,6 @@ func TestCreate(t *testing.T) {
 
 			if failed {
 				t.Errorf("create() = (%+v, `%s`), want (%+v, `%s`)", got, gotErr, tc.want, tc.wantErr)
-			}
-		})
-	}
-}
-
-func TestUpdate(t *testing.T) {
-	type args struct {
-		ctx  context.Context
-		item model.Repository
-	}
-
-	var cases = []struct {
-		intention string
-		args      args
-		wantErr   error
-	}{
-		{
-			"start atomic error",
-			args{
-				ctx:  context.TODO(),
-				item: model.NoneRepository,
-			},
-			errAtomicStart,
-		},
-		{
-			"fetch error",
-			args{
-				ctx:  context.Background(),
-				item: model.Repository{ID: 0},
-			},
-			httpModel.ErrInternalError,
-		},
-		{
-			"invalid check",
-			args{
-				ctx:  context.Background(),
-				item: model.Repository{ID: 1},
-			},
-			httpModel.ErrInvalid,
-		},
-		{
-			"update error",
-			args{
-				ctx:  context.Background(),
-				item: model.Repository{ID: 1, Version: "1.2.3"},
-			},
-			httpModel.ErrInternalError,
-		},
-		{
-			"end atomic error",
-			args{
-				ctx:  context.Background(),
-				item: model.Repository{ID: 2, Version: "1.2.3"},
-			},
-			errAtomicEnd,
-		},
-		{
-			"success",
-			args{
-				ctx:  context.Background(),
-				item: model.Repository{ID: 3, Version: "1.2.3"},
-			},
-			nil,
-		},
-	}
-
-	for _, tc := range cases {
-		t.Run(tc.intention, func(t *testing.T) {
-			gotErr := New(testRepositoryStore{}, nil, nil).Update(tc.args.ctx, tc.args.item)
-
-			failed := false
-
-			if !errors.Is(gotErr, tc.wantErr) {
-				failed = true
-			}
-
-			if failed {
-				t.Errorf("Update() = `%s`, want `%s`", gotErr, tc.wantErr)
 			}
 		})
 	}
@@ -484,17 +385,9 @@ func TestCheck(t *testing.T) {
 		{
 			"name required",
 			args{
-				new: model.Repository{ID: 1, Version: "1.0.0"},
+				new: model.Repository{ID: 1},
 			},
 			errors.New("name is required"),
-		},
-		{
-			"version required for update",
-			args{
-				old: model.Repository{ID: 1, Name: "vibioh/ketchup", Version: "1.0.0"},
-				new: model.Repository{ID: 1, Name: "vibioh/ketchup"},
-			},
-			errors.New("version is required"),
 		},
 		{
 			"get error",

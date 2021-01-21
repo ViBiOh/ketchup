@@ -38,8 +38,8 @@ func (tks testKetchupStore) List(_ context.Context, page, _ uint) ([]model.Ketch
 	}
 
 	return []model.Ketchup{
-		{Current: "1.0.0", Repository: model.Repository{Version: "1.0.2"}},
-		{Current: "1.2.3", Repository: model.Repository{Version: "1.2.3"}},
+		{Kind: "release", Upstream: "1.0.2", Current: "1.0.0"},
+		{Kind: "release", Upstream: "1.2.3", Current: "1.2.3"},
 	}, 2, nil
 }
 
@@ -49,8 +49,8 @@ func (tks testKetchupStore) ListByRepositoriesID(_ context.Context, ids []uint64
 	}
 
 	return []model.Ketchup{
-		{Current: "1.0.0", Repository: model.Repository{ID: 1, Name: "vibioh/ketchup", Version: "1.0.2"}},
-		{Current: "1.2.3", Repository: model.Repository{ID: 2, Name: "vibioh/viws", Version: "1.2.3"}},
+		{Kind: "release", Upstream: "1.0.2", Current: "1.0.0", Repository: model.Repository{ID: 1, Name: "vibioh/ketchup"}},
+		{Kind: "release", Upstream: "1.2.3", Current: "1.2.3", Repository: model.Repository{ID: 2, Name: "vibioh/viws"}},
 	}, nil
 }
 
@@ -64,7 +64,7 @@ func (tks testKetchupStore) GetByRepositoryID(_ context.Context, id uint64, _ bo
 	}
 
 	if id == 2 {
-		return model.Ketchup{Current: "1.0.0", Repository: model.Repository{ID: 2, Name: "vibioh/ketchup", Version: "1.2.3"}}, nil
+		return model.Ketchup{Kind: "release", Upstream: "1.2.3", Current: "1.0.0", Repository: model.Repository{ID: 2, Name: "vibioh/ketchup"}}, nil
 	}
 
 	if id == 3 {
@@ -137,8 +137,8 @@ func TestList(t *testing.T) {
 				page: 1,
 			},
 			[]model.Ketchup{
-				{Current: "1.0.0", Semver: "Patch", Repository: model.Repository{Version: "1.0.2"}},
-				{Current: "1.2.3", Repository: model.Repository{Version: "1.2.3"}},
+				{Kind: "release", Upstream: "1.0.2", Current: "1.0.0", Semver: "Patch"},
+				{Kind: "release", Upstream: "1.2.3", Current: "1.2.3"},
 			},
 			2,
 			nil,
@@ -195,8 +195,8 @@ func TestListForRepositories(t *testing.T) {
 				},
 			},
 			[]model.Ketchup{
-				{Current: "1.0.0", Semver: "Patch", Repository: model.Repository{ID: 1, Name: "vibioh/ketchup", Version: "1.0.2"}},
-				{Current: "1.2.3", Repository: model.Repository{ID: 2, Name: "vibioh/viws", Version: "1.2.3"}},
+				{Kind: "release", Upstream: "1.0.2", Current: "1.0.0", Semver: "Patch", Repository: model.Repository{ID: 1, Name: "vibioh/ketchup"}},
+				{Kind: "release", Upstream: "1.2.3", Current: "1.2.3", Repository: model.Repository{ID: 2, Name: "vibioh/viws"}},
 			},
 			nil,
 		},
@@ -290,9 +290,9 @@ func TestCreate(t *testing.T) {
 			"success",
 			args{
 				ctx:  model.StoreUser(context.Background(), model.User{ID: 1}),
-				item: model.Ketchup{Kind: "release", Current: "1.0.0", Repository: model.Repository{Name: "vibioh/ketchup"}},
+				item: model.Ketchup{Kind: "release", Upstream: "1.2.3", Current: "1.0.0", Repository: model.Repository{Name: "vibioh/ketchup"}},
 			},
-			model.Ketchup{Kind: "release", Current: "1.0.0", Repository: model.Repository{ID: 1, Name: "vibioh/ketchup", Version: "1.2.3"}},
+			model.Ketchup{Kind: "release", Upstream: "1.2.3", Current: "1.0.0", Repository: model.Repository{ID: 1, Name: "vibioh/ketchup"}},
 			nil,
 		},
 	}
@@ -377,9 +377,9 @@ func TestUpdate(t *testing.T) {
 			"success",
 			args{
 				ctx:  model.StoreUser(context.Background(), model.User{ID: 1}),
-				item: model.Ketchup{Kind: "release", Current: "1.0.0", Repository: model.Repository{ID: 2}},
+				item: model.Ketchup{Kind: "release", Upstream: "1.2.3", Current: "1.0.0", Repository: model.Repository{ID: 2}},
 			},
-			model.Ketchup{Kind: "release", Current: "1.0.0", Repository: model.Repository{ID: 2, Name: "vibioh/ketchup", Version: "1.2.3"}},
+			model.Ketchup{Kind: "release", Upstream: "1.2.3", Current: "1.0.0", Repository: model.Repository{ID: 2, Name: "vibioh/ketchup"}},
 			nil,
 		},
 	}

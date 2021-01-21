@@ -8,6 +8,114 @@ import (
 	"github.com/ViBiOh/ketchup/pkg/semver"
 )
 
+func TestURL(t *testing.T) {
+	var cases = []struct {
+		intention string
+		instance  Ketchup
+		want      string
+	}{
+		{
+			"helm",
+			Ketchup{
+				Kind:     "release",
+				Upstream: "1.2.3",
+				Current:  "1.2.1",
+				Repository: Repository{
+					Kind: Helm,
+					Name: "app@https://charts.vibioh.fr",
+				},
+			},
+			"https://charts.vibioh.fr",
+		},
+		{
+			"invalid",
+			Ketchup{
+				Kind:     "release",
+				Upstream: "1.2.3",
+				Current:  "1.2.1",
+				Repository: Repository{
+					Kind: Helm,
+					Name: "charts.fr",
+				},
+			},
+			"charts.fr",
+		},
+		{
+			"github",
+			Ketchup{
+				Kind:     "release",
+				Upstream: "1.2.3",
+				Current:  "1.2.1",
+				Repository: Repository{
+					Kind: Github,
+					Name: "vibioh/ketchup",
+				},
+			},
+			"https://github.com/vibioh/ketchup/releases/tag/1.2.1",
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.intention, func(t *testing.T) {
+			if got := tc.instance.URL(); got != tc.want {
+				t.Errorf("URL() = `%s`, want `%s`", got, tc.want)
+			}
+		})
+	}
+}
+
+func TestCompareURL(t *testing.T) {
+	type args struct {
+		version string
+	}
+
+	var cases = []struct {
+		intention string
+		instance  Ketchup
+		args      args
+		want      string
+	}{
+		{
+			"helm",
+			Ketchup{
+				Kind:     "release",
+				Upstream: "1.2.3",
+				Current:  "1.2.1",
+				Repository: Repository{
+					Kind: Helm,
+					Name: "app@https://charts.vibioh.fr",
+				},
+			},
+			args{},
+			"https://charts.vibioh.fr",
+		},
+		{
+			"github",
+			Ketchup{
+				Kind:     "release",
+				Upstream: "1.2.3",
+				Current:  "1.2.1",
+				Repository: Repository{
+					Kind: Github,
+					Name: "vibioh/ketchup",
+				},
+			},
+			args{
+				version: "1.1.0",
+			},
+			"https://github.com/vibioh/ketchup/compare/1.2.3...1.2.1",
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.intention, func(t *testing.T) {
+			if got := tc.instance.CompareURL(); got != tc.want {
+				t.Errorf("URL() = `%s`, want `%s`", got, tc.want)
+			}
+		})
+	}
+}
+
 func TestKetchupByRepositoryID(t *testing.T) {
 	type args struct {
 		array []Ketchup

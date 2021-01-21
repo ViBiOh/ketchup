@@ -105,6 +105,7 @@ func (a app) Update(ctx context.Context, item model.Ketchup) (model.Ketchup, err
 
 		current := model.Ketchup{
 			Kind:       item.Kind,
+			Upstream:   item.Upstream,
 			Current:    item.Current,
 			Repository: old.Repository,
 			User:       old.User,
@@ -179,10 +180,10 @@ func enrichSemver(list []model.Ketchup) []model.Ketchup {
 	output := make([]model.Ketchup, len(list))
 
 	for index, item := range list {
-		repositoryVersion, repositoryErr := semver.Parse(item.Repository.Version)
-		ketchupVersion, ketchupErr := semver.Parse(item.Current)
-		if repositoryErr == nil && ketchupErr == nil {
-			item.Semver = repositoryVersion.Compare(ketchupVersion)
+		upstreamVersion, upstreamErr := semver.Parse(item.Upstream)
+		currentVersion, currentErr := semver.Parse(item.Current)
+		if upstreamErr == nil && currentErr == nil {
+			item.Semver = upstreamVersion.Compare(currentVersion)
 		}
 
 		output[index] = item

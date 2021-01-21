@@ -20,7 +20,6 @@ type App interface {
 	Get(ctx context.Context, id uint64, forUpdate bool) (model.Repository, error)
 	GetByName(ctx context.Context, name string, repositoryKind model.RepositoryKind) (model.Repository, error)
 	Create(ctx context.Context, o model.Repository) (uint64, error)
-	Update(ctx context.Context, o model.Repository) error
 	DeleteUnused(ctx context.Context) error
 }
 
@@ -47,7 +46,7 @@ func (a app) list(ctx context.Context, query string, args ...interface{}) ([]mod
 		var item model.Repository
 		var rawRepositoryKind string
 
-		if err := rows.Scan(&item.ID, &item.Name, &item.Version, &rawRepositoryKind, &count); err != nil {
+		if err := rows.Scan(&item.ID, &item.Name, &rawRepositoryKind, &count); err != nil {
 			return err
 		}
 
@@ -69,7 +68,7 @@ func (a app) get(ctx context.Context, query string, args ...interface{}) (model.
 	var rawRepositoryKind string
 
 	scanner := func(row *sql.Row) error {
-		err := row.Scan(&item.ID, &item.Name, &item.Version, &rawRepositoryKind)
+		err := row.Scan(&item.ID, &item.Name, &rawRepositoryKind)
 		if errors.Is(err, sql.ErrNoRows) {
 			item = model.NoneRepository
 			return nil
@@ -90,7 +89,6 @@ const listQuery = `
 SELECT
   id,
   name,
-  version,
   kind,
   count(1) OVER() AS full_count
 FROM
@@ -107,7 +105,6 @@ const suggestQuery = `
 SELECT
   id,
   name,
-  version,
   kind,
   (
     SELECT
@@ -135,7 +132,6 @@ const getQuery = `
 SELECT
   id,
   name,
-  version,
   kind
 FROM
   ketchup.repository
@@ -156,7 +152,6 @@ const getByNameQuery = `
 SELECT
   id,
   name,
-  version,
   kind
 FROM
   ketchup.repository
@@ -178,12 +173,10 @@ INSERT INTO
   ketchup.repository
 (
   name,
-  version,
   kind
 ) VALUES (
   $1,
-  $2,
-  $3
+  $2
 ) RETURNING id
 `
 
@@ -201,20 +194,7 @@ func (a app) Create(ctx context.Context, o model.Repository) (uint64, error) {
 		return item.ID, nil
 	}
 
-	return db.Create(ctx, insertQuery, strings.ToLower(o.Name), o.Version, o.Kind.String())
-}
-
-const updateRepositoryQuery = `
-UPDATE
-  ketchup.repository
-SET
-  version = $2
-WHERE
-  id = $1
-`
-
-func (a app) Update(ctx context.Context, o model.Repository) error {
-	return db.Exec(ctx, updateRepositoryQuery, o.ID, o.Version)
+	return db.Create(ctx, insertQuery, strings.ToLower(o.Name), o.Kind.String())
 }
 
 const deleteQuery = `

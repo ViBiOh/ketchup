@@ -25,7 +25,6 @@ type App interface {
 	List(ctx context.Context, page, pageSize uint) ([]model.Repository, uint64, error)
 	Suggest(ctx context.Context, ignoreIds []uint64, count uint64) ([]model.Repository, error)
 	GetOrCreate(ctx context.Context, name string, repositoryKind model.RepositoryKind) (model.Repository, error)
-	Update(ctx context.Context, item model.Repository) error
 	Clean(ctx context.Context) error
 	LatestVersion(repo model.Repository) (semver.Version, error)
 }
@@ -86,47 +85,13 @@ func (a app) create(ctx context.Context, item model.Repository) (model.Repositor
 		return model.NoneRepository, httpModel.WrapInvalid(err)
 	}
 
-	version, err := a.LatestVersion(item)
-	if err != nil {
-		return model.NoneRepository, httpModel.WrapNotFound(fmt.Errorf("no release found for %s: %s", item.Name, err))
-	}
-
-	item.Version = version.Name
-
-	err = a.repositoryStore.DoAtomic(ctx, func(ctx context.Context) error {
+	return item, a.repositoryStore.DoAtomic(ctx, func(ctx context.Context) error {
 		id, err := a.repositoryStore.Create(ctx, item)
 		if err != nil {
 			return httpModel.WrapInternal(fmt.Errorf("unable to create: %s", err))
 		}
 
 		item.ID = id
-		return nil
-	})
-
-	return item, err
-}
-
-func (a app) Update(ctx context.Context, item model.Repository) error {
-	return a.repositoryStore.DoAtomic(ctx, func(ctx context.Context) error {
-		old, err := a.repositoryStore.Get(ctx, item.ID, true)
-		if err != nil {
-			return httpModel.WrapInternal(fmt.Errorf("unable to fetch: %s", err))
-		}
-
-		current := model.Repository{
-			ID:      old.ID,
-			Name:    old.Name,
-			Version: item.Version,
-		}
-
-		if err := a.check(ctx, old, current); err != nil {
-			return httpModel.WrapInvalid(err)
-		}
-
-		if err := a.repositoryStore.Update(ctx, current); err != nil {
-			return httpModel.WrapInternal(fmt.Errorf("unable to update: %s", err))
-		}
-
 		return nil
 	})
 }
@@ -150,10 +115,6 @@ func (a app) check(ctx context.Context, old, new model.Repository) error {
 
 	if len(strings.TrimSpace(new.Name)) == 0 {
 		output = append(output, errors.New("name is required"))
-	}
-
-	if old != model.NoneRepository && len(strings.TrimSpace(new.Version)) == 0 {
-		output = append(output, errors.New("version is required"))
 	}
 
 	repositoryWithName, err := a.repositoryStore.GetByName(ctx, new.Name, new.Kind)

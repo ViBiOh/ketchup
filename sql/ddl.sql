@@ -40,7 +40,6 @@ CREATE SEQUENCE ketchup.repository_seq;
 CREATE TABLE ketchup.repository (
   id BIGINT NOT NULL DEFAULT nextval('ketchup.repository_seq'),
   name TEXT NOT NULL,
-  version TEXT NOT NULL,
   kind ketchup.repository_kind NOT NULL,
   creation_date TIMESTAMP WITH TIME ZONE DEFAULT now()
 );

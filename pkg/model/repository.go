@@ -35,32 +35,9 @@ func (r RepositoryKind) String() string {
 
 // Repository of app
 type Repository struct {
-	Name    string         `json:"name"`
-	Version string         `json:"version"`
-	ID      uint64         `json:"id"`
-	Kind    RepositoryKind `json:"kind"`
-}
-
-// URL format the URL of given repository with current version
-func (r Repository) URL() string {
-	if r.Kind == Helm {
-		parts := strings.SplitN(r.Name, "@", 2)
-		if len(parts) > 1 {
-			return parts[1]
-		}
-		return r.Name
-	}
-
-	return fmt.Sprintf("%s/%s/releases/tag/%s", githubURL, r.Name, r.Version)
-}
-
-// CompareURL format the URL of given repository compared against given version
-func (r Repository) CompareURL(version string) string {
-	if r.Kind == Helm {
-		return r.URL()
-	}
-
-	return fmt.Sprintf("%s/%s/compare/%s...%s", githubURL, r.Name, version, r.Version)
+	Name string         `json:"name"`
+	ID   uint64         `json:"id"`
+	Kind RepositoryKind `json:"kind"`
 }
 
 // ParseRepositoryKind parse raw string into a RepositoryKind

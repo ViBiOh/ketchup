@@ -4,7 +4,6 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	"sort"
 	"strings"
 	"syscall"
 	"time"
@@ -14,11 +13,9 @@ import (
 	"github.com/ViBiOh/httputils/v3/pkg/flags"
 	"github.com/ViBiOh/httputils/v3/pkg/logger"
 	"github.com/ViBiOh/ketchup/pkg/model"
-	"github.com/ViBiOh/ketchup/pkg/semver"
 	"github.com/ViBiOh/ketchup/pkg/service/ketchup"
 	"github.com/ViBiOh/ketchup/pkg/service/repository"
 	mailer "github.com/ViBiOh/mailer/pkg/client"
-	mailerModel "github.com/ViBiOh/mailer/pkg/model"
 )
 
 var (
@@ -84,18 +81,8 @@ func (a app) ketchupNotify(_ time.Time) error {
 		return fmt.Errorf("unable to clean repository before starting: %s", err)
 	}
 
-	newReleases, err := a.getNewReleases(ctx)
-	if err != nil {
-		return fmt.Errorf("unable to get new releases: %s", err)
-	}
-
-	ketchupsToNotify, err := a.getKetchupToNotify(ctx, newReleases)
-	if err != nil {
-		return fmt.Errorf("unable to get ketchup to notify: %s", err)
-	}
-
-	if err := a.sendNotification(ctx, ketchupsToNotify); err != nil {
-		return err
+	if err := a.notifyUser(ctx); err != nil {
+		return fmt.Errorf("unable to notify user: %s", err)
 	}
 
 	return nil
@@ -118,129 +105,6 @@ func (a app) notifyUser(ctx context.Context) error {
 				return fmt.Errorf("unable to list kinds for repository `%s`: %s", repo.Name, err)
 			}
 			fmt.Println(kinds)
-		}
-	}
-
-	return nil
-}
-
-func (a app) getNewReleases(ctx context.Context) ([]model.Release, error) {
-	var newReleases []model.Release
-	count := 0
-	page := uint(1)
-
-	for {
-		repositories, totalCount, err := a.repositoryService.List(ctx, page, pageSize)
-		if err != nil {
-			return nil, fmt.Errorf("unable to fetch page %d of repositories: %s", page, err)
-		}
-
-		for _, repo := range repositories {
-			count++
-
-			latestVersion, err := a.repositoryService.LatestVersion(repo)
-			if err != nil {
-				logger.Error("unable to get latest version of %s: %s", repo.Name, err)
-				continue
-			}
-
-			if latestVersion.Name == repo.Version {
-				continue
-			}
-
-			repositoryVersion, repositoryErr := semver.Parse(repo.Version)
-			if repositoryErr == nil && repositoryVersion.Suffix == 0 && repositoryVersion.IsGreater(latestVersion) {
-				continue
-			}
-
-			logger.Info("New version available for %s: %s", repo.Name, latestVersion.Name)
-			repo.Version = latestVersion.Name
-
-			if err := a.repositoryService.Update(ctx, repo); err != nil {
-				return nil, fmt.Errorf("unable to update repo %s: %s", repo.Name, err)
-			}
-
-			newReleases = append(newReleases, model.NewRelease(repo, latestVersion))
-		}
-
-		if uint64(page*pageSize) < totalCount {
-			page++
-		} else {
-			logger.Info("%d repositories checked, %d new releases", count, len(newReleases))
-			return newReleases, nil
-		}
-	}
-}
-
-func (a app) getKetchupToNotify(ctx context.Context, releases []model.Release) (map[model.User][]model.Release, error) {
-	repositories := make([]model.Repository, len(releases))
-	for index, release := range releases {
-		repositories[index] = release.Repository
-	}
-
-	ketchups, err := a.ketchupService.ListForRepositories(ctx, repositories)
-	if err != nil {
-		return nil, fmt.Errorf("unable to get ketchups for repositories: %s", err)
-	}
-
-	userToNotify := make(map[model.User][]model.Release)
-
-	sort.Sort(model.ReleaseByRepositoryID(releases))
-	sort.Sort(model.KetchupByRepositoryID(ketchups))
-
-	ketchupsIndex := 0
-	ketchupsSize := len(ketchups)
-
-	for _, release := range releases {
-		for ketchupsIndex < ketchupsSize {
-			current := ketchups[ketchupsIndex]
-			if release.Repository.ID < current.Repository.ID {
-				break
-			}
-
-			if current.Current != release.Version.Name {
-				if userToNotify[current.User] != nil {
-					userToNotify[current.User] = append(userToNotify[current.User], release)
-				} else {
-					userToNotify[current.User] = []model.Release{release}
-				}
-			}
-
-			ketchupsIndex++
-		}
-	}
-
-	logger.Info("%d ketchups for %d users to notify", len(ketchups), len(userToNotify))
-
-	return userToNotify, nil
-}
-
-func (a app) sendNotification(ctx context.Context, ketchupToNotify map[model.User][]model.Release) error {
-	if len(ketchupToNotify) == 0 {
-		return nil
-	}
-
-	if a.mailerApp == nil || !a.mailerApp.Enabled() {
-		logger.Warn("mailer is not configured")
-		return nil
-	}
-
-	for user, releases := range ketchupToNotify {
-		logger.Info("Sending email to %s for %d releases", user.Email, len(releases))
-
-		payload := map[string]interface{}{
-			"releases": releases,
-		}
-
-		mailRequest := mailerModel.NewMailRequest().Template("ketchup").From("ketchup@vibioh.fr").As("Ketchup").To(user.Email).Data(payload)
-		if len(releases) > 1 {
-			mailRequest.WithSubject("Ketchup - New releases")
-		} else {
-			mailRequest.WithSubject("Ketchup - New release")
-		}
-
-		if err := a.mailerApp.Send(ctx, *mailRequest); err != nil {
-			return fmt.Errorf("unable to send email to %s: %s", user.Email, err)
 		}
 	}
 

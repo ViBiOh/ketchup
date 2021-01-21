@@ -1,6 +1,9 @@
 package model
 
 import (
+	"fmt"
+	"strings"
+
 	"github.com/ViBiOh/ketchup/pkg/semver"
 )
 
@@ -17,6 +20,28 @@ type Ketchup struct {
 	Upstream   string
 	Current    string
 	Repository Repository
+}
+
+// URL format the URL of given repository with current version
+func (k Ketchup) URL() string {
+	if k.Repository.Kind == Helm {
+		parts := strings.SplitN(k.Repository.Name, "@", 2)
+		if len(parts) > 1 {
+			return parts[1]
+		}
+		return k.Repository.Name
+	}
+
+	return fmt.Sprintf("%s/%s/releases/tag/%s", githubURL, k.Repository.Name, k.Current)
+}
+
+// CompareURL format the URL of given ketchup compared against upstream version
+func (k Ketchup) CompareURL() string {
+	if k.Repository.Kind == Helm {
+		return k.URL()
+	}
+
+	return fmt.Sprintf("%s/%s/compare/%s...%s", githubURL, k.Repository.Name, k.Upstream, k.Current)
 }
 
 // KetchupByRepositoryID sort ketchup by repository ID
