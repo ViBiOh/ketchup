@@ -74,7 +74,7 @@ func (a app) GetOrCreate(ctx context.Context, name string, repositoryKind model.
 		return model.NoneRepository, httpModel.WrapInternal(err)
 	}
 
-	if repo != model.NoneRepository {
+	if repo.ID != 0 {
 		return repo, nil
 	}
 
@@ -91,7 +91,10 @@ func (a app) create(ctx context.Context, item model.Repository) (model.Repositor
 		return model.NoneRepository, httpModel.WrapNotFound(fmt.Errorf("no release found for %s: %s", item.Name, err))
 	}
 
-	item.Version = version.Name
+	if item.Versions == nil {
+		item.Versions = make(map[string]string)
+	}
+	item.Versions["stable"] = version.Name
 
 	err = a.repositoryStore.DoAtomic(ctx, func(ctx context.Context) error {
 		id, err := a.repositoryStore.Create(ctx, item)
@@ -114,16 +117,16 @@ func (a app) Update(ctx context.Context, item model.Repository) error {
 		}
 
 		current := model.Repository{
-			ID:      old.ID,
-			Name:    old.Name,
-			Version: item.Version,
+			ID:       old.ID,
+			Name:     old.Name,
+			Versions: item.Versions,
 		}
 
 		if err := a.check(ctx, old, current); err != nil {
 			return httpModel.WrapInvalid(err)
 		}
 
-		if err := a.repositoryStore.Update(ctx, current); err != nil {
+		if err := a.repositoryStore.UpdateVersions(ctx, current); err != nil {
 			return httpModel.WrapInternal(fmt.Errorf("unable to update: %s", err))
 		}
 
@@ -142,7 +145,7 @@ func (a app) Clean(ctx context.Context) error {
 }
 
 func (a app) check(ctx context.Context, old, new model.Repository) error {
-	if new == model.NoneRepository {
+	if new.ID == 0 && new.Kind == 0 && len(new.Name) == 0 {
 		return nil
 	}
 
@@ -152,14 +155,14 @@ func (a app) check(ctx context.Context, old, new model.Repository) error {
 		output = append(output, errors.New("name is required"))
 	}
 
-	if old != model.NoneRepository && len(strings.TrimSpace(new.Version)) == 0 {
+	if old.ID != 0 && len(new.Versions) == 0 {
 		output = append(output, errors.New("version is required"))
 	}
 
 	repositoryWithName, err := a.repositoryStore.GetByName(ctx, new.Name, new.Kind)
 	if err != nil {
 		output = append(output, errors.New("unable to check if name already exists"))
-	} else if repositoryWithName != model.NoneRepository && repositoryWithName.ID != new.ID {
+	} else if repositoryWithName.ID != 0 && repositoryWithName.ID != new.ID {
 		output = append(output, errors.New("name already exists"))
 	}
 

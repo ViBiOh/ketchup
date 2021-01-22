@@ -23,7 +23,7 @@ func (tks app) List(ctx context.Context, _, _ uint) ([]model.Ketchup, uint64, er
 	}
 
 	return []model.Ketchup{
-		{Version: "1.0.0", Repository: model.Repository{ID: 1, Name: "vibioh/ketchup", Version: "1.0.0"}, User: model.User{ID: 1, Email: "nobody@localhost"}},
+		{Version: "1.0.0", Repository: model.Repository{ID: 1, Name: "vibioh/ketchup", Versions: map[string]string{"stable": "1.0.0"}}, User: model.User{ID: 1, Email: "nobody@localhost"}},
 	}, 0, nil
 }
 

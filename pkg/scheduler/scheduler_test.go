@@ -110,9 +110,9 @@ func TestGetNewReleases(t *testing.T) {
 				ctx: context.Background(),
 			},
 			[]model.Release{model.NewRelease(model.Repository{
-				ID:      1,
-				Name:    "vibioh/ketchup",
-				Version: "1.1.0",
+				ID:       1,
+				Name:     "vibioh/ketchup",
+				Versions: map[string]string{"stable": "1.1.0"},
 			}, semver.Version{Name: "1.1.0", Major: 1, Minor: 1, Patch: 0})},
 			nil,
 		},
@@ -125,9 +125,9 @@ func TestGetNewReleases(t *testing.T) {
 				ctx: context.Background(),
 			},
 			[]model.Release{model.NewRelease(model.Repository{
-				ID:      2,
-				Name:    "vibioh/ketchup",
-				Version: "1.1.0",
+				ID:       2,
+				Name:     "vibioh/ketchup",
+				Versions: map[string]string{"stable": "1.1.0"},
 			}, semver.Version{Name: "1.1.0", Major: 1, Minor: 1, Patch: 0})},
 			nil,
 		},
@@ -165,9 +165,9 @@ func TestGetKetchupToNotify(t *testing.T) {
 				Name: "1.0.1",
 			},
 			Repository: model.Repository{
-				ID:      1,
-				Name:    "vibioh/ketchup",
-				Version: "1.0.0",
+				ID:       1,
+				Name:     "vibioh/ketchup",
+				Versions: map[string]string{"stable": "1.1.0"},
 			},
 		},
 	}
@@ -178,9 +178,9 @@ func TestGetKetchupToNotify(t *testing.T) {
 				Name: "1.0.1",
 			},
 			Repository: model.Repository{
-				ID:      1,
-				Name:    "vibioh/viws",
-				Version: "1.0.0",
+				ID:       1,
+				Name:     "vibioh/viws",
+				Versions: map[string]string{"stable": "1.1.0"},
 			},
 		},
 		{
@@ -188,9 +188,9 @@ func TestGetKetchupToNotify(t *testing.T) {
 				Name: "1.0.1",
 			},
 			Repository: model.Repository{
-				ID:      2,
-				Name:    "vibioh/dotfiles",
-				Version: "1.0.0",
+				ID:       2,
+				Name:     "vibioh/dotfiles",
+				Versions: map[string]string{"stable": "1.1.0"},
 			},
 		},
 	}

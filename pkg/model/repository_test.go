@@ -58,9 +58,11 @@ func TestURL(t *testing.T) {
 		{
 			"github",
 			Repository{
-				Kind:    Github,
-				Name:    "vibioh/ketchup",
-				Version: "1.0.0",
+				Kind: Github,
+				Name: "vibioh/ketchup",
+				Versions: map[string]string{
+					"stable": "1.0.0",
+				},
 			},
 			"https://github.com/vibioh/ketchup/releases/tag/1.0.0",
 		},
@@ -98,9 +100,11 @@ func TestCompareURL(t *testing.T) {
 		{
 			"github",
 			Repository{
-				Kind:    Github,
-				Name:    "vibioh/ketchup",
-				Version: "1.0.0",
+				Kind: Github,
+				Name: "vibioh/ketchup",
+				Versions: map[string]string{
+					"stable": "1.0.0",
+				},
 			},
 			args{
 				version: "1.1.0",

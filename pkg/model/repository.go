@@ -35,10 +35,10 @@ func (r RepositoryKind) String() string {
 
 // Repository of app
 type Repository struct {
-	Name    string         `json:"name"`
-	Version string         `json:"version"`
-	ID      uint64         `json:"id"`
-	Kind    RepositoryKind `json:"kind"`
+	Name     string            `json:"name"`
+	ID       uint64            `json:"id"`
+	Kind     RepositoryKind    `json:"kind"`
+	Versions map[string]string `json:"versions"`
 }
 
 // URL format the URL of given repository with current version
@@ -51,7 +51,7 @@ func (r Repository) URL() string {
 		return r.Name
 	}
 
-	return fmt.Sprintf("%s/%s/releases/tag/%s", githubURL, r.Name, r.Version)
+	return fmt.Sprintf("%s/%s/releases/tag/%s", githubURL, r.Name, r.Versions["stable"])
 }
 
 // CompareURL format the URL of given repository compared against given version
@@ -60,7 +60,7 @@ func (r Repository) CompareURL(version string) string {
 		return r.URL()
 	}
 
-	return fmt.Sprintf("%s/%s/compare/%s...%s", githubURL, r.Name, version, r.Version)
+	return fmt.Sprintf("%s/%s/compare/%s...%s", githubURL, r.Name, version, r.Versions["stable"])
 }
 
 // ParseRepositoryKind parse raw string into a RepositoryKind
@@ -73,3 +73,10 @@ func ParseRepositoryKind(value string) (RepositoryKind, error) {
 
 	return Github, fmt.Errorf("invalid value `%s` for repository kind", value)
 }
+
+// RepositoryByID sort repository by ID
+type RepositoryByID []Repository
+
+func (a RepositoryByID) Len() int           { return len(a) }
+func (a RepositoryByID) Less(i, j int) bool { return a[i].ID < a[j].ID }
+func (a RepositoryByID) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }

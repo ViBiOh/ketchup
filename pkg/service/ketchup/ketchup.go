@@ -145,7 +145,7 @@ func (a app) check(ctx context.Context, old, new model.Ketchup) error {
 		output = append(output, errors.New("you must be logged in for interacting"))
 	}
 
-	if new == model.NoneKetchup {
+	if new.Repository.ID == 0 && new.User.ID == 0 {
 		return service.ConcatError(output)
 	}
 
@@ -153,11 +153,11 @@ func (a app) check(ctx context.Context, old, new model.Ketchup) error {
 		output = append(output, errors.New("version is required"))
 	}
 
-	if old == model.NoneKetchup {
+	if old.Repository.ID == 0 && old.User.ID == 0 {
 		o, err := a.ketchupStore.GetByRepositoryID(ctx, new.Repository.ID, false)
 		if err != nil {
 			output = append(output, errors.New("unable to check if ketchup already exists"))
-		} else if o != model.NoneKetchup {
+		} else if o.User.ID != 0 && o.Repository.ID != 0 {
 			output = append(output, fmt.Errorf("ketchup for %s already exists", new.Repository.Name))
 		}
 	}
@@ -169,7 +169,7 @@ func enrichSemver(list []model.Ketchup) []model.Ketchup {
 	output := make([]model.Ketchup, len(list))
 
 	for index, item := range list {
-		repositoryVersion, repositoryErr := semver.Parse(item.Repository.Version)
+		repositoryVersion, repositoryErr := semver.Parse(item.Repository.Versions["stable"])
 		ketchupVersion, ketchupErr := semver.Parse(item.Version)
 		if repositoryErr == nil && ketchupErr == nil {
 			item.Semver = repositoryVersion.Compare(ketchupVersion)
