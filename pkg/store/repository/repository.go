@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 	"strings"
 
 	"github.com/ViBiOh/httputils/v3/pkg/db"
@@ -20,7 +21,7 @@ type App interface {
 	Get(ctx context.Context, id uint64, forUpdate bool) (model.Repository, error)
 	GetByName(ctx context.Context, name string, repositoryKind model.RepositoryKind) (model.Repository, error)
 	Create(ctx context.Context, o model.Repository) (uint64, error)
-	Update(ctx context.Context, o model.Repository) error
+	UpdateVersions(ctx context.Context, o model.Repository) error
 	DeleteUnused(ctx context.Context) error
 }
 
@@ -47,7 +48,7 @@ func (a app) list(ctx context.Context, query string, args ...interface{}) ([]mod
 		var item model.Repository
 		var rawRepositoryKind string
 
-		if err := rows.Scan(&item.ID, &item.Name, &item.Version, &rawRepositoryKind, &count); err != nil {
+		if err := rows.Scan(&item.ID, &item.Name, &rawRepositoryKind, &count); err != nil {
 			return err
 		}
 
@@ -56,12 +57,18 @@ func (a app) list(ctx context.Context, query string, args ...interface{}) ([]mod
 			return err
 		}
 		item.Kind = repositoryKind
+		item.Versions = make(map[string]string, 0)
 
 		list = append(list, item)
 		return nil
 	}
 
-	return list, count, db.List(ctx, a.db, scanner, query, args...)
+	err := db.List(ctx, a.db, scanner, query, args...)
+	if err != nil {
+		return list, 0, err
+	}
+
+	return list, count, a.enrichRepositoriesVersions(ctx, list)
 }
 
 func (a app) get(ctx context.Context, query string, args ...interface{}) (model.Repository, error) {
@@ -69,7 +76,7 @@ func (a app) get(ctx context.Context, query string, args ...interface{}) (model.
 	var rawRepositoryKind string
 
 	scanner := func(row *sql.Row) error {
-		err := row.Scan(&item.ID, &item.Name, &item.Version, &rawRepositoryKind)
+		err := row.Scan(&item.ID, &item.Name, &rawRepositoryKind)
 		if errors.Is(err, sql.ErrNoRows) {
 			item = model.NoneRepository
 			return nil
@@ -80,17 +87,26 @@ func (a app) get(ctx context.Context, query string, args ...interface{}) (model.
 		}
 
 		item.Kind, err = model.ParseRepositoryKind(rawRepositoryKind)
+		item.Versions = make(map[string]string, 0)
+
 		return err
 	}
 
-	return item, db.Get(ctx, a.db, scanner, query, args...)
+	if err := db.Get(ctx, a.db, scanner, query, args...); err != nil {
+		return model.NoneRepository, err
+	}
+
+	if item.ID == 0 {
+		return item, nil
+	}
+
+	return item, a.enrichRepositoriesVersions(ctx, []model.Repository{item})
 }
 
 const listQuery = `
 SELECT
   id,
   name,
-  version,
   kind,
   count(1) OVER() AS full_count
 FROM
@@ -107,7 +123,6 @@ const suggestQuery = `
 SELECT
   id,
   name,
-  version,
   kind,
   (
     SELECT
@@ -135,7 +150,6 @@ const getQuery = `
 SELECT
   id,
   name,
-  version,
   kind
 FROM
   ketchup.repository
@@ -156,7 +170,6 @@ const getByNameQuery = `
 SELECT
   id,
   name,
-  version,
   kind
 FROM
   ketchup.repository
@@ -178,12 +191,10 @@ INSERT INTO
   ketchup.repository
 (
   name,
-  version,
   kind
 ) VALUES (
   $1,
-  $2,
-  $3
+  $2
 ) RETURNING id
 `
 
@@ -197,24 +208,17 @@ func (a app) Create(ctx context.Context, o model.Repository) (uint64, error) {
 		return 0, err
 	}
 
-	if item != model.NoneRepository {
-		return item.ID, nil
+	if item.ID != 0 {
+		return 0, fmt.Errorf("%s repository already exists with name `%s`", o.Kind.String(), o.Name)
 	}
 
-	return db.Create(ctx, insertQuery, strings.ToLower(o.Name), o.Version, o.Kind.String())
-}
+	id, err := db.Create(ctx, insertQuery, strings.ToLower(o.Name), o.Kind.String())
+	if err != nil {
+		return 0, err
+	}
 
-const updateRepositoryQuery = `
-UPDATE
-  ketchup.repository
-SET
-  version = $2
-WHERE
-  id = $1
-`
-
-func (a app) Update(ctx context.Context, o model.Repository) error {
-	return db.Exec(ctx, updateRepositoryQuery, o.ID, o.Version)
+	o.ID = id
+	return id, a.UpdateVersions(ctx, o)
 }
 
 const deleteQuery = `

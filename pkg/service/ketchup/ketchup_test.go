@@ -38,8 +38,8 @@ func (tks testKetchupStore) List(_ context.Context, page, _ uint) ([]model.Ketch
 	}
 
 	return []model.Ketchup{
-		{Version: "1.0.0", Repository: model.Repository{Version: "1.0.2"}},
-		{Version: "1.2.3", Repository: model.Repository{Version: "1.2.3"}},
+		{Version: "1.0.0", Repository: model.Repository{Versions: map[string]string{"stable": "1.0.2"}}},
+		{Version: "1.2.3", Repository: model.Repository{Versions: map[string]string{"stable": "1.2.3"}}},
 	}, 2, nil
 }
 
@@ -49,8 +49,8 @@ func (tks testKetchupStore) ListByRepositoriesID(_ context.Context, ids []uint64
 	}
 
 	return []model.Ketchup{
-		{Version: "1.0.0", Repository: model.Repository{ID: 1, Name: "vibioh/ketchup", Version: "1.0.2"}},
-		{Version: "1.2.3", Repository: model.Repository{ID: 2, Name: "vibioh/viws", Version: "1.2.3"}},
+		{Version: "1.0.0", Repository: model.Repository{ID: 1, Name: "vibioh/ketchup", Versions: map[string]string{"stable": "1.0.2"}}},
+		{Version: "1.2.3", Repository: model.Repository{ID: 2, Name: "vibioh/viws", Versions: map[string]string{"stable": "1.2.3"}}},
 	}, nil
 }
 
@@ -60,7 +60,7 @@ func (tks testKetchupStore) GetByRepositoryID(_ context.Context, id uint64, _ bo
 	}
 
 	if id == 2 {
-		return model.Ketchup{Version: "1.0.0", Repository: model.Repository{ID: 2, Name: "vibioh/ketchup", Version: "1.2.3"}}, nil
+		return model.Ketchup{Version: "1.0.0", Repository: model.Repository{ID: 2, Name: "vibioh/ketchup", Versions: map[string]string{"stable": "1.2.3"}}, User: model.User{ID: 1}}, nil
 	}
 
 	if id == 3 {
@@ -129,8 +129,8 @@ func TestList(t *testing.T) {
 				page: 1,
 			},
 			[]model.Ketchup{
-				{Version: "1.0.0", Semver: "Patch", Repository: model.Repository{Version: "1.0.2"}},
-				{Version: "1.2.3", Repository: model.Repository{Version: "1.2.3"}},
+				{Version: "1.0.0", Semver: "Patch", Repository: model.Repository{Versions: map[string]string{"stable": "1.0.2"}}},
+				{Version: "1.2.3", Repository: model.Repository{Versions: map[string]string{"stable": "1.2.3"}}},
 			},
 			2,
 			nil,
@@ -187,8 +187,8 @@ func TestListForRepositories(t *testing.T) {
 				},
 			},
 			[]model.Ketchup{
-				{Version: "1.0.0", Semver: "Patch", Repository: model.Repository{ID: 1, Name: "vibioh/ketchup", Version: "1.0.2"}},
-				{Version: "1.2.3", Repository: model.Repository{ID: 2, Name: "vibioh/viws", Version: "1.2.3"}},
+				{Version: "1.0.0", Semver: "Patch", Repository: model.Repository{ID: 1, Name: "vibioh/ketchup", Versions: map[string]string{"stable": "1.0.2"}}},
+				{Version: "1.2.3", Repository: model.Repository{ID: 2, Name: "vibioh/viws", Versions: map[string]string{"stable": "1.2.3"}}},
 			},
 			nil,
 		},
@@ -284,7 +284,7 @@ func TestCreate(t *testing.T) {
 				ctx:  model.StoreUser(context.Background(), model.User{ID: 1}),
 				item: model.Ketchup{Version: "1.0.0", Repository: model.Repository{Name: "vibioh/ketchup"}},
 			},
-			model.Ketchup{Version: "1.0.0", Repository: model.Repository{ID: 1, Name: "vibioh/ketchup", Version: "1.2.3"}},
+			model.Ketchup{Version: "1.0.0", Repository: model.Repository{ID: 1, Name: "vibioh/ketchup", Versions: map[string]string{"stable": "1.2.3"}}},
 			nil,
 		},
 	}
@@ -297,7 +297,7 @@ func TestCreate(t *testing.T) {
 
 			if !errors.Is(gotErr, tc.wantErr) {
 				failed = true
-			} else if got != tc.want {
+			} else if !reflect.DeepEqual(got, tc.want) {
 				failed = true
 			}
 
@@ -371,7 +371,7 @@ func TestUpdate(t *testing.T) {
 				ctx:  model.StoreUser(context.Background(), model.User{ID: 1}),
 				item: model.Ketchup{Version: "1.0.0", Repository: model.Repository{ID: 2}},
 			},
-			model.Ketchup{Version: "1.0.0", Repository: model.Repository{ID: 2, Name: "vibioh/ketchup", Version: "1.2.3"}},
+			model.Ketchup{Version: "1.0.0", Repository: model.Repository{ID: 2, Name: "vibioh/ketchup", Versions: map[string]string{"stable": "1.2.3"}}, User: model.User{ID: 1}},
 			nil,
 		},
 	}
@@ -384,7 +384,7 @@ func TestUpdate(t *testing.T) {
 
 			if !errors.Is(gotErr, tc.wantErr) {
 				failed = true
-			} else if got != tc.want {
+			} else if !reflect.DeepEqual(got, tc.want) {
 				failed = true
 			}
 
@@ -514,7 +514,7 @@ func TestCheck(t *testing.T) {
 			"create error",
 			args{
 				ctx: model.StoreUser(context.Background(), model.User{ID: 1}),
-				new: model.Ketchup{Version: "1.0.0", Repository: model.Repository{ID: 0}},
+				new: model.Ketchup{Version: "1.0.0", Repository: model.Repository{ID: 0}, User: model.User{ID: 1}},
 			},
 			errors.New("unable to check if ketchup already exists"),
 		},
@@ -522,7 +522,7 @@ func TestCheck(t *testing.T) {
 			"create already exists",
 			args{
 				ctx: model.StoreUser(context.Background(), model.User{ID: 1}),
-				new: model.Ketchup{Version: "1.0.0", Repository: model.Repository{ID: 2, Name: "vibioh/ketchup"}},
+				new: model.Ketchup{Version: "1.0.0", Repository: model.Repository{ID: 2, Name: "vibioh/ketchup"}, User: model.User{ID: 1}},
 			},
 			errors.New("ketchup for vibioh/ketchup already exists"),
 		},

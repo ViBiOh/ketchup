@@ -1,5 +1,6 @@
 -- clean
 DROP TABLE IF EXISTS ketchup.ketchup;
+DROP TABLE IF EXISTS ketchup.repository_version;
 DROP TABLE IF EXISTS ketchup.repository;
 DROP TABLE IF EXISTS ketchup.user;
 
@@ -40,7 +41,6 @@ CREATE SEQUENCE ketchup.repository_seq;
 CREATE TABLE ketchup.repository (
   id BIGINT NOT NULL DEFAULT nextval('ketchup.repository_seq'),
   name TEXT NOT NULL,
-  version TEXT NOT NULL,
   kind ketchup.repository_kind NOT NULL,
   creation_date TIMESTAMP WITH TIME ZONE DEFAULT now()
 );
@@ -48,6 +48,15 @@ ALTER SEQUENCE ketchup.repository_seq OWNED BY ketchup.repository.id;
 
 CREATE UNIQUE INDEX repository_id ON ketchup.repository(id);
 CREATE UNIQUE INDEX repository_repository ON ketchup.repository(name);
+
+-- repository_version
+CREATE TABLE ketchup.repository_version (
+  repository_id BIGINT NOT NULL REFERENCES ketchup.repository(id),
+  pattern TEXT NOT NULL DEFAULT 'stable',
+  version TEXT NOT NULL
+);
+
+CREATE UNIQUE INDEX repository_version ON ketchup.repository_version(repository_id, pattern);
 
 -- ketchup
 CREATE TABLE ketchup.ketchup (
