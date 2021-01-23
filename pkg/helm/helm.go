@@ -25,7 +25,7 @@ type chart struct {
 
 // App of package
 type App interface {
-	LatestVersion(string) (semver.Version, error)
+	LatestVersion(string, []string) (map[string]semver.Version, error)
 }
 
 type app struct{}
@@ -35,39 +35,49 @@ func New() App {
 	return app{}
 }
 
-func (a app) LatestVersion(repository string) (semver.Version, error) {
+func (a app) LatestVersion(repository string, patterns []string) (map[string]semver.Version, error) {
 	parts := strings.SplitN(repository, "@", 2)
 	if len(parts) != 2 {
-		return semver.NoneVersion, errors.New("invalid name for helm chart")
+		return nil, errors.New("invalid name for helm chart")
 	}
 
 	resp, err := request.New().Get(fmt.Sprintf("%s/%s", parts[1], indexName)).Send(context.Background(), nil)
 	if err != nil {
-		return semver.NoneVersion, fmt.Errorf("unable to request repository: %s", err)
+		return nil, fmt.Errorf("unable to request repository: %s", err)
 	}
 
 	payload, err := request.ReadBodyResponse(resp)
 	if err != nil {
-		return semver.NoneVersion, fmt.Errorf("unable to read body `%s`: %s", payload, err)
+		return nil, fmt.Errorf("unable to read body `%s`: %s", payload, err)
 	}
 
 	var index charts
 	if err := yaml.Unmarshal(payload, &index); err != nil {
-		return semver.NoneVersion, fmt.Errorf("unable to parse index: %s", err)
+		return nil, fmt.Errorf("unable to parse index: %s", err)
 	}
 
 	charts, ok := index.Entries[parts[0]]
 	if !ok {
-		return semver.NoneVersion, fmt.Errorf("no chart `%s` in repository", parts[0])
+		return nil, fmt.Errorf("no chart `%s` in repository", parts[0])
 	}
 
-	var version semver.Version
+	output := make(map[string]semver.Version)
+	for _, pattern := range patterns {
+		output[pattern] = semver.NoneVersion
+	}
+
 	for _, chart := range charts {
 		chartVersion, err := semver.Parse(chart.Version)
-		if err == nil && chartVersion.Suffix == 0 && chartVersion.IsGreater(version) {
-			version = chartVersion
+		if err != nil {
+			continue
+		}
+
+		for pattern, patternVersion := range output {
+			if chartVersion.Match(pattern) && chartVersion.IsGreater(patternVersion) {
+				output[pattern] = chartVersion
+			}
 		}
 	}
 
-	return version, nil
+	return output, nil
 }

@@ -27,7 +27,7 @@ type App interface {
 	GetOrCreate(ctx context.Context, name string, repositoryKind model.RepositoryKind) (model.Repository, error)
 	Update(ctx context.Context, item model.Repository) error
 	Clean(ctx context.Context) error
-	LatestVersion(repo model.Repository) (semver.Version, error)
+	LatestVersion(repo model.Repository, patterns []string) (map[string]semver.Version, error)
 }
 
 type app struct {
@@ -86,7 +86,7 @@ func (a app) create(ctx context.Context, item model.Repository) (model.Repositor
 		return model.NoneRepository, httpModel.WrapInvalid(err)
 	}
 
-	version, err := a.LatestVersion(item)
+	versions, err := a.LatestVersion(item, []string{model.DefaultPattern})
 	if err != nil {
 		return model.NoneRepository, httpModel.WrapNotFound(fmt.Errorf("no release found for %s: %s", item.Name, err))
 	}
@@ -94,7 +94,7 @@ func (a app) create(ctx context.Context, item model.Repository) (model.Repositor
 	if item.Versions == nil {
 		item.Versions = make(map[string]string)
 	}
-	item.Versions[model.DefaultPattern] = version.Name
+	item.Versions[model.DefaultPattern] = versions[model.DefaultPattern].Name
 
 	err = a.repositoryStore.DoAtomic(ctx, func(ctx context.Context) error {
 		id, err := a.repositoryStore.Create(ctx, item)
@@ -169,14 +169,14 @@ func (a app) check(ctx context.Context, old, new model.Repository) error {
 	return service.ConcatError(output)
 }
 
-func (a app) LatestVersion(repo model.Repository) (semver.Version, error) {
+func (a app) LatestVersion(repo model.Repository, patterns []string) (map[string]semver.Version, error) {
 	switch repo.Kind {
 	case model.Github:
-		return a.githubApp.LatestVersion(repo.Name)
+		return a.githubApp.LatestVersion(repo.Name, patterns)
 	case model.Helm:
-		return a.helmApp.LatestVersion(repo.Name)
+		return a.helmApp.LatestVersion(repo.Name, patterns)
 	default:
-		return semver.NoneVersion, fmt.Errorf("unknown repository kind %d", repo.Kind)
+		return nil, fmt.Errorf("unknown repository kind %d", repo.Kind)
 	}
 }
 

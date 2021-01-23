@@ -5,6 +5,7 @@ import (
 	"regexp"
 
 	"github.com/ViBiOh/ketchup/pkg/github"
+	"github.com/ViBiOh/ketchup/pkg/model"
 	"github.com/ViBiOh/ketchup/pkg/semver"
 )
 
@@ -23,11 +24,11 @@ type app struct {
 	version string
 }
 
-func (a app) LatestVersion(repository string) (semver.Version, error) {
+func (a app) LatestVersion(repository string, patterns []string) (map[string]semver.Version, error) {
 	if a.name.MatchString(repository) {
 		version, _ := semver.Parse(a.version)
-		return version, nil
+		return map[string]semver.Version{model.DefaultPattern: version}, nil
 	}
 
-	return semver.NoneVersion, errors.New("unknown repository")
+	return nil, errors.New("unknown repository")
 }
