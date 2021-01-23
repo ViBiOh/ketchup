@@ -121,17 +121,17 @@ func (a app) getNewReleases(ctx context.Context) ([]model.Release, error) {
 				continue
 			}
 
-			if latestVersion.Name == repo.Versions["stable"] {
+			if latestVersion.Name == repo.Versions[model.DefaultPattern] {
 				continue
 			}
 
-			repositoryVersion, repositoryErr := semver.Parse(repo.Versions["stable"])
+			repositoryVersion, repositoryErr := semver.Parse(repo.Versions[model.DefaultPattern])
 			if repositoryErr == nil && repositoryVersion.Suffix == 0 && repositoryVersion.IsGreater(latestVersion) {
 				continue
 			}
 
 			logger.Info("New version available for %s: %s", repo.Name, latestVersion.Name)
-			repo.Versions["stable"] = latestVersion.Name
+			repo.Versions[model.DefaultPattern] = latestVersion.Name
 
 			if err := a.repositoryService.Update(ctx, repo); err != nil {
 				return nil, fmt.Errorf("unable to update repo %s: %s", repo.Name, err)

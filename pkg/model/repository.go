@@ -9,6 +9,9 @@ import (
 type RepositoryKind int
 
 const (
+	// DefaultPattern is the latest but non-beta version
+	DefaultPattern = "stable"
+
 	githubURL = "https://github.com"
 )
 
@@ -51,7 +54,7 @@ func (r Repository) URL() string {
 		return r.Name
 	}
 
-	return fmt.Sprintf("%s/%s/releases/tag/%s", githubURL, r.Name, r.Versions["stable"])
+	return fmt.Sprintf("%s/%s/releases/tag/%s", githubURL, r.Name, r.Versions[DefaultPattern])
 }
 
 // CompareURL format the URL of given repository compared against given version
@@ -60,7 +63,7 @@ func (r Repository) CompareURL(version string) string {
 		return r.URL()
 	}
 
-	return fmt.Sprintf("%s/%s/compare/%s...%s", githubURL, r.Name, version, r.Versions["stable"])
+	return fmt.Sprintf("%s/%s/compare/%s...%s", githubURL, r.Name, version, r.Versions[DefaultPattern])
 }
 
 // ParseRepositoryKind parse raw string into a RepositoryKind

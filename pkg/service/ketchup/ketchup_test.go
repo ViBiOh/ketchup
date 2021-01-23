@@ -38,8 +38,8 @@ func (tks testKetchupStore) List(_ context.Context, page, _ uint) ([]model.Ketch
 	}
 
 	return []model.Ketchup{
-		{Version: "1.0.0", Repository: model.Repository{Versions: map[string]string{"stable": "1.0.2"}}},
-		{Version: "1.2.3", Repository: model.Repository{Versions: map[string]string{"stable": "1.2.3"}}},
+		{Pattern: model.DefaultPattern, Version: "1.0.0", Repository: model.Repository{Versions: map[string]string{model.DefaultPattern: "1.0.2"}}},
+		{Pattern: model.DefaultPattern, Version: "1.2.3", Repository: model.Repository{Versions: map[string]string{model.DefaultPattern: "1.2.3"}}},
 	}, 2, nil
 }
 
@@ -49,8 +49,8 @@ func (tks testKetchupStore) ListByRepositoriesID(_ context.Context, ids []uint64
 	}
 
 	return []model.Ketchup{
-		{Version: "1.0.0", Repository: model.Repository{ID: 1, Name: "vibioh/ketchup", Versions: map[string]string{"stable": "1.0.2"}}},
-		{Version: "1.2.3", Repository: model.Repository{ID: 2, Name: "vibioh/viws", Versions: map[string]string{"stable": "1.2.3"}}},
+		{Pattern: model.DefaultPattern, Version: "1.0.0", Repository: model.Repository{ID: 1, Name: "vibioh/ketchup", Versions: map[string]string{model.DefaultPattern: "1.0.2"}}},
+		{Pattern: model.DefaultPattern, Version: "1.2.3", Repository: model.Repository{ID: 2, Name: "vibioh/viws", Versions: map[string]string{model.DefaultPattern: "1.2.3"}}},
 	}, nil
 }
 
@@ -60,7 +60,7 @@ func (tks testKetchupStore) GetByRepositoryID(_ context.Context, id uint64, _ bo
 	}
 
 	if id == 2 {
-		return model.Ketchup{Version: "1.0.0", Repository: model.Repository{ID: 2, Name: "vibioh/ketchup", Versions: map[string]string{"stable": "1.2.3"}}, User: model.User{ID: 1}}, nil
+		return model.Ketchup{Pattern: model.DefaultPattern, Version: "1.0.0", Repository: model.Repository{ID: 2, Name: "vibioh/ketchup", Versions: map[string]string{model.DefaultPattern: "1.2.3"}}, User: model.User{ID: 1}}, nil
 	}
 
 	if id == 3 {
@@ -129,8 +129,8 @@ func TestList(t *testing.T) {
 				page: 1,
 			},
 			[]model.Ketchup{
-				{Version: "1.0.0", Semver: "Patch", Repository: model.Repository{Versions: map[string]string{"stable": "1.0.2"}}},
-				{Version: "1.2.3", Repository: model.Repository{Versions: map[string]string{"stable": "1.2.3"}}},
+				{Pattern: model.DefaultPattern, Version: "1.0.0", Semver: "Patch", Repository: model.Repository{Versions: map[string]string{model.DefaultPattern: "1.0.2"}}},
+				{Pattern: model.DefaultPattern, Version: "1.2.3", Repository: model.Repository{Versions: map[string]string{model.DefaultPattern: "1.2.3"}}},
 			},
 			2,
 			nil,
@@ -187,8 +187,8 @@ func TestListForRepositories(t *testing.T) {
 				},
 			},
 			[]model.Ketchup{
-				{Version: "1.0.0", Semver: "Patch", Repository: model.Repository{ID: 1, Name: "vibioh/ketchup", Versions: map[string]string{"stable": "1.0.2"}}},
-				{Version: "1.2.3", Repository: model.Repository{ID: 2, Name: "vibioh/viws", Versions: map[string]string{"stable": "1.2.3"}}},
+				{Pattern: model.DefaultPattern, Version: "1.0.0", Semver: "Patch", Repository: model.Repository{ID: 1, Name: "vibioh/ketchup", Versions: map[string]string{model.DefaultPattern: "1.0.2"}}},
+				{Pattern: model.DefaultPattern, Version: "1.2.3", Repository: model.Repository{ID: 2, Name: "vibioh/viws", Versions: map[string]string{model.DefaultPattern: "1.2.3"}}},
 			},
 			nil,
 		},
@@ -284,7 +284,7 @@ func TestCreate(t *testing.T) {
 				ctx:  model.StoreUser(context.Background(), model.User{ID: 1}),
 				item: model.Ketchup{Version: "1.0.0", Repository: model.Repository{Name: "vibioh/ketchup"}},
 			},
-			model.Ketchup{Version: "1.0.0", Repository: model.Repository{ID: 1, Name: "vibioh/ketchup", Versions: map[string]string{"stable": "1.2.3"}}},
+			model.Ketchup{Version: "1.0.0", Repository: model.Repository{ID: 1, Name: "vibioh/ketchup", Versions: map[string]string{model.DefaultPattern: "1.2.3"}}},
 			nil,
 		},
 	}
@@ -371,7 +371,7 @@ func TestUpdate(t *testing.T) {
 				ctx:  model.StoreUser(context.Background(), model.User{ID: 1}),
 				item: model.Ketchup{Version: "1.0.0", Repository: model.Repository{ID: 2}},
 			},
-			model.Ketchup{Version: "1.0.0", Repository: model.Repository{ID: 2, Name: "vibioh/ketchup", Versions: map[string]string{"stable": "1.2.3"}}, User: model.User{ID: 1}},
+			model.Ketchup{Version: "1.0.0", Repository: model.Repository{ID: 2, Name: "vibioh/ketchup", Versions: map[string]string{model.DefaultPattern: "1.2.3"}}, User: model.User{ID: 1}},
 			nil,
 		},
 	}

@@ -5,6 +5,9 @@ CREATE TABLE ketchup.repository_version (
   version TEXT NOT NULL
 );
 
+ALTER TABLE ketchup.ketchup
+  ADD COLUMN pattern TEXT NOT NULL DEFAULT 'stable';
+
 INSERT INTO ketchup.repository_version (repository_id, version)
 SELECT id, version
 FROM ketchup.repository;

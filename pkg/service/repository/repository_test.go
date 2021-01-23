@@ -39,8 +39,8 @@ func (trs testRepositoryStore) List(_ context.Context, page, _ uint) ([]model.Re
 	}
 
 	return []model.Repository{
-		{ID: 1, Name: "vibioh/ketchup", Versions: map[string]string{"stable": "1.0.0"}},
-		{ID: 2, Name: "vibioh/viws", Versions: map[string]string{"stable": "1.2.3"}},
+		{ID: 1, Name: "vibioh/ketchup", Versions: map[string]string{model.DefaultPattern: "1.0.0"}},
+		{ID: 2, Name: "vibioh/viws", Versions: map[string]string{model.DefaultPattern: "1.2.3"}},
 	}, 2, nil
 }
 
@@ -50,7 +50,7 @@ func (trs testRepositoryStore) Suggest(ctx context.Context, _ []uint64, _ uint64
 	}
 
 	return []model.Repository{
-		{ID: 2, Name: "vibioh/viws", Versions: map[string]string{"stable": "1.2.3"}},
+		{ID: 2, Name: "vibioh/viws", Versions: map[string]string{model.DefaultPattern: "1.2.3"}},
 	}, nil
 }
 
@@ -59,7 +59,7 @@ func (trs testRepositoryStore) Get(_ context.Context, id uint64, _ bool) (model.
 		return model.NoneRepository, errors.New("invalid id")
 	}
 
-	return model.Repository{ID: id, Name: "vibioh/ketchup", Versions: map[string]string{"stable": "1.0.0"}}, nil
+	return model.Repository{ID: id, Name: "vibioh/ketchup", Versions: map[string]string{model.DefaultPattern: "1.0.0"}}, nil
 }
 
 func (trs testRepositoryStore) GetByName(_ context.Context, name string, repositoryKind model.RepositoryKind) (model.Repository, error) {
@@ -121,8 +121,8 @@ func TestList(t *testing.T) {
 				page: 1,
 			},
 			[]model.Repository{
-				{ID: 1, Name: "vibioh/ketchup", Versions: map[string]string{"stable": "1.0.0"}},
-				{ID: 2, Name: "vibioh/viws", Versions: map[string]string{"stable": "1.2.3"}},
+				{ID: 1, Name: "vibioh/ketchup", Versions: map[string]string{model.DefaultPattern: "1.0.0"}},
+				{ID: 2, Name: "vibioh/viws", Versions: map[string]string{model.DefaultPattern: "1.2.3"}},
 			},
 			2,
 			nil,
@@ -178,7 +178,7 @@ func TestSuggest(t *testing.T) {
 				ctx: context.Background(),
 			},
 			[]model.Repository{
-				{ID: 2, Name: "vibioh/viws", Versions: map[string]string{"stable": "1.2.3"}},
+				{ID: 2, Name: "vibioh/viws", Versions: map[string]string{model.DefaultPattern: "1.2.3"}},
 			},
 			nil,
 		},
@@ -248,7 +248,7 @@ func TestGetOrCreate(t *testing.T) {
 				ctx:  context.Background(),
 				name: "not found",
 			},
-			model.Repository{ID: 1, Name: "not found", Versions: map[string]string{"stable": "1.0.0"}},
+			model.Repository{ID: 1, Name: "not found", Versions: map[string]string{model.DefaultPattern: "1.0.0"}},
 			nil,
 		},
 	}
@@ -308,7 +308,7 @@ func TestCreate(t *testing.T) {
 				ctx:  context.Background(),
 				item: model.Repository{Name: "vibioh"},
 			},
-			model.Repository{Name: "vibioh", Versions: map[string]string{"stable": "1.0.0"}},
+			model.Repository{Name: "vibioh", Versions: map[string]string{model.DefaultPattern: "1.0.0"}},
 			httpModel.ErrInternalError,
 		},
 		{
@@ -317,7 +317,7 @@ func TestCreate(t *testing.T) {
 				ctx:  context.Background(),
 				item: model.Repository{Name: "vibioh/ketchup"},
 			},
-			model.Repository{ID: 1, Name: "vibioh/ketchup", Versions: map[string]string{"stable": "1.0.0"}},
+			model.Repository{ID: 1, Name: "vibioh/ketchup", Versions: map[string]string{model.DefaultPattern: "1.0.0"}},
 			nil,
 		},
 	}
@@ -380,7 +380,7 @@ func TestUpdate(t *testing.T) {
 			"update error",
 			args{
 				ctx:  context.Background(),
-				item: model.Repository{ID: 1, Versions: map[string]string{"stable": "1.2.3"}},
+				item: model.Repository{ID: 1, Versions: map[string]string{model.DefaultPattern: "1.2.3"}},
 			},
 			httpModel.ErrInternalError,
 		},
@@ -388,7 +388,7 @@ func TestUpdate(t *testing.T) {
 			"end atomic error",
 			args{
 				ctx:  context.Background(),
-				item: model.Repository{ID: 2, Versions: map[string]string{"stable": "1.2.3"}},
+				item: model.Repository{ID: 2, Versions: map[string]string{model.DefaultPattern: "1.2.3"}},
 			},
 			errAtomicEnd,
 		},
@@ -396,7 +396,7 @@ func TestUpdate(t *testing.T) {
 			"success",
 			args{
 				ctx:  context.Background(),
-				item: model.Repository{ID: 3, Versions: map[string]string{"stable": "1.2.3"}},
+				item: model.Repository{ID: 3, Versions: map[string]string{model.DefaultPattern: "1.2.3"}},
 			},
 			nil,
 		},
@@ -484,14 +484,14 @@ func TestCheck(t *testing.T) {
 		{
 			"name required",
 			args{
-				new: model.Repository{ID: 1, Versions: map[string]string{"stable": "1.0.0"}},
+				new: model.Repository{ID: 1, Versions: map[string]string{model.DefaultPattern: "1.0.0"}},
 			},
 			errors.New("name is required"),
 		},
 		{
 			"version required for update",
 			args{
-				old: model.Repository{ID: 1, Name: "vibioh/ketchup", Versions: map[string]string{"stable": "1.0.0"}},
+				old: model.Repository{ID: 1, Name: "vibioh/ketchup", Versions: map[string]string{model.DefaultPattern: "1.0.0"}},
 				new: model.Repository{ID: 1, Name: "vibioh/ketchup"},
 			},
 			errors.New("version is required"),

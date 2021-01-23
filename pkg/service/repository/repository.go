@@ -94,7 +94,7 @@ func (a app) create(ctx context.Context, item model.Repository) (model.Repositor
 	if item.Versions == nil {
 		item.Versions = make(map[string]string)
 	}
-	item.Versions["stable"] = version.Name
+	item.Versions[model.DefaultPattern] = version.Name
 
 	err = a.repositoryStore.DoAtomic(ctx, func(ctx context.Context) error {
 		id, err := a.repositoryStore.Create(ctx, item)

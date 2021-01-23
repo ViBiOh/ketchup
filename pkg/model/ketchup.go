@@ -13,6 +13,7 @@ var (
 type Ketchup struct {
 	User       User
 	Semver     string
+	Pattern    string
 	Version    string
 	Repository Repository
 }

@@ -39,7 +39,7 @@ func (a app) List(ctx context.Context, page, _ uint) ([]model.Repository, uint64
 				{
 					ID:       1,
 					Name:     "vibioh/viws",
-					Versions: map[string]string{"stable": "1.1.0"},
+					Versions: map[string]string{model.DefaultPattern: "1.1.0"},
 				},
 			}, 2, nil
 		} else if page == 2 {
@@ -47,7 +47,7 @@ func (a app) List(ctx context.Context, page, _ uint) ([]model.Repository, uint64
 				{
 					ID:       2,
 					Name:     "vibioh/ketchup",
-					Versions: map[string]string{"stable": "1.0.0"},
+					Versions: map[string]string{model.DefaultPattern: "1.0.0"},
 				},
 			}, 2, nil
 		}
@@ -57,7 +57,7 @@ func (a app) List(ctx context.Context, page, _ uint) ([]model.Repository, uint64
 		{
 			ID:       1,
 			Name:     "vibioh/ketchup",
-			Versions: map[string]string{"stable": "1.0.0"},
+			Versions: map[string]string{model.DefaultPattern: "1.0.0"},
 		},
 	}, 1, nil
 }
@@ -71,11 +71,11 @@ func (a app) GetOrCreate(_ context.Context, name string, repositoryKind model.Re
 		return model.NoneRepository, httpModel.WrapInvalid(errors.New("invalid name"))
 	}
 
-	return model.Repository{ID: 1, Name: "vibioh/ketchup", Versions: map[string]string{"stable": "1.2.3"}}, nil
+	return model.Repository{ID: 1, Name: "vibioh/ketchup", Versions: map[string]string{model.DefaultPattern: "1.2.3"}}, nil
 }
 
 func (a app) Update(_ context.Context, item model.Repository) error {
-	if item.Versions["stable"] == "1.0.1" {
+	if item.Versions[model.DefaultPattern] == "1.0.1" {
 		return errors.New("update error")
 	}
 
