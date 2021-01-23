@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"sort"
 
 	"github.com/ViBiOh/httputils/v3/pkg/db"
@@ -113,10 +114,12 @@ func (a app) UpdateVersions(ctx context.Context, o model.Repository) error {
 
 		if repositoryVersion, ok := o.Versions[pattern]; ok {
 			if repositoryVersion != version {
-				return db.Exec(ctx, updateRepositoryVersionQuery, o.ID, pattern, version)
+				if err := db.Exec(ctx, updateRepositoryVersionQuery, o.ID, pattern, version); err != nil {
+					return fmt.Errorf("unable to update repository version: %w", err)
+				}
 			}
-		} else {
-			return db.Exec(ctx, deleteRepositoryVersionQuery, o.ID, pattern)
+		} else if err := db.Exec(ctx, deleteRepositoryVersionQuery, o.ID, pattern); err != nil {
+			return fmt.Errorf("unable to delete repository version: %w", err)
 		}
 
 		return nil
@@ -130,7 +133,7 @@ func (a app) UpdateVersions(ctx context.Context, o model.Repository) error {
 	for pattern, version := range o.Versions {
 		if !patterns[pattern] {
 			if err := db.Exec(ctx, createRepositoryVersionQuery, o.ID, pattern, version); err != nil {
-				return err
+				return fmt.Errorf("unable to create repository version: %w", err)
 			}
 		}
 	}

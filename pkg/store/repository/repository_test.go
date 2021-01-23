@@ -485,6 +485,20 @@ func TestCreate(t *testing.T) {
 			errors.New("repository already exists with name"),
 		},
 		{
+			"error create",
+			args{
+				o: model.Repository{
+					Name: "vibioh/ketchup",
+					Versions: map[string]string{
+						model.DefaultPattern: "1.0.0",
+					},
+					Kind: model.Github,
+				},
+			},
+			0,
+			errors.New("failed"),
+		},
+		{
 			"success",
 			args{
 				o: model.Repository{
@@ -521,9 +535,11 @@ func TestCreate(t *testing.T) {
 			switch tc.intention {
 			case "error lock":
 				lockQuery.WillReturnError(errors.New("unable to obtain lock"))
+
 			case "error get":
 				lockQuery.WillReturnResult(sqlmock.NewResult(0, 0))
 				mock.ExpectQuery("SELECT id, name, kind FROM ketchup.repository WHERE name = .+ AND kind = .+").WithArgs("vibioh/ketchup", tc.args.o.Kind.String()).WillReturnError(errors.New("unable to read"))
+
 			case "found get":
 				lockQuery.WillReturnResult(sqlmock.NewResult(0, 0))
 				mock.ExpectQuery("SELECT id, name, kind FROM ketchup.repository WHERE name = .+ AND kind = .+").WithArgs("vibioh/ketchup", "github").WillReturnRows(sqlmock.NewRows([]string{"id", "name", "kind"}).AddRow(1, "vibioh/ketchup", "github"))
@@ -534,6 +550,12 @@ func TestCreate(t *testing.T) {
 				).WillReturnRows(
 					sqlmock.NewRows([]string{"repository_id", "pattern", "version"}).AddRow(1, model.DefaultPattern, "1.0.0"),
 				)
+
+			case "error create":
+				lockQuery.WillReturnResult(sqlmock.NewResult(0, 0))
+				mock.ExpectQuery("SELECT id, name, kind FROM ketchup.repository WHERE name = .+ AND kind = .+").WithArgs("vibioh/ketchup", tc.args.o.Kind.String()).WillReturnRows(sqlmock.NewRows([]string{"id", "name", "kind"}))
+				mock.ExpectQuery("INSERT INTO ketchup.repository").WithArgs("vibioh/ketchup", "github").WillReturnError(errors.New("failed"))
+
 			case "success":
 				lockQuery.WillReturnResult(sqlmock.NewResult(0, 0))
 				mock.ExpectQuery("SELECT id, name, kind FROM ketchup.repository WHERE name = .+ AND kind = .+").WithArgs("vibioh/ketchup", tc.args.o.Kind.String()).WillReturnRows(sqlmock.NewRows([]string{"id", "name", "kind"}))
