@@ -63,7 +63,7 @@ func (r Repository) CompareURL(version string) string {
 		return r.URL()
 	}
 
-	return fmt.Sprintf("%s/%s/compare/%s...%s", githubURL, r.Name, version, r.Versions[DefaultPattern])
+	return fmt.Sprintf("%s/%s/compare/%s...%s", githubURL, r.Name, r.Versions[DefaultPattern], version)
 }
 
 // ParseRepositoryKind parse raw string into a RepositoryKind

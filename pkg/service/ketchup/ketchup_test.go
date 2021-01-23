@@ -64,11 +64,11 @@ func (tks testKetchupStore) GetByRepositoryID(_ context.Context, id uint64, _ bo
 	}
 
 	if id == 3 {
-		return model.Ketchup{Version: "0.0.0"}, nil
+		return model.Ketchup{Pattern: model.DefaultPattern, Version: "0.0.0"}, nil
 	}
 
 	if id == 4 {
-		return model.Ketchup{Version: "0"}, nil
+		return model.Ketchup{Pattern: model.DefaultPattern, Version: "0"}, nil
 	}
 
 	return model.NoneKetchup, nil
@@ -264,7 +264,7 @@ func TestCreate(t *testing.T) {
 			"create error",
 			args{
 				ctx:  model.StoreUser(context.Background(), model.User{ID: 1}),
-				item: model.Ketchup{Version: "0.0.0", Repository: model.Repository{ID: 1, Name: "vibioh/ketchup"}},
+				item: model.Ketchup{Pattern: model.DefaultPattern, Version: "0.0.0", Repository: model.Repository{ID: 1, Name: "vibioh/ketchup"}},
 			},
 			model.NoneKetchup,
 			httpModel.ErrInternalError,
@@ -273,7 +273,7 @@ func TestCreate(t *testing.T) {
 			"end atomic error",
 			args{
 				ctx:  model.StoreUser(context.Background(), model.User{ID: 1}),
-				item: model.Ketchup{Version: "0", Repository: model.Repository{Name: "vibioh/ketchup"}},
+				item: model.Ketchup{Pattern: model.DefaultPattern, Version: "0", Repository: model.Repository{Name: "vibioh/ketchup"}},
 			},
 			model.NoneKetchup,
 			errAtomicEnd,
@@ -282,9 +282,9 @@ func TestCreate(t *testing.T) {
 			"success",
 			args{
 				ctx:  model.StoreUser(context.Background(), model.User{ID: 1}),
-				item: model.Ketchup{Version: "1.0.0", Repository: model.Repository{Name: "vibioh/ketchup"}},
+				item: model.Ketchup{Pattern: model.DefaultPattern, Version: "1.0.0", Repository: model.Repository{Name: "vibioh/ketchup"}},
 			},
-			model.Ketchup{Version: "1.0.0", Repository: model.Repository{ID: 1, Name: "vibioh/ketchup", Versions: map[string]string{model.DefaultPattern: "1.2.3"}}},
+			model.Ketchup{Pattern: model.DefaultPattern, Version: "1.0.0", Repository: model.Repository{ID: 1, Name: "vibioh/ketchup", Versions: map[string]string{model.DefaultPattern: "1.2.3"}}},
 			nil,
 		},
 	}
@@ -351,7 +351,7 @@ func TestUpdate(t *testing.T) {
 			"update error",
 			args{
 				ctx:  model.StoreUser(context.Background(), model.User{ID: 1}),
-				item: model.Ketchup{Version: "0.0.0", Repository: model.Repository{ID: 2}},
+				item: model.Ketchup{Pattern: model.DefaultPattern, Version: "0.0.0", Repository: model.Repository{ID: 2}},
 			},
 			model.NoneKetchup,
 			httpModel.ErrInternalError,
@@ -360,7 +360,7 @@ func TestUpdate(t *testing.T) {
 			"end atomic error",
 			args{
 				ctx:  model.StoreUser(context.Background(), model.User{ID: 1}),
-				item: model.Ketchup{Version: "0", Repository: model.Repository{ID: 2}},
+				item: model.Ketchup{Pattern: model.DefaultPattern, Version: "0", Repository: model.Repository{ID: 2}},
 			},
 			model.NoneKetchup,
 			errAtomicEnd,
@@ -369,9 +369,9 @@ func TestUpdate(t *testing.T) {
 			"success",
 			args{
 				ctx:  model.StoreUser(context.Background(), model.User{ID: 1}),
-				item: model.Ketchup{Version: "1.0.0", Repository: model.Repository{ID: 2}},
+				item: model.Ketchup{Pattern: model.DefaultPattern, Version: "1.0.0", Repository: model.Repository{ID: 2}},
 			},
-			model.Ketchup{Version: "1.0.0", Repository: model.Repository{ID: 2, Name: "vibioh/ketchup", Versions: map[string]string{model.DefaultPattern: "1.2.3"}}, User: model.User{ID: 1}},
+			model.Ketchup{Pattern: model.DefaultPattern, Version: "1.0.0", Repository: model.Repository{ID: 2, Name: "vibioh/ketchup", Versions: map[string]string{model.DefaultPattern: "1.2.3"}}, User: model.User{ID: 1}},
 			nil,
 		},
 	}

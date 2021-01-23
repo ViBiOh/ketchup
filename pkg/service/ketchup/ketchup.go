@@ -99,6 +99,7 @@ func (a app) Update(ctx context.Context, item model.Ketchup) (model.Ketchup, err
 		}
 
 		current := model.Ketchup{
+			Pattern:    item.Pattern,
 			Version:    item.Version,
 			Repository: old.Repository,
 			User:       old.User,
@@ -147,6 +148,10 @@ func (a app) check(ctx context.Context, old, new model.Ketchup) error {
 
 	if new.Repository.ID == 0 && new.User.ID == 0 {
 		return service.ConcatError(output)
+	}
+
+	if len(strings.TrimSpace(new.Pattern)) == 0 {
+		output = append(output, errors.New("pattern is required"))
 	}
 
 	if len(strings.TrimSpace(new.Version)) == 0 {

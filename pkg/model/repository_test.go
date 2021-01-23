@@ -103,11 +103,11 @@ func TestCompareURL(t *testing.T) {
 				Kind: Github,
 				Name: "vibioh/ketchup",
 				Versions: map[string]string{
-					DefaultPattern: "1.0.0",
+					DefaultPattern: "1.1.0",
 				},
 			},
 			args{
-				version: "1.1.0",
+				version: "1.0.0",
 			},
 			"https://github.com/vibioh/ketchup/compare/1.1.0...1.0.0",
 		},
