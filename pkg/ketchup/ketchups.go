@@ -46,6 +46,7 @@ func (a app) handleCreate(w http.ResponseWriter, r *http.Request) {
 	}
 
 	item := model.Ketchup{
+		Pattern: r.FormValue("pattern"),
 		Version: r.FormValue("version"),
 		Repository: model.Repository{
 			Name: r.FormValue("repository"),
@@ -71,6 +72,7 @@ func (a app) handleUpdate(w http.ResponseWriter, r *http.Request) {
 	}
 
 	item := model.Ketchup{
+		Pattern: r.FormValue("pattern"),
 		Version: r.FormValue("version"),
 		Repository: model.Repository{
 			ID: id,
