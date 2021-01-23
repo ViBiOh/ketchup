@@ -106,6 +106,8 @@ func (a app) getNewReleases(ctx context.Context) ([]model.Release, error) {
 	count := 0
 	page := uint(1)
 
+	patterns := []string{model.DefaultPattern}
+
 	for {
 		repositories, totalCount, err := a.repositoryService.List(ctx, page, pageSize)
 		if err != nil {
@@ -115,29 +117,31 @@ func (a app) getNewReleases(ctx context.Context) ([]model.Release, error) {
 		for _, repo := range repositories {
 			count++
 
-			latestVersion, err := a.repositoryService.LatestVersion(repo)
+			versions, err := a.repositoryService.LatestVersion(repo, patterns)
 			if err != nil {
-				logger.Error("unable to get latest version of %s: %s", repo.Name, err)
+				logger.Error("unable to get latest versions of %s: %s", repo.Name, err)
 				continue
 			}
 
-			if latestVersion.Name == repo.Versions[model.DefaultPattern] {
+			if versions[model.DefaultPattern].Name == repo.Versions[model.DefaultPattern] {
 				continue
 			}
 
 			repositoryVersion, repositoryErr := semver.Parse(repo.Versions[model.DefaultPattern])
-			if repositoryErr == nil && repositoryVersion.Suffix == 0 && repositoryVersion.IsGreater(latestVersion) {
-				continue
+			if repositoryErr == nil {
+				if repositoryVersion.Match(model.DefaultPattern) && repositoryVersion.IsGreater(versions[model.DefaultPattern]) {
+					continue
+				}
 			}
 
-			logger.Info("New version available for %s: %s", repo.Name, latestVersion.Name)
-			repo.Versions[model.DefaultPattern] = latestVersion.Name
+			logger.Info("New `%s` version available for %s: %s", model.DefaultPattern, repo.Name, versions[model.DefaultPattern].Name)
+			repo.Versions[model.DefaultPattern] = versions[model.DefaultPattern].Name
 
 			if err := a.repositoryService.Update(ctx, repo); err != nil {
 				return nil, fmt.Errorf("unable to update repo %s: %s", repo.Name, err)
 			}
 
-			newReleases = append(newReleases, model.NewRelease(repo, latestVersion))
+			newReleases = append(newReleases, model.NewRelease(repo, versions[model.DefaultPattern]))
 		}
 
 		if uint64(page*pageSize) < totalCount {

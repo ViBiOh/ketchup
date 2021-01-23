@@ -86,11 +86,11 @@ func (a app) Clean(_ context.Context) error {
 	return nil
 }
 
-func (a app) LatestVersion(repo model.Repository) (semver.Version, error) {
+func (a app) LatestVersion(repo model.Repository, patterns []string) (map[string]semver.Version, error) {
 	if a.name.MatchString(repo.Name) {
 		version, _ := semver.Parse(a.version)
-		return version, nil
+		return map[string]semver.Version{model.DefaultPattern: version}, nil
 	}
 
-	return semver.NoneVersion, errors.New("unknown repository")
+	return nil, errors.New("unknown repository")
 }

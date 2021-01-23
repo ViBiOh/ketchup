@@ -26,7 +26,7 @@ type Tag struct {
 
 // App of package
 type App interface {
-	LatestVersion(string) (semver.Version, error)
+	LatestVersion(string, []string) (map[string]semver.Version, error)
 }
 
 // Config of package
@@ -62,31 +62,40 @@ func (a app) newClient() *request.Request {
 	})
 }
 
-func (a app) LatestVersion(repository string) (semver.Version, error) {
-	page := 1
-	version := semver.NoneVersion
+func (a app) LatestVersion(repository string, patterns []string) (map[string]semver.Version, error) {
+	output := make(map[string]semver.Version)
+	for _, pattern := range patterns {
+		output[pattern] = semver.NoneVersion
+	}
 
+	page := 1
 	req := a.newClient()
 	for {
 		resp, err := req.Get(fmt.Sprintf("%s/repos/%s/tags?per_page=100&page=%d", apiURL, repository, page)).Send(context.Background(), nil)
 		if err != nil {
-			return version, fmt.Errorf("unable to list page %d of tags: %s", page, err)
+			return nil, fmt.Errorf("unable to list page %d of tags: %s", page, err)
 		}
 
 		payload, err := request.ReadBodyResponse(resp)
 		if err != nil {
-			return version, fmt.Errorf("unable to read page %d tags body `%s`: %s", page, payload, err)
+			return nil, fmt.Errorf("unable to read page %d tags body `%s`: %s", page, payload, err)
 		}
 
 		var tags []Tag
 		if err := json.Unmarshal(payload, &tags); err != nil {
-			return version, fmt.Errorf("unable to parse page %d tags body: %s", page, err)
+			return nil, fmt.Errorf("unable to parse page %d tags body: %s", page, err)
 		}
 
 		for _, tag := range tags {
 			tagVersion, err := semver.Parse(tag.Name)
-			if err == nil && tagVersion.Suffix == 0 && tagVersion.IsGreater(version) {
-				version = tagVersion
+			if err != nil {
+				continue
+			}
+
+			for pattern, patternVersion := range output {
+				if tagVersion.Match(pattern) && tagVersion.IsGreater(patternVersion) {
+					output[pattern] = tagVersion
+				}
 			}
 		}
 
@@ -97,11 +106,7 @@ func (a app) LatestVersion(repository string) (semver.Version, error) {
 		page++
 	}
 
-	if version == semver.NoneVersion {
-		return version, fmt.Errorf("unable to find semver in tags for %s", repository)
-	}
-
-	return version, nil
+	return output, nil
 }
 
 func hasNext(resp *http.Response) bool {

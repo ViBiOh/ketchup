@@ -36,42 +36,55 @@ var (
 	NoneVersion = Version{}
 )
 
+// Match checks if version match pattern
+func (v Version) Match(pattern string) bool {
+	if pattern == "latest" {
+		return true
+	}
+
+	if pattern == "stable" {
+		return v.Suffix == 0
+	}
+
+	return false
+}
+
 // IsGreater check if current version is greater than other
-func (s Version) IsGreater(other Version) bool {
-	if s.Major != other.Major {
-		return s.Major > other.Major
+func (v Version) IsGreater(other Version) bool {
+	if v.Major != other.Major {
+		return v.Major > other.Major
 	}
 
-	if s.Minor != other.Minor {
-		return s.Minor > other.Minor
+	if v.Minor != other.Minor {
+		return v.Minor > other.Minor
 	}
 
-	if s.Patch != other.Patch {
-		return s.Patch > other.Patch
+	if v.Patch != other.Patch {
+		return v.Patch > other.Patch
 	}
 
-	if s.Suffix != other.Suffix {
-		return s.Suffix > other.Suffix
+	if v.Suffix != other.Suffix {
+		return v.Suffix > other.Suffix
 	}
 
 	return false
 }
 
 // Compare return version diff in semver nomenclture
-func (s Version) Compare(other Version) string {
-	if s.Major != other.Major {
+func (v Version) Compare(other Version) string {
+	if v.Major != other.Major {
 		return "Major"
 	}
 
-	if s.Minor != other.Minor {
+	if v.Minor != other.Minor {
 		return "Minor"
 	}
 
-	if s.Patch != other.Patch {
+	if v.Patch != other.Patch {
 		return "Patch"
 	}
 
-	if s.Suffix != other.Suffix {
+	if v.Suffix != other.Suffix {
 		return "Suffix"
 	}
 
