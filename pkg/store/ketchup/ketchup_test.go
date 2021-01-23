@@ -27,7 +27,6 @@ func TestList(t *testing.T) {
 	var cases = []struct {
 		intention string
 		args      args
-		expectSQL string
 		want      []model.Ketchup
 		wantCount uint64
 		wantErr   error
@@ -38,13 +37,16 @@ func TestList(t *testing.T) {
 				page:     1,
 				pageSize: 20,
 			},
-			"SELECT k.version, k.repository_id, r.name, r.kind, .+ AS full_count FROM ketchup.ketchup k, ketchup.repository r WHERE user_id = .+ AND repository_id = id",
 			[]model.Ketchup{
 				{
+					Pattern: model.DefaultPattern,
 					Version: "0.9.0",
 					Repository: model.Repository{
 						ID:   1,
 						Name: "vibioh/ketchup",
+						Versions: map[string]string{
+							model.DefaultPattern: "1.0.0",
+						},
 					},
 					User: model.User{
 						ID:    3,
@@ -52,10 +54,14 @@ func TestList(t *testing.T) {
 					},
 				},
 				{
+					Pattern: model.DefaultPattern,
 					Version: "1.0.0",
 					Repository: model.Repository{
 						ID:   2,
 						Name: "vibioh/viws",
+						Versions: map[string]string{
+							model.DefaultPattern: "1.0.0",
+						},
 						Kind: model.Helm,
 					},
 					User: model.User{
@@ -73,7 +79,6 @@ func TestList(t *testing.T) {
 				page:     1,
 				pageSize: 20,
 			},
-			"SELECT k.version, k.repository_id, r.name, r.kind, .+ AS full_count FROM ketchup.ketchup k, ketchup.repository r WHERE user_id = .+ AND repository_id = id",
 			[]model.Ketchup{},
 			0,
 			sqlmock.ErrCancelled,
@@ -84,7 +89,6 @@ func TestList(t *testing.T) {
 				page:     1,
 				pageSize: 20,
 			},
-			"SELECT k.version, k.repository_id, r.name, r.kind, .+ AS full_count FROM ketchup.ketchup k, ketchup.repository r WHERE user_id = .+ AND repository_id = id",
 			[]model.Ketchup{},
 			0,
 			errors.New("converting driver.Value type string (\"a\") to a uint64: invalid syntax"),
@@ -95,7 +99,6 @@ func TestList(t *testing.T) {
 				page:     1,
 				pageSize: 20,
 			},
-			"SELECT k.version, k.repository_id, r.name, r.kind, .+ AS full_count FROM ketchup.ketchup k, ketchup.repository r WHERE user_id = .+ AND repository_id = id",
 			[]model.Ketchup{},
 			1,
 			errors.New("invalid value `wrong` for repository kind"),
@@ -110,27 +113,26 @@ func TestList(t *testing.T) {
 			}
 			defer mockDb.Close()
 
-			rows := sqlmock.NewRows([]string{"version", "repository_id", "name", "kind", "full_count"})
-			expectedQuery := mock.ExpectQuery(tc.expectSQL).WithArgs(20, 0, 3).WillReturnRows(rows)
+			rows := sqlmock.NewRows([]string{"pattern", "version", "repository_id", "name", "kind", "repository_version", "full_count"})
+			expectedQuery := mock.ExpectQuery("SELECT k.pattern, k.version, k.repository_id, r.name, r.kind, rv.version, .+ AS full_count FROM ketchup.ketchup k, ketchup.repository r, ketchup.repository_version rv WHERE user_id = .+ AND k.repository_id = r.id AND rv.repository_id = r.id AND rv.pattern = k.pattern").WithArgs(20, 0, 3).WillReturnRows(rows)
 
-			if tc.intention != "invalid rows" {
-				if tc.intention == "invalid kind" {
-					rows.AddRow("1.0.0", 2, "vibioh/viws", "wrong", 1)
-				} else {
-					rows.AddRow("0.9.0", 1, "vibioh/ketchup", "github", 2).AddRow("1.0.0", 2, "vibioh/viws", "helm", 2)
-				}
-			} else {
-				rows.AddRow("0.9.0", "a", "vibioh/ketchup", "github", 2)
-			}
+			switch tc.intention {
+			case "simple":
+				rows.AddRow(model.DefaultPattern, "0.9.0", 1, "vibioh/ketchup", "github", "1.0.0", 2).AddRow(model.DefaultPattern, "1.0.0", 2, "vibioh/viws", "helm", "1.0.0", 2)
 
-			if tc.intention == "timeout" {
+			case "timeout":
 				savedSQLTimeout := db.SQLTimeout
 				db.SQLTimeout = time.Second
 				defer func() {
 					db.SQLTimeout = savedSQLTimeout
 				}()
-
 				expectedQuery.WillDelayFor(db.SQLTimeout * 2)
+
+			case "invalid rows":
+				rows.AddRow(model.DefaultPattern, "0.9.0", "a", "vibioh/ketchup", "github", "0.9.0", 2)
+
+			case "invalid kind":
+				rows.AddRow(model.DefaultPattern, "1.0.0", 2, "vibioh/viws", "wrong", "1.0.0", 1)
 			}
 
 			got, gotCount, gotErr := New(mockDb).List(testCtx, tc.args.page, tc.args.pageSize)
@@ -167,7 +169,6 @@ func TestListByRepositoriesID(t *testing.T) {
 	var cases = []struct {
 		intention string
 		args      args
-		expectSQL string
 		want      []model.Ketchup
 		wantErr   error
 	}{
@@ -176,9 +177,9 @@ func TestListByRepositoriesID(t *testing.T) {
 			args{
 				ids: []uint64{1, 2},
 			},
-			"SELECT k.version, k.repository_id, k.user_id, u.email FROM ketchup.ketchup k, ketchup.user u WHERE repository_id = ANY .+ AND k.user_id = u.id",
 			[]model.Ketchup{
 				{
+					Pattern: model.DefaultPattern,
 					Version: "0.9.0",
 					Repository: model.Repository{
 						ID: 1,
@@ -189,6 +190,7 @@ func TestListByRepositoriesID(t *testing.T) {
 					},
 				},
 				{
+					Pattern: model.DefaultPattern,
 					Version: "1.0.0",
 					Repository: model.Repository{
 						ID: 2,
@@ -206,7 +208,6 @@ func TestListByRepositoriesID(t *testing.T) {
 			args{
 				ids: []uint64{1, 2},
 			},
-			"SELECT k.version, k.repository_id, k.user_id, u.email FROM ketchup.ketchup k, ketchup.user u WHERE repository_id = ANY .+ AND k.user_id = u.id",
 			make([]model.Ketchup, 0),
 			sqlmock.ErrCancelled,
 		},
@@ -215,7 +216,6 @@ func TestListByRepositoriesID(t *testing.T) {
 			args{
 				ids: []uint64{1, 2},
 			},
-			"SELECT k.version, k.repository_id, k.user_id, u.email FROM ketchup.ketchup k, ketchup.user u WHERE repository_id = ANY .+ AND k.user_id = u.id",
 			make([]model.Ketchup, 0),
 			errors.New("converting driver.Value type string (\"a\") to a uint64: invalid syntax"),
 		},
@@ -229,23 +229,23 @@ func TestListByRepositoriesID(t *testing.T) {
 			}
 			defer mockDb.Close()
 
-			rows := sqlmock.NewRows([]string{"version", "repository_id", "user_id", "email"})
-			expectedQuery := mock.ExpectQuery(tc.expectSQL).WithArgs(pq.Array(tc.args.ids)).WillReturnRows(rows)
+			rows := sqlmock.NewRows([]string{"pattern", "version", "repository_id", "user_id", "email"})
+			expectedQuery := mock.ExpectQuery("SELECT k.pattern, k.version, k.repository_id, k.user_id, u.email FROM ketchup.ketchup k, ketchup.user u WHERE repository_id = ANY .+ AND k.user_id = u.id").WithArgs(pq.Array(tc.args.ids)).WillReturnRows(rows)
 
-			if tc.intention != "invalid rows" {
-				rows.AddRow("0.9.0", 1, 1, "nobody@localhost").AddRow("1.0.0", 2, 2, "guest@domain")
-			} else {
-				rows.AddRow("0.9.0", "a", 1, "nobody@localhost")
-			}
+			switch tc.intention {
+			case "simple":
+				rows.AddRow(model.DefaultPattern, "0.9.0", 1, 1, "nobody@localhost").AddRow(model.DefaultPattern, "1.0.0", 2, 2, "guest@domain")
 
-			if tc.intention == "timeout" {
+			case "timeout":
 				savedSQLTimeout := db.SQLTimeout
 				db.SQLTimeout = time.Second
 				defer func() {
 					db.SQLTimeout = savedSQLTimeout
 				}()
-
 				expectedQuery.WillDelayFor(db.SQLTimeout * 2)
+
+			case "invalid rows":
+				rows.AddRow(model.DefaultPattern, "0.9.0", "a", 1, "nobody@localhost")
 			}
 
 			got, gotErr := New(mockDb).ListByRepositoriesID(testCtx, tc.args.ids)
@@ -290,8 +290,9 @@ func TestGetByRepositoryID(t *testing.T) {
 			args{
 				id: 1,
 			},
-			"SELECT version, repository_id, user_id FROM ketchup.ketchup WHERE repository_id = .+ AND user_id = .+",
+			"SELECT pattern, version, repository_id, user_id FROM ketchup.ketchup WHERE repository_id = .+ AND user_id = .+",
 			model.Ketchup{
+				Pattern: model.DefaultPattern,
 				Version: "0.9.0",
 				Repository: model.Repository{
 					ID: 1,
@@ -308,18 +309,19 @@ func TestGetByRepositoryID(t *testing.T) {
 			args{
 				id: 1,
 			},
-			"SELECT version, repository_id, user_id FROM ketchup.ketchup WHERE repository_id = .+ AND user_id = .+",
+			"SELECT pattern, version, repository_id, user_id FROM ketchup.ketchup WHERE repository_id = .+ AND user_id = .+",
 			model.NoneKetchup,
 			nil,
 		},
 		{
-			"forUpdate",
+			"for update",
 			args{
 				id:        1,
 				forUpdate: true,
 			},
-			"SELECT version, repository_id, user_id FROM ketchup.ketchup WHERE repository_id = .+ AND user_id = .+ FOR UPDATE",
+			"SELECT pattern, version, repository_id, user_id FROM ketchup.ketchup WHERE repository_id = .+ AND user_id = .+ FOR UPDATE",
 			model.Ketchup{
+				Pattern: model.DefaultPattern,
 				Version: "0.9.0",
 				Repository: model.Repository{
 					ID: 1,
@@ -341,11 +343,15 @@ func TestGetByRepositoryID(t *testing.T) {
 			}
 			defer mockDb.Close()
 
-			rows := sqlmock.NewRows([]string{"version", "repository_id", "user_id"})
+			rows := sqlmock.NewRows([]string{"patter", "version", "repository_id", "user_id"})
 			mock.ExpectQuery(tc.expectSQL).WithArgs(1, 3).WillReturnRows(rows)
 
-			if tc.intention != "no rows" {
-				rows.AddRow("0.9.0", 1, 3)
+			switch tc.intention {
+			case "for update":
+				fallthrough
+
+			case "simple":
+				rows.AddRow(model.DefaultPattern, "0.9.0", 1, 3)
 			}
 
 			got, gotErr := New(mockDb).GetByRepositoryID(testCtx, tc.args.id, tc.args.forUpdate)
@@ -384,6 +390,7 @@ func TestCreate(t *testing.T) {
 			"simple",
 			args{
 				o: model.Ketchup{
+					Pattern: model.DefaultPattern,
 					Version: "0.9.0",
 					Repository: model.Repository{
 						ID: 1,
@@ -410,7 +417,7 @@ func TestCreate(t *testing.T) {
 			}
 			ctx := db.StoreTx(testCtx, tx)
 
-			mock.ExpectQuery("INSERT INTO ketchup.ketchup").WithArgs("0.9.0", 1, 3).WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(1))
+			mock.ExpectQuery("INSERT INTO ketchup.ketchup").WithArgs(model.DefaultPattern, "0.9.0", 1, 3).WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(1))
 
 			got, gotErr := New(mockDb).Create(ctx, tc.args.o)
 
@@ -447,6 +454,7 @@ func TestUpdate(t *testing.T) {
 			"simple",
 			args{
 				o: model.Ketchup{
+					Pattern: model.DefaultPattern,
 					Version: "0.9.0",
 					Repository: model.Repository{
 						ID: 1,
@@ -472,7 +480,7 @@ func TestUpdate(t *testing.T) {
 			}
 			ctx := db.StoreTx(testCtx, tx)
 
-			mock.ExpectExec("UPDATE ketchup.ketchup SET version").WithArgs(1, 3, "0.9.0").WillReturnResult(sqlmock.NewResult(0, 1))
+			mock.ExpectExec("UPDATE ketchup.ketchup SET pattern = .+, version = .+").WithArgs(1, 3, model.DefaultPattern, "0.9.0").WillReturnResult(sqlmock.NewResult(0, 1))
 
 			gotErr := New(mockDb).Update(ctx, tc.args.o)
 

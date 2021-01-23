@@ -39,17 +39,22 @@ func (a app) DoAtomic(ctx context.Context, action func(context.Context) error) e
 
 const listQuery = `
 SELECT
+  k.pattern,
   k.version,
   k.repository_id,
   r.name,
   r.kind,
+  rv.version,
   count(1) OVER() AS full_count
 FROM
   ketchup.ketchup k,
-  ketchup.repository r
+  ketchup.repository r,
+  ketchup.repository_version rv
 WHERE
   user_id = $3
-  AND repository_id = id
+  AND k.repository_id = r.id
+  AND rv.repository_id = r.id
+  AND rv.pattern = k.pattern
 LIMIT $1
 OFFSET $2
 `
@@ -61,12 +66,11 @@ func (a app) List(ctx context.Context, page, pageSize uint) ([]model.Ketchup, ui
 	list := make([]model.Ketchup, 0)
 
 	scanner := func(rows *sql.Rows) error {
-		item := model.Ketchup{
-			User: user,
-		}
+		item := model.Ketchup{User: user}
 		var rawRepositoryKind string
+		var repositoryVersion string
 
-		if err := rows.Scan(&item.Version, &item.Repository.ID, &item.Repository.Name, &rawRepositoryKind, &totalCount); err != nil {
+		if err := rows.Scan(&item.Pattern, &item.Version, &item.Repository.ID, &item.Repository.Name, &rawRepositoryKind, &repositoryVersion, &totalCount); err != nil {
 			return err
 		}
 
@@ -75,6 +79,7 @@ func (a app) List(ctx context.Context, page, pageSize uint) ([]model.Ketchup, ui
 			return err
 		}
 		item.Repository.Kind = repositoryKind
+		item.Repository.Versions = map[string]string{item.Pattern: repositoryVersion}
 
 		list = append(list, item)
 		return nil
@@ -85,6 +90,7 @@ func (a app) List(ctx context.Context, page, pageSize uint) ([]model.Ketchup, ui
 
 const listByRepositoriesIDQuery = `
 SELECT
+  k.pattern,
   k.version,
   k.repository_id,
   k.user_id,
@@ -102,7 +108,7 @@ func (a app) ListByRepositoriesID(ctx context.Context, ids []uint64) ([]model.Ke
 
 	scanner := func(rows *sql.Rows) error {
 		var item model.Ketchup
-		if err := rows.Scan(&item.Version, &item.Repository.ID, &item.User.ID, &item.User.Email); err != nil {
+		if err := rows.Scan(&item.Pattern, &item.Version, &item.Repository.ID, &item.User.ID, &item.User.Email); err != nil {
 			return err
 		}
 
@@ -115,6 +121,7 @@ func (a app) ListByRepositoriesID(ctx context.Context, ids []uint64) ([]model.Ke
 
 const getQuery = `
 SELECT
+  pattern,
   version,
   repository_id,
   user_id
@@ -137,7 +144,7 @@ func (a app) GetByRepositoryID(ctx context.Context, id uint64, forUpdate bool) (
 	}
 
 	scanner := func(row *sql.Row) error {
-		err := row.Scan(&item.Version, &item.Repository.ID, &item.User.ID)
+		err := row.Scan(&item.Pattern, &item.Version, &item.Repository.ID, &item.User.ID)
 		if errors.Is(err, sql.ErrNoRows) {
 			item = model.NoneKetchup
 			return nil
@@ -153,32 +160,35 @@ const insertQuery = `
 INSERT INTO
   ketchup.ketchup
 (
+  pattern,
   version,
   repository_id,
   user_id
 ) VALUES (
   $1,
   $2,
-  $3
+  $3,
+  $4
 ) RETURNING 1
 `
 
 func (a app) Create(ctx context.Context, o model.Ketchup) (uint64, error) {
-	return db.Create(ctx, insertQuery, o.Version, o.Repository.ID, model.ReadUser(ctx).ID)
+	return db.Create(ctx, insertQuery, o.Pattern, o.Version, o.Repository.ID, model.ReadUser(ctx).ID)
 }
 
 const updateQuery = `
 UPDATE
   ketchup.ketchup
 SET
-  version = $3
+  pattern = $3,
+  version = $4
 WHERE
   repository_id = $1
   AND user_id = $2
 `
 
 func (a app) Update(ctx context.Context, o model.Ketchup) error {
-	return db.Exec(ctx, updateQuery, o.Repository.ID, model.ReadUser(ctx).ID, o.Version)
+	return db.Exec(ctx, updateQuery, o.Repository.ID, model.ReadUser(ctx).ID, o.Pattern, o.Version)
 }
 
 const deleteQuery = `

@@ -62,6 +62,7 @@ CREATE UNIQUE INDEX repository_version ON ketchup.repository_version(repository_
 CREATE TABLE ketchup.ketchup (
   user_id BIGINT NOT NULL REFERENCES ketchup.user(id),
   repository_id BIGINT NOT NULL REFERENCES ketchup.repository(id),
+  pattern TEXT NOT NULL default 'stable',
   version TEXT NOT NULL,
   creation_date TIMESTAMP WITH TIME ZONE DEFAULT now()
 );

@@ -38,14 +38,14 @@ func TestList(t *testing.T) {
 					ID:   1,
 					Name: "vibioh/ketchup",
 					Versions: map[string]string{
-						"stable": "1.0.0",
+						model.DefaultPattern: "1.0.0",
 					},
 				},
 				{
 					ID:   2,
 					Name: "vibioh/viws",
 					Versions: map[string]string{
-						"stable": "1.2.3",
+						model.DefaultPattern: "1.2.3",
 					},
 				},
 			},
@@ -102,7 +102,7 @@ func TestList(t *testing.T) {
 				).WithArgs(
 					pq.Array([]uint64{1, 2}),
 				).WillReturnRows(
-					sqlmock.NewRows([]string{"repository_id", "pattern", "version"}).AddRow(1, "stable", "1.0.0").AddRow(2, "stable", "1.2.3"),
+					sqlmock.NewRows([]string{"repository_id", "pattern", "version"}).AddRow(1, model.DefaultPattern, "1.0.0").AddRow(2, model.DefaultPattern, "1.2.3"),
 				)
 				rows.AddRow(1, "vibioh/ketchup", "github", 2).AddRow(2, "vibioh/viws", "github", 2)
 
@@ -170,14 +170,14 @@ func TestSuggest(t *testing.T) {
 					ID:   1,
 					Name: "vibioh/ketchup",
 					Versions: map[string]string{
-						"stable": "1.0.0",
+						model.DefaultPattern: "1.0.0",
 					},
 				},
 				{
 					ID:   2,
 					Name: "vibioh/viws",
 					Versions: map[string]string{
-						"stable": "1.2.3",
+						model.DefaultPattern: "1.2.3",
 					},
 					Kind: model.Helm,
 				},
@@ -203,7 +203,7 @@ func TestSuggest(t *testing.T) {
 			).WithArgs(
 				pq.Array([]uint64{1, 2}),
 			).WillReturnRows(
-				sqlmock.NewRows([]string{"repository_id", "pattern", "version"}).AddRow(1, "stable", "1.0.0").AddRow(2, "stable", "1.2.3"),
+				sqlmock.NewRows([]string{"repository_id", "pattern", "version"}).AddRow(1, model.DefaultPattern, "1.0.0").AddRow(2, model.DefaultPattern, "1.2.3"),
 			)
 
 			got, gotErr := New(mockDb).Suggest(context.Background(), tc.args.ignoreIds, tc.args.count)
@@ -253,7 +253,7 @@ func TestGet(t *testing.T) {
 				ID:   1,
 				Name: "vibioh/ketchup",
 				Versions: map[string]string{
-					"stable": "1.0.0",
+					model.DefaultPattern: "1.0.0",
 				},
 				Kind: model.Helm,
 			},
@@ -270,7 +270,7 @@ func TestGet(t *testing.T) {
 				ID:   1,
 				Name: "vibioh/ketchup",
 				Versions: map[string]string{
-					"stable": "1.0.0",
+					model.DefaultPattern: "1.0.0",
 				},
 				Kind: model.Helm,
 			},
@@ -310,7 +310,7 @@ func TestGet(t *testing.T) {
 				).WithArgs(
 					pq.Array([]uint64{1}),
 				).WillReturnRows(
-					sqlmock.NewRows([]string{"repository_id", "pattern", "version"}).AddRow(1, "stable", "1.0.0"),
+					sqlmock.NewRows([]string{"repository_id", "pattern", "version"}).AddRow(1, model.DefaultPattern, "1.0.0"),
 				)
 			}
 
@@ -356,7 +356,7 @@ func TestGetByName(t *testing.T) {
 				ID:   1,
 				Name: "vibioh/ketchup",
 				Versions: map[string]string{
-					"stable": "1.0.0",
+					model.DefaultPattern: "1.0.0",
 				},
 				Kind: model.Github,
 			},
@@ -399,7 +399,7 @@ func TestGetByName(t *testing.T) {
 				).WithArgs(
 					pq.Array([]uint64{1}),
 				).WillReturnRows(
-					sqlmock.NewRows([]string{"repository_id", "pattern", "version"}).AddRow(1, "stable", "1.0.0"),
+					sqlmock.NewRows([]string{"repository_id", "pattern", "version"}).AddRow(1, model.DefaultPattern, "1.0.0"),
 				)
 
 			case "invalid kind":
@@ -448,7 +448,7 @@ func TestCreate(t *testing.T) {
 				o: model.Repository{
 					Name: "vibioh/ketchup",
 					Versions: map[string]string{
-						"stable": "1.0.0",
+						model.DefaultPattern: "1.0.0",
 					},
 					Kind: model.Github,
 				},
@@ -462,7 +462,7 @@ func TestCreate(t *testing.T) {
 				o: model.Repository{
 					Name: "vibioh/ketchup",
 					Versions: map[string]string{
-						"stable": "1.0.0",
+						model.DefaultPattern: "1.0.0",
 					},
 					Kind: model.Github,
 				},
@@ -476,7 +476,7 @@ func TestCreate(t *testing.T) {
 				o: model.Repository{
 					Name: "vibioh/ketchup",
 					Versions: map[string]string{
-						"stable": "1.0.0",
+						model.DefaultPattern: "1.0.0",
 					},
 					Kind: model.Github,
 				},
@@ -490,7 +490,7 @@ func TestCreate(t *testing.T) {
 				o: model.Repository{
 					Name: "vibioh/ketchup",
 					Versions: map[string]string{
-						"stable": "1.0.0",
+						model.DefaultPattern: "1.0.0",
 					},
 					Kind: model.Github,
 				},
@@ -532,14 +532,14 @@ func TestCreate(t *testing.T) {
 				).WithArgs(
 					pq.Array([]uint64{1}),
 				).WillReturnRows(
-					sqlmock.NewRows([]string{"repository_id", "pattern", "version"}).AddRow(1, "stable", "1.0.0"),
+					sqlmock.NewRows([]string{"repository_id", "pattern", "version"}).AddRow(1, model.DefaultPattern, "1.0.0"),
 				)
 			case "success":
 				lockQuery.WillReturnResult(sqlmock.NewResult(0, 0))
 				mock.ExpectQuery("SELECT id, name, kind FROM ketchup.repository WHERE name = .+ AND kind = .+").WithArgs("vibioh/ketchup", tc.args.o.Kind.String()).WillReturnRows(sqlmock.NewRows([]string{"id", "name", "kind"}))
 				mock.ExpectQuery("INSERT INTO ketchup.repository").WithArgs("vibioh/ketchup", "github").WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(1))
 				mock.ExpectQuery("SELECT pattern, version FROM ketchup.repository_version WHERE repository_id = .+").WithArgs(1).WillReturnRows(sqlmock.NewRows([]string{"pattern", "version"}))
-				mock.ExpectExec("INSERT INTO ketchup.repository_version").WithArgs(1, "stable", "1.0.0").WillReturnResult(sqlmock.NewResult(0, 1))
+				mock.ExpectExec("INSERT INTO ketchup.repository_version").WithArgs(1, model.DefaultPattern, "1.0.0").WillReturnResult(sqlmock.NewResult(0, 1))
 			}
 
 			got, gotErr := New(mockDb).Create(ctx, tc.args.o)

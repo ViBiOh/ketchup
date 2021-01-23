@@ -5,6 +5,7 @@
 
       <form method="POST" action="/app/ketchups/" class="create-form">
         <input type="hidden" name="method" value="POST">
+        <input type="hidden" name="pattern" value="stable">
 
         <p class="padding no-margin flex">
           <span class="flex-grow center">
@@ -62,6 +63,7 @@
 
       <form method="POST" action="/app/ketchups/{{ .Repository.ID }}">
         <input type="hidden" name="method" value="PUT">
+        <input type="hidden" name="pattern" value="{{ .Pattern }}">
 
         <p class="padding no-margin">
           <label for="edit-version-{{ .Repository.ID }}" class="block">My version:</label>
@@ -179,7 +181,7 @@
       {{ template "edit-modal" . }}
       {{ template "delete-modal" . }}
 
-      <div class="ketchup center {{ if ne .Version .Repository.Version }}ketchup--outdated{{ end }}">
+      <div class="ketchup center {{ if ne .Version (index .Repository.Versions .Pattern) }}ketchup--outdated{{ end }}">
         <h2 class="header small ellipsis">{{ .Repository.Name }}</h2>
 
         <div>
@@ -194,25 +196,25 @@
 
         <div class="ketchup__version">
           <span>
-            <a class="{{ if ne .Version .Repository.Version }}danger{{ else }}success{{ end }}" href="{{ .Repository.URL }}">{{ .Version }}</a>
+            <a class="{{ if ne .Version (index .Repository.Versions .Pattern) }}danger{{ else }}success{{ end }}" href="{{ .Repository.URL }}">{{ .Version }}</a>
           </span>
 
-          {{ if ne .Version .Repository.Version }}
+          {{ if ne .Version (index .Repository.Versions .Pattern) }}
             <span>
-              &nbsp;->&nbsp;<a class="success" href="{{ .Repository.URL }}">{{ .Repository.Version }}</a>
+              &nbsp;->&nbsp;<a class="success" href="{{ .Repository.URL }}">{{ index .Repository.Versions .Pattern }}</a>
             </span>
           {{ end }}
         </div>
 
         <div>
-          {{ if ne .Version .Repository.Version }}
+          {{ if ne .Version (index .Repository.Versions .Pattern) }}
             <a href="{{ .Repository.CompareURL .Version }}" class="button button-icon" title="Compare">
               <img class="icon" src="/svg/eyes?fill=silver" alt="Compare icon">
             </a>
 
             <form method="POST" action="/app/ketchups/{{ .Repository.ID }}" class="inline">
               <input type="hidden" name="method" value="PUT">
-              <input type="hidden" name="version" value="{{ .Repository.Version }}">
+              <input type="hidden" name="version" value="{{ index .Repository.Versions .Pattern }}">
 
               <button type="submit" class="button button-icon" title="Update to latest">
                 <img class="icon" src="/svg/circle-up?fill=silver" alt="Update icon">
@@ -236,7 +238,7 @@
 
         <div class="ketchup__version">
           <span>
-            <a href="{{ .URL }}">{{ .Version }}</a>
+            <a href="{{ .URL }}">{{ .Versions.stable }}</a>
           </span>
         </div>
 
@@ -244,7 +246,7 @@
           <form method="POST" action="/app/ketchups/">
             <input type="hidden" name="method" value="POST">
             <input type="hidden" name="repository" value="{{ .Name }}">
-            <input type="hidden" name="version" value="{{ .Version }}">
+            <input type="hidden" name="version" value="{{ .Versions.stable }}">
 
             <button type="submit" class="button button-icon" title="Add suggestion">
               <img class="icon" src="/svg/add?fill=silver" alt="Add icon">

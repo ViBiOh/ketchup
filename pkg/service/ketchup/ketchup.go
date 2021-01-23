@@ -169,12 +169,17 @@ func enrichSemver(list []model.Ketchup) []model.Ketchup {
 	output := make([]model.Ketchup, len(list))
 
 	for index, item := range list {
-		repositoryVersion, repositoryErr := semver.Parse(item.Repository.Versions["stable"])
-		ketchupVersion, ketchupErr := semver.Parse(item.Version)
-		if repositoryErr == nil && ketchupErr == nil {
-			item.Semver = repositoryVersion.Compare(ketchupVersion)
+		repositoryVersion, repositoryErr := semver.Parse(item.Repository.Versions[item.Pattern])
+		if repositoryErr != nil {
+			continue
 		}
 
+		ketchupVersion, ketchupErr := semver.Parse(item.Version)
+		if ketchupErr != nil {
+			continue
+		}
+
+		item.Semver = repositoryVersion.Compare(ketchupVersion)
 		output[index] = item
 	}
 
