@@ -24,7 +24,7 @@ type app struct {
 	version string
 }
 
-func (a app) LatestVersion(repository string, patterns []string) (map[string]semver.Version, error) {
+func (a app) LatestVersions(repository string, patterns []string) (map[string]semver.Version, error) {
 	if a.name.MatchString(repository) {
 		version, _ := semver.Parse(a.version)
 		return map[string]semver.Version{model.DefaultPattern: version}, nil

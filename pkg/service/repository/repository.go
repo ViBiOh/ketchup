@@ -27,7 +27,7 @@ type App interface {
 	GetOrCreate(ctx context.Context, name string, repositoryKind model.RepositoryKind) (model.Repository, error)
 	Update(ctx context.Context, item model.Repository) error
 	Clean(ctx context.Context) error
-	LatestVersion(repo model.Repository, patterns []string) (map[string]semver.Version, error)
+	LatestVersions(repo model.Repository) (map[string]semver.Version, error)
 }
 
 type app struct {
@@ -48,7 +48,7 @@ func New(repositoryStore repository.App, githubApp github.App, helmApp helm.App)
 func (a app) List(ctx context.Context, page, pageSize uint) ([]model.Repository, uint64, error) {
 	list, total, err := a.repositoryStore.List(ctx, page, pageSize)
 	if err != nil {
-		return nil, 0, httpModel.WrapInternal(fmt.Errorf("unable to list: %s", err))
+		return nil, 0, httpModel.WrapInternal(fmt.Errorf("unable to list: %w", err))
 	}
 
 	return list, total, nil
@@ -57,7 +57,7 @@ func (a app) List(ctx context.Context, page, pageSize uint) ([]model.Repository,
 func (a app) Suggest(ctx context.Context, ignoreIds []uint64, count uint64) ([]model.Repository, error) {
 	list, err := a.repositoryStore.Suggest(ctx, ignoreIds, count)
 	if err != nil {
-		return nil, httpModel.WrapInternal(fmt.Errorf("unable to suggest: %s", err))
+		return nil, httpModel.WrapInternal(fmt.Errorf("unable to suggest: %w", err))
 	}
 
 	return list, nil
@@ -78,7 +78,15 @@ func (a app) GetOrCreate(ctx context.Context, name string, repositoryKind model.
 		return repo, nil
 	}
 
-	return a.create(ctx, model.Repository{Name: sanitizedName, Kind: repositoryKind})
+	repo = model.Repository{
+		Kind: repositoryKind,
+		Name: sanitizedName,
+		Versions: map[string]string{
+			model.DefaultPattern: "0.0.0",
+		},
+	}
+
+	return a.create(ctx, repo)
 }
 
 func (a app) create(ctx context.Context, item model.Repository) (model.Repository, error) {
@@ -86,7 +94,7 @@ func (a app) create(ctx context.Context, item model.Repository) (model.Repositor
 		return model.NoneRepository, httpModel.WrapInvalid(err)
 	}
 
-	versions, err := a.LatestVersion(item, []string{model.DefaultPattern})
+	versions, err := a.LatestVersions(item)
 	if err != nil {
 		return model.NoneRepository, httpModel.WrapNotFound(fmt.Errorf("no release found for %s: %s", item.Name, err))
 	}
@@ -99,7 +107,7 @@ func (a app) create(ctx context.Context, item model.Repository) (model.Repositor
 	err = a.repositoryStore.DoAtomic(ctx, func(ctx context.Context) error {
 		id, err := a.repositoryStore.Create(ctx, item)
 		if err != nil {
-			return httpModel.WrapInternal(fmt.Errorf("unable to create: %s", err))
+			return httpModel.WrapInternal(fmt.Errorf("unable to create: %w", err))
 		}
 
 		item.ID = id
@@ -113,7 +121,7 @@ func (a app) Update(ctx context.Context, item model.Repository) error {
 	return a.repositoryStore.DoAtomic(ctx, func(ctx context.Context) error {
 		old, err := a.repositoryStore.Get(ctx, item.ID, true)
 		if err != nil {
-			return httpModel.WrapInternal(fmt.Errorf("unable to fetch: %s", err))
+			return httpModel.WrapInternal(fmt.Errorf("unable to fetch: %w", err))
 		}
 
 		current := model.Repository{
@@ -127,7 +135,7 @@ func (a app) Update(ctx context.Context, item model.Repository) error {
 		}
 
 		if err := a.repositoryStore.UpdateVersions(ctx, current); err != nil {
-			return httpModel.WrapInternal(fmt.Errorf("unable to update: %s", err))
+			return httpModel.WrapInternal(fmt.Errorf("unable to update: %w", err))
 		}
 
 		return nil
@@ -137,7 +145,7 @@ func (a app) Update(ctx context.Context, item model.Repository) error {
 func (a app) Clean(ctx context.Context) error {
 	return a.repositoryStore.DoAtomic(ctx, func(ctx context.Context) error {
 		if err := a.repositoryStore.DeleteUnused(ctx); err != nil {
-			return httpModel.WrapInternal(fmt.Errorf("unable to delete: %s", err))
+			return httpModel.WrapInternal(fmt.Errorf("unable to delete: %w", err))
 		}
 
 		return nil
@@ -169,12 +177,19 @@ func (a app) check(ctx context.Context, old, new model.Repository) error {
 	return service.ConcatError(output)
 }
 
-func (a app) LatestVersion(repo model.Repository, patterns []string) (map[string]semver.Version, error) {
+func (a app) LatestVersions(repo model.Repository) (map[string]semver.Version, error) {
+	index := 0
+	patterns := make([]string, len(repo.Versions))
+	for pattern := range repo.Versions {
+		patterns[index] = pattern
+		index++
+	}
+
 	switch repo.Kind {
 	case model.Github:
-		return a.githubApp.LatestVersion(repo.Name, patterns)
+		return a.githubApp.LatestVersions(repo.Name, patterns)
 	case model.Helm:
-		return a.helmApp.LatestVersion(repo.Name, patterns)
+		return a.helmApp.LatestVersions(repo.Name, patterns)
 	default:
 		return nil, fmt.Errorf("unknown repository kind %d", repo.Kind)
 	}

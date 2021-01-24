@@ -25,7 +25,7 @@ type chart struct {
 
 // App of package
 type App interface {
-	LatestVersion(string, []string) (map[string]semver.Version, error)
+	LatestVersions(string, []string) (map[string]semver.Version, error)
 }
 
 type app struct{}
@@ -35,7 +35,7 @@ func New() App {
 	return app{}
 }
 
-func (a app) LatestVersion(repository string, patterns []string) (map[string]semver.Version, error) {
+func (a app) LatestVersions(repository string, patterns []string) (map[string]semver.Version, error) {
 	parts := strings.SplitN(repository, "@", 2)
 	if len(parts) != 2 {
 		return nil, errors.New("invalid name for helm chart")
@@ -43,7 +43,7 @@ func (a app) LatestVersion(repository string, patterns []string) (map[string]sem
 
 	resp, err := request.New().Get(fmt.Sprintf("%s/%s", parts[1], indexName)).Send(context.Background(), nil)
 	if err != nil {
-		return nil, fmt.Errorf("unable to request repository: %s", err)
+		return nil, fmt.Errorf("unable to request repository: %w", err)
 	}
 
 	payload, err := request.ReadBodyResponse(resp)
@@ -53,7 +53,7 @@ func (a app) LatestVersion(repository string, patterns []string) (map[string]sem
 
 	var index charts
 	if err := yaml.Unmarshal(payload, &index); err != nil {
-		return nil, fmt.Errorf("unable to parse index: %s", err)
+		return nil, fmt.Errorf("unable to parse index: %w", err)
 	}
 
 	charts, ok := index.Entries[parts[0]]

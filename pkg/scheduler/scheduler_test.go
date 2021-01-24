@@ -99,7 +99,7 @@ func TestGetNewReleases(t *testing.T) {
 				ctx: context.Background(),
 			},
 			nil,
-			errors.New("unable to update repo vibioh/ketchup"),
+			errors.New("unable to update repo `vibioh/ketchup`"),
 		},
 		{
 			"success",
@@ -113,7 +113,7 @@ func TestGetNewReleases(t *testing.T) {
 				ID:       1,
 				Name:     "vibioh/ketchup",
 				Versions: map[string]string{model.DefaultPattern: "1.1.0"},
-			}, semver.Version{Name: "1.1.0", Major: 1, Minor: 1, Patch: 0})},
+			}, model.DefaultPattern, semver.Version{Name: "1.1.0", Major: 1, Minor: 1, Patch: 0})},
 			nil,
 		},
 		{
@@ -128,7 +128,7 @@ func TestGetNewReleases(t *testing.T) {
 				ID:       2,
 				Name:     "vibioh/ketchup",
 				Versions: map[string]string{model.DefaultPattern: "1.1.0"},
-			}, semver.Version{Name: "1.1.0", Major: 1, Minor: 1, Patch: 0})},
+			}, model.DefaultPattern, semver.Version{Name: "1.1.0", Major: 1, Minor: 1, Patch: 0})},
 			nil,
 		},
 	}

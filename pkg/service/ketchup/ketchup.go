@@ -40,7 +40,7 @@ func New(ketchupStore ketchup.App, repositoryService repository.App) App {
 func (a app) List(ctx context.Context, page, pageSize uint) ([]model.Ketchup, uint64, error) {
 	list, total, err := a.ketchupStore.List(ctx, page, pageSize)
 	if err != nil {
-		return nil, 0, httpModel.WrapInternal(fmt.Errorf("unable to list: %s", err))
+		return nil, 0, httpModel.WrapInternal(fmt.Errorf("unable to list: %w", err))
 	}
 
 	enrichedList := enrichSemver(list)
@@ -57,7 +57,7 @@ func (a app) ListForRepositories(ctx context.Context, repositories []model.Repos
 
 	list, err := a.ketchupStore.ListByRepositoriesID(ctx, ids)
 	if err != nil {
-		return nil, httpModel.WrapInternal(fmt.Errorf("unable to list by ids: %s", err))
+		return nil, httpModel.WrapInternal(fmt.Errorf("unable to list by ids: %w", err))
 	}
 
 	return enrichSemver(list), nil
@@ -79,7 +79,7 @@ func (a app) Create(ctx context.Context, item model.Ketchup) (model.Ketchup, err
 		}
 
 		if _, err := a.ketchupStore.Create(ctx, item); err != nil {
-			return httpModel.WrapInternal(fmt.Errorf("unable to create: %s", err))
+			return httpModel.WrapInternal(fmt.Errorf("unable to create: %w", err))
 		}
 
 		output = item
@@ -95,7 +95,7 @@ func (a app) Update(ctx context.Context, item model.Ketchup) (model.Ketchup, err
 	err := a.ketchupStore.DoAtomic(ctx, func(ctx context.Context) error {
 		old, err := a.ketchupStore.GetByRepositoryID(ctx, item.Repository.ID, true)
 		if err != nil {
-			return httpModel.WrapInternal(fmt.Errorf("unable to fetch: %s", err))
+			return httpModel.WrapInternal(fmt.Errorf("unable to fetch: %w", err))
 		}
 
 		current := model.Ketchup{
@@ -110,7 +110,7 @@ func (a app) Update(ctx context.Context, item model.Ketchup) (model.Ketchup, err
 		}
 
 		if err := a.ketchupStore.Update(ctx, current); err != nil {
-			return httpModel.WrapInternal(fmt.Errorf("unable to update: %s", err))
+			return httpModel.WrapInternal(fmt.Errorf("unable to update: %w", err))
 		}
 
 		output = current
@@ -124,7 +124,7 @@ func (a app) Delete(ctx context.Context, item model.Ketchup) (err error) {
 	return a.ketchupStore.DoAtomic(ctx, func(ctx context.Context) error {
 		old, err := a.ketchupStore.GetByRepositoryID(ctx, item.Repository.ID, true)
 		if err != nil {
-			return httpModel.WrapInternal(fmt.Errorf("unable to fetch current: %s", err))
+			return httpModel.WrapInternal(fmt.Errorf("unable to fetch current: %w", err))
 		}
 
 		if err = a.check(ctx, old, model.NoneKetchup); err != nil {
@@ -132,7 +132,7 @@ func (a app) Delete(ctx context.Context, item model.Ketchup) (err error) {
 		}
 
 		if err = a.ketchupStore.Delete(ctx, old); err != nil {
-			return httpModel.WrapInternal(fmt.Errorf("unable to delete: %s", err))
+			return httpModel.WrapInternal(fmt.Errorf("unable to delete: %w", err))
 		}
 
 		return nil
