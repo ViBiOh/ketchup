@@ -26,7 +26,7 @@ type Tag struct {
 
 // App of package
 type App interface {
-	LatestVersion(string, []string) (map[string]semver.Version, error)
+	LatestVersions(string, []string) (map[string]semver.Version, error)
 }
 
 // Config of package
@@ -62,7 +62,7 @@ func (a app) newClient() *request.Request {
 	})
 }
 
-func (a app) LatestVersion(repository string, patterns []string) (map[string]semver.Version, error) {
+func (a app) LatestVersions(repository string, patterns []string) (map[string]semver.Version, error) {
 	output := make(map[string]semver.Version)
 	for _, pattern := range patterns {
 		output[pattern] = semver.NoneVersion

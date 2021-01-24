@@ -66,14 +66,14 @@ func (a app) Create(ctx context.Context, item model.User) (model.User, error) {
 	err := a.userStore.DoAtomic(ctx, func(ctx context.Context) error {
 		loginUser, err := a.authService.Create(ctx, item.Login)
 		if err != nil {
-			return httpModel.WrapInternal(fmt.Errorf("unable to create login: %s", err))
+			return httpModel.WrapInternal(fmt.Errorf("unable to create login: %w", err))
 		}
 
 		item.Login = loginUser
 
 		id, err := a.userStore.Create(ctx, item)
 		if err != nil {
-			return httpModel.WrapInternal(fmt.Errorf("unable to create: %s", err))
+			return httpModel.WrapInternal(fmt.Errorf("unable to create: %w", err))
 		}
 
 		item.ID = id

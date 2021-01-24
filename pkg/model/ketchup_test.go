@@ -136,13 +136,13 @@ func TestReleaseByRepositoryID(t *testing.T) {
 			"simple",
 			args{
 				array: []Release{
-					NewRelease(Repository{ID: 10}, semver.Version{}),
-					NewRelease(Repository{ID: 1}, semver.Version{}),
+					NewRelease(Repository{ID: 10}, DefaultPattern, semver.Version{}),
+					NewRelease(Repository{ID: 1}, DefaultPattern, semver.Version{}),
 				},
 			},
 			[]Release{
-				NewRelease(Repository{ID: 1}, semver.Version{}),
-				NewRelease(Repository{ID: 10}, semver.Version{}),
+				NewRelease(Repository{ID: 1}, DefaultPattern, semver.Version{}),
+				NewRelease(Repository{ID: 10}, DefaultPattern, semver.Version{}),
 			},
 		},
 	}

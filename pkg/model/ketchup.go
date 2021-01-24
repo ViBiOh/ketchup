@@ -56,6 +56,7 @@ func (a KetchupByPriority) Swap(i, j int) { a[i], a[j] = a[j], a[i] }
 // Release is when new version is out
 type Release struct {
 	Repository Repository     `json:"repository"`
+	Pattern    string         `json:"pattern"`
 	Version    semver.Version `json:"version"`
 }
 
@@ -67,9 +68,10 @@ func (a ReleaseByRepositoryID) Less(i, j int) bool { return a[i].Repository.ID <
 func (a ReleaseByRepositoryID) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
 
 // NewRelease creates a new version from its objects
-func NewRelease(repository Repository, version semver.Version) Release {
+func NewRelease(repository Repository, pattern string, version semver.Version) Release {
 	return Release{
 		Repository: repository,
+		Pattern:    pattern,
 		Version:    version,
 	}
 }
