@@ -39,6 +39,7 @@ func (tks app) ListForRepositories(ctx context.Context, repositories []model.Rep
 	if repositories[0].Name == "vibioh/ketchup" {
 		return []model.Ketchup{
 			{Pattern: model.DefaultPattern, Repository: repositories[0], User: model.User{ID: 1, Email: "nobody@localhost"}},
+			{Pattern: "latest", Repository: repositories[0], User: model.User{ID: 1, Email: "nobody@localhost"}},
 			{Pattern: model.DefaultPattern, Repository: repositories[0], User: model.User{ID: 2, Email: "guest@nowhere"}},
 		}, nil
 	}
