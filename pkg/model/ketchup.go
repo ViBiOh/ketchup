@@ -21,9 +21,14 @@ type Ketchup struct {
 // KetchupByRepositoryID sort ketchup by repository ID
 type KetchupByRepositoryID []Ketchup
 
-func (a KetchupByRepositoryID) Len() int           { return len(a) }
-func (a KetchupByRepositoryID) Less(i, j int) bool { return a[i].Repository.ID < a[j].Repository.ID }
-func (a KetchupByRepositoryID) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
+func (a KetchupByRepositoryID) Len() int      { return len(a) }
+func (a KetchupByRepositoryID) Swap(i, j int) { a[i], a[j] = a[j], a[i] }
+func (a KetchupByRepositoryID) Less(i, j int) bool {
+	if a[i].Repository.ID == a[j].Repository.ID {
+		return a[i].Pattern < a[j].Pattern
+	}
+	return a[i].Repository.ID < a[j].Repository.ID
+}
 
 // KetchupByPriority sort ketchup by priority (outdated first, name then)
 type KetchupByPriority []Ketchup
@@ -63,9 +68,14 @@ type Release struct {
 // ReleaseByRepositoryID sort release by repository ID
 type ReleaseByRepositoryID []Release
 
-func (a ReleaseByRepositoryID) Len() int           { return len(a) }
-func (a ReleaseByRepositoryID) Less(i, j int) bool { return a[i].Repository.ID < a[j].Repository.ID }
-func (a ReleaseByRepositoryID) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
+func (a ReleaseByRepositoryID) Len() int      { return len(a) }
+func (a ReleaseByRepositoryID) Swap(i, j int) { a[i], a[j] = a[j], a[i] }
+func (a ReleaseByRepositoryID) Less(i, j int) bool {
+	if a[i].Repository.ID == a[j].Repository.ID {
+		return a[i].Pattern < a[j].Pattern
+	}
+	return a[i].Repository.ID < a[j].Repository.ID
+}
 
 // NewRelease creates a new version from its objects
 func NewRelease(repository Repository, pattern string, version semver.Version) Release {

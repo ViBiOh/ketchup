@@ -161,6 +161,7 @@ func TestGetNewReleases(t *testing.T) {
 func TestGetKetchupToNotify(t *testing.T) {
 	firstRelease := []model.Release{
 		{
+			Pattern: model.DefaultPattern,
 			Version: semver.Version{
 				Name: "1.0.1",
 			},
@@ -174,6 +175,7 @@ func TestGetKetchupToNotify(t *testing.T) {
 
 	secondRelease := []model.Release{
 		{
+			Pattern: model.DefaultPattern,
 			Version: semver.Version{
 				Name: "1.0.1",
 			},
@@ -184,6 +186,7 @@ func TestGetKetchupToNotify(t *testing.T) {
 			},
 		},
 		{
+			Pattern: model.DefaultPattern,
 			Version: semver.Version{
 				Name: "1.0.1",
 			},
