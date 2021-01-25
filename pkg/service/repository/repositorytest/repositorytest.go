@@ -2,10 +2,7 @@ package repositorytest
 
 import (
 	"context"
-	"errors"
-	"regexp"
 
-	httpModel "github.com/ViBiOh/httputils/v3/pkg/model"
 	"github.com/ViBiOh/ketchup/pkg/model"
 	"github.com/ViBiOh/ketchup/pkg/semver"
 	"github.com/ViBiOh/ketchup/pkg/service/repository"
@@ -15,13 +12,12 @@ var _ repository.App = &App{}
 
 // App mock app
 type App struct {
-	multiple bool
-	name     *regexp.Regexp
-	version  string
-
 	list    []model.Repository
 	total   uint64
 	listErr error
+
+	getOrCreateRepo model.Repository
+	getOrCreateErr  error
 
 	updateErr error
 
@@ -34,20 +30,19 @@ func New() *App {
 	return &App{}
 }
 
-// NewApp creates mock
-func NewApp(multiple bool, name *regexp.Regexp, version string) repository.App {
-	return &App{
-		multiple: multiple,
-		name:     name,
-		version:  version,
-	}
-}
-
 // SetList mocks
 func (a *App) SetList(list []model.Repository, total uint64, err error) *App {
 	a.list = list
 	a.total = total
 	a.listErr = err
+
+	return a
+}
+
+// SetGetOrCreate mocks
+func (a *App) SetGetOrCreate(repo model.Repository, err error) *App {
+	a.getOrCreateRepo = repo
+	a.getOrCreateErr = err
 
 	return a
 }
@@ -79,11 +74,7 @@ func (a *App) Suggest(_ context.Context, _ []uint64, _ uint64) ([]model.Reposito
 
 // GetOrCreate mocks
 func (a *App) GetOrCreate(_ context.Context, name string, repositoryKind model.RepositoryKind) (model.Repository, error) {
-	if len(name) == 0 {
-		return model.NoneRepository, httpModel.WrapInvalid(errors.New("invalid name"))
-	}
-
-	return model.Repository{ID: 1, Name: "vibioh/ketchup", Versions: map[string]string{model.DefaultPattern: "1.2.3"}}, nil
+	return a.getOrCreateRepo, a.getOrCreateErr
 }
 
 // Update mocks
