@@ -43,7 +43,7 @@ func (a app) List(ctx context.Context, page, pageSize uint) ([]model.Ketchup, ui
 		return nil, 0, httpModel.WrapInternal(fmt.Errorf("unable to list: %w", err))
 	}
 
-	enrichedList := enrichSemver(list)
+	enrichedList := enrichKetchupsWithSemver(list)
 	sort.Sort(model.KetchupByPriority(enrichedList))
 
 	return enrichedList, total, nil
@@ -60,7 +60,7 @@ func (a app) ListForRepositories(ctx context.Context, repositories []model.Repos
 		return nil, httpModel.WrapInternal(fmt.Errorf("unable to list by ids: %w", err))
 	}
 
-	return enrichSemver(list), nil
+	return enrichKetchupsWithSemver(list), nil
 }
 
 func (a app) Create(ctx context.Context, item model.Ketchup) (model.Ketchup, error) {
@@ -170,23 +170,27 @@ func (a app) check(ctx context.Context, old, new model.Ketchup) error {
 	return service.ConcatError(output)
 }
 
-func enrichSemver(list []model.Ketchup) []model.Ketchup {
+func enrichKetchupsWithSemver(list []model.Ketchup) []model.Ketchup {
 	output := make([]model.Ketchup, len(list))
 
 	for index, item := range list {
-		repositoryVersion, repositoryErr := semver.Parse(item.Repository.Versions[item.Pattern])
-		if repositoryErr != nil {
-			continue
-		}
-
-		ketchupVersion, ketchupErr := semver.Parse(item.Version)
-		if ketchupErr != nil {
-			continue
-		}
-
-		item.Semver = repositoryVersion.Compare(ketchupVersion)
-		output[index] = item
+		output[index] = enrichKetchupWithSemver(item)
 	}
 
 	return output
+}
+
+func enrichKetchupWithSemver(item model.Ketchup) model.Ketchup {
+	repositoryVersion, repositoryErr := semver.Parse(item.Repository.Versions[item.Pattern])
+	if repositoryErr != nil {
+		return item
+	}
+
+	ketchupVersion, ketchupErr := semver.Parse(item.Version)
+	if ketchupErr != nil {
+		return item
+	}
+
+	item.Semver = repositoryVersion.Compare(ketchupVersion)
+	return item
 }

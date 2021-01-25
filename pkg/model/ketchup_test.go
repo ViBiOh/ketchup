@@ -22,13 +22,15 @@ func TestKetchupByRepositoryID(t *testing.T) {
 			"simple",
 			args{
 				array: []Ketchup{
-					{Repository: Repository{ID: 10}},
-					{Repository: Repository{ID: 1}},
+					{Pattern: DefaultPattern, Repository: Repository{ID: 10}},
+					{Pattern: DefaultPattern, Repository: Repository{ID: 1}},
+					{Pattern: "latest", Repository: Repository{ID: 1}},
 				},
 			},
 			[]Ketchup{
-				{Repository: Repository{ID: 1}},
-				{Repository: Repository{ID: 10}},
+				{Pattern: "latest", Repository: Repository{ID: 1}},
+				{Pattern: DefaultPattern, Repository: Repository{ID: 1}},
+				{Pattern: DefaultPattern, Repository: Repository{ID: 10}},
 			},
 		},
 	}

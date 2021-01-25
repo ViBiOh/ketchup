@@ -77,6 +77,7 @@ func (a app) Start(done <-chan struct{}) {
 
 func (a app) ketchupNotify(_ time.Time) error {
 	logger.Info("Starting ketchup notifier")
+	defer logger.Info("Ending ketchup notifier")
 
 	ctx := authModel.StoreUser(context.Background(), authModel.NewUser(a.loginID, "scheduler"))
 
@@ -194,7 +195,7 @@ func (a app) getKetchupToNotify(ctx context.Context, releases []model.Release) (
 	for _, release := range releases {
 		for index < size {
 			current := ketchups[index]
-			if release.Repository.ID < current.Repository.ID {
+			if release.Repository.ID < current.Repository.ID || release.Pattern < current.Pattern {
 				break
 			}
 
