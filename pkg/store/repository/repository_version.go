@@ -100,7 +100,7 @@ WHERE
 `
 
 func (a app) UpdateVersions(ctx context.Context, o model.Repository) error {
-	patterns := make(map[string]bool)
+	patterns := make(map[string]string)
 
 	scanner := func(rows *sql.Rows) error {
 		var pattern string
@@ -110,8 +110,16 @@ func (a app) UpdateVersions(ctx context.Context, o model.Repository) error {
 			return err
 		}
 
-		patterns[pattern] = true
+		patterns[pattern] = version
+		return nil
+	}
 
+	err := db.List(ctx, a.db, scanner, listRepositoryVersionQuery, o.ID)
+	if err != nil {
+		return fmt.Errorf("unable to list repository version: %w", err)
+	}
+
+	for pattern, version := range patterns {
 		if repositoryVersion, ok := o.Versions[pattern]; ok {
 			if repositoryVersion != version {
 				if err := db.Exec(ctx, updateRepositoryVersionQuery, o.ID, pattern, version); err != nil {
@@ -121,17 +129,10 @@ func (a app) UpdateVersions(ctx context.Context, o model.Repository) error {
 		} else if err := db.Exec(ctx, deleteRepositoryVersionQuery, o.ID, pattern); err != nil {
 			return fmt.Errorf("unable to delete repository version: %w", err)
 		}
-
-		return nil
-	}
-
-	err := db.List(ctx, a.db, scanner, listRepositoryVersionQuery, o.ID)
-	if err != nil {
-		return err
 	}
 
 	for pattern, version := range o.Versions {
-		if !patterns[pattern] {
+		if _, ok := patterns[pattern]; !ok {
 			if err := db.Exec(ctx, createRepositoryVersionQuery, o.ID, pattern, version); err != nil {
 				return fmt.Errorf("unable to create repository version: %w", err)
 			}
