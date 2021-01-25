@@ -198,6 +198,8 @@ func (a app) getKetchupToNotify(ctx context.Context, releases []model.Release) (
 				break
 			}
 
+			index++
+
 			if current.Pattern != release.Pattern {
 				continue
 			}
@@ -209,8 +211,6 @@ func (a app) getKetchupToNotify(ctx context.Context, releases []model.Release) (
 					userToNotify[current.User] = []model.Release{release}
 				}
 			}
-
-			index++
 		}
 	}
 
