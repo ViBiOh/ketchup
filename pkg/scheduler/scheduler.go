@@ -201,10 +201,6 @@ func (a app) getKetchupToNotify(ctx context.Context, releases []model.Release) (
 
 			index++
 
-			if current.Pattern != release.Pattern {
-				continue
-			}
-
 			if current.Version != release.Version.Name {
 				if userToNotify[current.User] != nil {
 					userToNotify[current.User] = append(userToNotify[current.User], release)
