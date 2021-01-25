@@ -122,7 +122,7 @@ func (a app) UpdateVersions(ctx context.Context, o model.Repository) error {
 	for pattern, version := range patterns {
 		if repositoryVersion, ok := o.Versions[pattern]; ok {
 			if repositoryVersion != version {
-				if err := db.Exec(ctx, updateRepositoryVersionQuery, o.ID, pattern, version); err != nil {
+				if err := db.Exec(ctx, updateRepositoryVersionQuery, o.ID, pattern, repositoryVersion); err != nil {
 					return fmt.Errorf("unable to update repository version: %w", err)
 				}
 			}
