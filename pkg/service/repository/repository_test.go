@@ -4,13 +4,13 @@ import (
 	"context"
 	"errors"
 	"reflect"
-	"regexp"
 	"strings"
 	"testing"
 
 	httpModel "github.com/ViBiOh/httputils/v3/pkg/model"
 	"github.com/ViBiOh/ketchup/pkg/github/githubtest"
 	"github.com/ViBiOh/ketchup/pkg/model"
+	"github.com/ViBiOh/ketchup/pkg/semver"
 )
 
 var (
@@ -68,7 +68,7 @@ func (trs testRepositoryStore) GetByName(_ context.Context, name string, reposit
 	}
 
 	if name == "exist" {
-		return model.Repository{ID: 1, Name: "vibioh/ketchup"}, nil
+		return model.Repository{ID: 3, Name: "vibioh/ketchup", Versions: make(map[string]string)}, nil
 	}
 
 	return model.NoneRepository, nil
@@ -216,37 +216,57 @@ func TestGetOrCreate(t *testing.T) {
 		ctx            context.Context
 		name           string
 		repositoryKind model.RepositoryKind
+		pattern        string
 	}
 
 	var cases = []struct {
 		intention string
+		instance  App
 		args      args
 		want      model.Repository
 		wantErr   error
 	}{
 		{
 			"get error",
+			New(testRepositoryStore{}, githubtest.New(), nil),
 			args{
-				ctx:  context.Background(),
-				name: "error",
+				ctx:     context.Background(),
+				name:    "error",
+				pattern: model.DefaultPattern,
 			},
 			model.NoneRepository,
 			httpModel.ErrInternalError,
 		},
 		{
-			"exist",
+			"exists but no pattern",
+			New(testRepositoryStore{}, githubtest.New().SetLatestVersions(map[string]semver.Version{
+				model.DefaultPattern: {
+					Major: 1,
+					Name:  "1.0.0",
+				},
+			}, nil), nil),
 			args{
-				ctx:  context.Background(),
-				name: "exist",
+				ctx:     context.Background(),
+				name:    "exist",
+				pattern: model.DefaultPattern,
 			},
-			model.Repository{ID: 1, Name: "vibioh/ketchup"},
+			model.Repository{ID: 3, Name: "vibioh/ketchup", Versions: map[string]string{
+				model.DefaultPattern: "1.0.0",
+			}},
 			nil,
 		},
 		{
 			"create",
+			New(testRepositoryStore{}, githubtest.New().SetLatestVersions(map[string]semver.Version{
+				model.DefaultPattern: {
+					Major: 1,
+					Name:  "1.0.0",
+				},
+			}, nil), nil),
 			args{
-				ctx:  context.Background(),
-				name: "not found",
+				ctx:     context.Background(),
+				name:    "not found",
+				pattern: model.DefaultPattern,
 			},
 			model.Repository{ID: 1, Name: "not found", Versions: map[string]string{model.DefaultPattern: "1.0.0"}},
 			nil,
@@ -255,7 +275,7 @@ func TestGetOrCreate(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.intention, func(t *testing.T) {
-			got, gotErr := New(testRepositoryStore{}, githubtest.NewApp(regexp.MustCompile("not found"), "1.0.0"), nil).GetOrCreate(tc.args.ctx, tc.args.name, tc.args.repositoryKind)
+			got, gotErr := tc.instance.GetOrCreate(tc.args.ctx, tc.args.name, tc.args.repositoryKind, tc.args.pattern)
 
 			failed := false
 
@@ -280,12 +300,17 @@ func TestCreate(t *testing.T) {
 
 	var cases = []struct {
 		intention string
+		instance  app
 		args      args
 		want      model.Repository
 		wantErr   error
 	}{
 		{
 			"invalid",
+			app{
+				repositoryStore: testRepositoryStore{},
+				githubApp:       githubtest.New(),
+			},
 			args{
 				ctx:  context.Background(),
 				item: model.Repository{ID: 1},
@@ -295,6 +320,10 @@ func TestCreate(t *testing.T) {
 		},
 		{
 			"release error",
+			app{
+				repositoryStore: testRepositoryStore{},
+				githubApp:       githubtest.New().SetLatestVersions(nil, errors.New("failed")),
+			},
 			args{
 				ctx:  context.Background(),
 				item: model.Repository{Name: "invalid"},
@@ -304,18 +333,40 @@ func TestCreate(t *testing.T) {
 		},
 		{
 			"create error",
+			app{
+				repositoryStore: testRepositoryStore{},
+				githubApp: githubtest.New().SetLatestVersions(map[string]semver.Version{
+					model.DefaultPattern: {
+						Major: 1,
+						Name:  "1.0.0",
+					},
+				}, nil),
+			},
 			args{
-				ctx:  context.Background(),
-				item: model.Repository{Name: "vibioh"},
+				ctx: context.Background(),
+				item: model.Repository{Name: "vibioh", Versions: map[string]string{
+					model.DefaultPattern: "0.0.0",
+				}},
 			},
 			model.Repository{Name: "vibioh", Versions: map[string]string{model.DefaultPattern: "1.0.0"}},
 			httpModel.ErrInternalError,
 		},
 		{
 			"success",
+			app{
+				repositoryStore: testRepositoryStore{},
+				githubApp: githubtest.New().SetLatestVersions(map[string]semver.Version{
+					model.DefaultPattern: {
+						Major: 1,
+						Name:  "1.0.0",
+					},
+				}, nil),
+			},
 			args{
-				ctx:  context.Background(),
-				item: model.Repository{Name: "vibioh/ketchup"},
+				ctx: context.Background(),
+				item: model.Repository{Name: "vibioh/ketchup", Versions: map[string]string{
+					model.DefaultPattern: "0.0.0",
+				}},
 			},
 			model.Repository{ID: 1, Name: "vibioh/ketchup", Versions: map[string]string{model.DefaultPattern: "1.0.0"}},
 			nil,
@@ -324,7 +375,7 @@ func TestCreate(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.intention, func(t *testing.T) {
-			got, gotErr := app{testRepositoryStore{}, githubtest.NewApp(regexp.MustCompile("vibioh"), "1.0.0"), nil}.create(tc.args.ctx, tc.args.item)
+			got, gotErr := tc.instance.create(tc.args.ctx, tc.args.item)
 
 			failed := false
 

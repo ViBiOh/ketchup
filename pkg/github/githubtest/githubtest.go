@@ -1,34 +1,32 @@
 package githubtest
 
 import (
-	"errors"
-	"regexp"
-
 	"github.com/ViBiOh/ketchup/pkg/github"
-	"github.com/ViBiOh/ketchup/pkg/model"
 	"github.com/ViBiOh/ketchup/pkg/semver"
 )
 
-var _ github.App = app{}
+var _ github.App = &App{}
 
-// NewApp creates mock
-func NewApp(name *regexp.Regexp, version string) github.App {
-	return app{
-		name:    name,
-		version: version,
-	}
+// App mock app
+type App struct {
+	latestVersions    map[string]semver.Version
+	latestVersionsErr error
 }
 
-type app struct {
-	name    *regexp.Regexp
-	version string
+// New creates mock
+func New() *App {
+	return &App{}
 }
 
-func (a app) LatestVersions(repository string, patterns []string) (map[string]semver.Version, error) {
-	if a.name.MatchString(repository) {
-		version, _ := semver.Parse(a.version)
-		return map[string]semver.Version{model.DefaultPattern: version}, nil
-	}
+// SetLatestVersions mock
+func (a *App) SetLatestVersions(latestVersions map[string]semver.Version, err error) *App {
+	a.latestVersions = latestVersions
+	a.latestVersionsErr = err
 
-	return nil, errors.New("unknown repository")
+	return a
+}
+
+// LatestVersions mock
+func (a App) LatestVersions(_ string, _ []string) (map[string]semver.Version, error) {
+	return a.latestVersions, a.latestVersionsErr
 }
