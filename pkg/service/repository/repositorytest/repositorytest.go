@@ -73,7 +73,7 @@ func (a *App) Suggest(_ context.Context, _ []uint64, _ uint64) ([]model.Reposito
 }
 
 // GetOrCreate mocks
-func (a *App) GetOrCreate(_ context.Context, name string, repositoryKind model.RepositoryKind) (model.Repository, error) {
+func (a *App) GetOrCreate(_ context.Context, _ string, _ model.RepositoryKind, _ string) (model.Repository, error) {
 	return a.getOrCreateRepo, a.getOrCreateErr
 }
 
