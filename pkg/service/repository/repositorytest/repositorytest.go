@@ -12,9 +12,9 @@ var _ repository.App = &App{}
 
 // App mock app
 type App struct {
-	list    []model.Repository
-	total   uint64
-	listErr error
+	listRepositories []model.Repository
+	listTotal        uint64
+	listErr          error
 
 	getOrCreateRepo model.Repository
 	getOrCreateErr  error
@@ -32,8 +32,8 @@ func New() *App {
 
 // SetList mocks
 func (a *App) SetList(list []model.Repository, total uint64, err error) *App {
-	a.list = list
-	a.total = total
+	a.listRepositories = list
+	a.listTotal = total
 	a.listErr = err
 
 	return a
@@ -64,7 +64,7 @@ func (a *App) SetLatestVersions(latestVersions map[string]semver.Version, err er
 
 // List mocks
 func (a *App) List(_ context.Context, _, _ uint) ([]model.Repository, uint64, error) {
-	return a.list, a.total, a.listErr
+	return a.listRepositories, a.listTotal, a.listErr
 }
 
 // Suggest mocks
