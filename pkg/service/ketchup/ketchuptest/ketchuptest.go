@@ -2,67 +2,66 @@ package ketchuptest
 
 import (
 	"context"
-	"errors"
 
 	"github.com/ViBiOh/ketchup/pkg/model"
 	"github.com/ViBiOh/ketchup/pkg/service/ketchup"
 )
 
-var _ ketchup.App = app{}
+var _ ketchup.App = &App{}
 
-// NewApp creates mock
-func NewApp() ketchup.App {
-	return app{}
+// App mock app
+type App struct {
+	listKetchups []model.Ketchup
+	listTotal    uint64
+	listErr      error
+
+	listForRepositoriesKetchups []model.Ketchup
+	listForRepositoriesErr      error
 }
 
-type app struct{}
-
-func (tks app) List(ctx context.Context, _, _ uint) ([]model.Ketchup, uint64, error) {
-	if model.ReadUser(ctx) == model.NoneUser {
-		return nil, 0, errors.New("user not found")
-	}
-
-	return []model.Ketchup{
-		{Version: "1.0.0", Repository: model.Repository{ID: 1, Name: "vibioh/ketchup", Versions: map[string]string{model.DefaultPattern: "1.0.0"}}, User: model.User{ID: 1, Email: "nobody@localhost"}},
-	}, 0, nil
+// New creates raw mock
+func New() *App {
+	return &App{}
 }
 
-func (tks app) ListForRepositories(ctx context.Context, repositories []model.Repository) ([]model.Ketchup, error) {
-	if ctx == context.TODO() {
-		return nil, errors.New("invalid context")
-	}
+// SetList mocks
+func (a *App) SetList(list []model.Ketchup, total uint64, err error) *App {
+	a.listKetchups = list
+	a.listTotal = total
+	a.listErr = err
 
-	if len(repositories) == 0 {
-		return nil, nil
-	}
-
-	if repositories[0].Name == "vibioh/ketchup" {
-		return []model.Ketchup{
-			{Pattern: model.DefaultPattern, Repository: repositories[0], User: model.User{ID: 1, Email: "nobody@localhost"}},
-			{Pattern: "latest", Repository: repositories[0], User: model.User{ID: 1, Email: "nobody@localhost"}},
-			{Pattern: model.DefaultPattern, Repository: repositories[0], User: model.User{ID: 2, Email: "guest@nowhere"}},
-		}, nil
-	}
-
-	if repositories[0].Name == "vibioh/viws" {
-		return []model.Ketchup{
-			{Pattern: model.DefaultPattern, Repository: repositories[0], User: model.User{ID: 1, Email: "nobody@localhost"}},
-			{Pattern: model.DefaultPattern, Repository: repositories[0], User: model.User{ID: 2, Email: "guest@nowhere"}},
-			{Pattern: model.DefaultPattern, Repository: repositories[1], User: model.User{ID: 2, Email: "guest@nowhere"}},
-		}, nil
-	}
-
-	return nil, nil
+	return a
 }
 
-func (tks app) Create(_ context.Context, _ model.Ketchup) (model.Ketchup, error) {
+// SetListForRepositories mocks
+func (a *App) SetListForRepositories(list []model.Ketchup, err error) *App {
+	a.listForRepositoriesKetchups = list
+	a.listForRepositoriesErr = err
+
+	return a
+}
+
+// List mocks
+func (a App) List(_ context.Context, _, _ uint) ([]model.Ketchup, uint64, error) {
+	return a.listKetchups, a.listTotal, a.listErr
+}
+
+// ListForRepositories mocks
+func (a App) ListForRepositories(_ context.Context, _ []model.Repository) ([]model.Ketchup, error) {
+	return a.listForRepositoriesKetchups, a.listForRepositoriesErr
+}
+
+// Create mocks
+func (a App) Create(_ context.Context, _ model.Ketchup) (model.Ketchup, error) {
 	return model.NoneKetchup, nil
 }
 
-func (tks app) Update(_ context.Context, _ model.Ketchup) (model.Ketchup, error) {
+// Update mocks
+func (a App) Update(_ context.Context, _ model.Ketchup) (model.Ketchup, error) {
 	return model.NoneKetchup, nil
 }
 
-func (tks app) Delete(_ context.Context, _ model.Ketchup) error {
+// Delete mocks
+func (a App) Delete(_ context.Context, _ model.Ketchup) error {
 	return nil
 }

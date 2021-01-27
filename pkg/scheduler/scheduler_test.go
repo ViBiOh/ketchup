@@ -20,8 +20,8 @@ var (
 	repositoryVersion = "1.0.0"
 )
 
-func ketchupRepository() model.Repository {
-	return model.Repository{
+func ketchupRepository(latestVersion string) model.Repository {
+	repo := model.Repository{
 		ID:   1,
 		Kind: model.Github,
 		Name: repositoryName,
@@ -29,6 +29,12 @@ func ketchupRepository() model.Repository {
 			model.DefaultPattern: repositoryVersion,
 		},
 	}
+
+	if len(latestVersion) > 0 {
+		repo.Versions["latest"] = latestVersion
+	}
+
+	return repo
 }
 
 func TestFlags(t *testing.T) {
@@ -86,7 +92,7 @@ func TestGetNewReleases(t *testing.T) {
 		{
 			"github error",
 			app{
-				repositoryService: repositorytest.New().SetList([]model.Repository{ketchupRepository()}, 0, nil).SetLatestVersions(nil, errors.New("failed")),
+				repositoryService: repositorytest.New().SetList([]model.Repository{ketchupRepository("")}, 0, nil).SetLatestVersions(nil, errors.New("failed")),
 			},
 			args{
 				ctx: context.Background(),
@@ -98,7 +104,7 @@ func TestGetNewReleases(t *testing.T) {
 			"same version",
 			app{
 				repositoryService: repositorytest.New().SetList([]model.Repository{
-					ketchupRepository(),
+					ketchupRepository(""),
 				}, 0, nil).SetLatestVersions(map[string]semver.Version{
 					model.DefaultPattern: {
 						Name: "1.1.0",
@@ -114,7 +120,7 @@ func TestGetNewReleases(t *testing.T) {
 		{
 			"update error",
 			app{
-				repositoryService: repositorytest.New().SetList([]model.Repository{ketchupRepository()}, 0, nil).SetLatestVersions(map[string]semver.Version{
+				repositoryService: repositorytest.New().SetList([]model.Repository{ketchupRepository("")}, 0, nil).SetLatestVersions(map[string]semver.Version{
 					model.DefaultPattern: {
 						Name:  "1.1.0",
 						Major: 1,
@@ -131,7 +137,7 @@ func TestGetNewReleases(t *testing.T) {
 		{
 			"success",
 			app{
-				repositoryService: repositorytest.New().SetList([]model.Repository{ketchupRepository()}, 0, nil).SetLatestVersions(map[string]semver.Version{
+				repositoryService: repositorytest.New().SetList([]model.Repository{ketchupRepository("")}, 0, nil).SetLatestVersions(map[string]semver.Version{
 					model.DefaultPattern: {
 						Name:  "1.1.0",
 						Major: 1,
@@ -222,7 +228,7 @@ func TestCheckRepositoryVersion(t *testing.T) {
 				}, nil),
 			},
 			args{
-				repo: ketchupRepository(),
+				repo: ketchupRepository(""),
 			},
 			make([]model.Release, 0),
 		},
@@ -285,10 +291,10 @@ func TestCheckRepositoryVersion(t *testing.T) {
 				}, nil),
 			},
 			args{
-				repo: ketchupRepository(),
+				repo: ketchupRepository(""),
 			},
 			[]model.Release{
-				model.NewRelease(ketchupRepository(), model.DefaultPattern, semver.Version{
+				model.NewRelease(ketchupRepository(""), model.DefaultPattern, semver.Version{
 					Name:  "1.1.0",
 					Major: 1,
 					Minor: 1,
@@ -308,62 +314,6 @@ func TestCheckRepositoryVersion(t *testing.T) {
 }
 
 func TestGetKetchupToNotify(t *testing.T) {
-	firstRelease := []model.Release{
-		{
-			Pattern: model.DefaultPattern,
-			Version: semver.Version{
-				Name: "1.1.0",
-			},
-			Repository: model.Repository{
-				ID:   1,
-				Name: repositoryName,
-				Versions: map[string]string{
-					model.DefaultPattern: "1.1.0",
-					"latest":             "1.1.0-beta",
-				},
-			},
-		},
-		{
-			Pattern: "latest",
-			Version: semver.Version{
-				Name: "1.1.0-beta",
-			},
-			Repository: model.Repository{
-				ID:   1,
-				Name: repositoryName,
-				Versions: map[string]string{
-					model.DefaultPattern: "1.1.0",
-					"latest":             "1.1.0-beta",
-				},
-			},
-		},
-	}
-
-	secondRelease := []model.Release{
-		{
-			Pattern: model.DefaultPattern,
-			Version: semver.Version{
-				Name: "1.0.1",
-			},
-			Repository: model.Repository{
-				ID:       1,
-				Name:     "vibioh/viws",
-				Versions: map[string]string{model.DefaultPattern: "1.1.0"},
-			},
-		},
-		{
-			Pattern: model.DefaultPattern,
-			Version: semver.Version{
-				Name: "1.0.1",
-			},
-			Repository: model.Repository{
-				ID:       2,
-				Name:     "vibioh/dotfiles",
-				Versions: map[string]string{model.DefaultPattern: "1.1.0"},
-			},
-		},
-	}
-
 	type args struct {
 		ctx      context.Context
 		releases []model.Release
@@ -371,20 +321,23 @@ func TestGetKetchupToNotify(t *testing.T) {
 
 	var cases = []struct {
 		intention string
+		instance  app
 		args      args
 		want      map[model.User][]model.Release
 		wantErr   error
 	}{
 		{
 			"list error",
+			app{ketchupService: ketchuptest.New().SetListForRepositories(nil, errors.New("failed"))},
 			args{
-				ctx: context.TODO(),
+				ctx: context.Background(),
 			},
 			nil,
-			errors.New("invalid context"),
+			errors.New("failed"),
 		},
 		{
 			"empty",
+			app{ketchupService: ketchuptest.New()},
 			args{
 				ctx: context.Background(),
 			},
@@ -393,25 +346,72 @@ func TestGetKetchupToNotify(t *testing.T) {
 		},
 		{
 			"one release, n ketchups",
+			app{ketchupService: ketchuptest.New().SetListForRepositories([]model.Ketchup{
+				{
+					Pattern:    model.DefaultPattern,
+					Repository: ketchupRepository("1.1.0-beta"),
+					User: model.User{
+						ID:    1,
+						Email: "nobody@localhost",
+					},
+				},
+				{
+					Pattern:    "latest",
+					Repository: ketchupRepository("1.1.0-beta"),
+					User: model.User{
+						ID:    1,
+						Email: "nobody@localhost",
+					},
+				},
+				{
+					Pattern:    model.DefaultPattern,
+					Repository: ketchupRepository("1.1.0-beta"),
+					User: model.User{
+						ID:    2,
+						Email: "guest@nowhere",
+					},
+				},
+			}, nil)},
 			args{
-				ctx:      context.Background(),
-				releases: firstRelease,
+				ctx: context.Background(),
+				releases: []model.Release{
+					{
+						Pattern: model.DefaultPattern,
+						Version: semver.Version{
+							Name: "1.1.0",
+						},
+						Repository: ketchupRepository("1.1.0-beta"),
+					},
+					{
+						Pattern: "latest",
+						Version: semver.Version{
+							Name: "1.1.0-beta",
+						},
+						Repository: ketchupRepository("1.1.0-beta"),
+					},
+				},
 			},
 			map[model.User][]model.Release{
-				{ID: 2, Email: "guest@nowhere"}:    {firstRelease[0]},
-				{ID: 1, Email: "nobody@localhost"}: {firstRelease[1], firstRelease[0]},
-			},
-			nil,
-		},
-		{
-			"one release, n ketchups",
-			args{
-				ctx:      context.Background(),
-				releases: secondRelease,
-			},
-			map[model.User][]model.Release{
-				{ID: 1, Email: "nobody@localhost"}: {secondRelease[0]},
-				{ID: 2, Email: "guest@nowhere"}:    secondRelease,
+				{ID: 2, Email: "guest@nowhere"}: {{
+					Pattern: model.DefaultPattern,
+					Version: semver.Version{
+						Name: "1.1.0",
+					},
+					Repository: ketchupRepository("1.1.0-beta"),
+				}},
+				{ID: 1, Email: "nobody@localhost"}: {{
+					Pattern: "latest",
+					Version: semver.Version{
+						Name: "1.1.0-beta",
+					},
+					Repository: ketchupRepository("1.1.0-beta"),
+				}, {
+					Pattern: model.DefaultPattern,
+					Version: semver.Version{
+						Name: "1.1.0",
+					},
+					Repository: ketchupRepository("1.1.0-beta"),
+				}},
 			},
 			nil,
 		},
@@ -419,7 +419,7 @@ func TestGetKetchupToNotify(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.intention, func(t *testing.T) {
-			got, gotErr := app{ketchupService: ketchuptest.NewApp()}.getKetchupToNotify(tc.args.ctx, tc.args.releases)
+			got, gotErr := tc.instance.getKetchupToNotify(tc.args.ctx, tc.args.releases)
 
 			failed := false
 
