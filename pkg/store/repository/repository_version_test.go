@@ -39,11 +39,11 @@ func TestEnrichRepositoriesVersions(t *testing.T) {
 			"invalid rows",
 			args{
 				repositories: []model.Repository{
-					{ID: 1},
+					model.NewRepository(1, model.Github, ""),
 				},
 			},
 			[]model.Repository{
-				{ID: 1},
+				model.NewRepository(1, model.Github, ""),
 			},
 			errors.New("type string (\"a\") to a uint64"),
 		},
@@ -51,11 +51,11 @@ func TestEnrichRepositoriesVersions(t *testing.T) {
 			"invalid rows",
 			args{
 				repositories: []model.Repository{
-					{ID: 1},
+					model.NewRepository(1, model.Github, ""),
 				},
 			},
 			[]model.Repository{
-				{ID: 1},
+				model.NewRepository(1, model.Github, ""),
 			},
 			errors.New("type string (\"a\") to a uint64"),
 		},
@@ -63,29 +63,13 @@ func TestEnrichRepositoriesVersions(t *testing.T) {
 			"sequential",
 			args{
 				repositories: []model.Repository{
-					{
-						ID:       2,
-						Versions: make(map[string]string),
-					},
-					{
-						ID:       1,
-						Versions: make(map[string]string),
-					},
+					model.NewRepository(2, model.Github, ""),
+					model.NewRepository(1, model.Github, ""),
 				},
 			},
 			[]model.Repository{
-				{
-					ID: 1,
-					Versions: map[string]string{
-						model.DefaultPattern: "1.0.0",
-					},
-				},
-				{
-					ID: 2,
-					Versions: map[string]string{
-						model.DefaultPattern: "1.1.0",
-					},
-				},
+				model.NewRepository(1, model.Github, "").AddVersion(model.DefaultPattern, "1.0.0"),
+				model.NewRepository(2, model.Github, "").AddVersion(model.DefaultPattern, "1.1.0"),
 			},
 			nil,
 		},
@@ -108,24 +92,9 @@ func TestEnrichRepositoriesVersions(t *testing.T) {
 				},
 			},
 			[]model.Repository{
-				{
-					ID: 1,
-					Versions: map[string]string{
-						"beta":               "1.0.0-beta",
-						model.DefaultPattern: "1.0.0",
-					},
-				},
-				{
-					ID:       2,
-					Versions: map[string]string{},
-				},
-				{
-					ID: 3,
-					Versions: map[string]string{
-						"alpha":              "2.0.0",
-						model.DefaultPattern: "1.1.0",
-					},
-				},
+				model.NewRepository(1, model.Github, "").AddVersion(model.DefaultPattern, "1.0.0").AddVersion("beta", "1.0.0-beta"),
+				model.NewRepository(2, model.Github, ""),
+				model.NewRepository(3, model.Github, "").AddVersion(model.DefaultPattern, "1.1.0").AddVersion("alpha", "2.0.0"),
 			},
 			nil,
 		},
@@ -198,73 +167,49 @@ func TestUpdateVersions(t *testing.T) {
 		{
 			"create error",
 			args{
-				o: model.Repository{
-					Versions: map[string]string{
-						model.DefaultPattern: "1.0.0",
-					},
-				},
+				o: model.NewRepository(0, model.Github, "").AddVersion(model.DefaultPattern, "1.0.0"),
 			},
 			errFailed,
 		},
 		{
 			"create",
 			args{
-				o: model.Repository{
-					Versions: map[string]string{
-						model.DefaultPattern: "1.0.0",
-					},
-				},
+				o: model.NewRepository(0, model.Github, "").AddVersion(model.DefaultPattern, "1.0.0"),
 			},
 			nil,
 		},
 		{
 			"no update",
 			args{
-				o: model.Repository{
-					Versions: map[string]string{
-						model.DefaultPattern: "1.0.0",
-					},
-				},
+				o: model.NewRepository(0, model.Github, "").AddVersion(model.DefaultPattern, "1.0.0"),
 			},
 			nil,
 		},
 		{
 			"update error",
 			args{
-				o: model.Repository{
-					Versions: map[string]string{
-						model.DefaultPattern: "1.0.0",
-					},
-				},
+				o: model.NewRepository(0, model.Github, "").AddVersion(model.DefaultPattern, "1.0.0"),
 			},
 			errFailed,
 		},
 		{
 			"update",
 			args{
-				o: model.Repository{
-					Versions: map[string]string{
-						model.DefaultPattern: "1.0.0",
-					},
-				},
+				o: model.NewRepository(0, model.Github, "").AddVersion(model.DefaultPattern, "1.0.0"),
 			},
 			nil,
 		},
 		{
 			"delete error",
 			args{
-				o: model.Repository{
-					Versions: map[string]string{},
-				},
+				o: model.NewRepository(0, model.Github, ""),
 			},
 			errFailed,
 		},
 		{
 			"delete",
 			args{
-				o: model.Repository{
-					Versions: map[string]string{},
-				},
+				o: model.NewRepository(0, model.Github, ""),
 			},
 			nil,
 		},

@@ -44,6 +44,23 @@ type Repository struct {
 	Versions map[string]string `json:"versions"`
 }
 
+// NewRepository create new Repository with initialized values
+func NewRepository(id uint64, kind RepositoryKind, name string) Repository {
+	return Repository{
+		ID:       id,
+		Kind:     kind,
+		Name:     name,
+		Versions: make(map[string]string),
+	}
+}
+
+// AddVersion adds given pattern to versions map
+func (r Repository) AddVersion(pattern, version string) Repository {
+	r.Versions[pattern] = version
+
+	return r
+}
+
 // URL format the URL of given repository with current version
 func (r Repository) URL() string {
 	if r.Kind == Helm {

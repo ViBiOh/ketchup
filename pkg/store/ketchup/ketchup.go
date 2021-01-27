@@ -108,6 +108,8 @@ func (a app) ListByRepositoriesID(ctx context.Context, ids []uint64) ([]model.Ke
 
 	scanner := func(rows *sql.Rows) error {
 		var item model.Ketchup
+		item.Repository = model.NewRepository(0, 0, "")
+
 		if err := rows.Scan(&item.Pattern, &item.Version, &item.Repository.ID, &item.User.ID, &item.User.Email); err != nil {
 			return err
 		}
@@ -140,7 +142,8 @@ func (a app) GetByRepositoryID(ctx context.Context, id uint64, forUpdate bool) (
 
 	user := model.ReadUser(ctx)
 	item := model.Ketchup{
-		User: user,
+		User:       user,
+		Repository: model.NewRepository(0, model.Github, ""),
 	}
 
 	scanner := func(row *sql.Row) error {

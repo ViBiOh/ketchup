@@ -46,12 +46,9 @@ func (a app) handleCreate(w http.ResponseWriter, r *http.Request) {
 	}
 
 	item := model.Ketchup{
-		Pattern: r.FormValue("pattern"),
-		Version: r.FormValue("version"),
-		Repository: model.Repository{
-			Name: r.FormValue("repository"),
-			Kind: repositoryKind,
-		},
+		Pattern:    r.FormValue("pattern"),
+		Version:    r.FormValue("version"),
+		Repository: model.NewRepository(0, repositoryKind, r.FormValue("repository")),
 	}
 
 	created, err := a.ketchupService.Create(r.Context(), item)
@@ -72,11 +69,9 @@ func (a app) handleUpdate(w http.ResponseWriter, r *http.Request) {
 	}
 
 	item := model.Ketchup{
-		Pattern: r.FormValue("pattern"),
-		Version: r.FormValue("version"),
-		Repository: model.Repository{
-			ID: id,
-		},
+		Pattern:    r.FormValue("pattern"),
+		Version:    r.FormValue("version"),
+		Repository: model.NewRepository(id, 0, ""),
 	}
 
 	updated, err := a.ketchupService.Update(r.Context(), item)
@@ -96,9 +91,7 @@ func (a app) handleDelete(w http.ResponseWriter, r *http.Request) {
 	}
 
 	item := model.Ketchup{
-		Repository: model.Repository{
-			ID: id,
-		},
+		Repository: model.NewRepository(id, 0, ""),
 	}
 
 	if err := a.ketchupService.Delete(r.Context(), item); err != nil {
