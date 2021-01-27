@@ -39,31 +39,18 @@ func TestList(t *testing.T) {
 			},
 			[]model.Ketchup{
 				{
-					Pattern: model.DefaultPattern,
-					Version: "0.9.0",
-					Repository: model.Repository{
-						ID:   1,
-						Name: "vibioh/ketchup",
-						Versions: map[string]string{
-							model.DefaultPattern: "1.0.0",
-						},
-					},
+					Pattern:    model.DefaultPattern,
+					Version:    "0.9.0",
+					Repository: model.NewRepository(1, model.Github, "vibioh/ketchup").AddVersion(model.DefaultPattern, "1.0.0"),
 					User: model.User{
 						ID:    3,
 						Email: "nobody@localhost",
 					},
 				},
 				{
-					Pattern: model.DefaultPattern,
-					Version: "1.0.0",
-					Repository: model.Repository{
-						ID:   2,
-						Name: "vibioh/viws",
-						Versions: map[string]string{
-							model.DefaultPattern: "1.0.0",
-						},
-						Kind: model.Helm,
-					},
+					Pattern:    model.DefaultPattern,
+					Version:    "1.0.0",
+					Repository: model.NewRepository(2, model.Helm, "vibioh/viws").AddVersion(model.DefaultPattern, "1.0.0"),
 					User: model.User{
 						ID:    3,
 						Email: "nobody@localhost",
@@ -179,22 +166,18 @@ func TestListByRepositoriesID(t *testing.T) {
 			},
 			[]model.Ketchup{
 				{
-					Pattern: model.DefaultPattern,
-					Version: "0.9.0",
-					Repository: model.Repository{
-						ID: 1,
-					},
+					Pattern:    model.DefaultPattern,
+					Version:    "0.9.0",
+					Repository: model.NewRepository(1, model.Github, ""),
 					User: model.User{
 						ID:    1,
 						Email: "nobody@localhost",
 					},
 				},
 				{
-					Pattern: model.DefaultPattern,
-					Version: "1.0.0",
-					Repository: model.Repository{
-						ID: 2,
-					},
+					Pattern:    model.DefaultPattern,
+					Version:    "1.0.0",
+					Repository: model.NewRepository(2, model.Github, ""),
 					User: model.User{
 						ID:    2,
 						Email: "guest@domain",
@@ -292,11 +275,9 @@ func TestGetByRepositoryID(t *testing.T) {
 			},
 			"SELECT pattern, version, repository_id, user_id FROM ketchup.ketchup WHERE repository_id = .+ AND user_id = .+",
 			model.Ketchup{
-				Pattern: model.DefaultPattern,
-				Version: "0.9.0",
-				Repository: model.Repository{
-					ID: 1,
-				},
+				Pattern:    model.DefaultPattern,
+				Version:    "0.9.0",
+				Repository: model.NewRepository(1, model.Github, ""),
 				User: model.User{
 					ID:    3,
 					Email: "nobody@localhost",
@@ -321,11 +302,9 @@ func TestGetByRepositoryID(t *testing.T) {
 			},
 			"SELECT pattern, version, repository_id, user_id FROM ketchup.ketchup WHERE repository_id = .+ AND user_id = .+ FOR UPDATE",
 			model.Ketchup{
-				Pattern: model.DefaultPattern,
-				Version: "0.9.0",
-				Repository: model.Repository{
-					ID: 1,
-				},
+				Pattern:    model.DefaultPattern,
+				Version:    "0.9.0",
+				Repository: model.NewRepository(1, model.Github, ""),
 				User: model.User{
 					ID:    3,
 					Email: "nobody@localhost",
@@ -390,11 +369,9 @@ func TestCreate(t *testing.T) {
 			"simple",
 			args{
 				o: model.Ketchup{
-					Pattern: model.DefaultPattern,
-					Version: "0.9.0",
-					Repository: model.Repository{
-						ID: 1,
-					},
+					Pattern:    model.DefaultPattern,
+					Version:    "0.9.0",
+					Repository: model.NewRepository(1, model.Github, ""),
 				},
 			},
 			1,
@@ -454,11 +431,9 @@ func TestUpdate(t *testing.T) {
 			"simple",
 			args{
 				o: model.Ketchup{
-					Pattern: model.DefaultPattern,
-					Version: "0.9.0",
-					Repository: model.Repository{
-						ID: 1,
-					},
+					Pattern:    model.DefaultPattern,
+					Version:    "0.9.0",
+					Repository: model.NewRepository(1, model.Github, ""),
 				},
 			},
 			nil,
@@ -515,9 +490,7 @@ func TestDelete(t *testing.T) {
 			"simple",
 			args{
 				o: model.Ketchup{
-					Repository: model.Repository{
-						ID: 1,
-					},
+					Repository: model.NewRepository(1, model.Github, ""),
 				},
 			},
 			nil,

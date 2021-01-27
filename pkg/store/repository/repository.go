@@ -45,8 +45,8 @@ func (a app) list(ctx context.Context, query string, args ...interface{}) ([]mod
 	list := make([]model.Repository, 0)
 
 	scanner := func(rows *sql.Rows) error {
-		var item model.Repository
 		var rawRepositoryKind string
+		item := model.NewRepository(0, 0, "")
 
 		if err := rows.Scan(&item.ID, &item.Name, &rawRepositoryKind, &count); err != nil {
 			return err
@@ -57,7 +57,6 @@ func (a app) list(ctx context.Context, query string, args ...interface{}) ([]mod
 			return err
 		}
 		item.Kind = repositoryKind
-		item.Versions = make(map[string]string, 0)
 
 		list = append(list, item)
 		return nil
@@ -72,8 +71,8 @@ func (a app) list(ctx context.Context, query string, args ...interface{}) ([]mod
 }
 
 func (a app) get(ctx context.Context, query string, args ...interface{}) (model.Repository, error) {
-	var item model.Repository
 	var rawRepositoryKind string
+	item := model.NewRepository(0, 0, "")
 
 	scanner := func(row *sql.Row) error {
 		err := row.Scan(&item.ID, &item.Name, &rawRepositoryKind)
@@ -87,7 +86,6 @@ func (a app) get(ctx context.Context, query string, args ...interface{}) (model.
 		}
 
 		item.Kind, err = model.ParseRepositoryKind(rawRepositoryKind)
-		item.Versions = make(map[string]string, 0)
 
 		return err
 	}

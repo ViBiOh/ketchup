@@ -38,8 +38,8 @@ func (tks testKetchupStore) List(_ context.Context, page, _ uint) ([]model.Ketch
 	}
 
 	return []model.Ketchup{
-		{Pattern: model.DefaultPattern, Version: "1.0.0", Repository: model.Repository{Versions: map[string]string{model.DefaultPattern: "1.0.2"}}},
-		{Pattern: model.DefaultPattern, Version: "1.2.3", Repository: model.Repository{Versions: map[string]string{model.DefaultPattern: "1.2.3"}}},
+		{Pattern: model.DefaultPattern, Version: "1.0.0", Repository: model.NewRepository(1, model.Github, "vibioh/ketchup").AddVersion(model.DefaultPattern, "1.0.2")},
+		{Pattern: model.DefaultPattern, Version: "1.2.3", Repository: model.NewRepository(1, model.Github, "vibioh/ketchup").AddVersion(model.DefaultPattern, "1.2.3")},
 	}, 2, nil
 }
 
@@ -49,8 +49,8 @@ func (tks testKetchupStore) ListByRepositoriesID(_ context.Context, ids []uint64
 	}
 
 	return []model.Ketchup{
-		{Pattern: model.DefaultPattern, Version: "1.0.0", Repository: model.Repository{ID: 1, Name: "vibioh/ketchup", Versions: map[string]string{model.DefaultPattern: "1.0.2"}}},
-		{Pattern: model.DefaultPattern, Version: "1.2.3", Repository: model.Repository{ID: 2, Name: "vibioh/viws", Versions: map[string]string{model.DefaultPattern: "1.2.3"}}},
+		{Pattern: model.DefaultPattern, Version: "1.0.0", Repository: model.NewRepository(1, model.Github, "vibioh/ketchup").AddVersion(model.DefaultPattern, "1.0.2")},
+		{Pattern: model.DefaultPattern, Version: "1.2.3", Repository: model.NewRepository(2, model.Github, "vibioh/viws").AddVersion(model.DefaultPattern, "1.2.3")},
 	}, nil
 }
 
@@ -60,7 +60,7 @@ func (tks testKetchupStore) GetByRepositoryID(_ context.Context, id uint64, _ bo
 	}
 
 	if id == 2 {
-		return model.Ketchup{Pattern: model.DefaultPattern, Version: "1.0.0", Repository: model.Repository{ID: 2, Name: "vibioh/ketchup", Versions: map[string]string{model.DefaultPattern: "1.2.3"}}, User: model.User{ID: 1}}, nil
+		return model.Ketchup{Pattern: model.DefaultPattern, Version: "1.0.0", Repository: model.NewRepository(2, model.Github, "vibioh/ketchup").AddVersion(model.DefaultPattern, "1.2.3"), User: model.User{ID: 1}}, nil
 	}
 
 	if id == 3 {
@@ -129,8 +129,8 @@ func TestList(t *testing.T) {
 				page: 1,
 			},
 			[]model.Ketchup{
-				{Pattern: model.DefaultPattern, Version: "1.0.0", Semver: "Patch", Repository: model.Repository{Versions: map[string]string{model.DefaultPattern: "1.0.2"}}},
-				{Pattern: model.DefaultPattern, Version: "1.2.3", Repository: model.Repository{Versions: map[string]string{model.DefaultPattern: "1.2.3"}}},
+				{Pattern: model.DefaultPattern, Version: "1.0.0", Semver: "Patch", Repository: model.NewRepository(1, model.Github, "vibioh/ketchup").AddVersion(model.DefaultPattern, "1.0.2")},
+				{Pattern: model.DefaultPattern, Version: "1.2.3", Repository: model.NewRepository(1, model.Github, "vibioh/ketchup").AddVersion(model.DefaultPattern, "1.2.3")},
 			},
 			2,
 			nil,
@@ -182,13 +182,13 @@ func TestListForRepositories(t *testing.T) {
 			"simple",
 			args{
 				repositories: []model.Repository{
-					{ID: 1},
-					{ID: 2},
+					model.NewRepository(1, model.Github, ""),
+					model.NewRepository(2, model.Github, ""),
 				},
 			},
 			[]model.Ketchup{
-				{Pattern: model.DefaultPattern, Version: "1.0.0", Semver: "Patch", Repository: model.Repository{ID: 1, Name: "vibioh/ketchup", Versions: map[string]string{model.DefaultPattern: "1.0.2"}}},
-				{Pattern: model.DefaultPattern, Version: "1.2.3", Repository: model.Repository{ID: 2, Name: "vibioh/viws", Versions: map[string]string{model.DefaultPattern: "1.2.3"}}},
+				{Pattern: model.DefaultPattern, Version: "1.0.0", Semver: "Patch", Repository: model.NewRepository(1, model.Github, "vibioh/ketchup").AddVersion(model.DefaultPattern, "1.0.2")},
+				{Pattern: model.DefaultPattern, Version: "1.2.3", Repository: model.NewRepository(2, model.Github, "vibioh/viws").AddVersion(model.DefaultPattern, "1.2.3")},
 			},
 			nil,
 		},
@@ -258,7 +258,7 @@ func TestCreate(t *testing.T) {
 			args{
 				ctx: context.Background(),
 				item: model.Ketchup{
-					Repository: model.Repository{ID: 1, Name: "vibioh/ketchup"},
+					Repository: model.NewRepository(1, model.Github, "vibioh/ketchup"),
 				},
 			},
 			model.NoneKetchup,
@@ -269,7 +269,7 @@ func TestCreate(t *testing.T) {
 			New(testKetchupStore{}, repositorytest.New()),
 			args{
 				ctx:  model.StoreUser(context.Background(), model.User{ID: 1}),
-				item: model.Ketchup{Pattern: model.DefaultPattern, Version: "0.0.0", Repository: model.Repository{ID: 1, Name: "vibioh/ketchup"}},
+				item: model.Ketchup{Pattern: model.DefaultPattern, Version: "0.0.0", Repository: model.NewRepository(1, model.Github, "vibioh/ketchup")},
 			},
 			model.NoneKetchup,
 			httpModel.ErrInternalError,
@@ -279,44 +279,26 @@ func TestCreate(t *testing.T) {
 			New(testKetchupStore{}, repositorytest.New()),
 			args{
 				ctx:  model.StoreUser(context.Background(), model.User{ID: 1}),
-				item: model.Ketchup{Pattern: model.DefaultPattern, Version: "0", Repository: model.Repository{Name: "vibioh/ketchup"}},
+				item: model.Ketchup{Pattern: model.DefaultPattern, Version: "0", Repository: model.NewRepository(1, model.Github, "vibioh/ketchup")},
 			},
 			model.NoneKetchup,
 			errAtomicEnd,
 		},
 		{
 			"success",
-			New(testKetchupStore{}, repositorytest.New().SetGetOrCreate(model.Repository{
-				ID:   1,
-				Kind: model.Github,
-				Name: "vibioh/ketchup",
-				Versions: map[string]string{
-					model.DefaultPattern: "1.0.0",
-				},
-			}, nil),
-			),
+			New(testKetchupStore{}, repositorytest.New().SetGetOrCreate(model.NewRepository(1, model.Github, "vibioh/ketchup").AddVersion(model.DefaultPattern, "1.0.0"), nil)),
 			args{
 				ctx: model.StoreUser(context.Background(), model.User{ID: 1}),
 				item: model.Ketchup{
-					Pattern: model.DefaultPattern,
-					Version: "1.0.0",
-					Repository: model.Repository{
-						Kind: model.Github,
-						Name: "vibioh/ketchup",
-					},
+					Pattern:    model.DefaultPattern,
+					Version:    "1.0.0",
+					Repository: model.NewRepository(1, model.Github, "vibioh/ketchup"),
 				},
 			},
 			model.Ketchup{
-				Pattern: model.DefaultPattern,
-				Version: "1.0.0",
-				Repository: model.Repository{
-					ID:   1,
-					Kind: model.Github,
-					Name: "vibioh/ketchup",
-					Versions: map[string]string{
-						model.DefaultPattern: "1.0.0",
-					},
-				},
+				Pattern:    model.DefaultPattern,
+				Version:    "1.0.0",
+				Repository: model.NewRepository(1, model.Github, "vibioh/ketchup").AddVersion(model.DefaultPattern, "1.0.0"),
 			},
 			nil,
 		},
@@ -375,7 +357,7 @@ func TestUpdate(t *testing.T) {
 			"check error",
 			args{
 				ctx:  context.Background(),
-				item: model.Ketchup{Repository: model.Repository{ID: 1}},
+				item: model.Ketchup{Repository: model.NewRepository(1, 0, "")},
 			},
 			model.NoneKetchup,
 			httpModel.ErrInvalid,
@@ -384,7 +366,7 @@ func TestUpdate(t *testing.T) {
 			"update error",
 			args{
 				ctx:  model.StoreUser(context.Background(), model.User{ID: 1}),
-				item: model.Ketchup{Pattern: model.DefaultPattern, Version: "0.0.0", Repository: model.Repository{ID: 2}},
+				item: model.Ketchup{Pattern: model.DefaultPattern, Version: "0.0.0", Repository: model.NewRepository(2, 0, "")},
 			},
 			model.NoneKetchup,
 			httpModel.ErrInternalError,
@@ -393,7 +375,7 @@ func TestUpdate(t *testing.T) {
 			"end atomic error",
 			args{
 				ctx:  model.StoreUser(context.Background(), model.User{ID: 1}),
-				item: model.Ketchup{Pattern: model.DefaultPattern, Version: "0", Repository: model.Repository{ID: 2}},
+				item: model.Ketchup{Pattern: model.DefaultPattern, Version: "0", Repository: model.NewRepository(2, 0, "")},
 			},
 			model.NoneKetchup,
 			errAtomicEnd,
@@ -402,9 +384,9 @@ func TestUpdate(t *testing.T) {
 			"success",
 			args{
 				ctx:  model.StoreUser(context.Background(), model.User{ID: 1}),
-				item: model.Ketchup{Pattern: model.DefaultPattern, Version: "1.0.0", Repository: model.Repository{ID: 2}},
+				item: model.Ketchup{Pattern: model.DefaultPattern, Version: "1.0.0", Repository: model.NewRepository(2, 0, "")},
 			},
-			model.Ketchup{Pattern: model.DefaultPattern, Version: "1.0.0", Repository: model.Repository{ID: 2, Name: "vibioh/ketchup", Versions: map[string]string{model.DefaultPattern: "1.2.3"}}, User: model.User{ID: 1}},
+			model.Ketchup{Pattern: model.DefaultPattern, Version: "1.0.0", Repository: model.NewRepository(2, model.Github, "vibioh/ketchup").AddVersion(model.DefaultPattern, "1.2.3"), User: model.User{ID: 1}},
 			nil,
 		},
 	}
@@ -451,7 +433,7 @@ func TestDelete(t *testing.T) {
 			"fetch error",
 			args{
 				ctx:  context.Background(),
-				item: model.Ketchup{Repository: model.Repository{ID: 0}},
+				item: model.Ketchup{Repository: model.NewRepository(0, 0, "")},
 			},
 			httpModel.ErrInternalError,
 		},
@@ -459,7 +441,7 @@ func TestDelete(t *testing.T) {
 			"check error",
 			args{
 				ctx:  context.Background(),
-				item: model.Ketchup{Repository: model.Repository{ID: 1}},
+				item: model.Ketchup{Repository: model.NewRepository(1, 0, "")},
 			},
 			httpModel.ErrInvalid,
 		},
@@ -467,7 +449,7 @@ func TestDelete(t *testing.T) {
 			"delete error",
 			args{
 				ctx:  model.StoreUser(context.Background(), model.User{ID: 1}),
-				item: model.Ketchup{Repository: model.Repository{ID: 3}},
+				item: model.Ketchup{Repository: model.NewRepository(3, 0, "")},
 			},
 			httpModel.ErrInternalError,
 		},
@@ -475,7 +457,7 @@ func TestDelete(t *testing.T) {
 			"end atomic error",
 			args{
 				ctx:  model.StoreUser(context.Background(), model.User{ID: 1}),
-				item: model.Ketchup{Repository: model.Repository{ID: 4}},
+				item: model.Ketchup{Repository: model.NewRepository(4, 0, "")},
 			},
 			errAtomicEnd,
 		},
@@ -483,7 +465,7 @@ func TestDelete(t *testing.T) {
 			"success",
 			args{
 				ctx:  model.StoreUser(context.Background(), model.User{ID: 1}),
-				item: model.Ketchup{Repository: model.Repository{ID: 1}},
+				item: model.Ketchup{Repository: model.NewRepository(1, 0, "")},
 			},
 			nil,
 		},
@@ -539,7 +521,7 @@ func TestCheck(t *testing.T) {
 			args{
 				ctx: model.StoreUser(context.Background(), model.User{ID: 1}),
 				old: model.Ketchup{Version: "1.0.0"},
-				new: model.Ketchup{Version: "", Repository: model.Repository{ID: 1}},
+				new: model.Ketchup{Version: "", Repository: model.NewRepository(1, 0, "")},
 			},
 			errors.New("version is required"),
 		},
@@ -547,7 +529,7 @@ func TestCheck(t *testing.T) {
 			"create error",
 			args{
 				ctx: model.StoreUser(context.Background(), model.User{ID: 1}),
-				new: model.Ketchup{Version: "1.0.0", Repository: model.Repository{ID: 0}, User: model.User{ID: 1}},
+				new: model.Ketchup{Version: "1.0.0", Repository: model.NewRepository(0, 0, ""), User: model.User{ID: 1}},
 			},
 			errors.New("unable to check if ketchup already exists"),
 		},
@@ -555,7 +537,7 @@ func TestCheck(t *testing.T) {
 			"create already exists",
 			args{
 				ctx: model.StoreUser(context.Background(), model.User{ID: 1}),
-				new: model.Ketchup{Version: "1.0.0", Repository: model.Repository{ID: 2, Name: "vibioh/ketchup"}, User: model.User{ID: 1}},
+				new: model.Ketchup{Version: "1.0.0", Repository: model.NewRepository(2, model.Github, "vibioh/ketchup"), User: model.User{ID: 1}},
 			},
 			errors.New("ketchup for vibioh/ketchup already exists"),
 		},

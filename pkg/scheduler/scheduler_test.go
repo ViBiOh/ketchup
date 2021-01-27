@@ -16,26 +16,10 @@ import (
 )
 
 var (
-	repositoryName    = "vibioh/ketchup"
-	repositoryVersion = "1.0.0"
+	repositoryName        = "vibioh/ketchup"
+	repositoryVersion     = "1.0.0"
+	repositoryBetaVersion = "1.0.0-beta1"
 )
-
-func ketchupRepository(latestVersion string) model.Repository {
-	repo := model.Repository{
-		ID:   1,
-		Kind: model.Github,
-		Name: repositoryName,
-		Versions: map[string]string{
-			model.DefaultPattern: repositoryVersion,
-		},
-	}
-
-	if len(latestVersion) > 0 {
-		repo.Versions["latest"] = latestVersion
-	}
-
-	return repo
-}
 
 func TestFlags(t *testing.T) {
 	var cases = []struct {
@@ -92,7 +76,8 @@ func TestGetNewReleases(t *testing.T) {
 		{
 			"github error",
 			app{
-				repositoryService: repositorytest.New().SetList([]model.Repository{ketchupRepository("")}, 0, nil).SetLatestVersions(nil, errors.New("failed")),
+				repositoryService: repositorytest.New().SetList([]model.Repository{
+					model.NewRepository(1, model.Github, repositoryName).AddVersion(model.DefaultPattern, repositoryVersion)}, 0, nil).SetLatestVersions(nil, errors.New("failed")),
 			},
 			args{
 				ctx: context.Background(),
@@ -104,7 +89,7 @@ func TestGetNewReleases(t *testing.T) {
 			"same version",
 			app{
 				repositoryService: repositorytest.New().SetList([]model.Repository{
-					ketchupRepository(""),
+					model.NewRepository(1, model.Github, repositoryName).AddVersion(model.DefaultPattern, repositoryVersion),
 				}, 0, nil).SetLatestVersions(map[string]semver.Version{
 					model.DefaultPattern: {
 						Name: "1.1.0",
@@ -120,7 +105,9 @@ func TestGetNewReleases(t *testing.T) {
 		{
 			"update error",
 			app{
-				repositoryService: repositorytest.New().SetList([]model.Repository{ketchupRepository("")}, 0, nil).SetLatestVersions(map[string]semver.Version{
+				repositoryService: repositorytest.New().SetList([]model.Repository{
+					model.NewRepository(1, model.Github, repositoryName).AddVersion(model.DefaultPattern, repositoryVersion),
+				}, 0, nil).SetLatestVersions(map[string]semver.Version{
 					model.DefaultPattern: {
 						Name:  "1.1.0",
 						Major: 1,
@@ -137,7 +124,9 @@ func TestGetNewReleases(t *testing.T) {
 		{
 			"success",
 			app{
-				repositoryService: repositorytest.New().SetList([]model.Repository{ketchupRepository("")}, 0, nil).SetLatestVersions(map[string]semver.Version{
+				repositoryService: repositorytest.New().SetList([]model.Repository{
+					model.NewRepository(1, model.Github, repositoryName).AddVersion(model.DefaultPattern, repositoryVersion),
+				}, 0, nil).SetLatestVersions(map[string]semver.Version{
 					model.DefaultPattern: {
 						Name:  "1.1.0",
 						Major: 1,
@@ -149,14 +138,7 @@ func TestGetNewReleases(t *testing.T) {
 				ctx: context.Background(),
 			},
 			[]model.Release{model.NewRelease(
-				model.Repository{
-					ID:   1,
-					Kind: model.Github,
-					Name: repositoryName,
-					Versions: map[string]string{
-						model.DefaultPattern: "1.1.0",
-					},
-				},
+				model.NewRepository(1, model.Github, repositoryName).AddVersion(model.DefaultPattern, "1.1.0"),
 				model.DefaultPattern,
 				semver.Version{
 					Name:  "1.1.0",
@@ -211,7 +193,7 @@ func TestCheckRepositoryVersion(t *testing.T) {
 				repositoryService: repositorytest.New().SetLatestVersions(nil, nil),
 			},
 			args{
-				repo: model.Repository{},
+				repo: model.NewRepository(0, 0, ""),
 			},
 			make([]model.Release, 0),
 		},
@@ -228,7 +210,7 @@ func TestCheckRepositoryVersion(t *testing.T) {
 				}, nil),
 			},
 			args{
-				repo: ketchupRepository(""),
+				repo: model.NewRepository(1, model.Github, repositoryName).AddVersion(model.DefaultPattern, repositoryVersion),
 			},
 			make([]model.Release, 0),
 		},
@@ -245,13 +227,7 @@ func TestCheckRepositoryVersion(t *testing.T) {
 				}, nil),
 			},
 			args{
-				repo: model.Repository{
-					ID:   1,
-					Name: repositoryName,
-					Versions: map[string]string{
-						model.DefaultPattern: "abcde",
-					},
-				},
+				repo: model.NewRepository(1, model.Github, repositoryName).AddVersion(model.DefaultPattern, "abcde"),
 			},
 			make([]model.Release, 0),
 		},
@@ -268,13 +244,7 @@ func TestCheckRepositoryVersion(t *testing.T) {
 				}, nil),
 			},
 			args{
-				repo: model.Repository{
-					ID:   1,
-					Name: repositoryName,
-					Versions: map[string]string{
-						model.DefaultPattern: "1.1.0",
-					},
-				},
+				repo: model.NewRepository(1, model.Github, repositoryName).AddVersion(model.DefaultPattern, "1.1.0"),
 			},
 			make([]model.Release, 0),
 		},
@@ -291,10 +261,10 @@ func TestCheckRepositoryVersion(t *testing.T) {
 				}, nil),
 			},
 			args{
-				repo: ketchupRepository(""),
+				repo: model.NewRepository(1, model.Github, repositoryName).AddVersion(model.DefaultPattern, repositoryVersion),
 			},
 			[]model.Release{
-				model.NewRelease(ketchupRepository(""), model.DefaultPattern, semver.Version{
+				model.NewRelease(model.NewRepository(1, model.Github, repositoryName).AddVersion(model.DefaultPattern, repositoryVersion), model.DefaultPattern, semver.Version{
 					Name:  "1.1.0",
 					Major: 1,
 					Minor: 1,
@@ -349,7 +319,7 @@ func TestGetKetchupToNotify(t *testing.T) {
 			app{ketchupService: ketchuptest.New().SetListForRepositories([]model.Ketchup{
 				{
 					Pattern:    model.DefaultPattern,
-					Repository: ketchupRepository("1.1.0-beta"),
+					Repository: model.NewRepository(1, model.Github, repositoryName).AddVersion(model.DefaultPattern, repositoryVersion).AddVersion("latest", repositoryBetaVersion),
 					User: model.User{
 						ID:    1,
 						Email: "nobody@localhost",
@@ -357,7 +327,7 @@ func TestGetKetchupToNotify(t *testing.T) {
 				},
 				{
 					Pattern:    "latest",
-					Repository: ketchupRepository("1.1.0-beta"),
+					Repository: model.NewRepository(1, model.Github, repositoryName).AddVersion(model.DefaultPattern, repositoryVersion).AddVersion("latest", repositoryBetaVersion),
 					User: model.User{
 						ID:    1,
 						Email: "nobody@localhost",
@@ -365,7 +335,7 @@ func TestGetKetchupToNotify(t *testing.T) {
 				},
 				{
 					Pattern:    model.DefaultPattern,
-					Repository: ketchupRepository("1.1.0-beta"),
+					Repository: model.NewRepository(1, model.Github, repositoryName).AddVersion(model.DefaultPattern, repositoryVersion).AddVersion("latest", repositoryBetaVersion),
 					User: model.User{
 						ID:    2,
 						Email: "guest@nowhere",
@@ -380,14 +350,14 @@ func TestGetKetchupToNotify(t *testing.T) {
 						Version: semver.Version{
 							Name: "1.1.0",
 						},
-						Repository: ketchupRepository("1.1.0-beta"),
+						Repository: model.NewRepository(1, model.Github, repositoryName).AddVersion(model.DefaultPattern, repositoryVersion).AddVersion("latest", repositoryBetaVersion),
 					},
 					{
 						Pattern: "latest",
 						Version: semver.Version{
 							Name: "1.1.0-beta",
 						},
-						Repository: ketchupRepository("1.1.0-beta"),
+						Repository: model.NewRepository(1, model.Github, repositoryName).AddVersion(model.DefaultPattern, repositoryVersion).AddVersion("latest", repositoryBetaVersion),
 					},
 				},
 			},
@@ -397,20 +367,20 @@ func TestGetKetchupToNotify(t *testing.T) {
 					Version: semver.Version{
 						Name: "1.1.0",
 					},
-					Repository: ketchupRepository("1.1.0-beta"),
+					Repository: model.NewRepository(1, model.Github, repositoryName).AddVersion(model.DefaultPattern, repositoryVersion).AddVersion("latest", repositoryBetaVersion),
 				}},
 				{ID: 1, Email: "nobody@localhost"}: {{
 					Pattern: "latest",
 					Version: semver.Version{
 						Name: "1.1.0-beta",
 					},
-					Repository: ketchupRepository("1.1.0-beta"),
+					Repository: model.NewRepository(1, model.Github, repositoryName).AddVersion(model.DefaultPattern, repositoryVersion).AddVersion("latest", repositoryBetaVersion),
 				}, {
 					Pattern: model.DefaultPattern,
 					Version: semver.Version{
 						Name: "1.1.0",
 					},
-					Repository: ketchupRepository("1.1.0-beta"),
+					Repository: model.NewRepository(1, model.Github, repositoryName).AddVersion(model.DefaultPattern, repositoryVersion).AddVersion("latest", repositoryBetaVersion),
 				}},
 			},
 			nil,
@@ -472,9 +442,7 @@ func TestSendNotification(t *testing.T) {
 						Email: "nobody@localhost",
 					}: {
 						{
-							Repository: model.Repository{
-								Name: repositoryName,
-							},
+							Repository: model.NewRepository(1, model.Github, repositoryName),
 							Version: semver.Version{
 								Name: repositoryVersion,
 							},
@@ -497,9 +465,7 @@ func TestSendNotification(t *testing.T) {
 						Email: "nobody@localhost",
 					}: {
 						{
-							Repository: model.Repository{
-								Name: repositoryName,
-							},
+							Repository: model.NewRepository(1, model.Github, repositoryName),
 							Version: semver.Version{
 								Name: repositoryVersion,
 							},
@@ -522,9 +488,7 @@ func TestSendNotification(t *testing.T) {
 						Email: "nobody@localhost",
 					}: {
 						{
-							Repository: model.Repository{
-								Name: repositoryName,
-							},
+							Repository: model.NewRepository(1, model.Github, repositoryName),
 							Version: semver.Version{
 								Name: repositoryVersion,
 							},
@@ -547,17 +511,13 @@ func TestSendNotification(t *testing.T) {
 						Email: "nobody@localhost",
 					}: {
 						{
-							Repository: model.Repository{
-								Name: repositoryName,
-							},
+							Repository: model.NewRepository(1, model.Github, repositoryName),
 							Version: semver.Version{
 								Name: repositoryVersion,
 							},
 						},
 						{
-							Repository: model.Repository{
-								Name: "vibioh/viws",
-							},
+							Repository: model.NewRepository(2, model.Github, "vibioh/viws"),
 							Version: semver.Version{
 								Name: repositoryVersion,
 							},

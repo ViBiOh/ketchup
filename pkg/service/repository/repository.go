@@ -75,13 +75,7 @@ func (a app) GetOrCreate(ctx context.Context, name string, repositoryKind model.
 	}
 
 	if repo.ID == 0 {
-		return a.create(ctx, model.Repository{
-			Kind: repositoryKind,
-			Name: sanitizedName,
-			Versions: map[string]string{
-				pattern: "0.0.0",
-			},
-		})
+		return a.create(ctx, model.NewRepository(0, repositoryKind, sanitizedName).AddVersion(pattern, "0.0.0"))
 	}
 
 	if repo.Versions[pattern] != "" {
@@ -143,6 +137,7 @@ func (a app) Update(ctx context.Context, item model.Repository) error {
 
 		current := model.Repository{
 			ID:       old.ID,
+			Kind:     old.Kind,
 			Name:     old.Name,
 			Versions: item.Versions,
 		}
@@ -178,6 +173,10 @@ func (a app) check(ctx context.Context, old, new model.Repository) error {
 
 	if len(strings.TrimSpace(new.Name)) == 0 {
 		output = append(output, errors.New("name is required"))
+	}
+
+	if old.ID != 0 && new.Kind != old.Kind {
+		output = append(output, errors.New("kind cannot be changed"))
 	}
 
 	if old.ID != 0 && len(new.Versions) == 0 {

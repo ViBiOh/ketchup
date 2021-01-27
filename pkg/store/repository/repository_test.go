@@ -34,20 +34,8 @@ func TestList(t *testing.T) {
 				pageSize: 20,
 			},
 			[]model.Repository{
-				{
-					ID:   1,
-					Name: "vibioh/ketchup",
-					Versions: map[string]string{
-						model.DefaultPattern: "1.0.0",
-					},
-				},
-				{
-					ID:   2,
-					Name: "vibioh/viws",
-					Versions: map[string]string{
-						model.DefaultPattern: "1.2.3",
-					},
-				},
+				model.NewRepository(1, model.Github, "vibioh/ketchup").AddVersion(model.DefaultPattern, "1.0.0"),
+				model.NewRepository(2, model.Github, "vibioh/viws").AddVersion(model.DefaultPattern, "1.2.3"),
 			},
 			2,
 			nil,
@@ -166,21 +154,8 @@ func TestSuggest(t *testing.T) {
 				count:     2,
 			},
 			[]model.Repository{
-				{
-					ID:   1,
-					Name: "vibioh/ketchup",
-					Versions: map[string]string{
-						model.DefaultPattern: "1.0.0",
-					},
-				},
-				{
-					ID:   2,
-					Name: "vibioh/viws",
-					Versions: map[string]string{
-						model.DefaultPattern: "1.2.3",
-					},
-					Kind: model.Helm,
-				},
+				model.NewRepository(1, model.Github, "vibioh/ketchup").AddVersion(model.DefaultPattern, "1.0.0"),
+				model.NewRepository(2, model.Helm, "vibioh/viws").AddVersion(model.DefaultPattern, "1.2.3"),
 			},
 			nil,
 		},
@@ -249,14 +224,7 @@ func TestGet(t *testing.T) {
 				id: 1,
 			},
 			"SELECT id, name, kind FROM ketchup.repository WHERE id =",
-			model.Repository{
-				ID:   1,
-				Name: "vibioh/ketchup",
-				Versions: map[string]string{
-					model.DefaultPattern: "1.0.0",
-				},
-				Kind: model.Helm,
-			},
+			model.NewRepository(1, model.Helm, "vibioh/ketchup").AddVersion(model.DefaultPattern, "1.0.0"),
 			nil,
 		},
 		{
@@ -266,14 +234,7 @@ func TestGet(t *testing.T) {
 				forUpdate: true,
 			},
 			"SELECT id, name, kind FROM ketchup.repository WHERE id = .+ FOR UPDATE",
-			model.Repository{
-				ID:   1,
-				Name: "vibioh/ketchup",
-				Versions: map[string]string{
-					model.DefaultPattern: "1.0.0",
-				},
-				Kind: model.Helm,
-			},
+			model.NewRepository(1, model.Helm, "vibioh/ketchup").AddVersion(model.DefaultPattern, "1.0.0"),
 			nil,
 		},
 		{
@@ -352,14 +313,7 @@ func TestGetByName(t *testing.T) {
 			args{
 				name: "vibioh/ketchup",
 			},
-			model.Repository{
-				ID:   1,
-				Name: "vibioh/ketchup",
-				Versions: map[string]string{
-					model.DefaultPattern: "1.0.0",
-				},
-				Kind: model.Github,
-			},
+			model.NewRepository(1, model.Github, "vibioh/ketchup").AddVersion(model.DefaultPattern, "1.0.0"),
 			nil,
 		},
 		{
@@ -445,13 +399,7 @@ func TestCreate(t *testing.T) {
 		{
 			"error lock",
 			args{
-				o: model.Repository{
-					Name: "vibioh/ketchup",
-					Versions: map[string]string{
-						model.DefaultPattern: "1.0.0",
-					},
-					Kind: model.Github,
-				},
+				o: model.NewRepository(0, model.Github, "vibioh/ketchup").AddVersion(model.DefaultPattern, "1.0.0"),
 			},
 			0,
 			errors.New("unable to obtain lock"),
@@ -459,13 +407,7 @@ func TestCreate(t *testing.T) {
 		{
 			"error get",
 			args{
-				o: model.Repository{
-					Name: "vibioh/ketchup",
-					Versions: map[string]string{
-						model.DefaultPattern: "1.0.0",
-					},
-					Kind: model.Github,
-				},
+				o: model.NewRepository(0, model.Github, "vibioh/ketchup").AddVersion(model.DefaultPattern, "1.0.0"),
 			},
 			0,
 			errors.New("unable to read"),
@@ -473,13 +415,7 @@ func TestCreate(t *testing.T) {
 		{
 			"found get",
 			args{
-				o: model.Repository{
-					Name: "vibioh/ketchup",
-					Versions: map[string]string{
-						model.DefaultPattern: "1.0.0",
-					},
-					Kind: model.Github,
-				},
+				o: model.NewRepository(0, model.Github, "vibioh/ketchup").AddVersion(model.DefaultPattern, "1.0.0"),
 			},
 			0,
 			errors.New("repository already exists with name"),
@@ -487,13 +423,7 @@ func TestCreate(t *testing.T) {
 		{
 			"error create",
 			args{
-				o: model.Repository{
-					Name: "vibioh/ketchup",
-					Versions: map[string]string{
-						model.DefaultPattern: "1.0.0",
-					},
-					Kind: model.Github,
-				},
+				o: model.NewRepository(0, model.Github, "vibioh/ketchup").AddVersion(model.DefaultPattern, "1.0.0"),
 			},
 			0,
 			errors.New("failed"),
@@ -501,13 +431,7 @@ func TestCreate(t *testing.T) {
 		{
 			"success",
 			args{
-				o: model.Repository{
-					Name: "vibioh/ketchup",
-					Versions: map[string]string{
-						model.DefaultPattern: "1.0.0",
-					},
-					Kind: model.Github,
-				},
+				o: model.NewRepository(0, model.Github, "vibioh/ketchup").AddVersion(model.DefaultPattern, "1.0.0"),
 			},
 			1,
 			nil,
