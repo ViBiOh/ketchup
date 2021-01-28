@@ -36,13 +36,10 @@ func (a app) Signup() http.Handler {
 			return
 		}
 
-		user := model.User{
-			Email: r.FormValue("email"),
-			Login: authModel.User{
-				Login:    r.FormValue("login"),
-				Password: r.FormValue("password"),
-			},
-		}
+		user := model.NewUser(0, r.FormValue("email"), authModel.User{
+			Login:    r.FormValue("login"),
+			Password: r.FormValue("password"),
+		})
 
 		if _, err := a.userService.Create(r.Context(), user); err != nil {
 			a.rendererApp.Error(w, err)

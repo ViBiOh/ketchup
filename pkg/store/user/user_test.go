@@ -28,11 +28,7 @@ func TestGetByEmail(t *testing.T) {
 			args{
 				email: "nobody@localhost",
 			},
-			model.User{
-				ID:    1,
-				Email: "nobody@localhost",
-				Login: authModel.NewUser(1, ""),
-			},
+			model.NewUser(1, "nobody@localhost", authModel.NewUser(1, "")),
 			nil,
 		},
 		{
@@ -97,11 +93,7 @@ func TestGetByLoginID(t *testing.T) {
 			args{
 				loginID: 2,
 			},
-			model.User{
-				ID:    1,
-				Email: "nobody@localhost",
-				Login: authModel.NewUser(2, ""),
-			},
+			model.NewUser(1, "nobody@localhost", authModel.NewUser(2, "")),
 			nil,
 		},
 		{
@@ -164,14 +156,11 @@ func TestCreate(t *testing.T) {
 		{
 			"simple",
 			args{
-				o: model.User{
-					Email: "nobody@localhost",
-					Login: authModel.User{
-						ID:       1,
-						Login:    "vibioh",
-						Password: "secret",
-					},
-				},
+				o: model.NewUser(0, "nobody@localhost", authModel.User{
+					ID:       1,
+					Login:    "vibioh",
+					Password: "secret",
+				}),
 			},
 			1,
 			nil,

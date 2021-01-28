@@ -8,6 +8,7 @@ import (
 	"strings"
 	"testing"
 
+	authModel "github.com/ViBiOh/auth/v2/pkg/model"
 	"github.com/ViBiOh/ketchup/pkg/model"
 	"github.com/ViBiOh/ketchup/pkg/semver"
 	"github.com/ViBiOh/ketchup/pkg/service/ketchup/ketchuptest"
@@ -320,26 +321,17 @@ func TestGetKetchupToNotify(t *testing.T) {
 				{
 					Pattern:    model.DefaultPattern,
 					Repository: model.NewRepository(1, model.Github, repositoryName).AddVersion(model.DefaultPattern, repositoryVersion).AddVersion("latest", repositoryBetaVersion),
-					User: model.User{
-						ID:    1,
-						Email: "nobody@localhost",
-					},
+					User:       model.NewUser(1, "nobody@localhost", authModel.NewUser(0, "")),
 				},
 				{
 					Pattern:    "latest",
 					Repository: model.NewRepository(1, model.Github, repositoryName).AddVersion(model.DefaultPattern, repositoryVersion).AddVersion("latest", repositoryBetaVersion),
-					User: model.User{
-						ID:    1,
-						Email: "nobody@localhost",
-					},
+					User:       model.NewUser(1, "nobody@localhost", authModel.NewUser(0, "")),
 				},
 				{
 					Pattern:    model.DefaultPattern,
 					Repository: model.NewRepository(1, model.Github, repositoryName).AddVersion(model.DefaultPattern, repositoryVersion).AddVersion("latest", repositoryBetaVersion),
-					User: model.User{
-						ID:    2,
-						Email: "guest@nowhere",
-					},
+					User:       model.NewUser(2, "guest@nowhere", authModel.NewUser(0, "")),
 				},
 			}, nil)},
 			args{

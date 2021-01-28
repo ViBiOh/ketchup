@@ -101,7 +101,7 @@ func TestStoreInContext(t *testing.T) {
 			args{
 				ctx: authModel.StoreUser(context.Background(), authModel.NewUser(1, "")),
 			},
-			model.User{ID: 1, Email: "nobody@localhost"},
+			model.NewUser(1, "nobody@localhost", authModel.NewUser(0, "")),
 		},
 	}
 
