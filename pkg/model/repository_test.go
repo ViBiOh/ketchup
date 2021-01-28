@@ -41,29 +41,17 @@ func TestURL(t *testing.T) {
 	}{
 		{
 			"helm",
-			Repository{
-				Kind: Helm,
-				Name: "app@https://charts.vibioh.fr",
-			},
+			NewRepository(0, Helm, "app@https://charts.vibioh.fr"),
 			"https://charts.vibioh.fr",
 		},
 		{
 			"invalid",
-			Repository{
-				Kind: Helm,
-				Name: "charts.fr",
-			},
+			NewRepository(0, Helm, "charts.fr"),
 			"charts.fr",
 		},
 		{
 			"github",
-			Repository{
-				Kind: Github,
-				Name: "vibioh/ketchup",
-				Versions: map[string]string{
-					DefaultPattern: "1.0.0",
-				},
-			},
+			NewRepository(0, Github, "vibioh/ketchup").AddVersion(DefaultPattern, "1.0.0"),
 			"https://github.com/vibioh/ketchup/releases/tag/1.0.0",
 		},
 	}
@@ -90,22 +78,13 @@ func TestCompareURL(t *testing.T) {
 	}{
 		{
 			"helm",
-			Repository{
-				Kind: Helm,
-				Name: "app@https://charts.vibioh.fr",
-			},
+			NewRepository(0, Helm, "app@https://charts.vibioh.fr"),
 			args{},
 			"https://charts.vibioh.fr",
 		},
 		{
 			"github",
-			Repository{
-				Kind: Github,
-				Name: "vibioh/ketchup",
-				Versions: map[string]string{
-					DefaultPattern: "1.1.0",
-				},
-			},
+			NewRepository(0, Github, "vibioh/ketchup").AddVersion(DefaultPattern, "1.1.0"),
 			args{
 				version: "1.0.0",
 			},

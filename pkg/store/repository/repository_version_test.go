@@ -160,7 +160,7 @@ func TestUpdateVersions(t *testing.T) {
 		{
 			"no version",
 			args{
-				o: model.Repository{},
+				o: model.NoneRepository,
 			},
 			nil,
 		},
