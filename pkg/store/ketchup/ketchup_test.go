@@ -9,13 +9,14 @@ import (
 	"time"
 
 	"github.com/DATA-DOG/go-sqlmock"
+	authModel "github.com/ViBiOh/auth/v2/pkg/model"
 	"github.com/ViBiOh/httputils/v3/pkg/db"
 	"github.com/ViBiOh/ketchup/pkg/model"
 	"github.com/lib/pq"
 )
 
 var (
-	testCtx = model.StoreUser(context.Background(), model.User{ID: 3, Email: "nobody@localhost"})
+	testCtx = model.StoreUser(context.Background(), model.NewUser(3, "nobody@localhost", authModel.NewUser(0, "")))
 )
 
 func TestList(t *testing.T) {
@@ -42,19 +43,13 @@ func TestList(t *testing.T) {
 					Pattern:    model.DefaultPattern,
 					Version:    "0.9.0",
 					Repository: model.NewRepository(1, model.Github, "vibioh/ketchup").AddVersion(model.DefaultPattern, "1.0.0"),
-					User: model.User{
-						ID:    3,
-						Email: "nobody@localhost",
-					},
+					User:       model.NewUser(3, "nobody@localhost", authModel.NewUser(0, "")),
 				},
 				{
 					Pattern:    model.DefaultPattern,
 					Version:    "1.0.0",
 					Repository: model.NewRepository(2, model.Helm, "vibioh/viws").AddVersion(model.DefaultPattern, "1.0.0"),
-					User: model.User{
-						ID:    3,
-						Email: "nobody@localhost",
-					},
+					User:       model.NewUser(3, "nobody@localhost", authModel.NewUser(0, "")),
 				},
 			},
 			2,
@@ -169,19 +164,13 @@ func TestListByRepositoriesID(t *testing.T) {
 					Pattern:    model.DefaultPattern,
 					Version:    "0.9.0",
 					Repository: model.NewRepository(1, model.Github, ""),
-					User: model.User{
-						ID:    1,
-						Email: "nobody@localhost",
-					},
+					User:       model.NewUser(1, "nobody@localhost", authModel.NewUser(0, "")),
 				},
 				{
 					Pattern:    model.DefaultPattern,
 					Version:    "1.0.0",
 					Repository: model.NewRepository(2, model.Github, ""),
-					User: model.User{
-						ID:    2,
-						Email: "guest@domain",
-					},
+					User:       model.NewUser(2, "guest@domain", authModel.NewUser(0, "")),
 				},
 			},
 			nil,
@@ -278,10 +267,7 @@ func TestGetByRepositoryID(t *testing.T) {
 				Pattern:    model.DefaultPattern,
 				Version:    "0.9.0",
 				Repository: model.NewRepository(1, model.Github, ""),
-				User: model.User{
-					ID:    3,
-					Email: "nobody@localhost",
-				},
+				User:       model.NewUser(3, "nobody@localhost", authModel.NewUser(0, "")),
 			},
 			nil,
 		},
@@ -305,10 +291,7 @@ func TestGetByRepositoryID(t *testing.T) {
 				Pattern:    model.DefaultPattern,
 				Version:    "0.9.0",
 				Repository: model.NewRepository(1, model.Github, ""),
-				User: model.User{
-					ID:    3,
-					Email: "nobody@localhost",
-				},
+				User:       model.NewUser(3, "nobody@localhost", authModel.NewUser(0, "")),
 			},
 			nil,
 		},

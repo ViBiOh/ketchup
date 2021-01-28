@@ -7,6 +7,7 @@ import (
 	"strings"
 	"testing"
 
+	authModel "github.com/ViBiOh/auth/v2/pkg/model"
 	httpModel "github.com/ViBiOh/httputils/v3/pkg/model"
 	"github.com/ViBiOh/ketchup/pkg/github/githubtest"
 	"github.com/ViBiOh/ketchup/pkg/model"
@@ -487,7 +488,7 @@ func TestClean(t *testing.T) {
 		{
 			"success",
 			args{
-				ctx: model.StoreUser(context.Background(), model.User{ID: 1}),
+				ctx: model.StoreUser(context.Background(), model.NewUser(1, "", authModel.NewUser(0, ""))),
 			},
 			nil,
 		},
