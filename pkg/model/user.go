@@ -24,6 +24,15 @@ type User struct {
 	ID    uint64
 }
 
+// NewUser creates new User instance
+func NewUser(id uint64, email string, login authModel.User) User {
+	return User{
+		ID:    id,
+		Email: email,
+		Login: login,
+	}
+}
+
 // StoreUser stores given User in context
 func StoreUser(ctx context.Context, user User) context.Context {
 	return context.WithValue(ctx, ctxUserKey, user)
