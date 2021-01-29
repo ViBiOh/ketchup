@@ -29,7 +29,7 @@ name:
 ## version: Output last commit sha1
 .PHONY: version
 version:
-	@printf "$(shell git rev-parse --short HEAD)"
+	@printf "$(shell date +%s)-$(shell git rev-parse --short HEAD)"
 
 ## app: Build whole app
 .PHONY: app
