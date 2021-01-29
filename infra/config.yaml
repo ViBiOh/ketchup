@@ -17,7 +17,7 @@ spec:
   values:
     nameOverride: ketchup
     image:
-      repository: vibioh/ketchup:0015b8a # {"$imagepolicy": "default:ketchup"}
+      repository: vibioh/ketchup:1611956803-d89de7f # {"$imagepolicy": "default:ketchup"}
     config:
       KETCHUP_LOGGER_JSON: "true"
       KETCHUP_DB_HOST: ketchup-db
@@ -31,7 +31,7 @@ spec:
     ingress:
       enabled: true
       hosts:
-      - ketchup.vibioh.fr
+        - ketchup.vibioh.fr
 ---
 apiVersion: helm.toolkit.fluxcd.io/v2beta1
 kind: HelmRelease
