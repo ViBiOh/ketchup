@@ -142,6 +142,14 @@ func TestIsGreater(t *testing.T) {
 			true,
 		},
 		{
+			"suffix presence",
+			Version{"", 1, 1, 1, 0},
+			args{
+				other: Version{"", 1, 1, 1, beta},
+			},
+			true,
+		},
+		{
 			"equal",
 			Version{"", 1, 0, 0, 0},
 			args{
