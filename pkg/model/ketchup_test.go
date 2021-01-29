@@ -22,15 +22,15 @@ func TestKetchupByRepositoryID(t *testing.T) {
 			"simple",
 			args{
 				array: []Ketchup{
-					{Pattern: DefaultPattern, Repository: NewRepository(10, Github, "")},
-					{Pattern: DefaultPattern, Repository: NewRepository(1, Github, "")},
-					{Pattern: "latest", Repository: NewRepository(1, Github, "")},
+					NewKetchup(DefaultPattern, "", NewRepository(10, Github, "")),
+					NewKetchup(DefaultPattern, "", NewRepository(1, Github, "")),
+					NewKetchup("latest", "", NewRepository(1, Github, "")),
 				},
 			},
 			[]Ketchup{
-				{Pattern: "latest", Repository: NewRepository(1, Github, "")},
-				{Pattern: DefaultPattern, Repository: NewRepository(1, Github, "")},
-				{Pattern: DefaultPattern, Repository: NewRepository(10, Github, "")},
+				NewKetchup("latest", "", NewRepository(1, Github, "")),
+				NewKetchup(DefaultPattern, "", NewRepository(1, Github, "")),
+				NewKetchup(DefaultPattern, "", NewRepository(10, Github, "")),
 			},
 		},
 	}
@@ -59,17 +59,17 @@ func TestKetchupByPriority(t *testing.T) {
 			"alphabetic",
 			args{
 				array: []Ketchup{
-					{Repository: NewRepository(0, Github, "abc")},
-					{Repository: NewRepository(0, Github, "ghi")},
-					{Repository: NewRepository(0, Github, "jkl")},
-					{Repository: NewRepository(0, Github, "def")},
+					NewKetchup("", "", NewRepository(0, Github, "abc")),
+					NewKetchup("", "", NewRepository(0, Github, "ghi")),
+					NewKetchup("", "", NewRepository(0, Github, "jkl")),
+					NewKetchup("", "", NewRepository(0, Github, "def")),
 				},
 			},
 			[]Ketchup{
-				{Repository: NewRepository(0, Github, "abc")},
-				{Repository: NewRepository(0, Github, "def")},
-				{Repository: NewRepository(0, Github, "ghi")},
-				{Repository: NewRepository(0, Github, "jkl")},
+				NewKetchup("", "", NewRepository(0, Github, "abc")),
+				NewKetchup("", "", NewRepository(0, Github, "def")),
+				NewKetchup("", "", NewRepository(0, Github, "ghi")),
+				NewKetchup("", "", NewRepository(0, Github, "jkl")),
 			},
 		},
 		{

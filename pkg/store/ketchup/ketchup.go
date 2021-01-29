@@ -66,7 +66,8 @@ func (a app) List(ctx context.Context, page, pageSize uint) ([]model.Ketchup, ui
 	list := make([]model.Ketchup, 0)
 
 	scanner := func(rows *sql.Rows) error {
-		item := model.Ketchup{User: user}
+		item := model.NewKetchup("", "", model.NewRepository(0, 0, ""))
+		item.User = user
 		var rawRepositoryKind string
 		var repositoryVersion string
 
@@ -74,12 +75,13 @@ func (a app) List(ctx context.Context, page, pageSize uint) ([]model.Ketchup, ui
 			return err
 		}
 
+		item.Repository.AddVersion(item.Pattern, repositoryVersion)
+
 		repositoryKind, err := model.ParseRepositoryKind(rawRepositoryKind)
 		if err != nil {
 			return err
 		}
 		item.Repository.Kind = repositoryKind
-		item.Repository.Versions = map[string]string{item.Pattern: repositoryVersion}
 
 		list = append(list, item)
 		return nil
