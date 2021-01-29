@@ -64,6 +64,10 @@ func (v Version) IsGreater(other Version) bool {
 	}
 
 	if v.Suffix != other.Suffix {
+		if v.Suffix == 0 {
+			return true
+		}
+
 		return v.Suffix > other.Suffix
 	}
 

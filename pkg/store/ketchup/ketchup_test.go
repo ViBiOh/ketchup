@@ -262,11 +262,11 @@ func TestGetByRepositoryID(t *testing.T) {
 			args{
 				id: 1,
 			},
-			"SELECT pattern, version, repository_id, user_id FROM ketchup.ketchup WHERE repository_id = .+ AND user_id = .+",
+			"SELECT k.pattern, k.version, k.repository_id, k.user_id, r.name, r.kind FROM ketchup.ketchup k, ketchup.repository r WHERE k.repository_id = .+ AND k.user_id = .+ AND k.repository_id = r.id",
 			model.Ketchup{
 				Pattern:    model.DefaultPattern,
 				Version:    "0.9.0",
-				Repository: model.NewRepository(1, model.Github, ""),
+				Repository: model.NewRepository(1, model.Github, "vibioh/ketchup"),
 				User:       model.NewUser(3, "nobody@localhost", authModel.NewUser(0, "")),
 			},
 			nil,
@@ -276,7 +276,7 @@ func TestGetByRepositoryID(t *testing.T) {
 			args{
 				id: 1,
 			},
-			"SELECT pattern, version, repository_id, user_id FROM ketchup.ketchup WHERE repository_id = .+ AND user_id = .+",
+			"SELECT k.pattern, k.version, k.repository_id, k.user_id, r.name, r.kind FROM ketchup.ketchup k, ketchup.repository r WHERE k.repository_id = .+ AND k.user_id = .+ AND k.repository_id = r.id",
 			model.NoneKetchup,
 			nil,
 		},
@@ -286,11 +286,11 @@ func TestGetByRepositoryID(t *testing.T) {
 				id:        1,
 				forUpdate: true,
 			},
-			"SELECT pattern, version, repository_id, user_id FROM ketchup.ketchup WHERE repository_id = .+ AND user_id = .+ FOR UPDATE",
+			"SELECT k.pattern, k.version, k.repository_id, k.user_id, r.name, r.kind FROM ketchup.ketchup k, ketchup.repository r WHERE k.repository_id = .+ AND k.user_id = .+ AND k.repository_id = r.id FOR UPDATE",
 			model.Ketchup{
 				Pattern:    model.DefaultPattern,
 				Version:    "0.9.0",
-				Repository: model.NewRepository(1, model.Github, ""),
+				Repository: model.NewRepository(1, model.Github, "vibioh/ketchup"),
 				User:       model.NewUser(3, "nobody@localhost", authModel.NewUser(0, "")),
 			},
 			nil,
@@ -305,7 +305,7 @@ func TestGetByRepositoryID(t *testing.T) {
 			}
 			defer mockDb.Close()
 
-			rows := sqlmock.NewRows([]string{"patter", "version", "repository_id", "user_id"})
+			rows := sqlmock.NewRows([]string{"patter", "version", "repository_id", "user_id", "name", "kind"})
 			mock.ExpectQuery(tc.expectSQL).WithArgs(1, 3).WillReturnRows(rows)
 
 			switch tc.intention {
@@ -313,7 +313,7 @@ func TestGetByRepositoryID(t *testing.T) {
 				fallthrough
 
 			case "simple":
-				rows.AddRow(model.DefaultPattern, "0.9.0", 1, 3)
+				rows.AddRow(model.DefaultPattern, "0.9.0", 1, 3, "vibioh/ketchup", "github")
 			}
 
 			got, gotErr := New(mockDb).GetByRepositoryID(testCtx, tc.args.id, tc.args.forUpdate)

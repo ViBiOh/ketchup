@@ -109,6 +109,15 @@ func (a app) Update(ctx context.Context, item model.Ketchup) (model.Ketchup, err
 			return httpModel.WrapInvalid(err)
 		}
 
+		if old.Pattern != item.Pattern {
+			repo, err := a.repositoryService.GetOrCreate(ctx, old.Repository.Name, old.Repository.Kind, item.Pattern)
+			if err != nil {
+				return fmt.Errorf("unable to get repository version: %s", err)
+			}
+
+			current.Repository = repo
+		}
+
 		if err := a.ketchupStore.Update(ctx, current); err != nil {
 			return httpModel.WrapInternal(fmt.Errorf("unable to update: %w", err))
 		}

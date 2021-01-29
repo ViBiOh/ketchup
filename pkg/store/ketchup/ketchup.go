@@ -125,15 +125,19 @@ func (a app) ListByRepositoriesID(ctx context.Context, ids []uint64) ([]model.Ke
 
 const getQuery = `
 SELECT
-  pattern,
-  version,
-  repository_id,
-  user_id
+  k.pattern,
+  k.version,
+  k.repository_id,
+  k.user_id,
+  r.name,
+  r.kind
 FROM
-  ketchup.ketchup
+  ketchup.ketchup k,
+  ketchup.repository r
 WHERE
-  repository_id = $1
-  AND user_id = $2
+  k.repository_id = $1
+  AND k.user_id = $2
+  AND k.repository_id = r.id
 `
 
 func (a app) GetByRepositoryID(ctx context.Context, id uint64, forUpdate bool) (model.Ketchup, error) {
@@ -149,11 +153,14 @@ func (a app) GetByRepositoryID(ctx context.Context, id uint64, forUpdate bool) (
 	}
 
 	scanner := func(row *sql.Row) error {
-		err := row.Scan(&item.Pattern, &item.Version, &item.Repository.ID, &item.User.ID)
+		var rawRepositoryKind string
+		err := row.Scan(&item.Pattern, &item.Version, &item.Repository.ID, &item.User.ID, &item.Repository.Name, &rawRepositoryKind)
 		if errors.Is(err, sql.ErrNoRows) {
 			item = model.NoneKetchup
 			return nil
 		}
+
+		item.Repository.Kind, err = model.ParseRepositoryKind(rawRepositoryKind)
 
 		return err
 	}

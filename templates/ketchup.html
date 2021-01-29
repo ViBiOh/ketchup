@@ -28,6 +28,14 @@
         </p>
 
         <p class="padding no-margin">
+          <label for="create-pattern" class="block">Pattern:</label>
+          <select id="create-pattern" name="pattern" class="full">
+            <option value="stable" selected>stable</option>
+            <option value="latest">latest</option>
+          </select>
+        </p>
+
+        <p class="padding no-margin">
           <label for="create-version" class="block">My version:</label>
           <input id="create-version" type="text" name="version" placeholder="1.0.0" class="full">
         </p>
@@ -59,11 +67,22 @@
     <div class="modal-content">
       <h2 class="header">Edit ketchup</h2>
 
+      <p class="padding no-margin center">
+        <img class="icon" src="/svg/{{ .Repository.Kind.String }}?fill=silver" alt="{{ .Repository.Kind.String }} icon">
+      </p>
+
       <p class="no-margin center padding">{{ .Repository.Name }}</p>
 
       <form method="POST" action="/app/ketchups/{{ .Repository.ID }}">
         <input type="hidden" name="method" value="PUT">
-        <input type="hidden" name="pattern" value="{{ .Pattern }}">
+
+        <p class="padding no-margin">
+          <label for="edit-pattern-{{ .Repository.ID }}" class="block">Pattern:</label>
+          <select id="edit-pattern-{{ .Repository.ID }}" name="pattern" class="full">
+            <option value="stable" {{ if eq .Pattern "stable" }}selected{{ end }}>stable</option>
+            <option value="latest" {{ if eq .Pattern "latest" }}selected{{ end }}>latest</option>
+          </select>
+        </p>
 
         <p class="padding no-margin">
           <label for="edit-version-{{ .Repository.ID }}" class="block">My version:</label>
@@ -134,7 +153,7 @@
       border: 1px solid var(--success);
       display: inline-flex;
       flex-direction: column;
-      height: 18rem;
+      height: 20rem;
     }
 
     .suggest {
@@ -150,6 +169,7 @@
       display: flex;
       flex: 1 1;
       flex-basis: auto;
+      flex-direction: column;
       justify-content: center;
     }
 
@@ -195,16 +215,21 @@
         {{ end }}
 
         <div class="ketchup__version">
-          <span>
-            <a class="{{ if ne .Version (index .Repository.Versions .Pattern) }}danger{{ else }}success{{ end }}" href="{{ .Repository.URL }}">{{ .Version }}</a>
-          </span>
-
-          {{ if ne .Version (index .Repository.Versions .Pattern) }}
+          <p class="no-margin padding">
             <span>
-              &nbsp;->&nbsp;<a class="success" href="{{ .Repository.URL }}">{{ index .Repository.Versions .Pattern }}</a>
+              <a class="{{ if ne .Version (index .Repository.Versions .Pattern) }}danger{{ else }}success{{ end }}" href="{{ .Repository.URL }}">{{ .Version }}</a>
             </span>
-          {{ end }}
+
+            {{ if ne .Version (index .Repository.Versions .Pattern) }}
+              <span>
+                &nbsp;->&nbsp;<a class="success" href="{{ .Repository.URL }}">{{ index .Repository.Versions .Pattern }}</a>
+              </span>
+            {{ end }}
+          </p>
+
+          <pre class="no-margin">{{ .Pattern }}</pre>
         </div>
+
 
         <div>
           {{ if ne .Version (index .Repository.Versions .Pattern) }}
