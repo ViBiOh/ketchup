@@ -51,7 +51,7 @@ CREATE UNIQUE INDEX repository_repository ON ketchup.repository(name);
 
 -- repository_version
 CREATE TABLE ketchup.repository_version (
-  repository_id BIGINT NOT NULL REFERENCES ketchup.repository(id),
+  repository_id BIGINT NOT NULL REFERENCES ketchup.repository(id) ON DELETE CASCADE,
   pattern TEXT NOT NULL DEFAULT 'stable',
   version TEXT NOT NULL
 );
@@ -60,7 +60,7 @@ CREATE UNIQUE INDEX repository_version ON ketchup.repository_version(repository_
 
 -- ketchup
 CREATE TABLE ketchup.ketchup (
-  user_id BIGINT NOT NULL REFERENCES ketchup.user(id),
+  user_id BIGINT NOT NULL REFERENCES ketchup.user(id) ON DELETE CASCADE,
   repository_id BIGINT NOT NULL REFERENCES ketchup.repository(id),
   pattern TEXT NOT NULL default 'stable',
   version TEXT NOT NULL,
