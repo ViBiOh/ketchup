@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	authModel "github.com/ViBiOh/auth/v2/pkg/model"
+	"github.com/ViBiOh/auth/v2/pkg/service/servicetest"
 	httpModel "github.com/ViBiOh/httputils/v3/pkg/model"
 	"github.com/ViBiOh/ketchup/pkg/model"
 	"github.com/ViBiOh/ketchup/pkg/store/user/usertest"
@@ -17,48 +18,6 @@ var (
 	errAtomicStart = errors.New("invalid context")
 	errAtomicEnd   = errors.New("invalid context")
 )
-
-type testAuthService struct{}
-
-func (tas testAuthService) Unmarshal(_ []byte, _ string) (authModel.User, error) {
-	return authModel.NoneUser, nil
-}
-
-func (tas testAuthService) Check(_ context.Context, _, new authModel.User) error {
-	if new.ID == 0 {
-		return errors.New("id is invalid")
-	}
-
-	return nil
-}
-
-func (tas testAuthService) List(_ context.Context, _, _ uint, _ string, _ bool, _ map[string][]string) ([]authModel.User, uint, error) {
-	return nil, 0, nil
-}
-
-func (tas testAuthService) Get(_ context.Context, _ uint64) (authModel.User, error) {
-	return authModel.NoneUser, nil
-}
-
-func (tas testAuthService) Create(_ context.Context, o authModel.User) (authModel.User, error) {
-	if o.ID == 1 {
-		return authModel.NoneUser, errors.New("invalid id")
-	}
-
-	return authModel.NewUser(o.ID, "admin"), nil
-}
-
-func (tas testAuthService) Update(_ context.Context, _ authModel.User) (authModel.User, error) {
-	return authModel.NoneUser, nil
-}
-
-func (tas testAuthService) Delete(_ context.Context, _ authModel.User) error {
-	return nil
-}
-
-func (tas testAuthService) CheckRights(_ context.Context, _ uint64) error {
-	return nil
-}
 
 func TestStoreInContext(t *testing.T) {
 	type args struct {
@@ -129,7 +88,7 @@ func TestCreate(t *testing.T) {
 	}{
 		{
 			"invalid user",
-			New(usertest.New(), testAuthService{}),
+			New(usertest.New(), servicetest.New()),
 			args{
 				ctx:  context.TODO(),
 				item: model.NewUser(1, "", authModel.NewUser(1, "")),
@@ -139,7 +98,7 @@ func TestCreate(t *testing.T) {
 		},
 		{
 			"invalid auth",
-			New(usertest.New(), testAuthService{}),
+			New(usertest.New(), servicetest.New().SetCheck(errors.New("failed"))),
 			args{
 				ctx:  context.TODO(),
 				item: model.NewUser(0, "nobody@localhost", authModel.NewUser(0, "")),
@@ -149,7 +108,7 @@ func TestCreate(t *testing.T) {
 		},
 		{
 			"start atomic error",
-			New(usertest.New().SetGetByEmail(model.NoneUser, nil).SetDoAtomic(errAtomicStart), testAuthService{}),
+			New(usertest.New().SetGetByEmail(model.NoneUser, nil).SetDoAtomic(errAtomicStart), servicetest.New()),
 			args{
 				ctx:  context.TODO(),
 				item: model.NewUser(1, "nobody@localhost", authModel.NewUser(1, "")),
@@ -159,7 +118,7 @@ func TestCreate(t *testing.T) {
 		},
 		{
 			"login create error",
-			New(usertest.New().SetGetByEmail(model.NoneUser, nil), testAuthService{}),
+			New(usertest.New().SetGetByEmail(model.NoneUser, nil), servicetest.New().SetCreate(authModel.NoneUser, errors.New("failed"))),
 			args{
 				ctx:  context.Background(),
 				item: model.NewUser(1, "nobody@localhost", authModel.NewUser(1, "")),
@@ -169,7 +128,7 @@ func TestCreate(t *testing.T) {
 		},
 		{
 			"user create error",
-			New(usertest.New().SetGetByEmail(model.NoneUser, nil).SetCreate(0, errors.New("failed")), testAuthService{}),
+			New(usertest.New().SetGetByEmail(model.NoneUser, nil).SetCreate(0, errors.New("failed")), servicetest.New()),
 			args{
 				ctx:  context.Background(),
 				item: model.NewUser(2, "nobody@localhost", authModel.NewUser(2, "")),
@@ -179,7 +138,7 @@ func TestCreate(t *testing.T) {
 		},
 		{
 			"success",
-			New(usertest.New().SetGetByEmail(model.NoneUser, nil).SetCreate(2, nil), testAuthService{}),
+			New(usertest.New().SetGetByEmail(model.NoneUser, nil).SetCreate(2, nil), servicetest.New().SetCreate(authModel.NewUser(2, "admin"), nil)),
 			args{
 				ctx:  context.Background(),
 				item: model.NewUser(2, "nobody@localhost", authModel.NewUser(2, "")),
