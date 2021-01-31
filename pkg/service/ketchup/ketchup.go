@@ -171,7 +171,7 @@ func (a app) check(ctx context.Context, old, new model.Ketchup) error {
 		o, err := a.ketchupStore.GetByRepositoryID(ctx, new.Repository.ID, false)
 		if err != nil {
 			output = append(output, errors.New("unable to check if ketchup already exists"))
-		} else if o.User.ID != 0 && o.Repository.ID != 0 {
+		} else if o.Repository.ID != 0 {
 			output = append(output, fmt.Errorf("ketchup for %s already exists", new.Repository.Name))
 		}
 	}
