@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"flag"
+	"fmt"
 	"reflect"
 	"strings"
 	"testing"
@@ -21,6 +22,14 @@ var (
 	repositoryVersion     = "1.0.0"
 	repositoryBetaVersion = "1.0.0-beta1"
 )
+
+func safeParse(version string) semver.Version {
+	output, err := semver.Parse(version)
+	if err != nil {
+		fmt.Println(err)
+	}
+	return output
+}
 
 func TestFlags(t *testing.T) {
 	var cases = []struct {
@@ -109,11 +118,7 @@ func TestGetNewReleases(t *testing.T) {
 				repositoryService: repositorytest.New().SetList([]model.Repository{
 					model.NewRepository(1, model.Github, repositoryName).AddVersion(model.DefaultPattern, repositoryVersion),
 				}, 0, nil).SetLatestVersions(map[string]semver.Version{
-					model.DefaultPattern: {
-						Name:  "1.1.0",
-						Major: 1,
-						Minor: 1,
-					},
+					model.DefaultPattern: safeParse("1.1.0"),
 				}, nil).SetUpdate(errors.New("failed")),
 			},
 			args{
@@ -128,11 +133,7 @@ func TestGetNewReleases(t *testing.T) {
 				repositoryService: repositorytest.New().SetList([]model.Repository{
 					model.NewRepository(1, model.Github, repositoryName).AddVersion(model.DefaultPattern, repositoryVersion),
 				}, 0, nil).SetLatestVersions(map[string]semver.Version{
-					model.DefaultPattern: {
-						Name:  "1.1.0",
-						Major: 1,
-						Minor: 1,
-					},
+					model.DefaultPattern: safeParse("1.1.0"),
 				}, nil).SetUpdate(nil),
 			},
 			args{
@@ -141,12 +142,7 @@ func TestGetNewReleases(t *testing.T) {
 			[]model.Release{model.NewRelease(
 				model.NewRepository(1, model.Github, repositoryName).AddVersion(model.DefaultPattern, "1.1.0"),
 				model.DefaultPattern,
-				semver.Version{
-					Name:  "1.1.0",
-					Major: 1,
-					Minor: 1,
-					Patch: 0,
-				},
+				safeParse("1.1.0"),
 			)},
 			nil,
 		},
@@ -202,12 +198,7 @@ func TestCheckRepositoryVersion(t *testing.T) {
 			"no new",
 			app{
 				repositoryService: repositorytest.New().SetLatestVersions(map[string]semver.Version{
-					model.DefaultPattern: {
-						Name:  repositoryVersion,
-						Major: 1,
-						Minor: 0,
-						Patch: 0,
-					},
+					model.DefaultPattern: safeParse(repositoryVersion),
 				}, nil),
 			},
 			args{
@@ -219,12 +210,7 @@ func TestCheckRepositoryVersion(t *testing.T) {
 			"invalid version",
 			app{
 				repositoryService: repositorytest.New().SetLatestVersions(map[string]semver.Version{
-					model.DefaultPattern: {
-						Name:  repositoryVersion,
-						Major: 1,
-						Minor: 0,
-						Patch: 0,
-					},
+					model.DefaultPattern: safeParse(repositoryVersion),
 				}, nil),
 			},
 			args{
@@ -236,12 +222,7 @@ func TestCheckRepositoryVersion(t *testing.T) {
 			"not greater",
 			app{
 				repositoryService: repositorytest.New().SetLatestVersions(map[string]semver.Version{
-					model.DefaultPattern: {
-						Name:  repositoryVersion,
-						Major: 1,
-						Minor: 0,
-						Patch: 0,
-					},
+					model.DefaultPattern: safeParse(repositoryVersion),
 				}, nil),
 			},
 			args{
@@ -253,24 +234,14 @@ func TestCheckRepositoryVersion(t *testing.T) {
 			"greater",
 			app{
 				repositoryService: repositorytest.New().SetLatestVersions(map[string]semver.Version{
-					model.DefaultPattern: {
-						Name:  "1.1.0",
-						Major: 1,
-						Minor: 1,
-						Patch: 0,
-					},
+					model.DefaultPattern: safeParse("1.1.0"),
 				}, nil),
 			},
 			args{
 				repo: model.NewRepository(1, model.Github, repositoryName).AddVersion(model.DefaultPattern, repositoryVersion),
 			},
 			[]model.Release{
-				model.NewRelease(model.NewRepository(1, model.Github, repositoryName).AddVersion(model.DefaultPattern, repositoryVersion), model.DefaultPattern, semver.Version{
-					Name:  "1.1.0",
-					Major: 1,
-					Minor: 1,
-					Patch: 0,
-				}),
+				model.NewRelease(model.NewRepository(1, model.Github, repositoryName).AddVersion(model.DefaultPattern, repositoryVersion), model.DefaultPattern, safeParse("1.1.0")),
 			},
 		},
 	}
