@@ -12,6 +12,7 @@ import (
 	"github.com/ViBiOh/httputils/v3/pkg/flags"
 	"github.com/ViBiOh/httputils/v3/pkg/logger"
 	"github.com/ViBiOh/httputils/v3/pkg/request"
+	"github.com/ViBiOh/ketchup/pkg/model"
 	"github.com/ViBiOh/ketchup/pkg/semver"
 )
 
@@ -63,9 +64,9 @@ func (a app) newClient() *request.Request {
 }
 
 func (a app) LatestVersions(repository string, patterns []string) (map[string]semver.Version, error) {
-	output := make(map[string]semver.Version)
-	for _, pattern := range patterns {
-		output[pattern] = semver.NoneVersion
+	versions, compiledPatterns, err := model.PreparePatternMatching(patterns)
+	if err != nil {
+		return nil, fmt.Errorf("unable to prepare pattern matching: %s", err)
 	}
 
 	page := 1
@@ -92,11 +93,7 @@ func (a app) LatestVersions(repository string, patterns []string) (map[string]se
 				continue
 			}
 
-			for pattern, patternVersion := range output {
-				if tagVersion.Match(pattern) && tagVersion.IsGreater(patternVersion) {
-					output[pattern] = tagVersion
-				}
-			}
+			model.CheckPatternsMatching(versions, compiledPatterns, tagVersion)
 		}
 
 		if !hasNext(resp) {
@@ -106,7 +103,7 @@ func (a app) LatestVersions(repository string, patterns []string) (map[string]se
 		page++
 	}
 
-	return output, nil
+	return versions, nil
 }
 
 func hasNext(resp *http.Response) bool {

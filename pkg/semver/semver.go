@@ -29,7 +29,7 @@ const (
 
 var (
 	// According to https://semver.org/#spec-item-11
-	semverMatcher = regexp.MustCompile(`(?i)^[a-zA-Z]*([0-9]+)\.([0-9]+)(?:\.([0-9]+))?(?:$|(?:[+-](.*)))`)
+	semverMatcher = regexp.MustCompile(`(?i)^[a-zA-Z]*([0-9]+)\.([0-9]+)(?:\.([0-9]+))?(?:$|(?:[+-]([a-zA-Z0-9]+)))`)
 
 	nonFinalVersions = []string{"alpha", "beta", "canary", "rc", "test"}
 
@@ -37,20 +37,9 @@ var (
 	NoneVersion = Version{}
 )
 
-// Match checks if version match pattern
-func (v Version) Match(pattern string) bool {
-	p, err := ParsePattern(pattern)
-	if err != nil {
-		fmt.Println(err)
-		return false
-	}
-
-	return p.Check(v)
-}
-
 // Equals check if two versions are equivalent
 func (v Version) Equals(other Version) bool {
-	return v.Name == other.Name
+	return v.major == other.major && v.minor == other.minor && v.patch == other.patch && v.suffix == other.suffix
 }
 
 // IsGreater check if current version is greater than other

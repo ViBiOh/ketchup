@@ -6,60 +6,6 @@ import (
 	"testing"
 )
 
-func TestMatch(t *testing.T) {
-	type args struct {
-		pattern string
-	}
-
-	var cases = []struct {
-		intention string
-		instance  Version
-		args      args
-		want      bool
-	}{
-		{
-			"no match",
-			Version{},
-			args{
-				pattern: "test",
-			},
-			false,
-		},
-		{
-			"latest",
-			safeParse("1.2.3-canary"),
-			args{
-				pattern: "latest",
-			},
-			true,
-		},
-		{
-			"stable beta",
-			safeParse("1.2.3-canary"),
-			args{
-				pattern: "stable",
-			},
-			false,
-		},
-		{
-			"stable",
-			safeParse("1.2.3"),
-			args{
-				pattern: "stable",
-			},
-			true,
-		},
-	}
-
-	for _, tc := range cases {
-		t.Run(tc.intention, func(t *testing.T) {
-			if got := tc.instance.Match(tc.args.pattern); got != tc.want {
-				t.Errorf("Match() = %t, want %t", got, tc.want)
-			}
-		})
-	}
-}
-
 func TestIsGreater(t *testing.T) {
 	type args struct {
 		other Version
