@@ -27,25 +27,15 @@ func TestMatch(t *testing.T) {
 		},
 		{
 			"latest",
-			Version{
-				Major:  1,
-				Minor:  2,
-				Patch:  3,
-				Suffix: canary,
-			},
+			safeParse("1.2.3-canary"),
 			args{
 				pattern: "latest",
 			},
 			true,
 		},
 		{
-			"stable",
-			Version{
-				Major:  1,
-				Minor:  2,
-				Patch:  3,
-				Suffix: canary,
-			},
+			"stable beta",
+			safeParse("1.2.3-canary"),
 			args{
 				pattern: "stable",
 			},
@@ -53,11 +43,7 @@ func TestMatch(t *testing.T) {
 		},
 		{
 			"stable",
-			Version{
-				Major: 1,
-				Minor: 2,
-				Patch: 3,
-			},
+			safeParse("1.2.3"),
 			args{
 				pattern: "stable",
 			},
@@ -87,33 +73,33 @@ func TestIsGreater(t *testing.T) {
 	}{
 		{
 			"major",
-			Version{"", 2, 0, 0, 0},
+			safeParse("2.0.0"),
 			args{
-				other: Version{"", 1, 0, 0, 0},
+				other: safeParse("1.0.0"),
 			},
 			true,
 		},
 		{
 			"minor",
-			Version{"", 1, 1, 0, 0},
+			safeParse("1.1.0"),
 			args{
-				other: Version{"", 1, 0, 0, 0},
+				other: safeParse("1.0.0"),
 			},
 			true,
 		},
 		{
 			"patch",
-			Version{"", 1, 1, 1, 0},
+			safeParse("1.1.1"),
 			args{
-				other: Version{"", 1, 1, 0, 0},
+				other: safeParse("1.1.0"),
 			},
 			true,
 		},
 		{
 			"minor with major greater",
-			Version{"", 2, 0, 0, 0},
+			safeParse("2.0.0"),
 			args{
-				other: Version{"", 1, 2, 0, 0},
+				other: safeParse("1.2.0"),
 			},
 			true,
 		},
@@ -143,17 +129,17 @@ func TestIsGreater(t *testing.T) {
 		},
 		{
 			"suffix presence",
-			Version{"", 1, 1, 1, 0},
+			safeParse("1.1.1"),
 			args{
-				other: Version{"", 1, 1, 1, beta},
+				other: safeParse("1.1.1-beta1"),
 			},
 			true,
 		},
 		{
 			"equal",
-			Version{"", 1, 0, 0, 0},
+			safeParse("1.0.0"),
 			args{
-				other: Version{"", 1, 0, 0, 0},
+				other: safeParse("1.0.0"),
 			},
 			false,
 		},
@@ -181,7 +167,7 @@ func TestCompare(t *testing.T) {
 	}{
 		{
 			"major",
-			Version{"", 1, 0, 0, 0},
+			safeParse("1.0.0"),
 			args{
 				other: Version{"", 0, 0, 0, 0},
 			},
@@ -189,9 +175,9 @@ func TestCompare(t *testing.T) {
 		},
 		{
 			"minor",
-			Version{"", 1, 0, 0, 0},
+			safeParse("1.0.0"),
 			args{
-				other: Version{"", 1, 2, 0, 0},
+				other: safeParse("1.2.0"),
 			},
 			"Minor",
 		},
@@ -199,7 +185,7 @@ func TestCompare(t *testing.T) {
 			"patch",
 			Version{"", 1, 0, 1, 0},
 			args{
-				other: Version{"", 1, 0, 0, 0},
+				other: safeParse("1.0.0"),
 			},
 			"Patch",
 		},
@@ -213,9 +199,9 @@ func TestCompare(t *testing.T) {
 		},
 		{
 			"equal",
-			Version{"", 1, 0, 0, 0},
+			safeParse("1.0.0"),
 			args{
-				other: Version{"", 1, 0, 0, 0},
+				other: safeParse("1.0.0"),
 			},
 			"",
 		},
@@ -292,6 +278,14 @@ func TestParse(t *testing.T) {
 		{
 			"major and minor only",
 			args{
+				version: "v1.25",
+			},
+			Version{"v1.25", 1, 25, 0, -1},
+			nil,
+		},
+		{
+			"major and minor only with suffix",
+			args{
 				version: "v1.25+xyz",
 			},
 			Version{"v1.25+xyz", 1, 25, 0, 0},
@@ -302,7 +296,7 @@ func TestParse(t *testing.T) {
 			args{
 				version: "v1.2.3",
 			},
-			Version{"v1.2.3", 1, 2, 3, 0},
+			Version{"v1.2.3", 1, 2, 3, -1},
 			nil,
 		},
 		{

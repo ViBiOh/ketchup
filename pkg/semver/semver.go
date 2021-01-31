@@ -12,25 +12,26 @@ type NonFinalVersion int
 
 // Version describe a semantic version
 type Version struct {
-	Name   string          `json:"name"`
-	Major  uint64          `json:"major"`
-	Minor  uint64          `json:"minor"`
-	Patch  uint64          `json:"patch"`
-	Suffix NonFinalVersion `json:"-"`
+	Name   string `json:"name"`
+	major  uint64
+	minor  uint64
+	patch  uint64
+	suffix NonFinalVersion
 }
 
 const (
 	alpha NonFinalVersion = iota + 1
 	beta
-	rc
 	canary
+	rc
 	test
 )
 
 var (
+	// According to https://semver.org/#spec-item-11
 	semverMatcher = regexp.MustCompile(`(?i)^[a-zA-Z]*([0-9]+)\.([0-9]+)(?:\.([0-9]+))?(?:$|(?:[+-](.*)))`)
 
-	nonFinalVersions = []string{"alpha", "beta", "rc", "canary", "test"}
+	nonFinalVersions = []string{"alpha", "beta", "canary", "rc", "test"}
 
 	// NoneVersion is the empty semver
 	NoneVersion = Version{}
@@ -38,37 +39,40 @@ var (
 
 // Match checks if version match pattern
 func (v Version) Match(pattern string) bool {
-	if pattern == "latest" {
-		return true
+	p, err := ParsePattern(pattern)
+	if err != nil {
+		fmt.Println(err)
+		return false
 	}
 
-	if pattern == "stable" {
-		return v.Suffix == 0
-	}
+	return p.Check(v)
+}
 
-	return false
+// Equals check if two versions are equivalent
+func (v Version) Equals(other Version) bool {
+	return v.Name == other.Name
 }
 
 // IsGreater check if current version is greater than other
 func (v Version) IsGreater(other Version) bool {
-	if v.Major != other.Major {
-		return v.Major > other.Major
+	if v.major != other.major {
+		return v.major > other.major
 	}
 
-	if v.Minor != other.Minor {
-		return v.Minor > other.Minor
+	if v.minor != other.minor {
+		return v.minor > other.minor
 	}
 
-	if v.Patch != other.Patch {
-		return v.Patch > other.Patch
+	if v.patch != other.patch {
+		return v.patch > other.patch
 	}
 
-	if v.Suffix != other.Suffix {
-		if v.Suffix == 0 {
+	if v.suffix != other.suffix {
+		if v.suffix == -1 {
 			return true
 		}
 
-		return v.Suffix > other.Suffix
+		return v.suffix > other.suffix
 	}
 
 	return false
@@ -76,19 +80,19 @@ func (v Version) IsGreater(other Version) bool {
 
 // Compare return version diff in semver nomenclture
 func (v Version) Compare(other Version) string {
-	if v.Major != other.Major {
+	if v.major != other.major {
 		return "Major"
 	}
 
-	if v.Minor != other.Minor {
+	if v.minor != other.minor {
 		return "Minor"
 	}
 
-	if v.Patch != other.Patch {
+	if v.patch != other.patch {
 		return "Patch"
 	}
 
-	if v.Suffix != other.Suffix {
+	if v.suffix != other.suffix {
 		return "Suffix"
 	}
 
@@ -107,20 +111,20 @@ func Parse(version string) (Version, error) {
 	}
 	var err error
 
-	semver.Major, err = strconv.ParseUint(matches[1], 10, 64)
+	semver.major, err = strconv.ParseUint(matches[1], 10, 64)
 	if err != nil {
 		return NoneVersion, fmt.Errorf("version major is not numeric")
 	}
 
 	if len(matches[2]) != 0 {
-		semver.Minor, err = strconv.ParseUint(matches[2], 10, 64)
+		semver.minor, err = strconv.ParseUint(matches[2], 10, 64)
 		if err != nil {
 			return NoneVersion, fmt.Errorf("version minor is not numeric")
 		}
 	}
 
 	if len(matches[3]) != 0 {
-		semver.Patch, err = strconv.ParseUint(matches[3], 10, 64)
+		semver.patch, err = strconv.ParseUint(matches[3], 10, 64)
 		if err != nil {
 			return NoneVersion, fmt.Errorf("version patch is not numeric")
 		}
@@ -129,10 +133,20 @@ func Parse(version string) (Version, error) {
 	if len(matches[4]) != 0 {
 		for index, nonFinalVersion := range nonFinalVersions {
 			if strings.Contains(matches[4], nonFinalVersion) {
-				semver.Suffix = NonFinalVersion(index + 1)
+				semver.suffix = NonFinalVersion(index + 1)
 			}
 		}
+	} else {
+		semver.suffix = -1
 	}
 
 	return semver, nil
+}
+
+func safeParse(version string) Version {
+	output, err := Parse(version)
+	if err != nil {
+		fmt.Println(err)
+	}
+	return output
 }

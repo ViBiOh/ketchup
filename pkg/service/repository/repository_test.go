@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"errors"
+	"fmt"
 	"reflect"
 	"strings"
 	"testing"
@@ -101,6 +102,14 @@ func (trs testRepositoryStore) DeleteUnused(ctx context.Context) error {
 	}
 
 	return nil
+}
+
+func safeParse(version string) semver.Version {
+	output, err := semver.Parse(version)
+	if err != nil {
+		fmt.Println(err)
+	}
+	return output
 }
 
 func TestList(t *testing.T) {
@@ -242,10 +251,7 @@ func TestGetOrCreate(t *testing.T) {
 		{
 			"exists but no pattern",
 			New(testRepositoryStore{}, githubtest.New().SetLatestVersions(map[string]semver.Version{
-				model.DefaultPattern: {
-					Major: 1,
-					Name:  "1.0.0",
-				},
+				model.DefaultPattern: safeParse("1.0.0"),
 			}, nil), nil),
 			args{
 				ctx:            context.Background(),
@@ -259,10 +265,7 @@ func TestGetOrCreate(t *testing.T) {
 		{
 			"create",
 			New(testRepositoryStore{}, githubtest.New().SetLatestVersions(map[string]semver.Version{
-				model.DefaultPattern: {
-					Major: 1,
-					Name:  "1.0.0",
-				},
+				model.DefaultPattern: safeParse("1.0.0"),
 			}, nil), nil),
 			args{
 				ctx:            context.Background(),
@@ -338,10 +341,7 @@ func TestCreate(t *testing.T) {
 			app{
 				repositoryStore: testRepositoryStore{},
 				githubApp: githubtest.New().SetLatestVersions(map[string]semver.Version{
-					model.DefaultPattern: {
-						Major: 1,
-						Name:  "1.0.0",
-					},
+					model.DefaultPattern: safeParse("1.0.0"),
 				}, nil),
 			},
 			args{
@@ -356,10 +356,7 @@ func TestCreate(t *testing.T) {
 			app{
 				repositoryStore: testRepositoryStore{},
 				githubApp: githubtest.New().SetLatestVersions(map[string]semver.Version{
-					model.DefaultPattern: {
-						Major: 1,
-						Name:  "1.0.0",
-					},
+					model.DefaultPattern: safeParse("1.0.0"),
 				}, nil),
 			},
 			args{
