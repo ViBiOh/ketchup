@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/ViBiOh/httputils/v3/pkg/request"
+	"github.com/ViBiOh/ketchup/pkg/model"
 	"github.com/ViBiOh/ketchup/pkg/semver"
 	"gopkg.in/yaml.v2"
 )
@@ -61,9 +62,9 @@ func (a app) LatestVersions(repository string, patterns []string) (map[string]se
 		return nil, fmt.Errorf("no chart `%s` in repository", parts[0])
 	}
 
-	output := make(map[string]semver.Version)
-	for _, pattern := range patterns {
-		output[pattern] = semver.NoneVersion
+	versions, compiledPatterns, err := model.PreparePatternMatching(patterns)
+	if err != nil {
+		return nil, fmt.Errorf("unable to prepare pattern matching: %s", err)
 	}
 
 	for _, chart := range charts {
@@ -72,12 +73,8 @@ func (a app) LatestVersions(repository string, patterns []string) (map[string]se
 			continue
 		}
 
-		for pattern, patternVersion := range output {
-			if chartVersion.Match(pattern) && chartVersion.IsGreater(patternVersion) {
-				output[pattern] = chartVersion
-			}
-		}
+		model.CheckPatternsMatching(versions, compiledPatterns, chartVersion)
 	}
 
-	return output, nil
+	return versions, nil
 }

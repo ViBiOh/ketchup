@@ -3,25 +3,26 @@ package semver
 import (
 	"errors"
 	"fmt"
+	"regexp"
 )
 
 type operation int
 
 const (
-	equal operation = iota
-	notEqual
-	greaterThan
-	greaterOrEqual
+	greaterOrEqual operation = iota
 	lowerThan
-	lowerOrEqual
 )
 
 var (
-	// NonePattern for empty response
+	// NonePattern is the empty pattern
 	NonePattern = Pattern{}
 
-	operationSigns = []string{"=", "!=", ">", ">=", "<", "<="}
+	operationsRegex *regexp.Regexp
 )
+
+func init() {
+	operationsRegex = regexp.MustCompile(`(?i)^(^|~)([0-9]+)(?:\.([0-9]+))(?:\.([0-9]+))?(-0)?$`)
+}
 
 type constraint struct {
 	version    Version
@@ -37,31 +38,15 @@ func newConstraint(version Version, comparator operation) constraint {
 
 // Pattern describe a pattern constraint
 type Pattern struct {
+	Name        string
 	constraints []constraint
 }
 
 // NewPattern creates new pattern instance
-func NewPattern(constraints ...constraint) Pattern {
+func NewPattern(name string, constraints ...constraint) Pattern {
 	return Pattern{
 		constraints: constraints,
 	}
-}
-
-// ParsePattern parse given constraint to extract pattern matcher
-func ParsePattern(pattern string) (Pattern, error) {
-	if len(pattern) == 0 {
-		return NonePattern, errors.New("pattern is empty")
-	}
-
-	if pattern == "latest" {
-		return NewPattern(newConstraint(safeParse("0.0.0-0"), greaterOrEqual)), nil
-	}
-
-	if pattern == "stable" {
-		return NewPattern(newConstraint(safeParse("0.0.0"), greaterOrEqual)), nil
-	}
-
-	return NonePattern, fmt.Errorf("unable to parse pattern `%s`", pattern)
 }
 
 // Check verifies is given version match Pattern
@@ -72,37 +57,49 @@ func (p Pattern) Check(version Version) bool {
 		}
 
 		switch constraint.comparator {
-		case equal:
-			if !version.Equals(constraint.version) {
-				return false
-			}
-		case notEqual:
-			if version.Equals(constraint.version) {
-				return false
-			}
-		case greaterThan:
-			if !version.IsGreater(constraint.version) {
-				return false
-			}
 		case greaterOrEqual:
 			if !version.IsGreater(constraint.version) && !version.Equals(constraint.version) {
 				return false
 			}
 		case lowerThan:
-			if version.IsGreater(constraint.version) {
+			if !constraint.version.IsGreater(version) {
 				return false
 			}
-		case lowerOrEqual:
-			if version.IsGreater(constraint.version) || !version.Equals(constraint.version) {
-				return false
-			}
-		default:
-			fmt.Printf("comparator `%d` is not implemented\n", constraint.comparator)
-			return false
 		}
 	}
 
 	return true
+}
+
+// ParsePattern parse given constraint to extract pattern matcher
+func ParsePattern(pattern string) (Pattern, error) {
+	if len(pattern) < 4 {
+		return NonePattern, errors.New("pattern is invalid")
+	}
+
+	if pattern == "latest" {
+		return NewPattern(pattern, newConstraint(safeParse("0.0-0"), greaterOrEqual)), nil
+	}
+
+	if pattern == "stable" {
+		return NewPattern(pattern, newConstraint(safeParse("0.0"), greaterOrEqual)), nil
+	}
+
+	version, err := Parse(pattern[1:])
+	if err != nil {
+		return NonePattern, fmt.Errorf("unable to parse version in pattern: %s", err)
+	}
+
+	constraintVersionSuffix := ""
+	if version.suffix != -1 {
+		constraintVersionSuffix = "-0"
+	}
+
+	if pattern[0] == '^' {
+		return NewPattern(pattern, newConstraint(version, greaterOrEqual), newConstraint(safeParse(fmt.Sprintf("%d.0%s", version.major+1, constraintVersionSuffix)), lowerThan)), nil
+	}
+
+	return NewPattern(pattern, newConstraint(version, greaterOrEqual), newConstraint(safeParse(fmt.Sprintf("%d.%d%s", version.major, version.minor+1, constraintVersionSuffix)), lowerThan)), nil
 }
 
 func safeParsePattern(pattern string) Pattern {
