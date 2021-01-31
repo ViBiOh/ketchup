@@ -13,7 +13,6 @@ import (
 // App of package
 type App interface {
 	DoAtomic(ctx context.Context, action func(context.Context) error) error
-
 	List(ctx context.Context, page, pageSize uint) ([]model.Ketchup, uint64, error)
 	ListByRepositoriesID(ctx context.Context, ids []uint64) ([]model.Ketchup, error)
 	GetByRepositoryID(ctx context.Context, id uint64, forUpdate bool) (model.Ketchup, error)
