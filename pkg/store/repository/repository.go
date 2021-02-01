@@ -15,7 +15,6 @@ import (
 // App of package
 type App interface {
 	DoAtomic(ctx context.Context, action func(context.Context) error) error
-
 	List(ctx context.Context, page, pageSize uint) ([]model.Repository, uint64, error)
 	Suggest(ctx context.Context, ignoreIds []uint64, count uint64) ([]model.Repository, error)
 	Get(ctx context.Context, id uint64, forUpdate bool) (model.Repository, error)

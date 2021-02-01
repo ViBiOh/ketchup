@@ -8,101 +8,17 @@ import (
 	"strings"
 	"testing"
 
-	authModel "github.com/ViBiOh/auth/v2/pkg/model"
 	httpModel "github.com/ViBiOh/httputils/v3/pkg/model"
 	"github.com/ViBiOh/ketchup/pkg/github/githubtest"
 	"github.com/ViBiOh/ketchup/pkg/model"
 	"github.com/ViBiOh/ketchup/pkg/semver"
+	"github.com/ViBiOh/ketchup/pkg/store/repository/repositorytest"
 )
 
 var (
 	errAtomicStart = errors.New("invalid context")
 	errAtomicEnd   = errors.New("invalid context")
 )
-
-type testRepositoryStore struct{}
-
-func (trs testRepositoryStore) DoAtomic(ctx context.Context, action func(context.Context) error) error {
-	if ctx == context.TODO() {
-		return errAtomicStart
-	}
-
-	err := action(ctx)
-	if err != nil && strings.Contains(err.Error(), "duplicate pk") {
-		return errAtomicEnd
-	}
-
-	return err
-}
-
-func (trs testRepositoryStore) List(_ context.Context, page, _ uint) ([]model.Repository, uint64, error) {
-	if page == 0 {
-		return nil, 0, errors.New("invalid page")
-	}
-
-	return []model.Repository{
-		model.NewRepository(1, model.Github, "vibioh/ketchup").AddVersion(model.DefaultPattern, "1.0.0"),
-		model.NewRepository(2, model.Github, "vibioh/viws").AddVersion(model.DefaultPattern, "1.2.3"),
-	}, 2, nil
-}
-
-func (trs testRepositoryStore) Suggest(ctx context.Context, _ []uint64, _ uint64) ([]model.Repository, error) {
-	if ctx == context.TODO() {
-		return nil, errors.New("invalid context")
-	}
-
-	return []model.Repository{
-		model.NewRepository(2, model.Github, "vibioh/viws").AddVersion(model.DefaultPattern, "1.2.3"),
-	}, nil
-}
-
-func (trs testRepositoryStore) Get(_ context.Context, id uint64, _ bool) (model.Repository, error) {
-	if id == 0 {
-		return model.NoneRepository, errors.New("invalid id")
-	}
-
-	return model.NewRepository(id, model.Github, "vibioh/ketchup").AddVersion(model.DefaultPattern, "1.0.0"), nil
-}
-
-func (trs testRepositoryStore) GetByName(_ context.Context, name string, repositoryKind model.RepositoryKind) (model.Repository, error) {
-	if name == "error" {
-		return model.NoneRepository, errors.New("invalid name")
-	}
-
-	if name == "exist" {
-		return model.NewRepository(3, model.Github, "vibioh/ketchup"), nil
-	}
-
-	return model.NoneRepository, nil
-}
-
-func (trs testRepositoryStore) Create(_ context.Context, o model.Repository) (uint64, error) {
-	if o.Name == "vibioh" {
-		return 0, errors.New("invalid name")
-	}
-
-	return 1, nil
-}
-
-func (trs testRepositoryStore) UpdateVersions(_ context.Context, o model.Repository) error {
-	if o.ID == 1 {
-		return errors.New("invalid id")
-	}
-
-	if o.ID == 2 {
-		return errors.New("duplicate pk")
-	}
-
-	return nil
-}
-
-func (trs testRepositoryStore) DeleteUnused(ctx context.Context) error {
-	if model.ReadUser(ctx) == model.NoneUser {
-		return errors.New("no user found")
-	}
-
-	return nil
-}
 
 func safeParse(version string) semver.Version {
 	output, err := semver.Parse(version)
@@ -120,6 +36,7 @@ func TestList(t *testing.T) {
 
 	var cases = []struct {
 		intention string
+		instance  App
 		args      args
 		want      []model.Repository
 		wantCount uint64
@@ -127,6 +44,10 @@ func TestList(t *testing.T) {
 	}{
 		{
 			"simple",
+			New(repositorytest.New().SetList([]model.Repository{
+				model.NewRepository(1, model.Github, "vibioh/ketchup").AddVersion(model.DefaultPattern, "1.0.0"),
+				model.NewRepository(2, model.Github, "vibioh/viws").AddVersion(model.DefaultPattern, "1.2.3"),
+			}, 2, nil), nil, nil),
 			args{
 				page: 1,
 			},
@@ -139,6 +60,7 @@ func TestList(t *testing.T) {
 		},
 		{
 			"error",
+			New(repositorytest.New().SetList(nil, 0, errors.New("failed")), nil, nil),
 			args{
 				page: 0,
 			},
@@ -150,7 +72,7 @@ func TestList(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.intention, func(t *testing.T) {
-			got, gotCount, gotErr := New(testRepositoryStore{}, nil, nil).List(context.Background(), tc.args.page, tc.args.pageSize)
+			got, gotCount, gotErr := tc.instance.List(context.Background(), tc.args.page, tc.args.pageSize)
 
 			failed := false
 
@@ -178,24 +100,29 @@ func TestSuggest(t *testing.T) {
 
 	var cases = []struct {
 		intention string
+		instance  App
 		args      args
 		want      []model.Repository
 		wantErr   error
 	}{
 		{
 			"simple",
+			New(repositorytest.New().SetSuggest([]model.Repository{
+				model.NewRepository(1, model.Github, "vibioh/ketchup").AddVersion(model.DefaultPattern, "1.2.3"),
+			}, nil), nil, nil),
 			args{
 				ctx: context.Background(),
 			},
 			[]model.Repository{
-				model.NewRepository(2, model.Github, "vibioh/viws").AddVersion(model.DefaultPattern, "1.2.3"),
+				model.NewRepository(1, model.Github, "vibioh/ketchup").AddVersion(model.DefaultPattern, "1.2.3"),
 			},
 			nil,
 		},
 		{
 			"error",
+			New(repositorytest.New().SetSuggest(nil, errors.New("failed")), nil, nil),
 			args{
-				ctx: context.TODO(),
+				ctx: context.Background(),
 			},
 			nil,
 			httpModel.ErrInternalError,
@@ -204,7 +131,7 @@ func TestSuggest(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.intention, func(t *testing.T) {
-			got, gotErr := New(testRepositoryStore{}, nil, nil).Suggest(tc.args.ctx, tc.args.ignoreIds, tc.args.count)
+			got, gotErr := tc.instance.Suggest(tc.args.ctx, tc.args.ignoreIds, tc.args.count)
 
 			failed := false
 
@@ -238,7 +165,7 @@ func TestGetOrCreate(t *testing.T) {
 	}{
 		{
 			"get error",
-			New(testRepositoryStore{}, githubtest.New(), nil),
+			New(repositorytest.New().SetGetByName(model.NoneRepository, errors.New("failed")), githubtest.New(), nil),
 			args{
 				ctx:            context.Background(),
 				name:           "error",
@@ -250,7 +177,7 @@ func TestGetOrCreate(t *testing.T) {
 		},
 		{
 			"exists but no pattern",
-			New(testRepositoryStore{}, githubtest.New().SetLatestVersions(map[string]semver.Version{
+			New(repositorytest.New().SetGetByName(model.NewRepository(1, model.Github, "vibioh/ketchup"), nil), githubtest.New().SetLatestVersions(map[string]semver.Version{
 				model.DefaultPattern: safeParse("1.0.0"),
 			}, nil), nil),
 			args{
@@ -259,12 +186,12 @@ func TestGetOrCreate(t *testing.T) {
 				repositoryKind: model.Github,
 				pattern:        model.DefaultPattern,
 			},
-			model.NewRepository(3, model.Github, "vibioh/ketchup").AddVersion(model.DefaultPattern, "1.0.0"),
+			model.NewRepository(1, model.Github, "vibioh/ketchup").AddVersion(model.DefaultPattern, "1.0.0"),
 			nil,
 		},
 		{
 			"create",
-			New(testRepositoryStore{}, githubtest.New().SetLatestVersions(map[string]semver.Version{
+			New(repositorytest.New().SetCreate(1, nil), githubtest.New().SetLatestVersions(map[string]semver.Version{
 				model.DefaultPattern: safeParse("1.0.0"),
 			}, nil), nil),
 			args{
@@ -313,7 +240,7 @@ func TestCreate(t *testing.T) {
 		{
 			"invalid",
 			app{
-				repositoryStore: testRepositoryStore{},
+				repositoryStore: repositorytest.New(),
 				githubApp:       githubtest.New(),
 			},
 			args{
@@ -326,7 +253,7 @@ func TestCreate(t *testing.T) {
 		{
 			"release error",
 			app{
-				repositoryStore: testRepositoryStore{},
+				repositoryStore: repositorytest.New(),
 				githubApp:       githubtest.New().SetLatestVersions(nil, errors.New("failed")),
 			},
 			args{
@@ -339,7 +266,7 @@ func TestCreate(t *testing.T) {
 		{
 			"create error",
 			app{
-				repositoryStore: testRepositoryStore{},
+				repositoryStore: repositorytest.New().SetCreate(0, errors.New("failed")),
 				githubApp: githubtest.New().SetLatestVersions(map[string]semver.Version{
 					model.DefaultPattern: safeParse("1.0.0"),
 				}, nil),
@@ -354,7 +281,7 @@ func TestCreate(t *testing.T) {
 		{
 			"success",
 			app{
-				repositoryStore: testRepositoryStore{},
+				repositoryStore: repositorytest.New().SetCreate(1, nil),
 				githubApp: githubtest.New().SetLatestVersions(map[string]semver.Version{
 					model.DefaultPattern: safeParse("1.0.0"),
 				}, nil),
@@ -395,11 +322,13 @@ func TestUpdate(t *testing.T) {
 
 	var cases = []struct {
 		intention string
+		instance  App
 		args      args
 		wantErr   error
 	}{
 		{
 			"start atomic error",
+			New(repositorytest.New().SetDoAtomic(errAtomicStart), nil, nil),
 			args{
 				ctx:  context.TODO(),
 				item: model.NoneRepository,
@@ -408,6 +337,7 @@ func TestUpdate(t *testing.T) {
 		},
 		{
 			"fetch error",
+			New(repositorytest.New().SetGet(model.NoneRepository, errors.New("failed")), nil, nil),
 			args{
 				ctx:  context.Background(),
 				item: model.NewRepository(0, model.Github, ""),
@@ -416,6 +346,7 @@ func TestUpdate(t *testing.T) {
 		},
 		{
 			"invalid check",
+			New(repositorytest.New().SetGet(model.NewRepository(1, model.Github, "vibioh/ketchup"), nil), nil, nil),
 			args{
 				ctx:  context.Background(),
 				item: model.NewRepository(1, model.Github, ""),
@@ -424,6 +355,7 @@ func TestUpdate(t *testing.T) {
 		},
 		{
 			"update error",
+			New(repositorytest.New().SetGet(model.NewRepository(1, model.Github, "vibioh/ketchup"), nil).SetUpdateVersions(errors.New("failed")), nil, nil),
 			args{
 				ctx:  context.Background(),
 				item: model.NewRepository(1, model.Github, "").AddVersion(model.DefaultPattern, "1.2.3"),
@@ -431,15 +363,8 @@ func TestUpdate(t *testing.T) {
 			httpModel.ErrInternalError,
 		},
 		{
-			"end atomic error",
-			args{
-				ctx:  context.Background(),
-				item: model.NewRepository(2, model.Github, "").AddVersion(model.DefaultPattern, "1.2.3"),
-			},
-			errAtomicEnd,
-		},
-		{
 			"success",
+			New(repositorytest.New().SetGet(model.NewRepository(1, model.Github, "vibioh/ketchup"), nil), nil, nil),
 			args{
 				ctx:  context.Background(),
 				item: model.NewRepository(3, model.Github, "").AddVersion(model.DefaultPattern, "1.2.3"),
@@ -450,7 +375,7 @@ func TestUpdate(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.intention, func(t *testing.T) {
-			gotErr := New(testRepositoryStore{}, nil, nil).Update(tc.args.ctx, tc.args.item)
+			gotErr := tc.instance.Update(tc.args.ctx, tc.args.item)
 
 			failed := false
 
@@ -472,11 +397,13 @@ func TestClean(t *testing.T) {
 
 	var cases = []struct {
 		intention string
+		instance  App
 		args      args
 		wantErr   error
 	}{
 		{
 			"error",
+			New(repositorytest.New().SetDeleteUnused(errors.New("failed")), nil, nil),
 			args{
 				ctx: context.Background(),
 			},
@@ -484,8 +411,9 @@ func TestClean(t *testing.T) {
 		},
 		{
 			"success",
+			New(repositorytest.New(), nil, nil),
 			args{
-				ctx: model.StoreUser(context.Background(), model.NewUser(1, "", authModel.NewUser(0, ""))),
+				ctx: context.Background(),
 			},
 			nil,
 		},
@@ -493,7 +421,7 @@ func TestClean(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.intention, func(t *testing.T) {
-			gotErr := New(testRepositoryStore{}, nil, nil).Clean(tc.args.ctx)
+			gotErr := tc.instance.Clean(tc.args.ctx)
 
 			failed := false
 
@@ -517,11 +445,13 @@ func TestCheck(t *testing.T) {
 
 	var cases = []struct {
 		intention string
+		instance  app
 		args      args
 		wantErr   error
 	}{
 		{
 			"delete",
+			app{repositoryStore: repositorytest.New()},
 			args{
 				old: model.NewRepository(1, model.Github, ""),
 			},
@@ -529,6 +459,7 @@ func TestCheck(t *testing.T) {
 		},
 		{
 			"name required",
+			app{repositoryStore: repositorytest.New()},
 			args{
 				new: model.NewRepository(1, model.Github, "").AddVersion(model.DefaultPattern, "1.0.0"),
 			},
@@ -536,6 +467,7 @@ func TestCheck(t *testing.T) {
 		},
 		{
 			"version required for update",
+			app{repositoryStore: repositorytest.New()},
 			args{
 				old: model.NewRepository(1, model.Github, "vibioh/ketchup").AddVersion(model.DefaultPattern, "1.0.0"),
 				new: model.NewRepository(1, model.Github, "vibioh/ketchup"),
@@ -544,6 +476,7 @@ func TestCheck(t *testing.T) {
 		},
 		{
 			"get error",
+			app{repositoryStore: repositorytest.New().SetGetByName(model.NoneRepository, errors.New("failed"))},
 			args{
 				new: model.NewRepository(1, model.Github, "error"),
 			},
@@ -551,6 +484,7 @@ func TestCheck(t *testing.T) {
 		},
 		{
 			"exist",
+			app{repositoryStore: repositorytest.New().SetGetByName(model.NewRepository(2, model.Github, "vibioh/ketchup"), nil)},
 			args{
 				new: model.NewRepository(1, model.Github, "exist"),
 			},
@@ -560,7 +494,7 @@ func TestCheck(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.intention, func(t *testing.T) {
-			gotErr := app{repositoryStore: testRepositoryStore{}}.check(tc.args.ctx, tc.args.old, tc.args.new)
+			gotErr := tc.instance.check(tc.args.ctx, tc.args.old, tc.args.new)
 
 			failed := false
 
