@@ -176,6 +176,44 @@ func TestGetOrCreate(t *testing.T) {
 			httpModel.ErrInternalError,
 		},
 		{
+			"exists with pattern",
+			New(repositorytest.New().SetGetByName(model.NewRepository(1, model.Github, "vibioh/ketchup").AddVersion(model.DefaultPattern, "1.0.0"), nil), githubtest.New(), nil),
+			args{
+				ctx:            context.Background(),
+				name:           "exist",
+				repositoryKind: model.Github,
+				pattern:        model.DefaultPattern,
+			},
+			model.NewRepository(1, model.Github, "vibioh/ketchup").AddVersion(model.DefaultPattern, "1.0.0"),
+			nil,
+		},
+		{
+			"exists no pattern error",
+			New(repositorytest.New().SetGetByName(model.NewRepository(1, model.Github, "vibioh/ketchup"), nil), githubtest.New().SetLatestVersions(nil, errors.New("failed")), nil),
+			args{
+				ctx:            context.Background(),
+				name:           "exist",
+				repositoryKind: model.Github,
+				pattern:        model.DefaultPattern,
+			},
+			model.NoneRepository,
+			httpModel.ErrInternalError,
+		},
+		{
+			"exists pattern not found",
+			New(repositorytest.New().SetGetByName(model.NewRepository(1, model.Github, "vibioh/ketchup"), nil), githubtest.New().SetLatestVersions(map[string]semver.Version{
+				"latest": safeParse("1.0.0"),
+			}, nil), nil),
+			args{
+				ctx:            context.Background(),
+				name:           "exist",
+				repositoryKind: model.Github,
+				pattern:        model.DefaultPattern,
+			},
+			model.NoneRepository,
+			httpModel.ErrNotFound,
+		},
+		{
 			"exists but no pattern",
 			New(repositorytest.New().SetGetByName(model.NewRepository(1, model.Github, "vibioh/ketchup"), nil), githubtest.New().SetLatestVersions(map[string]semver.Version{
 				model.DefaultPattern: safeParse("1.0.0"),
@@ -188,6 +226,20 @@ func TestGetOrCreate(t *testing.T) {
 			},
 			model.NewRepository(1, model.Github, "vibioh/ketchup").AddVersion(model.DefaultPattern, "1.0.0"),
 			nil,
+		},
+		{
+			"update error",
+			New(repositorytest.New().SetGetByName(model.NewRepository(1, model.Github, "vibioh/ketchup"), nil).SetUpdateVersions(errors.New("failed")), githubtest.New().SetLatestVersions(map[string]semver.Version{
+				model.DefaultPattern: safeParse("1.0.0"),
+			}, nil), nil),
+			args{
+				ctx:            context.Background(),
+				name:           "exist",
+				repositoryKind: model.Github,
+				pattern:        model.DefaultPattern,
+			},
+			model.NoneRepository,
+			httpModel.ErrInternalError,
 		},
 		{
 			"create",
@@ -464,6 +516,15 @@ func TestCheck(t *testing.T) {
 				new: model.NewRepository(1, model.Github, "").AddVersion(model.DefaultPattern, "1.0.0"),
 			},
 			errors.New("name is required"),
+		},
+		{
+			"no kind change",
+			app{repositoryStore: repositorytest.New()},
+			args{
+				old: model.NewRepository(1, model.Github, "vibioh/ketchup").AddVersion(model.DefaultPattern, "1.0.0"),
+				new: model.NewRepository(1, model.Helm, "vibioh/ketchup"),
+			},
+			errors.New("kind cannot be changed"),
 		},
 		{
 			"version required for update",
