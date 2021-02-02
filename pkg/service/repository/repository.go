@@ -75,27 +75,27 @@ func (a app) GetOrCreate(ctx context.Context, name string, repositoryKind model.
 	}
 
 	if repo.ID == 0 {
-		return a.create(ctx, model.NewRepository(0, repositoryKind, sanitizedName).AddVersion(pattern, "0.0.0"))
+		return a.create(ctx, model.NewRepository(0, repositoryKind, sanitizedName).AddVersion(pattern, ""))
 	}
 
 	if repo.Versions[pattern] != "" {
 		return repo, nil
 	}
 
-	repo.Versions[pattern] = "0.0.0"
+	repo.Versions[pattern] = ""
 	versions, err := a.LatestVersions(repo)
 	if err != nil {
-		return model.NoneRepository, httpModel.WrapNotFound(fmt.Errorf("unable to get releases for `%s`: %w", repo.Name, err))
+		return model.NoneRepository, httpModel.WrapInternal(fmt.Errorf("unable to get releases for `%s`: %w", repo.Name, err))
 	}
 
 	version, ok := versions[pattern]
-	if !ok {
+	if !ok || version == semver.NoneVersion {
 		return model.NoneRepository, httpModel.WrapNotFound(fmt.Errorf("no release with pattern `%s` found for repository `%s`: %w", pattern, repo.Name, err))
 	}
 
 	repo.Versions[pattern] = version.Name
 	if err := a.repositoryStore.UpdateVersions(ctx, repo); err != nil {
-		return model.NoneRepository, httpModel.WrapNotFound(fmt.Errorf("unable to update repository versions `%s`: %w", repo.Name, err))
+		return model.NoneRepository, httpModel.WrapInternal(fmt.Errorf("unable to update repository versions `%s`: %w", repo.Name, err))
 	}
 
 	return repo, nil
