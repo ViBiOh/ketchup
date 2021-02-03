@@ -1,7 +1,7 @@
 # ketchup
 
 [![Build](https://github.com/ViBiOh/ketchup/workflows/Build/badge.svg)](https://github.com/ViBiOh/ketchup/actions)
-[![codecov](https://codecov.io/gh/ViBiOh/ketchup/branch/master/graph/badge.svg)](https://codecov.io/gh/ViBiOh/ketchup)
+[![codecov](https://codecov.io/gh/ViBiOh/ketchup/branch/main/graph/badge.svg)](https://codecov.io/gh/ViBiOh/ketchup)
 [![Go Report Card](https://goreportcard.com/badge/github.com/ViBiOh/ketchup)](https://goreportcard.com/report/github.com/ViBiOh/ketchup)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=ViBiOh_ketchup&metric=alert_status)](https://sonarcloud.io/dashboard?id=ViBiOh_ketchup)
 
@@ -30,7 +30,7 @@ Thanks to [FontAwesome](https://fontawesome.com) for icons.
 
 You need a [Github OAuth Token](https://github.com/settings/tokens), with no particular permission, for having a decent rate-limiting when querying Github. Configuration is done by passing `-githubToken` arg or setting equivalent environment variable (cf. [Usage](#usage) section)
 
-You need a Postgres database for storing your datas. I personnaly use free tier of [ElephantSQL](https://www.elephantsql.com). Once setup, you _have to_ to create schema with [Auth DDL](https://github.com/ViBiOh/auth/blob/master/ddl.sql) and [Ketchup DDL](sql/ddl.sql). Configuration is done by passing `-dbHost`, `-dbName`, `-dbUser`, `-dbPass` arg or setting equivalent environment variables (cf. [Usage](#usage) section).
+You need a Postgres database for storing your datas. I personnaly use free tier of [ElephantSQL](https://www.elephantsql.com). Once setup, you _have to_ to create schema with [Auth DDL](https://github.com/ViBiOh/auth/blob/main/ddl.sql) and [Ketchup DDL](sql/ddl.sql). Configuration is done by passing `-dbHost`, `-dbName`, `-dbUser`, `-dbPass` arg or setting equivalent environment variables (cf. [Usage](#usage) section).
 
 In order to send email, you must configure a [mailer](https://github.com/ViBiOh/mailer#getting-started). Configuration is done by passing `-mailerURL` arg or setting equivalent environment variable (cf. [Usage](#usage) section).
 
@@ -42,7 +42,7 @@ A Docker image is available for `amd64`, `arm` and `arm64` platforms on Docker H
 
 You can configure app by passing CLI args or environment variables (cf. [Usage](#usage) section). CLI override environment variables.
 
-You'll find a Kubernetes exemple in the [`infra/`](infra/) folder, using my [`app chart`](https://github.com/ViBiOh/charts/tree/master/app)
+You'll find a Kubernetes exemple in the [`infra/`](infra/) folder, using my [`app chart`](https://github.com/ViBiOh/charts/tree/main/app)
 
 ## Endpoints
 
