@@ -17,6 +17,22 @@ func TestCheck(t *testing.T) {
 		want      bool
 	}{
 		{
+			"too short",
+			safeParsePattern("tst"),
+			args{
+				version: safeParse("1.0.0"),
+			},
+			true,
+		},
+		{
+			"no veersion",
+			safeParsePattern("^latest"),
+			args{
+				version: safeParse("1.0.0"),
+			},
+			true,
+		},
+		{
 			"latest",
 			safeParsePattern("latest"),
 			args{

@@ -10,6 +10,7 @@ import (
 
 	httpModel "github.com/ViBiOh/httputils/v3/pkg/model"
 	"github.com/ViBiOh/ketchup/pkg/github/githubtest"
+	"github.com/ViBiOh/ketchup/pkg/helm/helmtest"
 	"github.com/ViBiOh/ketchup/pkg/model"
 	"github.com/ViBiOh/ketchup/pkg/semver"
 	"github.com/ViBiOh/ketchup/pkg/store/repository/repositorytest"
@@ -229,13 +230,13 @@ func TestGetOrCreate(t *testing.T) {
 		},
 		{
 			"update error",
-			New(repositorytest.New().SetGetByName(model.NewRepository(1, model.Github, "vibioh/ketchup"), nil).SetUpdateVersions(errors.New("failed")), githubtest.New().SetLatestVersions(map[string]semver.Version{
+			New(repositorytest.New().SetGetByName(model.NewRepository(1, model.Helm, "vibioh/ketchup"), nil).SetUpdateVersions(errors.New("failed")), githubtest.New(), helmtest.New().SetLatestVersions(map[string]semver.Version{
 				model.DefaultPattern: safeParse("1.0.0"),
-			}, nil), nil),
+			}, nil)),
 			args{
 				ctx:            context.Background(),
 				name:           "exist",
-				repositoryKind: model.Github,
+				repositoryKind: model.Helm,
 				pattern:        model.DefaultPattern,
 			},
 			model.NoneRepository,
