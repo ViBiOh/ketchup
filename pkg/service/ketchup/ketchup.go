@@ -112,7 +112,7 @@ func (a app) Update(ctx context.Context, item model.Ketchup) (model.Ketchup, err
 		if old.Pattern != item.Pattern {
 			repo, err := a.repositoryService.GetOrCreate(ctx, old.Repository.Name, old.Repository.Kind, item.Pattern)
 			if err != nil {
-				return fmt.Errorf("unable to get repository version: %s", err)
+				return httpModel.WrapInternal(fmt.Errorf("unable to get repository version: %w", err))
 			}
 
 			current.Repository = repo
