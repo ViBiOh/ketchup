@@ -22,6 +22,7 @@
         display: flex;
         flex: 1 1;
         flex-basis: auto;
+        flex-direction: column;
         justify-content: center;
       }
 
@@ -37,14 +38,16 @@
         <div class="ketchup center">
           <h2 class="header small ellipsis">{{ .Name }}</h2>
 
-          <div>
+          <div class="padding">
             <img class="icon" src="/svg/{{ .Kind.String }}?fill=silver" alt="{{ .Kind.String }} icon">
           </div>
 
           <div class="ketchup__version">
-            <span>
+            <p class="no-margin padding">
               <a href="{{ .URL }}">{{ .Versions.stable }}</a>
-            </span>
+            </p>
+
+            <pre class="no-margin">stable</pre>
           </div>
         </div>
       {{ end }}

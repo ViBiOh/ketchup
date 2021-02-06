@@ -153,7 +153,7 @@
       border: 1px solid var(--success);
       display: inline-flex;
       flex-direction: column;
-      height: 20rem;
+      min-height: 20rem;
     }
 
     .suggest {
@@ -204,17 +204,15 @@
       <div class="ketchup center {{ if ne .Version (index .Repository.Versions .Pattern) }}ketchup--outdated{{ end }}">
         <h2 class="header small ellipsis">{{ .Repository.Name }}</h2>
 
-        <div>
+        <div class="padding">
           <img class="icon" src="/svg/{{ .Repository.Kind.String }}?fill=silver" alt="{{ .Repository.Kind.String }} icon">
         </div>
 
-        {{ if .Semver }}
-          <p class="no-margin padding">
-            {{ .Semver }}
-          </p>
-        {{ end }}
-
         <div class="ketchup__version">
+          {{ if .Semver }}
+            <pre class="no-margin">{{ .Semver }}</pre>
+          {{ end }}
+
           <p class="no-margin padding">
             <span>
               <a class="{{ if ne .Version (index .Repository.Versions .Pattern) }}danger{{ else }}success{{ end }}" href="{{ .Repository.URL }}">{{ .Version }}</a>
