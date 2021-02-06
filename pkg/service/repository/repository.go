@@ -90,7 +90,7 @@ func (a app) GetOrCreate(ctx context.Context, name string, repositoryKind model.
 
 	version, ok := versions[pattern]
 	if !ok || version == semver.NoneVersion {
-		return model.NoneRepository, httpModel.WrapNotFound(fmt.Errorf("no release with pattern `%s` found for repository `%s`: %w", pattern, repo.Name, err))
+		return model.NoneRepository, httpModel.WrapNotFound(fmt.Errorf("no release with pattern `%s` found for repository `%s`", pattern, repo.Name))
 	}
 
 	repo.Versions[pattern] = version.Name

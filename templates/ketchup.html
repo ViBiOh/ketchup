@@ -24,15 +24,12 @@
 
         <p class="padding no-margin">
           <label for="create-name" class="block">Name:</label>
-          <input id="create-name" type="text" name="repository" placeholder="ViBiOh/ketchup" value="{{ .Version }}" class="full">
+          <input id="create-name" type="text" name="repository" placeholder="ViBiOh/ketchup" class="full">
         </p>
 
         <p class="padding no-margin">
           <label for="create-pattern" class="block">Pattern:</label>
-          <select id="create-pattern" name="pattern" class="full">
-            <option value="stable" selected>stable</option>
-            <option value="latest">latest</option>
-          </select>
+          <input id="create-pattern" type="text" name="pattern" placeholder="stable" class="full">
         </p>
 
         <p class="padding no-margin">
@@ -78,10 +75,7 @@
 
         <p class="padding no-margin">
           <label for="edit-pattern-{{ .Repository.ID }}" class="block">Pattern:</label>
-          <select id="edit-pattern-{{ .Repository.ID }}" name="pattern" class="full">
-            <option value="stable" {{ if eq .Pattern "stable" }}selected{{ end }}>stable</option>
-            <option value="latest" {{ if eq .Pattern "latest" }}selected{{ end }}>latest</option>
-          </select>
+          <input id="edit-pattern-{{ .Repository.ID }}" name="pattern" type="text" value="{{ .Pattern }}">
         </p>
 
         <p class="padding no-margin">

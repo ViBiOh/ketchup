@@ -456,6 +456,26 @@ func TestCheck(t *testing.T) {
 			nil,
 		},
 		{
+			"no pattern",
+			app{ketchupStore: ketchuptest.New()},
+			args{
+				ctx: model.StoreUser(context.Background(), model.NewUser(1, "", authModel.NewUser(0, ""))),
+				old: model.NoneKetchup,
+				new: model.NewKetchup("", "", model.NewRepository(1, 0, "")),
+			},
+			errors.New("pattern is required"),
+		},
+		{
+			"invalid pattern",
+			app{ketchupStore: ketchuptest.New()},
+			args{
+				ctx: model.StoreUser(context.Background(), model.NewUser(1, "", authModel.NewUser(0, ""))),
+				old: model.NoneKetchup,
+				new: model.NewKetchup("test", "", model.NewRepository(1, 0, "")),
+			},
+			errors.New("pattern is invalid"),
+		},
+		{
 			"no version",
 			app{ketchupStore: ketchuptest.New()},
 			args{

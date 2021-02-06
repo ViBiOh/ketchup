@@ -174,7 +174,7 @@ func TestParse(t *testing.T) {
 		wantErr   error
 	}{
 		{
-			"no a semver",
+			"not a semver",
 			args{
 				version: "release.r60.1",
 			},
@@ -182,7 +182,7 @@ func TestParse(t *testing.T) {
 			errors.New("unable to parse version"),
 		},
 		{
-			"no a semver",
+			"not a semver too many",
 			args{
 				version: "v2.2.1.0-0.3.rc3",
 			},
@@ -230,11 +230,19 @@ func TestParse(t *testing.T) {
 			nil,
 		},
 		{
-			"major and minor only with suffix",
+			"major and minor only with release",
+			args{
+				version: "v1.25-xyz",
+			},
+			Version{"v1.25-xyz", 1, 25, 0, 0},
+			nil,
+		},
+		{
+			"major and minor only with build",
 			args{
 				version: "v1.25+xyz",
 			},
-			Version{"v1.25+xyz", 1, 25, 0, 0},
+			Version{"v1.25+xyz", 1, 25, 0, -1},
 			nil,
 		},
 		{
@@ -248,9 +256,9 @@ func TestParse(t *testing.T) {
 		{
 			"with sha1",
 			args{
-				version: "v1.2.3+abcdef123456",
+				version: "v1.2.3-abcdef123456",
 			},
-			Version{"v1.2.3+abcdef123456", 1, 2, 3, 0},
+			Version{"v1.2.3-abcdef123456", 1, 2, 3, 0},
 			nil,
 		},
 	}

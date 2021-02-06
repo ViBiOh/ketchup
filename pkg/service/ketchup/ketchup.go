@@ -161,6 +161,8 @@ func (a app) check(ctx context.Context, old, new model.Ketchup) error {
 
 	if len(strings.TrimSpace(new.Pattern)) == 0 {
 		output = append(output, errors.New("pattern is required"))
+	} else if _, err := semver.ParsePattern(new.Pattern); err != nil {
+		output = append(output, fmt.Errorf("pattern is invalid: %s", err))
 	}
 
 	if len(strings.TrimSpace(new.Version)) == 0 {
