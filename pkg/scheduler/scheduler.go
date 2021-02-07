@@ -156,12 +156,17 @@ func (a app) checkRepositoryVersion(repo model.Repository) []model.Release {
 			continue
 		}
 
+		compiledPattern, err := semver.ParsePattern(pattern)
+		if err != nil {
+			logger.Error("unable to parse pattern: %s", err)
+		}
+
 		repositoryVersion, err := semver.Parse(repositoryVersionName)
 		if err != nil {
 			continue
 		}
 
-		if !version.IsGreater(repositoryVersion) {
+		if !compiledPattern.Check(version) || !version.IsGreater(repositoryVersion) {
 			continue
 		}
 

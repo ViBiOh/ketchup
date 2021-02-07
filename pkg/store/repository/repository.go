@@ -22,6 +22,7 @@ type App interface {
 	Create(ctx context.Context, o model.Repository) (uint64, error)
 	UpdateVersions(ctx context.Context, o model.Repository) error
 	DeleteUnused(ctx context.Context) error
+	DeleteUnusedVersions(ctx context.Context) error
 }
 
 type app struct {
@@ -232,4 +233,21 @@ WHERE
 
 func (a app) DeleteUnused(ctx context.Context) error {
 	return db.Exec(ctx, deleteQuery)
+}
+
+const deleteVersionsQuery = `
+DELETE FROM
+  ketchup.repository_version r
+WHERE NOT EXISTS (
+    SELECT
+    FROM
+      ketchup.ketchup k
+    WHERE
+      r.repository_id = k.repository_id
+      AND r.pattern = k.pattern
+  )
+`
+
+func (a app) DeleteUnusedVersions(ctx context.Context) error {
+	return db.Exec(ctx, deleteVersionsQuery)
 }

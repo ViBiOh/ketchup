@@ -157,7 +157,11 @@ func (a app) Update(ctx context.Context, item model.Repository) error {
 func (a app) Clean(ctx context.Context) error {
 	return a.repositoryStore.DoAtomic(ctx, func(ctx context.Context) error {
 		if err := a.repositoryStore.DeleteUnused(ctx); err != nil {
-			return httpModel.WrapInternal(fmt.Errorf("unable to delete: %w", err))
+			return httpModel.WrapInternal(fmt.Errorf("unable to delete unused repository: %w", err))
+		}
+
+		if err := a.repositoryStore.DeleteUnusedVersions(ctx); err != nil {
+			return httpModel.WrapInternal(fmt.Errorf("unable to delete unused repository versions: %w", err))
 		}
 
 		return nil
