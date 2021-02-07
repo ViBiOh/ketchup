@@ -28,7 +28,11 @@
         </p>
 
         <p class="padding no-margin">
-          <label for="create-pattern" class="block">Pattern:</label>
+          <label for="create-pattern" class="block">Pattern: <img class="icon icon-small" title="`latest`: latest version, beta included.
+`stable`: latest version without beta.
+`^1.0`: latest with fixed major version.
+`~1.1`: latest with fixed major and minor version.
+`^1.0-0`: include beta (works also for `~`)." src="/svg/question?fill=silver" alt="question icon"></label>
           <input id="create-pattern" type="text" name="pattern" placeholder="stable" class="full">
         </p>
 
@@ -74,7 +78,11 @@
         <input type="hidden" name="method" value="PUT">
 
         <p class="padding no-margin">
-          <label for="edit-pattern-{{ .Repository.ID }}" class="block">Pattern:</label>
+          <label for="edit-pattern-{{ .Repository.ID }}" class="block">Pattern: <img class="icon icon-small" title="`latest`: latest version, beta included.
+`stable`: latest version without beta.
+`^1.0`: latest with fixed major version.
+`~1.1`: latest with fixed major and minor version.
+`^1.0-0`: include beta (works also for `~`)." src="/svg/question?fill=silver" alt="question icon"></label>
           <input id="edit-pattern-{{ .Repository.ID }}" name="pattern" type="text" value="{{ .Pattern }}">
         </p>
 
