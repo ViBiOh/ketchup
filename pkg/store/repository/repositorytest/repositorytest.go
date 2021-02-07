@@ -32,6 +32,8 @@ type App struct {
 	updateVersionsErr error
 
 	deleteUnusedErr error
+
+	deleteUnusedVersionsErr error
 }
 
 // New creates mock instance
@@ -101,6 +103,13 @@ func (a *App) SetDeleteUnused(err error) *App {
 	return a
 }
 
+// SetDeleteUnusedVersions mocks
+func (a *App) SetDeleteUnusedVersions(err error) *App {
+	a.deleteUnusedVersionsErr = err
+
+	return a
+}
+
 // DoAtomic mocks
 func (a *App) DoAtomic(ctx context.Context, action func(context.Context) error) error {
 	if ctx == context.TODO() {
@@ -143,4 +152,9 @@ func (a *App) UpdateVersions(_ context.Context, o model.Repository) error {
 // DeleteUnused mocks
 func (a *App) DeleteUnused(_ context.Context) error {
 	return a.deleteUnusedErr
+}
+
+// DeleteUnusedVersions mocks
+func (a *App) DeleteUnusedVersions(_ context.Context) error {
+	return a.deleteUnusedVersionsErr
 }

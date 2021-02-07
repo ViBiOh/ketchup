@@ -463,6 +463,14 @@ func TestClean(t *testing.T) {
 			httpModel.ErrInternalError,
 		},
 		{
+			"error versions",
+			New(repositorytest.New().SetDeleteUnusedVersions(errors.New("failed")), nil, nil),
+			args{
+				ctx: context.Background(),
+			},
+			httpModel.ErrInternalError,
+		},
+		{
 			"success",
 			New(repositorytest.New(), nil, nil),
 			args{

@@ -560,3 +560,51 @@ func TestDeleteUnused(t *testing.T) {
 		})
 	}
 }
+
+func TestDeleteUnusedVersions(t *testing.T) {
+	var cases = []struct {
+		intention string
+		wantErr   error
+	}{
+		{
+			"simple",
+			nil,
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.intention, func(t *testing.T) {
+			mockDb, mock, err := sqlmock.New()
+			if err != nil {
+				t.Fatalf("unable to create mock database: %s", err)
+			}
+			defer mockDb.Close()
+
+			ctx := context.Background()
+			mock.ExpectBegin()
+			tx, err := mockDb.Begin()
+			if err != nil {
+				t.Errorf("unable to create tx: %s", err)
+			}
+			ctx = db.StoreTx(ctx, tx)
+
+			mock.ExpectExec("DELETE FROM ketchup.repository_version r WHERE NOT EXISTS").WillReturnResult(sqlmock.NewResult(0, 1))
+
+			gotErr := New(mockDb).DeleteUnusedVersions(ctx)
+
+			failed := false
+
+			if !errors.Is(gotErr, tc.wantErr) {
+				failed = true
+			}
+
+			if failed {
+				t.Errorf("DeleteUnusedVersions() = `%s`, want `%s`", gotErr, tc.wantErr)
+			}
+
+			if err := mock.ExpectationsWereMet(); err != nil {
+				t.Errorf("sqlmock unfilled expectations: %s", err)
+			}
+		})
+	}
+}
