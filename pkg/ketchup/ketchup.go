@@ -2,7 +2,6 @@ package ketchup
 
 import (
 	"html/template"
-	"math/rand"
 	"net/http"
 	"strings"
 	"time"
@@ -35,8 +34,6 @@ type App interface {
 }
 
 type app struct {
-	rand *rand.Rand
-
 	rendererApp       renderer.App
 	ketchupService    ketchup.App
 	userService       user.App
@@ -47,7 +44,6 @@ type app struct {
 // New creates new App from Config
 func New(rendererApp renderer.App, ketchupService ketchup.App, userService user.App, repositoryService repository.App) App {
 	return app{
-		rand:       rand.New(rand.NewSource(time.Now().UnixNano())),
 		tokenStore: NewTokenStore(),
 
 		rendererApp:       rendererApp,
