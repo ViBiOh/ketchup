@@ -1,10 +1,12 @@
 package ketchup
 
 import (
+	"crypto/rand"
 	"fmt"
-	"math/rand"
 	"sync"
 	"time"
+
+	"github.com/ViBiOh/httputils/v3/pkg/logger"
 )
 
 // TokenStore stores single usage token
@@ -16,15 +18,12 @@ type TokenStore interface {
 }
 
 type tokenStore struct {
-	rand  *rand.Rand
 	store sync.Map
 }
 
 // NewTokenStore creates a new token store
 func NewTokenStore() TokenStore {
-	return &tokenStore{
-		rand: rand.New(rand.NewSource(time.Now().UnixNano())),
-	}
+	return &tokenStore{}
 }
 
 type mapValue struct {
@@ -79,7 +78,10 @@ func (t *tokenStore) Clean(_ time.Time) error {
 
 func (t *tokenStore) uuid() string {
 	raw := make([]byte, 16)
-	t.rand.Read(raw)
+	if _, err := rand.Read(raw); err != nil {
+		logger.Fatal(err)
+		return ""
+	}
 
 	raw[8] = raw[8]&^0xc0 | 0x80
 	raw[6] = raw[6]&^0xf0 | 0x40
