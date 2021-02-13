@@ -12,6 +12,10 @@ import (
 	"github.com/ViBiOh/ketchup/pkg/model"
 )
 
+var (
+	testEmail = "nobody@localhost"
+)
+
 func TestGetByEmail(t *testing.T) {
 	type args struct {
 		email string
@@ -26,15 +30,15 @@ func TestGetByEmail(t *testing.T) {
 		{
 			"simple",
 			args{
-				email: "nobody@localhost",
+				email: testEmail,
 			},
-			model.NewUser(1, "nobody@localhost", authModel.NewUser(1, "")),
+			model.NewUser(1, testEmail, authModel.NewUser(1, "")),
 			nil,
 		},
 		{
 			"no rows",
 			args{
-				email: "nobody@localhost",
+				email: testEmail,
 			},
 			model.NoneUser,
 			nil,
@@ -50,10 +54,10 @@ func TestGetByEmail(t *testing.T) {
 			defer mockDb.Close()
 
 			rows := sqlmock.NewRows([]string{"id", "email", "login_id"})
-			mock.ExpectQuery("SELECT id, email, login_id FROM ketchup.user").WithArgs("nobody@localhost").WillReturnRows(rows)
+			mock.ExpectQuery("SELECT id, email, login_id FROM ketchup.user").WithArgs(testEmail).WillReturnRows(rows)
 
 			if tc.intention != "no rows" {
-				rows.AddRow(1, "nobody@localhost", 1)
+				rows.AddRow(1, testEmail, 1)
 			}
 
 			got, gotErr := New(mockDb).GetByEmail(context.Background(), tc.args.email)
@@ -93,7 +97,7 @@ func TestGetByLoginID(t *testing.T) {
 			args{
 				loginID: 2,
 			},
-			model.NewUser(1, "nobody@localhost", authModel.NewUser(2, "")),
+			model.NewUser(1, testEmail, authModel.NewUser(2, "")),
 			nil,
 		},
 		{
@@ -118,7 +122,7 @@ func TestGetByLoginID(t *testing.T) {
 			mock.ExpectQuery("SELECT id, email, login_id FROM ketchup.user").WithArgs(2).WillReturnRows(rows)
 
 			if tc.intention != "no rows" {
-				rows.AddRow(1, "nobody@localhost", 2)
+				rows.AddRow(1, testEmail, 2)
 			}
 
 			got, gotErr := New(mockDb).GetByLoginID(context.Background(), tc.args.loginID)
@@ -156,7 +160,7 @@ func TestCreate(t *testing.T) {
 		{
 			"simple",
 			args{
-				o: model.NewUser(0, "nobody@localhost", authModel.User{
+				o: model.NewUser(0, testEmail, authModel.User{
 					ID:       1,
 					Login:    "vibioh",
 					Password: "secret",
@@ -184,7 +188,7 @@ func TestCreate(t *testing.T) {
 				ctx = db.StoreTx(ctx, tx)
 			}
 
-			mock.ExpectQuery("INSERT INTO ketchup.user").WithArgs("nobody@localhost", 1).WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(1))
+			mock.ExpectQuery("INSERT INTO ketchup.user").WithArgs(testEmail, 1).WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(1))
 
 			got, gotErr := New(mockDb).Create(ctx, tc.args.o)
 

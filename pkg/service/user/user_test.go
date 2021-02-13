@@ -15,6 +15,8 @@ import (
 )
 
 var (
+	testEmail = "nobody@localhost"
+
 	errAtomicStart = errors.New("invalid context")
 	errAtomicEnd   = errors.New("invalid context")
 )
@@ -56,11 +58,11 @@ func TestStoreInContext(t *testing.T) {
 		},
 		{
 			"valid",
-			New(usertest.New().SetGetByLoginID(model.NewUser(1, "nobody@localhost", authModel.NoneUser), nil), nil),
+			New(usertest.New().SetGetByLoginID(model.NewUser(1, testEmail, authModel.NoneUser), nil), nil),
 			args{
 				ctx: authModel.StoreUser(context.Background(), authModel.NewUser(1, "")),
 			},
-			model.NewUser(1, "nobody@localhost", authModel.NewUser(0, "")),
+			model.NewUser(1, testEmail, authModel.NewUser(0, "")),
 		},
 	}
 
@@ -101,7 +103,7 @@ func TestCreate(t *testing.T) {
 			New(usertest.New(), servicetest.New().SetCheck(errors.New("failed"))),
 			args{
 				ctx:  context.TODO(),
-				item: model.NewUser(0, "nobody@localhost", authModel.NewUser(0, "")),
+				item: model.NewUser(0, testEmail, authModel.NewUser(0, "")),
 			},
 			model.NoneUser,
 			httpModel.ErrInvalid,
@@ -111,7 +113,7 @@ func TestCreate(t *testing.T) {
 			New(usertest.New().SetGetByEmail(model.NoneUser, nil).SetDoAtomic(errAtomicStart), servicetest.New()),
 			args{
 				ctx:  context.TODO(),
-				item: model.NewUser(1, "nobody@localhost", authModel.NewUser(1, "")),
+				item: model.NewUser(1, testEmail, authModel.NewUser(1, "")),
 			},
 			model.NoneUser,
 			errAtomicStart,
@@ -121,7 +123,7 @@ func TestCreate(t *testing.T) {
 			New(usertest.New().SetGetByEmail(model.NoneUser, nil), servicetest.New().SetCreate(authModel.NoneUser, errors.New("failed"))),
 			args{
 				ctx:  context.Background(),
-				item: model.NewUser(1, "nobody@localhost", authModel.NewUser(1, "")),
+				item: model.NewUser(1, testEmail, authModel.NewUser(1, "")),
 			},
 			model.NoneUser,
 			httpModel.ErrInternalError,
@@ -131,7 +133,7 @@ func TestCreate(t *testing.T) {
 			New(usertest.New().SetGetByEmail(model.NoneUser, nil).SetCreate(0, errors.New("failed")), servicetest.New()),
 			args{
 				ctx:  context.Background(),
-				item: model.NewUser(2, "nobody@localhost", authModel.NewUser(2, "")),
+				item: model.NewUser(2, testEmail, authModel.NewUser(2, "")),
 			},
 			model.NoneUser,
 			httpModel.ErrInternalError,
@@ -141,9 +143,9 @@ func TestCreate(t *testing.T) {
 			New(usertest.New().SetGetByEmail(model.NoneUser, nil).SetCreate(2, nil), servicetest.New().SetCreate(authModel.NewUser(2, "admin"), nil)),
 			args{
 				ctx:  context.Background(),
-				item: model.NewUser(2, "nobody@localhost", authModel.NewUser(2, "")),
+				item: model.NewUser(2, testEmail, authModel.NewUser(2, "")),
 			},
-			model.NewUser(2, "nobody@localhost", authModel.NewUser(2, "admin")),
+			model.NewUser(2, testEmail, authModel.NewUser(2, "admin")),
 			nil,
 		},
 	}
@@ -202,16 +204,16 @@ func TestCheck(t *testing.T) {
 			app{userStore: usertest.New().SetGetByEmail(model.NoneUser, errors.New("failed"))},
 			args{
 				ctx: context.Background(),
-				new: model.NewUser(1, "nobody@localhost", authModel.NewUser(1, "")),
+				new: model.NewUser(1, testEmail, authModel.NewUser(1, "")),
 			},
 			errors.New("unable to check if email already exists"),
 		},
 		{
 			"already used",
-			app{userStore: usertest.New().SetGetByEmail(model.NewUser(1, "nobody@localhost", authModel.NewUser(1, "")), nil)},
+			app{userStore: usertest.New().SetGetByEmail(model.NewUser(1, testEmail, authModel.NewUser(1, "")), nil)},
 			args{
 				ctx: context.Background(),
-				new: model.NewUser(1, "nobody@localhost", authModel.NewUser(1, "")),
+				new: model.NewUser(1, testEmail, authModel.NewUser(1, "")),
 			},
 			errors.New("email already used"),
 		},
