@@ -14,6 +14,11 @@ import (
 	"github.com/lib/pq"
 )
 
+var (
+	ketchupRepository = "vibioh/ketchup"
+	viwsRepository    = "vibioh/viws"
+)
+
 func TestList(t *testing.T) {
 	type args struct {
 		page     uint
@@ -34,8 +39,8 @@ func TestList(t *testing.T) {
 				pageSize: 20,
 			},
 			[]model.Repository{
-				model.NewRepository(1, model.Github, "vibioh/ketchup").AddVersion(model.DefaultPattern, "1.0.0"),
-				model.NewRepository(2, model.Github, "vibioh/viws").AddVersion(model.DefaultPattern, "1.2.3"),
+				model.NewRepository(1, model.Github, ketchupRepository).AddVersion(model.DefaultPattern, "1.0.0"),
+				model.NewRepository(2, model.Github, viwsRepository).AddVersion(model.DefaultPattern, "1.2.3"),
 			},
 			2,
 			nil,
@@ -92,7 +97,7 @@ func TestList(t *testing.T) {
 				).WillReturnRows(
 					sqlmock.NewRows([]string{"repository_id", "pattern", "version"}).AddRow(1, model.DefaultPattern, "1.0.0").AddRow(2, model.DefaultPattern, "1.2.3"),
 				)
-				rows.AddRow(1, "vibioh/ketchup", "github", 2).AddRow(2, "vibioh/viws", "github", 2)
+				rows.AddRow(1, ketchupRepository, "github", 2).AddRow(2, viwsRepository, "github", 2)
 
 			case "timeout":
 				savedSQLTimeout := db.SQLTimeout
@@ -103,10 +108,10 @@ func TestList(t *testing.T) {
 				expectedQuery.WillDelayFor(db.SQLTimeout * 2)
 
 			case "invalid rows":
-				rows.AddRow("a", "vibioh/ketchup", "github", 2)
+				rows.AddRow("a", ketchupRepository, "github", 2)
 
 			case "invalid kind":
-				rows.AddRow(1, "vibioh/viws", "wrong", 1)
+				rows.AddRow(1, viwsRepository, "wrong", 1)
 			}
 
 			got, gotCount, gotErr := New(mockDb).List(context.Background(), tc.args.page, tc.args.pageSize)
@@ -154,8 +159,8 @@ func TestSuggest(t *testing.T) {
 				count:     2,
 			},
 			[]model.Repository{
-				model.NewRepository(1, model.Github, "vibioh/ketchup").AddVersion(model.DefaultPattern, "1.0.0"),
-				model.NewRepository(2, model.Helm, "vibioh/viws").AddVersion(model.DefaultPattern, "1.2.3"),
+				model.NewRepository(1, model.Github, ketchupRepository).AddVersion(model.DefaultPattern, "1.0.0"),
+				model.NewRepository(2, model.Helm, viwsRepository).AddVersion(model.DefaultPattern, "1.2.3"),
 			},
 			nil,
 		},
@@ -171,7 +176,7 @@ func TestSuggest(t *testing.T) {
 
 			rows := sqlmock.NewRows([]string{"id", "name", "kind", "full_count"})
 			mock.ExpectQuery("SELECT id, name, kind, \\( SELECT COUNT\\(1\\) FROM ketchup.ketchup WHERE repository_id = id \\) AS count FROM ketchup.repository").WithArgs(tc.args.count, pq.Array(tc.args.ignoreIds)).WillReturnRows(rows)
-			rows.AddRow(1, "vibioh/ketchup", "github", 2).AddRow(2, "vibioh/viws", "helm", 2)
+			rows.AddRow(1, ketchupRepository, "github", 2).AddRow(2, viwsRepository, "helm", 2)
 
 			mock.ExpectQuery(
 				"SELECT repository_id, pattern, version FROM ketchup.repository_version WHERE repository_id = ANY",
@@ -224,7 +229,7 @@ func TestGet(t *testing.T) {
 				id: 1,
 			},
 			"SELECT id, name, kind FROM ketchup.repository WHERE id =",
-			model.NewRepository(1, model.Helm, "vibioh/ketchup").AddVersion(model.DefaultPattern, "1.0.0"),
+			model.NewRepository(1, model.Helm, ketchupRepository).AddVersion(model.DefaultPattern, "1.0.0"),
 			nil,
 		},
 		{
@@ -234,7 +239,7 @@ func TestGet(t *testing.T) {
 				forUpdate: true,
 			},
 			"SELECT id, name, kind FROM ketchup.repository WHERE id = .+ FOR UPDATE",
-			model.NewRepository(1, model.Helm, "vibioh/ketchup").AddVersion(model.DefaultPattern, "1.0.0"),
+			model.NewRepository(1, model.Helm, ketchupRepository).AddVersion(model.DefaultPattern, "1.0.0"),
 			nil,
 		},
 		{
@@ -264,7 +269,7 @@ func TestGet(t *testing.T) {
 				fallthrough
 
 			case "for update":
-				rows.AddRow(1, "vibioh/ketchup", "helm")
+				rows.AddRow(1, ketchupRepository, "helm")
 
 				mock.ExpectQuery(
 					"SELECT repository_id, pattern, version FROM ketchup.repository_version WHERE repository_id = ANY",
@@ -311,15 +316,15 @@ func TestGetByName(t *testing.T) {
 		{
 			"simple",
 			args{
-				name: "vibioh/ketchup",
+				name: ketchupRepository,
 			},
-			model.NewRepository(1, model.Github, "vibioh/ketchup").AddVersion(model.DefaultPattern, "1.0.0"),
+			model.NewRepository(1, model.Github, ketchupRepository).AddVersion(model.DefaultPattern, "1.0.0"),
 			nil,
 		},
 		{
 			"no rows",
 			args{
-				name: "vibioh/ketchup",
+				name: ketchupRepository,
 			},
 			model.NoneRepository,
 			nil,
@@ -327,7 +332,7 @@ func TestGetByName(t *testing.T) {
 		{
 			"invalid kind",
 			args{
-				name: "vibioh/ketchup",
+				name: ketchupRepository,
 			},
 			model.NoneRepository,
 			errors.New("invalid value `wrong` for repository kind"),
@@ -343,11 +348,11 @@ func TestGetByName(t *testing.T) {
 			defer mockDb.Close()
 
 			rows := sqlmock.NewRows([]string{"id", "name", "kind"})
-			mock.ExpectQuery("SELECT id, name, kind FROM ketchup.repository WHERE name =").WithArgs("vibioh/ketchup", "github").WillReturnRows(rows)
+			mock.ExpectQuery("SELECT id, name, kind FROM ketchup.repository WHERE name =").WithArgs(ketchupRepository, "github").WillReturnRows(rows)
 
 			switch tc.intention {
 			case "simple":
-				rows.AddRow(1, "vibioh/ketchup", "github")
+				rows.AddRow(1, ketchupRepository, "github")
 				mock.ExpectQuery(
 					"SELECT repository_id, pattern, version FROM ketchup.repository_version WHERE repository_id = ANY",
 				).WithArgs(
@@ -357,7 +362,7 @@ func TestGetByName(t *testing.T) {
 				)
 
 			case "invalid kind":
-				rows.AddRow(1, "vibioh/ketchup", "wrong")
+				rows.AddRow(1, ketchupRepository, "wrong")
 			}
 
 			got, gotErr := New(mockDb).GetByName(context.Background(), tc.args.name, tc.args.repositoryKind)
@@ -399,7 +404,7 @@ func TestCreate(t *testing.T) {
 		{
 			"error lock",
 			args{
-				o: model.NewRepository(0, model.Github, "vibioh/ketchup").AddVersion(model.DefaultPattern, "1.0.0"),
+				o: model.NewRepository(0, model.Github, ketchupRepository).AddVersion(model.DefaultPattern, "1.0.0"),
 			},
 			0,
 			errors.New("unable to obtain lock"),
@@ -407,7 +412,7 @@ func TestCreate(t *testing.T) {
 		{
 			"error get",
 			args{
-				o: model.NewRepository(0, model.Github, "vibioh/ketchup").AddVersion(model.DefaultPattern, "1.0.0"),
+				o: model.NewRepository(0, model.Github, ketchupRepository).AddVersion(model.DefaultPattern, "1.0.0"),
 			},
 			0,
 			errors.New("unable to read"),
@@ -415,7 +420,7 @@ func TestCreate(t *testing.T) {
 		{
 			"found get",
 			args{
-				o: model.NewRepository(0, model.Github, "vibioh/ketchup").AddVersion(model.DefaultPattern, "1.0.0"),
+				o: model.NewRepository(0, model.Github, ketchupRepository).AddVersion(model.DefaultPattern, "1.0.0"),
 			},
 			0,
 			errors.New("repository already exists with name"),
@@ -423,7 +428,7 @@ func TestCreate(t *testing.T) {
 		{
 			"error create",
 			args{
-				o: model.NewRepository(0, model.Github, "vibioh/ketchup").AddVersion(model.DefaultPattern, "1.0.0"),
+				o: model.NewRepository(0, model.Github, ketchupRepository).AddVersion(model.DefaultPattern, "1.0.0"),
 			},
 			0,
 			errors.New("failed"),
@@ -431,7 +436,7 @@ func TestCreate(t *testing.T) {
 		{
 			"success",
 			args{
-				o: model.NewRepository(0, model.Github, "vibioh/ketchup").AddVersion(model.DefaultPattern, "1.0.0"),
+				o: model.NewRepository(0, model.Github, ketchupRepository).AddVersion(model.DefaultPattern, "1.0.0"),
 			},
 			1,
 			nil,
@@ -455,6 +460,7 @@ func TestCreate(t *testing.T) {
 			ctx = db.StoreTx(ctx, tx)
 
 			lockQuery := mock.ExpectExec("LOCK ketchup.repository IN SHARE ROW EXCLUSIVE MODE")
+			selectQueryString := "SELECT id, name, kind FROM ketchup.repository WHERE name = .+ AND kind = .+"
 
 			switch tc.intention {
 			case "error lock":
@@ -462,11 +468,11 @@ func TestCreate(t *testing.T) {
 
 			case "error get":
 				lockQuery.WillReturnResult(sqlmock.NewResult(0, 0))
-				mock.ExpectQuery("SELECT id, name, kind FROM ketchup.repository WHERE name = .+ AND kind = .+").WithArgs("vibioh/ketchup", tc.args.o.Kind.String()).WillReturnError(errors.New("unable to read"))
+				mock.ExpectQuery(selectQueryString).WithArgs(ketchupRepository, tc.args.o.Kind.String()).WillReturnError(errors.New("unable to read"))
 
 			case "found get":
 				lockQuery.WillReturnResult(sqlmock.NewResult(0, 0))
-				mock.ExpectQuery("SELECT id, name, kind FROM ketchup.repository WHERE name = .+ AND kind = .+").WithArgs("vibioh/ketchup", "github").WillReturnRows(sqlmock.NewRows([]string{"id", "name", "kind"}).AddRow(1, "vibioh/ketchup", "github"))
+				mock.ExpectQuery(selectQueryString).WithArgs(ketchupRepository, "github").WillReturnRows(sqlmock.NewRows([]string{"id", "name", "kind"}).AddRow(1, ketchupRepository, "github"))
 				mock.ExpectQuery(
 					"SELECT repository_id, pattern, version FROM ketchup.repository_version WHERE repository_id = ANY",
 				).WithArgs(
@@ -477,13 +483,13 @@ func TestCreate(t *testing.T) {
 
 			case "error create":
 				lockQuery.WillReturnResult(sqlmock.NewResult(0, 0))
-				mock.ExpectQuery("SELECT id, name, kind FROM ketchup.repository WHERE name = .+ AND kind = .+").WithArgs("vibioh/ketchup", tc.args.o.Kind.String()).WillReturnRows(sqlmock.NewRows([]string{"id", "name", "kind"}))
-				mock.ExpectQuery("INSERT INTO ketchup.repository").WithArgs("vibioh/ketchup", "github").WillReturnError(errors.New("failed"))
+				mock.ExpectQuery(selectQueryString).WithArgs(ketchupRepository, tc.args.o.Kind.String()).WillReturnRows(sqlmock.NewRows([]string{"id", "name", "kind"}))
+				mock.ExpectQuery("INSERT INTO ketchup.repository").WithArgs(ketchupRepository, "github").WillReturnError(errors.New("failed"))
 
 			case "success":
 				lockQuery.WillReturnResult(sqlmock.NewResult(0, 0))
-				mock.ExpectQuery("SELECT id, name, kind FROM ketchup.repository WHERE name = .+ AND kind = .+").WithArgs("vibioh/ketchup", tc.args.o.Kind.String()).WillReturnRows(sqlmock.NewRows([]string{"id", "name", "kind"}))
-				mock.ExpectQuery("INSERT INTO ketchup.repository").WithArgs("vibioh/ketchup", "github").WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(1))
+				mock.ExpectQuery(selectQueryString).WithArgs(ketchupRepository, tc.args.o.Kind.String()).WillReturnRows(sqlmock.NewRows([]string{"id", "name", "kind"}))
+				mock.ExpectQuery("INSERT INTO ketchup.repository").WithArgs(ketchupRepository, "github").WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(1))
 				mock.ExpectQuery("SELECT pattern, version FROM ketchup.repository_version WHERE repository_id = .+").WithArgs(1).WillReturnRows(sqlmock.NewRows([]string{"pattern", "version"}))
 				mock.ExpectExec("INSERT INTO ketchup.repository_version").WithArgs(1, model.DefaultPattern, "1.0.0").WillReturnResult(sqlmock.NewResult(0, 1))
 			}

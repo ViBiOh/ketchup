@@ -18,6 +18,7 @@ import (
 )
 
 var (
+	testEmail             = "nobody@localhost"
 	repositoryName        = "vibioh/ketchup"
 	repositoryVersion     = "1.0.0"
 	repositoryBetaVersion = "1.0.0-beta1"
@@ -292,12 +293,12 @@ func TestGetKetchupToNotify(t *testing.T) {
 				{
 					Pattern:    model.DefaultPattern,
 					Repository: model.NewRepository(1, model.Github, repositoryName).AddVersion(model.DefaultPattern, repositoryVersion).AddVersion("latest", repositoryBetaVersion),
-					User:       model.NewUser(1, "nobody@localhost", authModel.NewUser(0, "")),
+					User:       model.NewUser(1, testEmail, authModel.NewUser(0, "")),
 				},
 				{
 					Pattern:    "latest",
 					Repository: model.NewRepository(1, model.Github, repositoryName).AddVersion(model.DefaultPattern, repositoryVersion).AddVersion("latest", repositoryBetaVersion),
-					User:       model.NewUser(1, "nobody@localhost", authModel.NewUser(0, "")),
+					User:       model.NewUser(1, testEmail, authModel.NewUser(0, "")),
 				},
 				{
 					Pattern:    model.DefaultPattern,
@@ -332,7 +333,7 @@ func TestGetKetchupToNotify(t *testing.T) {
 					},
 					Repository: model.NewRepository(1, model.Github, repositoryName).AddVersion(model.DefaultPattern, repositoryVersion).AddVersion("latest", repositoryBetaVersion),
 				}},
-				{ID: 1, Email: "nobody@localhost"}: {{
+				{ID: 1, Email: testEmail}: {{
 					Pattern: "latest",
 					Version: semver.Version{
 						Name: "1.1.0-beta",
@@ -402,7 +403,7 @@ func TestSendNotification(t *testing.T) {
 				ketchupToNotify: map[model.User][]model.Release{
 					{
 						ID:    1,
-						Email: "nobody@localhost",
+						Email: testEmail,
 					}: {
 						{
 							Repository: model.NewRepository(1, model.Github, repositoryName),
@@ -425,7 +426,7 @@ func TestSendNotification(t *testing.T) {
 				ketchupToNotify: map[model.User][]model.Release{
 					{
 						ID:    1,
-						Email: "nobody@localhost",
+						Email: testEmail,
 					}: {
 						{
 							Repository: model.NewRepository(1, model.Github, repositoryName),
@@ -448,7 +449,7 @@ func TestSendNotification(t *testing.T) {
 				ketchupToNotify: map[model.User][]model.Release{
 					{
 						ID:    1,
-						Email: "nobody@localhost",
+						Email: testEmail,
 					}: {
 						{
 							Repository: model.NewRepository(1, model.Github, repositoryName),
@@ -471,7 +472,7 @@ func TestSendNotification(t *testing.T) {
 				ketchupToNotify: map[model.User][]model.Release{
 					{
 						ID:    1,
-						Email: "nobody@localhost",
+						Email: testEmail,
 					}: {
 						{
 							Repository: model.NewRepository(1, model.Github, repositoryName),

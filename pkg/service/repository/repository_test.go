@@ -17,6 +17,9 @@ import (
 )
 
 var (
+	ketchupRepository = "vibioh/ketchup"
+	viwsRepository    = "vibioh/viws"
+
 	errAtomicStart = errors.New("invalid context")
 	errAtomicEnd   = errors.New("invalid context")
 )
@@ -46,15 +49,15 @@ func TestList(t *testing.T) {
 		{
 			"simple",
 			New(repositorytest.New().SetList([]model.Repository{
-				model.NewRepository(1, model.Github, "vibioh/ketchup").AddVersion(model.DefaultPattern, "1.0.0"),
-				model.NewRepository(2, model.Github, "vibioh/viws").AddVersion(model.DefaultPattern, "1.2.3"),
+				model.NewRepository(1, model.Github, ketchupRepository).AddVersion(model.DefaultPattern, "1.0.0"),
+				model.NewRepository(2, model.Github, viwsRepository).AddVersion(model.DefaultPattern, "1.2.3"),
 			}, 2, nil), nil, nil),
 			args{
 				page: 1,
 			},
 			[]model.Repository{
-				model.NewRepository(1, model.Github, "vibioh/ketchup").AddVersion(model.DefaultPattern, "1.0.0"),
-				model.NewRepository(2, model.Github, "vibioh/viws").AddVersion(model.DefaultPattern, "1.2.3"),
+				model.NewRepository(1, model.Github, ketchupRepository).AddVersion(model.DefaultPattern, "1.0.0"),
+				model.NewRepository(2, model.Github, viwsRepository).AddVersion(model.DefaultPattern, "1.2.3"),
 			},
 			2,
 			nil,
@@ -109,13 +112,13 @@ func TestSuggest(t *testing.T) {
 		{
 			"simple",
 			New(repositorytest.New().SetSuggest([]model.Repository{
-				model.NewRepository(1, model.Github, "vibioh/ketchup").AddVersion(model.DefaultPattern, "1.2.3"),
+				model.NewRepository(1, model.Github, ketchupRepository).AddVersion(model.DefaultPattern, "1.2.3"),
 			}, nil), nil, nil),
 			args{
 				ctx: context.Background(),
 			},
 			[]model.Repository{
-				model.NewRepository(1, model.Github, "vibioh/ketchup").AddVersion(model.DefaultPattern, "1.2.3"),
+				model.NewRepository(1, model.Github, ketchupRepository).AddVersion(model.DefaultPattern, "1.2.3"),
 			},
 			nil,
 		},
@@ -178,19 +181,19 @@ func TestGetOrCreate(t *testing.T) {
 		},
 		{
 			"exists with pattern",
-			New(repositorytest.New().SetGetByName(model.NewRepository(1, model.Github, "vibioh/ketchup").AddVersion(model.DefaultPattern, "1.0.0"), nil), githubtest.New(), nil),
+			New(repositorytest.New().SetGetByName(model.NewRepository(1, model.Github, ketchupRepository).AddVersion(model.DefaultPattern, "1.0.0"), nil), githubtest.New(), nil),
 			args{
 				ctx:            context.Background(),
 				name:           "exist",
 				repositoryKind: model.Github,
 				pattern:        model.DefaultPattern,
 			},
-			model.NewRepository(1, model.Github, "vibioh/ketchup").AddVersion(model.DefaultPattern, "1.0.0"),
+			model.NewRepository(1, model.Github, ketchupRepository).AddVersion(model.DefaultPattern, "1.0.0"),
 			nil,
 		},
 		{
 			"exists no pattern error",
-			New(repositorytest.New().SetGetByName(model.NewRepository(1, model.Github, "vibioh/ketchup"), nil), githubtest.New().SetLatestVersions(nil, errors.New("failed")), nil),
+			New(repositorytest.New().SetGetByName(model.NewRepository(1, model.Github, ketchupRepository), nil), githubtest.New().SetLatestVersions(nil, errors.New("failed")), nil),
 			args{
 				ctx:            context.Background(),
 				name:           "exist",
@@ -202,7 +205,7 @@ func TestGetOrCreate(t *testing.T) {
 		},
 		{
 			"exists pattern not found",
-			New(repositorytest.New().SetGetByName(model.NewRepository(1, model.Github, "vibioh/ketchup"), nil), githubtest.New().SetLatestVersions(map[string]semver.Version{
+			New(repositorytest.New().SetGetByName(model.NewRepository(1, model.Github, ketchupRepository), nil), githubtest.New().SetLatestVersions(map[string]semver.Version{
 				"latest": safeParse("1.0.0"),
 			}, nil), nil),
 			args{
@@ -216,7 +219,7 @@ func TestGetOrCreate(t *testing.T) {
 		},
 		{
 			"exists but no pattern",
-			New(repositorytest.New().SetGetByName(model.NewRepository(1, model.Github, "vibioh/ketchup"), nil), githubtest.New().SetLatestVersions(map[string]semver.Version{
+			New(repositorytest.New().SetGetByName(model.NewRepository(1, model.Github, ketchupRepository), nil), githubtest.New().SetLatestVersions(map[string]semver.Version{
 				model.DefaultPattern: safeParse("1.0.0"),
 			}, nil), nil),
 			args{
@@ -225,12 +228,12 @@ func TestGetOrCreate(t *testing.T) {
 				repositoryKind: model.Github,
 				pattern:        model.DefaultPattern,
 			},
-			model.NewRepository(1, model.Github, "vibioh/ketchup").AddVersion(model.DefaultPattern, "1.0.0"),
+			model.NewRepository(1, model.Github, ketchupRepository).AddVersion(model.DefaultPattern, "1.0.0"),
 			nil,
 		},
 		{
 			"update error",
-			New(repositorytest.New().SetGetByName(model.NewRepository(1, model.Helm, "vibioh/ketchup"), nil).SetUpdateVersions(errors.New("failed")), githubtest.New(), helmtest.New().SetLatestVersions(map[string]semver.Version{
+			New(repositorytest.New().SetGetByName(model.NewRepository(1, model.Helm, ketchupRepository), nil).SetUpdateVersions(errors.New("failed")), githubtest.New(), helmtest.New().SetLatestVersions(map[string]semver.Version{
 				model.DefaultPattern: safeParse("1.0.0"),
 			}, nil)),
 			args{
@@ -341,9 +344,9 @@ func TestCreate(t *testing.T) {
 			},
 			args{
 				ctx:  context.Background(),
-				item: model.NewRepository(1, model.Github, "vibioh/ketchup").AddVersion(model.DefaultPattern, "0.0.0"),
+				item: model.NewRepository(1, model.Github, ketchupRepository).AddVersion(model.DefaultPattern, "0.0.0"),
 			},
-			model.NewRepository(1, model.Github, "vibioh/ketchup").AddVersion(model.DefaultPattern, "1.0.0"),
+			model.NewRepository(1, model.Github, ketchupRepository).AddVersion(model.DefaultPattern, "1.0.0"),
 			nil,
 		},
 	}
@@ -399,7 +402,7 @@ func TestUpdate(t *testing.T) {
 		},
 		{
 			"invalid check",
-			New(repositorytest.New().SetGet(model.NewRepository(1, model.Github, "vibioh/ketchup"), nil), nil, nil),
+			New(repositorytest.New().SetGet(model.NewRepository(1, model.Github, ketchupRepository), nil), nil, nil),
 			args{
 				ctx:  context.Background(),
 				item: model.NewRepository(1, model.Github, ""),
@@ -408,7 +411,7 @@ func TestUpdate(t *testing.T) {
 		},
 		{
 			"update error",
-			New(repositorytest.New().SetGet(model.NewRepository(1, model.Github, "vibioh/ketchup"), nil).SetUpdateVersions(errors.New("failed")), nil, nil),
+			New(repositorytest.New().SetGet(model.NewRepository(1, model.Github, ketchupRepository), nil).SetUpdateVersions(errors.New("failed")), nil, nil),
 			args{
 				ctx:  context.Background(),
 				item: model.NewRepository(1, model.Github, "").AddVersion(model.DefaultPattern, "1.2.3"),
@@ -417,7 +420,7 @@ func TestUpdate(t *testing.T) {
 		},
 		{
 			"success",
-			New(repositorytest.New().SetGet(model.NewRepository(1, model.Github, "vibioh/ketchup"), nil), nil, nil),
+			New(repositorytest.New().SetGet(model.NewRepository(1, model.Github, ketchupRepository), nil), nil, nil),
 			args{
 				ctx:  context.Background(),
 				item: model.NewRepository(3, model.Github, "").AddVersion(model.DefaultPattern, "1.2.3"),
@@ -530,8 +533,8 @@ func TestCheck(t *testing.T) {
 			"no kind change",
 			app{repositoryStore: repositorytest.New()},
 			args{
-				old: model.NewRepository(1, model.Github, "vibioh/ketchup").AddVersion(model.DefaultPattern, "1.0.0"),
-				new: model.NewRepository(1, model.Helm, "vibioh/ketchup"),
+				old: model.NewRepository(1, model.Github, ketchupRepository).AddVersion(model.DefaultPattern, "1.0.0"),
+				new: model.NewRepository(1, model.Helm, ketchupRepository),
 			},
 			errors.New("kind cannot be changed"),
 		},
@@ -539,8 +542,8 @@ func TestCheck(t *testing.T) {
 			"version required for update",
 			app{repositoryStore: repositorytest.New()},
 			args{
-				old: model.NewRepository(1, model.Github, "vibioh/ketchup").AddVersion(model.DefaultPattern, "1.0.0"),
-				new: model.NewRepository(1, model.Github, "vibioh/ketchup"),
+				old: model.NewRepository(1, model.Github, ketchupRepository).AddVersion(model.DefaultPattern, "1.0.0"),
+				new: model.NewRepository(1, model.Github, ketchupRepository),
 			},
 			errors.New("version is required"),
 		},
@@ -554,7 +557,7 @@ func TestCheck(t *testing.T) {
 		},
 		{
 			"exist",
-			app{repositoryStore: repositorytest.New().SetGetByName(model.NewRepository(2, model.Github, "vibioh/ketchup"), nil)},
+			app{repositoryStore: repositorytest.New().SetGetByName(model.NewRepository(2, model.Github, ketchupRepository), nil)},
 			args{
 				new: model.NewRepository(1, model.Github, "exist"),
 			},
@@ -605,21 +608,21 @@ func TestSanitizeName(t *testing.T) {
 			args{
 				name: "github.com/vibioh/ketchup",
 			},
-			"vibioh/ketchup",
+			ketchupRepository,
 		},
 		{
 			"full url",
 			args{
 				name: "https://github.com/vibioh/ketchup",
 			},
-			"vibioh/ketchup",
+			ketchupRepository,
 		},
 		{
 			"with suffix",
 			args{
 				name: "https://github.com/vibioh/ketchup/releases/latest",
 			},
-			"vibioh/ketchup",
+			ketchupRepository,
 		},
 	}
 

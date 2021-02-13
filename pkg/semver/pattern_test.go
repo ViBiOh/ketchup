@@ -5,6 +5,11 @@ import (
 	"testing"
 )
 
+var (
+	stableVersion = "1.0.0"
+	betaVersion   = "1.0.0-beta1"
+)
+
 func TestCheck(t *testing.T) {
 	type args struct {
 		version Version
@@ -20,7 +25,7 @@ func TestCheck(t *testing.T) {
 			"too short",
 			safeParsePattern("tst"),
 			args{
-				version: safeParse("1.0.0"),
+				version: safeParse(stableVersion),
 			},
 			true,
 		},
@@ -28,7 +33,7 @@ func TestCheck(t *testing.T) {
 			"no veersion",
 			safeParsePattern("^latest"),
 			args{
-				version: safeParse("1.0.0"),
+				version: safeParse(stableVersion),
 			},
 			true,
 		},
@@ -36,7 +41,7 @@ func TestCheck(t *testing.T) {
 			"latest",
 			safeParsePattern("latest"),
 			args{
-				version: safeParse("1.0.0"),
+				version: safeParse(stableVersion),
 			},
 			true,
 		},
@@ -44,7 +49,7 @@ func TestCheck(t *testing.T) {
 			"latest beta",
 			safeParsePattern("latest"),
 			args{
-				version: safeParse("1.0.0-beta1"),
+				version: safeParse(betaVersion),
 			},
 			true,
 		},
@@ -52,7 +57,7 @@ func TestCheck(t *testing.T) {
 			"stable",
 			safeParsePattern("stable"),
 			args{
-				version: safeParse("1.0.0"),
+				version: safeParse(stableVersion),
 			},
 			true,
 		},
@@ -60,7 +65,7 @@ func TestCheck(t *testing.T) {
 			"stable beta",
 			safeParsePattern("stable"),
 			args{
-				version: safeParse("1.0.0-beta1"),
+				version: safeParse(betaVersion),
 			},
 			false,
 		},
@@ -68,7 +73,7 @@ func TestCheck(t *testing.T) {
 			"caret",
 			safeParsePattern("^1.0"),
 			args{
-				version: safeParse("1.0.0"),
+				version: safeParse(stableVersion),
 			},
 			true,
 		},
@@ -100,7 +105,7 @@ func TestCheck(t *testing.T) {
 			"caret no beta",
 			safeParsePattern("^1.0"),
 			args{
-				version: safeParse("1.0.0-beta1"),
+				version: safeParse(betaVersion),
 			},
 			false,
 		},
@@ -140,7 +145,7 @@ func TestCheck(t *testing.T) {
 			"tilde no beta",
 			safeParsePattern("~1.0"),
 			args{
-				version: safeParse("1.0.0-beta1"),
+				version: safeParse(betaVersion),
 			},
 			false,
 		},
