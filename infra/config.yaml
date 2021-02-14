@@ -17,7 +17,7 @@ spec:
   values:
     nameOverride: ketchup
     image:
-      repository: vibioh/ketchup:202102131830 # {"$imagepolicy": "default:ketchup"}
+      repository: vibioh/ketchup:202102140916 # {"$imagepolicy": "default:ketchup"}
     config:
       KETCHUP_LOGGER_JSON: "true"
       KETCHUP_DB_HOST: ketchup-db
