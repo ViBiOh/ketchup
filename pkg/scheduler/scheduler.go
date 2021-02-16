@@ -90,6 +90,11 @@ func (a app) ketchupNotify(_ time.Time) error {
 		return fmt.Errorf("unable to get new releases: %w", err)
 	}
 
+	sort.Sort(model.ReleaseByRepositoryID(newReleases))
+	if err := a.updateRepositories(ctx, newReleases); err != nil {
+		return fmt.Errorf("unable to update repositories: %w", err)
+	}
+
 	ketchupsToNotify, err := a.getKetchupToNotify(ctx, newReleases)
 	if err != nil {
 		return fmt.Errorf("unable to get ketchup to notify: %w", err)
@@ -115,20 +120,7 @@ func (a app) getNewReleases(ctx context.Context) ([]model.Release, error) {
 
 		for _, repo := range repositories {
 			count++
-
-			releases := a.checkRepositoryVersion(repo)
-			if len(releases) == 0 {
-				continue
-			}
-
-			newReleases = append(newReleases, releases...)
-			for _, release := range releases {
-				repo.Versions[release.Pattern] = release.Version.Name
-			}
-
-			if err := a.repositoryService.Update(ctx, repo); err != nil {
-				return nil, fmt.Errorf("unable to update repo `%s`: %s", repo.Name, err)
-			}
+			newReleases = append(newReleases, a.getNewRepositoryReleases(repo)...)
 		}
 
 		if uint64(page*pageSize) < totalCount {
@@ -140,7 +132,7 @@ func (a app) getNewReleases(ctx context.Context) ([]model.Release, error) {
 	}
 }
 
-func (a app) checkRepositoryVersion(repo model.Repository) []model.Release {
+func (a app) getNewRepositoryReleases(repo model.Repository) []model.Release {
 	versions, err := a.repositoryService.LatestVersions(repo)
 	if err != nil {
 		logger.Error("unable to get latest versions of %s: %s", repo.Name, err)
@@ -176,6 +168,32 @@ func (a app) checkRepositoryVersion(repo model.Repository) []model.Release {
 	}
 
 	return releases
+}
+
+func (a app) updateRepositories(ctx context.Context, releases []model.Release) error {
+	if len(releases) == 0 {
+		return nil
+	}
+
+	repo := releases[0].Repository
+
+	for _, release := range releases {
+		if release.Repository.ID != repo.ID {
+			if err := a.repositoryService.Update(ctx, repo); err != nil {
+				return fmt.Errorf("unable to update repository `%s`: %s", repo.Name, err)
+			}
+
+			repo = release.Repository
+		}
+
+		repo.Versions[release.Pattern] = release.Version.Name
+	}
+
+	if err := a.repositoryService.Update(ctx, repo); err != nil {
+		return fmt.Errorf("unable to update repository `%s`: %s", repo.Name, err)
+	}
+
+	return nil
 }
 
 func (a app) getKetchupToNotify(ctx context.Context, releases []model.Release) (map[model.User][]model.Release, error) {

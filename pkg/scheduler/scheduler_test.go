@@ -114,21 +114,6 @@ func TestGetNewReleases(t *testing.T) {
 			nil,
 		},
 		{
-			"update error",
-			app{
-				repositoryService: repositorytest.New().SetList([]model.Repository{
-					model.NewRepository(1, model.Github, repositoryName).AddVersion(model.DefaultPattern, repositoryVersion),
-				}, 0, nil).SetLatestVersions(map[string]semver.Version{
-					model.DefaultPattern: safeParse("1.1.0"),
-				}, nil).SetUpdate(errors.New("failed")),
-			},
-			args{
-				ctx: context.Background(),
-			},
-			nil,
-			errors.New("unable to update repo `vibioh/ketchup`"),
-		},
-		{
 			"success",
 			app{
 				repositoryService: repositorytest.New().SetList([]model.Repository{
@@ -141,7 +126,7 @@ func TestGetNewReleases(t *testing.T) {
 				ctx: context.Background(),
 			},
 			[]model.Release{model.NewRelease(
-				model.NewRepository(1, model.Github, repositoryName).AddVersion(model.DefaultPattern, "1.1.0"),
+				model.NewRepository(1, model.Github, repositoryName).AddVersion(model.DefaultPattern, repositoryVersion),
 				model.DefaultPattern,
 				safeParse("1.1.0"),
 			)},
@@ -174,7 +159,7 @@ func TestGetNewReleases(t *testing.T) {
 	}
 }
 
-func TestCheckRepositoryVersion(t *testing.T) {
+func TestGetNewRepositoryReleases(t *testing.T) {
 	type args struct {
 		repo model.Repository
 	}
@@ -249,8 +234,8 @@ func TestCheckRepositoryVersion(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.intention, func(t *testing.T) {
-			if got := tc.instance.checkRepositoryVersion(tc.args.repo); !reflect.DeepEqual(got, tc.want) {
-				t.Errorf("checkRepositoryVersion() = %+v, want %+v", got, tc.want)
+			if got := tc.instance.getNewRepositoryReleases(tc.args.repo); !reflect.DeepEqual(got, tc.want) {
+				t.Errorf("getNewRepositoryReleases() = %+v, want %+v", got, tc.want)
 			}
 		})
 	}
