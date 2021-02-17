@@ -2,6 +2,7 @@ package ketchup
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"reflect"
 	"strings"
@@ -16,8 +17,27 @@ import (
 )
 
 var (
-	testCtx = model.StoreUser(context.Background(), model.NewUser(3, "nobody@localhost", authModel.NewUser(0, "")))
+	testCtx = model.StoreUser(context.Background(), model.NewUser(3, testEmail, authModel.NewUser(0, "")))
+
+	testEmail         = "nobody@localhost"
+	repositoryName    = "vibioh/ketchup"
+	viwsRepository    = "vibioh/viws"
+	repositoryVersion = "1.0.0"
 )
+
+func testWithMock(t *testing.T, action func(*sql.DB, sqlmock.Sqlmock)) {
+	mockDb, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("unable to create mock database: %s", err)
+	}
+	defer mockDb.Close()
+
+	action(mockDb, mock)
+
+	if err := mock.ExpectationsWereMet(); err != nil {
+		t.Errorf("sqlmock unfilled expectations: %s", err)
+	}
+}
 
 func TestList(t *testing.T) {
 	type args struct {
@@ -42,14 +62,14 @@ func TestList(t *testing.T) {
 				{
 					Pattern:    model.DefaultPattern,
 					Version:    "0.9.0",
-					Repository: model.NewRepository(1, model.Github, "vibioh/ketchup").AddVersion(model.DefaultPattern, "1.0.0"),
-					User:       model.NewUser(3, "nobody@localhost", authModel.NewUser(0, "")),
+					Repository: model.NewRepository(1, model.Github, repositoryName).AddVersion(model.DefaultPattern, repositoryVersion),
+					User:       model.NewUser(3, testEmail, authModel.NewUser(0, "")),
 				},
 				{
 					Pattern:    model.DefaultPattern,
-					Version:    "1.0.0",
-					Repository: model.NewRepository(2, model.Helm, "vibioh/viws").AddVersion(model.DefaultPattern, "1.0.0"),
-					User:       model.NewUser(3, "nobody@localhost", authModel.NewUser(0, "")),
+					Version:    repositoryVersion,
+					Repository: model.NewRepository(2, model.Helm, viwsRepository).AddVersion(model.DefaultPattern, repositoryVersion),
+					User:       model.NewUser(3, testEmail, authModel.NewUser(0, "")),
 				},
 			},
 			2,
@@ -89,56 +109,48 @@ func TestList(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.intention, func(t *testing.T) {
-			mockDb, mock, err := sqlmock.New()
-			if err != nil {
-				t.Fatalf("unable to create mock database: %s", err)
-			}
-			defer mockDb.Close()
+			testWithMock(t, func(mockDb *sql.DB, mock sqlmock.Sqlmock) {
+				rows := sqlmock.NewRows([]string{"pattern", "version", "repository_id", "name", "kind", "repository_version", "full_count"})
+				expectedQuery := mock.ExpectQuery("SELECT k.pattern, k.version, k.repository_id, r.name, r.kind, rv.version, .+ AS full_count FROM ketchup.ketchup k, ketchup.repository r, ketchup.repository_version rv WHERE user_id = .+ AND k.repository_id = r.id AND rv.repository_id = r.id AND rv.pattern = k.pattern").WithArgs(20, 0, 3).WillReturnRows(rows)
 
-			rows := sqlmock.NewRows([]string{"pattern", "version", "repository_id", "name", "kind", "repository_version", "full_count"})
-			expectedQuery := mock.ExpectQuery("SELECT k.pattern, k.version, k.repository_id, r.name, r.kind, rv.version, .+ AS full_count FROM ketchup.ketchup k, ketchup.repository r, ketchup.repository_version rv WHERE user_id = .+ AND k.repository_id = r.id AND rv.repository_id = r.id AND rv.pattern = k.pattern").WithArgs(20, 0, 3).WillReturnRows(rows)
+				switch tc.intention {
+				case "simple":
+					rows.AddRow(model.DefaultPattern, "0.9.0", 1, repositoryName, "github", repositoryVersion, 2).AddRow(model.DefaultPattern, repositoryVersion, 2, viwsRepository, "helm", repositoryVersion, 2)
 
-			switch tc.intention {
-			case "simple":
-				rows.AddRow(model.DefaultPattern, "0.9.0", 1, "vibioh/ketchup", "github", "1.0.0", 2).AddRow(model.DefaultPattern, "1.0.0", 2, "vibioh/viws", "helm", "1.0.0", 2)
+				case "timeout":
+					savedSQLTimeout := db.SQLTimeout
+					db.SQLTimeout = time.Second
+					defer func() {
+						db.SQLTimeout = savedSQLTimeout
+					}()
+					expectedQuery.WillDelayFor(db.SQLTimeout * 2)
 
-			case "timeout":
-				savedSQLTimeout := db.SQLTimeout
-				db.SQLTimeout = time.Second
-				defer func() {
-					db.SQLTimeout = savedSQLTimeout
-				}()
-				expectedQuery.WillDelayFor(db.SQLTimeout * 2)
+				case "invalid rows":
+					rows.AddRow(model.DefaultPattern, "0.9.0", "a", repositoryName, "github", "0.9.0", 2)
 
-			case "invalid rows":
-				rows.AddRow(model.DefaultPattern, "0.9.0", "a", "vibioh/ketchup", "github", "0.9.0", 2)
+				case "invalid kind":
+					rows.AddRow(model.DefaultPattern, repositoryVersion, 2, viwsRepository, "wrong", repositoryVersion, 1)
+				}
 
-			case "invalid kind":
-				rows.AddRow(model.DefaultPattern, "1.0.0", 2, "vibioh/viws", "wrong", "1.0.0", 1)
-			}
+				got, gotCount, gotErr := New(mockDb).List(testCtx, tc.args.page, tc.args.pageSize)
+				failed := false
 
-			got, gotCount, gotErr := New(mockDb).List(testCtx, tc.args.page, tc.args.pageSize)
-			failed := false
+				if tc.wantErr == nil && gotErr != nil {
+					failed = true
+				} else if tc.wantErr != nil && gotErr == nil {
+					failed = true
+				} else if tc.wantErr != nil && !strings.Contains(gotErr.Error(), tc.wantErr.Error()) {
+					failed = true
+				} else if !reflect.DeepEqual(got, tc.want) {
+					failed = true
+				} else if gotCount != tc.wantCount {
+					failed = true
+				}
 
-			if tc.wantErr == nil && gotErr != nil {
-				failed = true
-			} else if tc.wantErr != nil && gotErr == nil {
-				failed = true
-			} else if tc.wantErr != nil && !strings.Contains(gotErr.Error(), tc.wantErr.Error()) {
-				failed = true
-			} else if !reflect.DeepEqual(got, tc.want) {
-				failed = true
-			} else if gotCount != tc.wantCount {
-				failed = true
-			}
-
-			if failed {
-				t.Errorf("List() = (%+v, %d, `%s`), want (%+v, %d, `%s`)", got, gotCount, gotErr, tc.want, tc.wantCount, tc.wantErr)
-			}
-
-			if err := mock.ExpectationsWereMet(); err != nil {
-				t.Errorf("sqlmock unfilled expectations: %s", err)
-			}
+				if failed {
+					t.Errorf("List() = (%+v, %d, `%s`), want (%+v, %d, `%s`)", got, gotCount, gotErr, tc.want, tc.wantCount, tc.wantErr)
+				}
+			})
 		})
 	}
 }
@@ -164,11 +176,11 @@ func TestListByRepositoriesID(t *testing.T) {
 					Pattern:    model.DefaultPattern,
 					Version:    "0.9.0",
 					Repository: model.NewRepository(1, model.Github, ""),
-					User:       model.NewUser(1, "nobody@localhost", authModel.NewUser(0, "")),
+					User:       model.NewUser(1, testEmail, authModel.NewUser(0, "")),
 				},
 				{
 					Pattern:    model.DefaultPattern,
-					Version:    "1.0.0",
+					Version:    repositoryVersion,
 					Repository: model.NewRepository(2, model.Github, ""),
 					User:       model.NewUser(2, "guest@domain", authModel.NewUser(0, "")),
 				},
@@ -195,51 +207,43 @@ func TestListByRepositoriesID(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.intention, func(t *testing.T) {
-			mockDb, mock, err := sqlmock.New()
-			if err != nil {
-				t.Fatalf("unable to create mock database: %s", err)
-			}
-			defer mockDb.Close()
+			testWithMock(t, func(mockDb *sql.DB, mock sqlmock.Sqlmock) {
+				rows := sqlmock.NewRows([]string{"pattern", "version", "repository_id", "user_id", "email"})
+				expectedQuery := mock.ExpectQuery("SELECT k.pattern, k.version, k.repository_id, k.user_id, u.email FROM ketchup.ketchup k, ketchup.user u WHERE repository_id = ANY .+ AND k.user_id = u.id").WithArgs(pq.Array(tc.args.ids)).WillReturnRows(rows)
 
-			rows := sqlmock.NewRows([]string{"pattern", "version", "repository_id", "user_id", "email"})
-			expectedQuery := mock.ExpectQuery("SELECT k.pattern, k.version, k.repository_id, k.user_id, u.email FROM ketchup.ketchup k, ketchup.user u WHERE repository_id = ANY .+ AND k.user_id = u.id").WithArgs(pq.Array(tc.args.ids)).WillReturnRows(rows)
+				switch tc.intention {
+				case "simple":
+					rows.AddRow(model.DefaultPattern, "0.9.0", 1, 1, testEmail).AddRow(model.DefaultPattern, repositoryVersion, 2, 2, "guest@domain")
 
-			switch tc.intention {
-			case "simple":
-				rows.AddRow(model.DefaultPattern, "0.9.0", 1, 1, "nobody@localhost").AddRow(model.DefaultPattern, "1.0.0", 2, 2, "guest@domain")
+				case "timeout":
+					savedSQLTimeout := db.SQLTimeout
+					db.SQLTimeout = time.Second
+					defer func() {
+						db.SQLTimeout = savedSQLTimeout
+					}()
+					expectedQuery.WillDelayFor(db.SQLTimeout * 2)
 
-			case "timeout":
-				savedSQLTimeout := db.SQLTimeout
-				db.SQLTimeout = time.Second
-				defer func() {
-					db.SQLTimeout = savedSQLTimeout
-				}()
-				expectedQuery.WillDelayFor(db.SQLTimeout * 2)
+				case "invalid rows":
+					rows.AddRow(model.DefaultPattern, "0.9.0", "a", 1, testEmail)
+				}
 
-			case "invalid rows":
-				rows.AddRow(model.DefaultPattern, "0.9.0", "a", 1, "nobody@localhost")
-			}
+				got, gotErr := New(mockDb).ListByRepositoriesID(testCtx, tc.args.ids)
+				failed := false
 
-			got, gotErr := New(mockDb).ListByRepositoriesID(testCtx, tc.args.ids)
-			failed := false
+				if tc.wantErr == nil && gotErr != nil {
+					failed = true
+				} else if tc.wantErr != nil && gotErr == nil {
+					failed = true
+				} else if tc.wantErr != nil && !strings.Contains(gotErr.Error(), tc.wantErr.Error()) {
+					failed = true
+				} else if !reflect.DeepEqual(got, tc.want) {
+					failed = true
+				}
 
-			if tc.wantErr == nil && gotErr != nil {
-				failed = true
-			} else if tc.wantErr != nil && gotErr == nil {
-				failed = true
-			} else if tc.wantErr != nil && !strings.Contains(gotErr.Error(), tc.wantErr.Error()) {
-				failed = true
-			} else if !reflect.DeepEqual(got, tc.want) {
-				failed = true
-			}
-
-			if failed {
-				t.Errorf("ListByRepositoriesID() = (%+v, `%s`), want (%+v, `%s`)", got, gotErr, tc.want, tc.wantErr)
-			}
-
-			if err := mock.ExpectationsWereMet(); err != nil {
-				t.Errorf("sqlmock unfilled expectations: %s", err)
-			}
+				if failed {
+					t.Errorf("ListByRepositoriesID() = (%+v, `%s`), want (%+v, `%s`)", got, gotErr, tc.want, tc.wantErr)
+				}
+			})
 		})
 	}
 }
@@ -266,8 +270,8 @@ func TestGetByRepositoryID(t *testing.T) {
 			model.Ketchup{
 				Pattern:    model.DefaultPattern,
 				Version:    "0.9.0",
-				Repository: model.NewRepository(1, model.Github, "vibioh/ketchup"),
-				User:       model.NewUser(3, "nobody@localhost", authModel.NewUser(0, "")),
+				Repository: model.NewRepository(1, model.Github, repositoryName),
+				User:       model.NewUser(3, testEmail, authModel.NewUser(0, "")),
 			},
 			nil,
 		},
@@ -290,8 +294,8 @@ func TestGetByRepositoryID(t *testing.T) {
 			model.Ketchup{
 				Pattern:    model.DefaultPattern,
 				Version:    "0.9.0",
-				Repository: model.NewRepository(1, model.Github, "vibioh/ketchup"),
-				User:       model.NewUser(3, "nobody@localhost", authModel.NewUser(0, "")),
+				Repository: model.NewRepository(1, model.Github, repositoryName),
+				User:       model.NewUser(3, testEmail, authModel.NewUser(0, "")),
 			},
 			nil,
 		},
@@ -299,40 +303,32 @@ func TestGetByRepositoryID(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.intention, func(t *testing.T) {
-			mockDb, mock, err := sqlmock.New()
-			if err != nil {
-				t.Fatalf("unable to create mock database: %s", err)
-			}
-			defer mockDb.Close()
+			testWithMock(t, func(mockDb *sql.DB, mock sqlmock.Sqlmock) {
+				rows := sqlmock.NewRows([]string{"patter", "version", "repository_id", "user_id", "name", "kind"})
+				mock.ExpectQuery(tc.expectSQL).WithArgs(1, 3).WillReturnRows(rows)
 
-			rows := sqlmock.NewRows([]string{"patter", "version", "repository_id", "user_id", "name", "kind"})
-			mock.ExpectQuery(tc.expectSQL).WithArgs(1, 3).WillReturnRows(rows)
+				switch tc.intention {
+				case "for update":
+					fallthrough
 
-			switch tc.intention {
-			case "for update":
-				fallthrough
+				case "simple":
+					rows.AddRow(model.DefaultPattern, "0.9.0", 1, 3, repositoryName, "github")
+				}
 
-			case "simple":
-				rows.AddRow(model.DefaultPattern, "0.9.0", 1, 3, "vibioh/ketchup", "github")
-			}
+				got, gotErr := New(mockDb).GetByRepositoryID(testCtx, tc.args.id, tc.args.forUpdate)
 
-			got, gotErr := New(mockDb).GetByRepositoryID(testCtx, tc.args.id, tc.args.forUpdate)
+				failed := false
 
-			failed := false
+				if !errors.Is(gotErr, tc.wantErr) {
+					failed = true
+				} else if !reflect.DeepEqual(got, tc.want) {
+					failed = true
+				}
 
-			if !errors.Is(gotErr, tc.wantErr) {
-				failed = true
-			} else if !reflect.DeepEqual(got, tc.want) {
-				failed = true
-			}
-
-			if failed {
-				t.Errorf("GetByRepositoryID() = (%+v, `%s`), want (%+v, `%s`)", got, gotErr, tc.want, tc.wantErr)
-			}
-
-			if err := mock.ExpectationsWereMet(); err != nil {
-				t.Errorf("sqlmock unfilled expectations: %s", err)
-			}
+				if failed {
+					t.Errorf("GetByRepositoryID() = (%+v, `%s`), want (%+v, `%s`)", got, gotErr, tc.want, tc.wantErr)
+				}
+			})
 		})
 	}
 }
@@ -364,38 +360,30 @@ func TestCreate(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.intention, func(t *testing.T) {
-			mockDb, mock, err := sqlmock.New()
-			if err != nil {
-				t.Fatalf("unable to create mock database: %s", err)
-			}
-			defer mockDb.Close()
+			testWithMock(t, func(mockDb *sql.DB, mock sqlmock.Sqlmock) {
+				mock.ExpectBegin()
+				tx, err := mockDb.Begin()
+				if err != nil {
+					t.Errorf("unable to create tx: %s", err)
+				}
+				ctx := db.StoreTx(testCtx, tx)
 
-			mock.ExpectBegin()
-			tx, err := mockDb.Begin()
-			if err != nil {
-				t.Errorf("unable to create tx: %s", err)
-			}
-			ctx := db.StoreTx(testCtx, tx)
+				mock.ExpectQuery("INSERT INTO ketchup.ketchup").WithArgs(model.DefaultPattern, "0.9.0", 1, 3).WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(1))
 
-			mock.ExpectQuery("INSERT INTO ketchup.ketchup").WithArgs(model.DefaultPattern, "0.9.0", 1, 3).WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(1))
+				got, gotErr := New(mockDb).Create(ctx, tc.args.o)
 
-			got, gotErr := New(mockDb).Create(ctx, tc.args.o)
+				failed := false
 
-			failed := false
+				if !errors.Is(gotErr, tc.wantErr) {
+					failed = true
+				} else if got != tc.want {
+					failed = true
+				}
 
-			if !errors.Is(gotErr, tc.wantErr) {
-				failed = true
-			} else if got != tc.want {
-				failed = true
-			}
-
-			if failed {
-				t.Errorf("Create() = (%d, `%s`), want (%d, `%s`)", got, gotErr, tc.want, tc.wantErr)
-			}
-
-			if err := mock.ExpectationsWereMet(); err != nil {
-				t.Errorf("sqlmock unfilled expectations: %s", err)
-			}
+				if failed {
+					t.Errorf("Create() = (%d, `%s`), want (%d, `%s`)", got, gotErr, tc.want, tc.wantErr)
+				}
+			})
 		})
 	}
 }
@@ -425,36 +413,28 @@ func TestUpdate(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.intention, func(t *testing.T) {
-			mockDb, mock, err := sqlmock.New()
-			if err != nil {
-				t.Fatalf("unable to create mock database: %s", err)
-			}
-			defer mockDb.Close()
+			testWithMock(t, func(mockDb *sql.DB, mock sqlmock.Sqlmock) {
+				mock.ExpectBegin()
+				tx, err := mockDb.Begin()
+				if err != nil {
+					t.Errorf("unable to create tx: %s", err)
+				}
+				ctx := db.StoreTx(testCtx, tx)
 
-			mock.ExpectBegin()
-			tx, err := mockDb.Begin()
-			if err != nil {
-				t.Errorf("unable to create tx: %s", err)
-			}
-			ctx := db.StoreTx(testCtx, tx)
+				mock.ExpectExec("UPDATE ketchup.ketchup SET pattern = .+, version = .+").WithArgs(1, 3, model.DefaultPattern, "0.9.0").WillReturnResult(sqlmock.NewResult(0, 1))
 
-			mock.ExpectExec("UPDATE ketchup.ketchup SET pattern = .+, version = .+").WithArgs(1, 3, model.DefaultPattern, "0.9.0").WillReturnResult(sqlmock.NewResult(0, 1))
+				gotErr := New(mockDb).Update(ctx, tc.args.o)
 
-			gotErr := New(mockDb).Update(ctx, tc.args.o)
+				failed := false
 
-			failed := false
+				if !errors.Is(gotErr, tc.wantErr) {
+					failed = true
+				}
 
-			if !errors.Is(gotErr, tc.wantErr) {
-				failed = true
-			}
-
-			if failed {
-				t.Errorf("Update() = `%s`, want `%s`", gotErr, tc.wantErr)
-			}
-
-			if err := mock.ExpectationsWereMet(); err != nil {
-				t.Errorf("sqlmock unfilled expectations: %s", err)
-			}
+				if failed {
+					t.Errorf("Update() = `%s`, want `%s`", gotErr, tc.wantErr)
+				}
+			})
 		})
 	}
 }
@@ -482,36 +462,28 @@ func TestDelete(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.intention, func(t *testing.T) {
-			mockDb, mock, err := sqlmock.New()
-			if err != nil {
-				t.Fatalf("unable to create mock database: %s", err)
-			}
-			defer mockDb.Close()
+			testWithMock(t, func(mockDb *sql.DB, mock sqlmock.Sqlmock) {
+				mock.ExpectBegin()
+				tx, err := mockDb.Begin()
+				if err != nil {
+					t.Errorf("unable to create tx: %s", err)
+				}
+				ctx := db.StoreTx(testCtx, tx)
 
-			mock.ExpectBegin()
-			tx, err := mockDb.Begin()
-			if err != nil {
-				t.Errorf("unable to create tx: %s", err)
-			}
-			ctx := db.StoreTx(testCtx, tx)
+				mock.ExpectExec("DELETE FROM ketchup.ketchup").WithArgs(1, 3).WillReturnResult(sqlmock.NewResult(0, 1))
 
-			mock.ExpectExec("DELETE FROM ketchup.ketchup").WithArgs(1, 3).WillReturnResult(sqlmock.NewResult(0, 1))
+				gotErr := New(mockDb).Delete(ctx, tc.args.o)
 
-			gotErr := New(mockDb).Delete(ctx, tc.args.o)
+				failed := false
 
-			failed := false
+				if !errors.Is(gotErr, tc.wantErr) {
+					failed = true
+				}
 
-			if !errors.Is(gotErr, tc.wantErr) {
-				failed = true
-			}
-
-			if failed {
-				t.Errorf("Delete() = `%s`, want `%s`", gotErr, tc.wantErr)
-			}
-
-			if err := mock.ExpectationsWereMet(); err != nil {
-				t.Errorf("sqlmock unfilled expectations: %s", err)
-			}
+				if failed {
+					t.Errorf("Delete() = `%s`, want `%s`", gotErr, tc.wantErr)
+				}
+			})
 		})
 	}
 }
