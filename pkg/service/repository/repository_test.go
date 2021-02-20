@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	httpModel "github.com/ViBiOh/httputils/v3/pkg/model"
+	httpModel "github.com/ViBiOh/httputils/v4/pkg/model"
 	"github.com/ViBiOh/ketchup/pkg/github/githubtest"
 	"github.com/ViBiOh/ketchup/pkg/helm/helmtest"
 	"github.com/ViBiOh/ketchup/pkg/model"

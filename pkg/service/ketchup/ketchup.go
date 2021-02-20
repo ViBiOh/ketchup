@@ -7,7 +7,7 @@ import (
 	"sort"
 	"strings"
 
-	httpModel "github.com/ViBiOh/httputils/v3/pkg/model"
+	httpModel "github.com/ViBiOh/httputils/v4/pkg/model"
 	"github.com/ViBiOh/ketchup/pkg/model"
 	"github.com/ViBiOh/ketchup/pkg/semver"
 	"github.com/ViBiOh/ketchup/pkg/service"

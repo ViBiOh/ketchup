@@ -8,8 +8,8 @@ import (
 
 	authModel "github.com/ViBiOh/auth/v2/pkg/model"
 	authService "github.com/ViBiOh/auth/v2/pkg/service"
-	"github.com/ViBiOh/httputils/v3/pkg/logger"
-	httpModel "github.com/ViBiOh/httputils/v3/pkg/model"
+	"github.com/ViBiOh/httputils/v4/pkg/logger"
+	httpModel "github.com/ViBiOh/httputils/v4/pkg/model"
 	"github.com/ViBiOh/ketchup/pkg/model"
 	"github.com/ViBiOh/ketchup/pkg/service"
 	"github.com/ViBiOh/ketchup/pkg/store/user"

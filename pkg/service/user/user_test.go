@@ -9,7 +9,7 @@ import (
 
 	authModel "github.com/ViBiOh/auth/v2/pkg/model"
 	"github.com/ViBiOh/auth/v2/pkg/service/servicetest"
-	httpModel "github.com/ViBiOh/httputils/v3/pkg/model"
+	httpModel "github.com/ViBiOh/httputils/v4/pkg/model"
 	"github.com/ViBiOh/ketchup/pkg/model"
 	"github.com/ViBiOh/ketchup/pkg/store/user/usertest"
 )

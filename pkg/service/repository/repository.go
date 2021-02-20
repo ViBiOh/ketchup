@@ -7,7 +7,7 @@ import (
 	"regexp"
 	"strings"
 
-	httpModel "github.com/ViBiOh/httputils/v3/pkg/model"
+	httpModel "github.com/ViBiOh/httputils/v4/pkg/model"
 	"github.com/ViBiOh/ketchup/pkg/github"
 	"github.com/ViBiOh/ketchup/pkg/helm"
 	"github.com/ViBiOh/ketchup/pkg/model"

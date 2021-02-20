@@ -6,8 +6,8 @@ import (
 	"strconv"
 	"strings"
 
-	httpModel "github.com/ViBiOh/httputils/v3/pkg/model"
-	"github.com/ViBiOh/httputils/v3/pkg/renderer"
+	httpModel "github.com/ViBiOh/httputils/v4/pkg/model"
+	"github.com/ViBiOh/httputils/v4/pkg/renderer"
 	"github.com/ViBiOh/ketchup/pkg/model"
 )
 

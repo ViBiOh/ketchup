@@ -10,9 +10,9 @@ import (
 	"time"
 
 	authModel "github.com/ViBiOh/auth/v2/pkg/model"
-	"github.com/ViBiOh/httputils/v3/pkg/cron"
-	"github.com/ViBiOh/httputils/v3/pkg/flags"
-	"github.com/ViBiOh/httputils/v3/pkg/logger"
+	"github.com/ViBiOh/httputils/v4/pkg/cron"
+	"github.com/ViBiOh/httputils/v4/pkg/flags"
+	"github.com/ViBiOh/httputils/v4/pkg/logger"
 	"github.com/ViBiOh/ketchup/pkg/model"
 	"github.com/ViBiOh/ketchup/pkg/semver"
 	"github.com/ViBiOh/ketchup/pkg/service/ketchup"

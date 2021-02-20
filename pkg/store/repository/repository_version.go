@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"sort"
 
-	"github.com/ViBiOh/httputils/v3/pkg/db"
+	"github.com/ViBiOh/httputils/v4/pkg/db"
 	"github.com/ViBiOh/ketchup/pkg/model"
 	"github.com/lib/pq"
 )

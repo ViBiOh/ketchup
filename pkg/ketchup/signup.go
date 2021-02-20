@@ -7,8 +7,8 @@ import (
 	"strings"
 
 	authModel "github.com/ViBiOh/auth/v2/pkg/model"
-	httpModel "github.com/ViBiOh/httputils/v3/pkg/model"
-	"github.com/ViBiOh/httputils/v3/pkg/renderer"
+	httpModel "github.com/ViBiOh/httputils/v4/pkg/model"
+	"github.com/ViBiOh/httputils/v4/pkg/renderer"
 	"github.com/ViBiOh/ketchup/pkg/model"
 )
 
