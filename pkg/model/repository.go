@@ -38,10 +38,10 @@ func (r RepositoryKind) String() string {
 
 // Repository of app
 type Repository struct {
+	Versions map[string]string `json:"versions"`
 	Name     string            `json:"name"`
 	ID       uint64            `json:"id"`
 	Kind     RepositoryKind    `json:"kind"`
-	Versions map[string]string `json:"versions"`
 }
 
 // NewRepository create new Repository with initialized values

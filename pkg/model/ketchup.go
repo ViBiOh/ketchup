@@ -11,10 +11,10 @@ var (
 
 // Ketchup of app
 type Ketchup struct {
-	User       User
 	Semver     string
 	Pattern    string
 	Version    string
+	User       User
 	Repository Repository
 }
 
