@@ -62,7 +62,7 @@ func (r Repository) AddVersion(pattern, version string) Repository {
 }
 
 // URL format the URL of given repository with current version
-func (r Repository) URL() string {
+func (r Repository) URL(pattern string) string {
 	if r.Kind == Helm {
 		parts := strings.SplitN(r.Name, "@", 2)
 		if len(parts) > 1 {
@@ -71,16 +71,16 @@ func (r Repository) URL() string {
 		return r.Name
 	}
 
-	return fmt.Sprintf("%s/%s/releases/tag/%s", githubURL, r.Name, r.Versions[DefaultPattern])
+	return fmt.Sprintf("%s/%s/releases/tag/%s", githubURL, r.Name, r.Versions[pattern])
 }
 
 // CompareURL format the URL of given repository compared against given version
-func (r Repository) CompareURL(version string) string {
+func (r Repository) CompareURL(version string, pattern string) string {
 	if r.Kind == Helm {
-		return r.URL()
+		return r.URL(pattern)
 	}
 
-	return fmt.Sprintf("%s/%s/compare/%s...%s", githubURL, r.Name, r.Versions[DefaultPattern], version)
+	return fmt.Sprintf("%s/%s/compare/%s...%s", githubURL, r.Name, r.Versions[pattern], version)
 }
 
 // ParseRepositoryKind parse raw string into a RepositoryKind

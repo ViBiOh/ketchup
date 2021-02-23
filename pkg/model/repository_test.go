@@ -34,31 +34,45 @@ func TestString(t *testing.T) {
 }
 
 func TestURL(t *testing.T) {
+	type args struct {
+		pattern string
+	}
+
 	var cases = []struct {
 		intention string
 		instance  Repository
+		args      args
 		want      string
 	}{
 		{
 			"helm",
 			NewRepository(0, Helm, "app@https://charts.vibioh.fr"),
+			args{
+				pattern: DefaultPattern,
+			},
 			"https://charts.vibioh.fr",
 		},
 		{
 			"invalid",
 			NewRepository(0, Helm, "charts.fr"),
+			args{
+				pattern: DefaultPattern,
+			},
 			"charts.fr",
 		},
 		{
 			"github",
 			NewRepository(0, Github, "vibioh/ketchup").AddVersion(DefaultPattern, "1.0.0"),
+			args{
+				pattern: DefaultPattern,
+			},
 			"https://github.com/vibioh/ketchup/releases/tag/1.0.0",
 		},
 	}
 
 	for _, tc := range cases {
 		t.Run(tc.intention, func(t *testing.T) {
-			if got := tc.instance.URL(); got != tc.want {
+			if got := tc.instance.URL(tc.args.pattern); got != tc.want {
 				t.Errorf("URL() = `%s`, want `%s`", got, tc.want)
 			}
 		})
@@ -68,6 +82,7 @@ func TestURL(t *testing.T) {
 func TestCompareURL(t *testing.T) {
 	type args struct {
 		version string
+		pattern string
 	}
 
 	var cases = []struct {
@@ -87,6 +102,7 @@ func TestCompareURL(t *testing.T) {
 			NewRepository(0, Github, "vibioh/ketchup").AddVersion(DefaultPattern, "1.1.0"),
 			args{
 				version: "1.0.0",
+				pattern: DefaultPattern,
 			},
 			"https://github.com/vibioh/ketchup/compare/1.1.0...1.0.0",
 		},
@@ -94,7 +110,7 @@ func TestCompareURL(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.intention, func(t *testing.T) {
-			if got := tc.instance.CompareURL(tc.args.version); got != tc.want {
+			if got := tc.instance.CompareURL(tc.args.version, tc.args.pattern); got != tc.want {
 				t.Errorf("URL() = `%s`, want `%s`", got, tc.want)
 			}
 		})

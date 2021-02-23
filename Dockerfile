@@ -7,9 +7,6 @@ ENV ZONEINFO /zoneinfo.zip
 COPY zoneinfo.zip /zoneinfo.zip
 COPY ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
 
-COPY templates/ /templates
-COPY static/ /static
-
 HEALTHCHECK --retries=5 CMD [ "/ketchup", "-url", "http://localhost:1080/health" ]
 ENTRYPOINT [ "/ketchup" ]
 

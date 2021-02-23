@@ -217,12 +217,12 @@
 
           <p class="no-margin padding">
             <span>
-              <a class="{{ if ne .Version (index .Repository.Versions .Pattern) }}danger{{ else }}success{{ end }}" href="{{ .Repository.URL }}">{{ .Version }}</a>
+              <a class="{{ if ne .Version (index .Repository.Versions .Pattern) }}danger{{ else }}success{{ end }}" href="{{ .Repository.URL .Pattern }}">{{ .Version }}</a>
             </span>
 
             {{ if ne .Version (index .Repository.Versions .Pattern) }}
               <span>
-                &nbsp;->&nbsp;<a class="success" href="{{ .Repository.URL }}">{{ index .Repository.Versions .Pattern }}</a>
+                &nbsp;->&nbsp;<a class="success" href="{{ .Repository.URL .Pattern }}">{{ index .Repository.Versions .Pattern }}</a>
               </span>
             {{ end }}
           </p>
@@ -233,7 +233,7 @@
 
         <div>
           {{ if ne .Version (index .Repository.Versions .Pattern) }}
-            <a href="{{ .Repository.CompareURL .Version }}" class="button button-icon" title="Compare">
+            <a href="{{ .Repository.CompareURL .Version .Pattern }}" class="button button-icon" title="Compare">
               <img class="icon" src="/svg/eyes?fill=silver" alt="Compare icon">
             </a>
 

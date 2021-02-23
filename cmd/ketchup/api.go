@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"embed"
 	"flag"
 	"net/http"
 	"os"
@@ -40,6 +41,9 @@ const (
 	appPath    = "/app"
 	signupPath = "/signup"
 )
+
+//go:embed templates static
+var content embed.FS
 
 func initAuth(db *sql.DB) (authService.App, authMiddleware.App) {
 	authProvider := authStore.New(db)
@@ -92,7 +96,7 @@ func main() {
 	logger.Fatal(err)
 	defer mailerApp.Close()
 
-	publicRendererApp, err := renderer.New(rendererConfig, ketchup.FuncMap)
+	publicRendererApp, err := renderer.New(rendererConfig, content, ketchup.FuncMap)
 	logger.Fatal(err)
 
 	schedulerApp := scheduler.New(schedulerConfig, repositoryServiceApp, ketchupServiceApp, mailerApp)
