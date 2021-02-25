@@ -56,7 +56,7 @@ CREATE TABLE ketchup.repository_version (
   version TEXT NOT NULL
 );
 
-CREATE UNIQUE INDEX repository_version ON ketchup.repository_version(repository_id, pattern);
+CREATE UNIQUE INDEX repository_version_id ON ketchup.repository_version(repository_id, pattern);
 
 -- ketchup
 CREATE TABLE ketchup.ketchup (
