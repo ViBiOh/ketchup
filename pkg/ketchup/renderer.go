@@ -21,7 +21,9 @@ func (a app) generateToken() (string, int64, error) {
 		return "", 0, fmt.Errorf("unable to generate random int: %w", err)
 	}
 
-	return a.tokenStore.Store(questionID, time.Minute*5), questionID.Int64(), nil
+	id := questionID.Int64()
+
+	return a.tokenStore.Store(id, time.Minute*5), id, nil
 }
 
 func (a app) PublicTemplateFunc(r *http.Request) (string, int, map[string]interface{}, error) {
