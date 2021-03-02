@@ -8,7 +8,7 @@ spec:
   chart:
     spec:
       chart: app
-      version: "0.0.47"
+      version: '0.0.47'
       sourceRef:
         kind: HelmRepository
         name: vibioh
@@ -16,6 +16,7 @@ spec:
       interval: 120m
   install:
     skipCRDs: true
+  maxHistory: 3
   upgrade:
     remediation:
       retries: 3
@@ -26,9 +27,9 @@ spec:
     image:
       repository: vibioh/ketchup:202103012031 # {"$imagepolicy": "default:flux-ketchup-web"}
     config:
-      KETCHUP_LOGGER_JSON: "true"
+      KETCHUP_LOGGER_JSON: 'true'
       KETCHUP_DB_HOST: ketchup-db
-      KETCHUP_DB_PORT: "80"
+      KETCHUP_DB_PORT: '80'
       KETCHUP_DB_NAME: ketchup
       KETCHUP_DB_USER: ketchup
     secrets:
@@ -38,7 +39,7 @@ spec:
     ingress:
       enabled: true
       hosts:
-      - ketchup.vibioh.fr
+        - ketchup.vibioh.fr
 ---
 apiVersion: helm.toolkit.fluxcd.io/v2beta1
 kind: HelmRelease
@@ -50,7 +51,7 @@ spec:
   chart:
     spec:
       chart: postgres
-      version: "0.0.19"
+      version: '0.0.19'
       sourceRef:
         kind: HelmRepository
         name: vibioh
@@ -58,6 +59,7 @@ spec:
       interval: 120m
   install:
     skipCRDs: true
+  maxHistory: 3
   upgrade:
     remediation:
       retries: 3
