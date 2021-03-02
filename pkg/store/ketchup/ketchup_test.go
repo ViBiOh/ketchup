@@ -39,6 +39,16 @@ func testWithMock(t *testing.T, action func(*sql.DB, sqlmock.Sqlmock)) {
 	}
 }
 
+func testWithTransaction(t *testing.T, mockDb *sql.DB, mock sqlmock.Sqlmock) context.Context {
+	mock.ExpectBegin()
+	tx, err := mockDb.Begin()
+	if err != nil {
+		t.Errorf("unable to create tx: %s", err)
+	}
+
+	return db.StoreTx(testCtx, tx)
+}
+
 func TestList(t *testing.T) {
 	type args struct {
 		page     uint
@@ -361,12 +371,7 @@ func TestCreate(t *testing.T) {
 	for _, tc := range cases {
 		t.Run(tc.intention, func(t *testing.T) {
 			testWithMock(t, func(mockDb *sql.DB, mock sqlmock.Sqlmock) {
-				mock.ExpectBegin()
-				tx, err := mockDb.Begin()
-				if err != nil {
-					t.Errorf("unable to create tx: %s", err)
-				}
-				ctx := db.StoreTx(testCtx, tx)
+				ctx := testWithTransaction(t, mockDb, mock)
 
 				mock.ExpectQuery("INSERT INTO ketchup.ketchup").WithArgs(model.DefaultPattern, "0.9.0", 1, 3).WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(1))
 
@@ -414,12 +419,7 @@ func TestUpdate(t *testing.T) {
 	for _, tc := range cases {
 		t.Run(tc.intention, func(t *testing.T) {
 			testWithMock(t, func(mockDb *sql.DB, mock sqlmock.Sqlmock) {
-				mock.ExpectBegin()
-				tx, err := mockDb.Begin()
-				if err != nil {
-					t.Errorf("unable to create tx: %s", err)
-				}
-				ctx := db.StoreTx(testCtx, tx)
+				ctx := testWithTransaction(t, mockDb, mock)
 
 				mock.ExpectExec("UPDATE ketchup.ketchup SET pattern = .+, version = .+").WithArgs(1, 3, model.DefaultPattern, "0.9.0").WillReturnResult(sqlmock.NewResult(0, 1))
 
@@ -463,12 +463,7 @@ func TestDelete(t *testing.T) {
 	for _, tc := range cases {
 		t.Run(tc.intention, func(t *testing.T) {
 			testWithMock(t, func(mockDb *sql.DB, mock sqlmock.Sqlmock) {
-				mock.ExpectBegin()
-				tx, err := mockDb.Begin()
-				if err != nil {
-					t.Errorf("unable to create tx: %s", err)
-				}
-				ctx := db.StoreTx(testCtx, tx)
+				ctx := testWithTransaction(t, mockDb, mock)
 
 				mock.ExpectExec("DELETE FROM ketchup.ketchup").WithArgs(1, 3).WillReturnResult(sqlmock.NewResult(0, 1))
 
