@@ -190,6 +190,22 @@ func TestParse(t *testing.T) {
 			errors.New("unable to parse version"),
 		},
 		{
+			"prefixed version",
+			args{
+				version: "stable-2.10.1",
+			},
+			Version{"stable-2.10.1", 2, 10, 1, 0},
+			nil,
+		},
+		{
+			"edge version",
+			args{
+				version: "edge-2.10.1",
+			},
+			Version{"edge-2.10.1", 2, 10, 1, edge},
+			nil,
+		},
+		{
 			"flag rc version",
 			args{
 				version: "v2.27.0-rc1",
