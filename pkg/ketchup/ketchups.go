@@ -49,7 +49,6 @@ func (a app) handleCreate(w http.ResponseWriter, r *http.Request) {
 
 	created, err := a.ketchupService.Create(r.Context(), item)
 	if err != nil {
-		fmt.Println(err)
 		a.rendererApp.Error(w, err)
 		return
 	}
