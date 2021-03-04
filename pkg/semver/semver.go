@@ -23,16 +23,15 @@ const (
 	alpha NonFinalVersion = iota + 1
 	beta
 	canary
-	edge
 	rc
 	test
 )
 
 var (
 	// According to https://semver.org/#spec-item-11
-	semverMatcher = regexp.MustCompile(`(?i)^([a-zA-Z-]*)([0-9]+)\.([0-9]+)(?:\.([0-9]+))?(-[a-zA-Z0-9.]+)?(?:\+[a-zA-Z0-9.]+)?$`)
+	semverMatcher = regexp.MustCompile(`(?i)^[a-zA-Z]*([0-9]+)\.([0-9]+)(?:\.([0-9]+))?(-[a-zA-Z0-9.]+)?(?:\+[a-zA-Z0-9.]+)?$`)
 
-	nonFinalVersions = []string{"alpha", "beta", "canary", "edge", "rc", "test"}
+	nonFinalVersions = []string{"alpha", "beta", "canary", "rc", "test"}
 
 	// NoneVersion is the empty semver
 	NoneVersion = Version{}
@@ -102,20 +101,20 @@ func Parse(version string) (Version, error) {
 	}
 	var err error
 
-	semver.major, err = strconv.ParseUint(matches[2], 10, 64)
+	semver.major, err = strconv.ParseUint(matches[1], 10, 64)
 	if err != nil {
 		return NoneVersion, fmt.Errorf("version major is not numeric")
 	}
 
-	if len(matches[3]) != 0 {
-		semver.minor, err = strconv.ParseUint(matches[3], 10, 64)
+	if len(matches[2]) != 0 {
+		semver.minor, err = strconv.ParseUint(matches[2], 10, 64)
 		if err != nil {
 			return NoneVersion, fmt.Errorf("version minor is not numeric")
 		}
 	}
 
-	if len(matches[4]) != 0 {
-		semver.patch, err = strconv.ParseUint(matches[4], 10, 64)
+	if len(matches[3]) != 0 {
+		semver.patch, err = strconv.ParseUint(matches[3], 10, 64)
 		if err != nil {
 			return NoneVersion, fmt.Errorf("version patch is not numeric")
 		}
@@ -125,16 +124,12 @@ func Parse(version string) (Version, error) {
 }
 
 func parseNonFinalVersion(matches []string) NonFinalVersion {
-	if len(matches[1]) <= 1 && len(matches[5]) == 0 {
+	if len(matches[4]) == 0 {
 		return -1
 	}
 
 	for index, nonFinalVersion := range nonFinalVersions {
-		if strings.Contains(matches[1], nonFinalVersion) {
-			return NonFinalVersion(index + 1)
-		}
-
-		if len(matches[5]) != 0 && strings.Contains(matches[5], nonFinalVersion) {
+		if strings.Contains(matches[4], nonFinalVersion) {
 			return NonFinalVersion(index + 1)
 		}
 	}
