@@ -12,7 +12,6 @@ import (
 	"github.com/ViBiOh/ketchup/pkg/helm"
 	"github.com/ViBiOh/ketchup/pkg/model"
 	"github.com/ViBiOh/ketchup/pkg/semver"
-	"github.com/ViBiOh/ketchup/pkg/service"
 	"github.com/ViBiOh/ketchup/pkg/store/repository"
 )
 
@@ -194,7 +193,7 @@ func (a app) check(ctx context.Context, old, new model.Repository) error {
 		output = append(output, errors.New("name already exists"))
 	}
 
-	return service.ConcatError(output)
+	return httpModel.ConcatError(output)
 }
 
 func (a app) LatestVersions(repo model.Repository) (map[string]semver.Version, error) {

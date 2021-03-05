@@ -10,7 +10,6 @@ import (
 	httpModel "github.com/ViBiOh/httputils/v4/pkg/model"
 	"github.com/ViBiOh/ketchup/pkg/model"
 	"github.com/ViBiOh/ketchup/pkg/semver"
-	"github.com/ViBiOh/ketchup/pkg/service"
 	"github.com/ViBiOh/ketchup/pkg/service/repository"
 	"github.com/ViBiOh/ketchup/pkg/store/ketchup"
 )
@@ -156,7 +155,7 @@ func (a app) check(ctx context.Context, old, new model.Ketchup) error {
 	}
 
 	if new.Repository.ID == 0 && new.User.ID == 0 {
-		return service.ConcatError(output)
+		return httpModel.ConcatError(output)
 	}
 
 	if len(strings.TrimSpace(new.Pattern)) == 0 {
@@ -178,7 +177,7 @@ func (a app) check(ctx context.Context, old, new model.Ketchup) error {
 		}
 	}
 
-	return service.ConcatError(output)
+	return httpModel.ConcatError(output)
 }
 
 func enrichKetchupsWithSemver(list []model.Ketchup) []model.Ketchup {

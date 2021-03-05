@@ -11,7 +11,6 @@ import (
 	"github.com/ViBiOh/httputils/v4/pkg/logger"
 	httpModel "github.com/ViBiOh/httputils/v4/pkg/model"
 	"github.com/ViBiOh/ketchup/pkg/model"
-	"github.com/ViBiOh/ketchup/pkg/service"
 	"github.com/ViBiOh/ketchup/pkg/store/user"
 )
 
@@ -102,5 +101,5 @@ func (a app) check(ctx context.Context, _, new model.User) error {
 		output = append(output, errors.New("email already used"))
 	}
 
-	return service.ConcatError(output)
+	return httpModel.ConcatError(output)
 }
