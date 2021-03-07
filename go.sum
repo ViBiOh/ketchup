@@ -16,6 +16,8 @@ github.com/ViBiOh/httputils/v4 v4.3.0 h1:4Az+w8qipdzNA3Jdeg4UAqU4Io7q7BPa821kVvt
 github.com/ViBiOh/httputils/v4 v4.3.0/go.mod h1:+mwW3YVDPI9y1Fx1ZXbehJPqWDFtlDLsNL5otGeBSBw=
 github.com/ViBiOh/mailer v1.16.0 h1:OR7cbWXN6ZyNlom/WcIw3NmXXTLRBwiMMXbVTYDO9Cc=
 github.com/ViBiOh/mailer v1.16.0/go.mod h1:ZR3J829riosdgLRc6tAi+at4RAfNWgP2KOiAJEButZw=
+github.com/ViBiOh/mailer v1.16.1 h1:v1D3cHda1tYZ6BMGtzwRKfBijfUp0B3UBDWvnem/fLY=
+github.com/ViBiOh/mailer v1.16.1/go.mod h1:OQLes6l3yYUaa6ztnB/yAIsHCqysoir+VW99npVFHPI=
 github.com/VividCortex/gohistogram v1.0.0/go.mod h1:Pf5mBqqDxYaXu3hDrrU+w6nw50o/4+TcAqDqk/vUH7g=
 github.com/afex/hystrix-go v0.0.0-20180502004556-fa1af6a1f4f5/go.mod h1:SkGFH1ia65gfNATL8TAiHDNxPzPdmEL5uirI2Uyuz6c=
 github.com/alecthomas/template v0.0.0-20160405071501-a0175ee3bccc/go.mod h1:LOuyumcjzFXgccqObfd/Ljyb9UuFJ6TxHnclSeseNhc=
