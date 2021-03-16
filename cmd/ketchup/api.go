@@ -27,6 +27,7 @@ import (
 	"github.com/ViBiOh/ketchup/pkg/helm"
 	"github.com/ViBiOh/ketchup/pkg/ketchup"
 	"github.com/ViBiOh/ketchup/pkg/middleware"
+	"github.com/ViBiOh/ketchup/pkg/notifier"
 	"github.com/ViBiOh/ketchup/pkg/scheduler"
 	ketchupService "github.com/ViBiOh/ketchup/pkg/service/ketchup"
 	repositoryService "github.com/ViBiOh/ketchup/pkg/service/repository"
@@ -69,6 +70,7 @@ func main() {
 	dbConfig := db.Flags(fs, "db")
 	mailerConfig := mailer.Flags(fs, "mailer")
 	githubConfig := github.Flags(fs, "github")
+	notifierConfig := notifier.Flags(fs, "notifier")
 	schedulerConfig := scheduler.Flags(fs, "scheduler")
 
 	logger.Fatal(fs.Parse(os.Args[1:]))
@@ -83,6 +85,11 @@ func main() {
 
 	ketchupDb, err := db.New(dbConfig)
 	logger.Fatal(err)
+	defer func() {
+		if err := ketchupDb.Close(); err != nil {
+			logger.Error("error while closing database connection: %s", err)
+		}
+	}()
 
 	healthApp := health.New(healthConfig, ketchupDb.Ping)
 
@@ -99,7 +106,8 @@ func main() {
 	publicRendererApp, err := renderer.New(rendererConfig, content, ketchup.FuncMap)
 	logger.Fatal(err)
 
-	schedulerApp := scheduler.New(schedulerConfig, repositoryServiceApp, ketchupServiceApp, mailerApp)
+	notifierApp := notifier.New(notifierConfig, repositoryServiceApp, ketchupServiceApp, mailerApp)
+	schedulerApp := scheduler.New(schedulerConfig, notifierApp)
 	ketchupApp := ketchup.New(publicRendererApp, ketchupServiceApp, userServiceApp, repositoryServiceApp)
 
 	publicHandler := publicRendererApp.Handler(ketchupApp.PublicTemplateFunc)
@@ -120,8 +128,10 @@ func main() {
 		publicHandler.ServeHTTP(w, r)
 	})
 
-	go schedulerApp.Start(healthApp.Done())
 	go ketchupApp.Start(healthApp.Done())
+	if schedulerApp != nil {
+		go schedulerApp.Start(healthApp.Done())
+	}
 
 	go promServer.Start("prometheus", healthApp.End(), prometheusApp.Handler())
 	go appServer.Start("http", healthApp.End(), httputils.Handler(appHandler, healthApp, prometheusApp.Middleware, owasp.New(owaspConfig).Middleware, cors.New(corsConfig).Middleware))

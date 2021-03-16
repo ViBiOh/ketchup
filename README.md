@@ -55,9 +55,9 @@ You'll find a Kubernetes exemple in the [`infra/`](infra/) folder, using my [`ap
 ```bash
 Usage of ketchup:
   -address string
-        [http] Listen address {KETCHUP_ADDRESS}
+        [server] Listen address {KETCHUP_ADDRESS}
   -cert string
-        [http] Certificate file {KETCHUP_CERT}
+        [server] Certificate file {KETCHUP_CERT}
   -corsCredentials
         [cors] Access-Control-Allow-Credentials {KETCHUP_CORS_CREDENTIALS}
   -corsExpose string
@@ -91,9 +91,9 @@ Usage of ketchup:
   -hsts
         [owasp] Indicate Strict Transport Security {KETCHUP_HSTS} (default true)
   -idleTimeout string
-        [http] Idle Timeout {KETCHUP_IDLE_TIMEOUT} (default "2m")
+        [server] Idle Timeout {KETCHUP_IDLE_TIMEOUT} (default "2m")
   -key string
-        [http] Key file {KETCHUP_KEY}
+        [server] Key file {KETCHUP_KEY}
   -loggerJson
         [logger] Log format as JSON {KETCHUP_LOGGER_JSON}
   -loggerLevel string
@@ -104,44 +104,56 @@ Usage of ketchup:
         [logger] Key for message in JSON {KETCHUP_LOGGER_MESSAGE_KEY} (default "message")
   -loggerTimeKey string
         [logger] Key for timestamp in JSON {KETCHUP_LOGGER_TIME_KEY} (default "time")
-  -mailerPass string
-        [mailer] Pass {KETCHUP_MAILER_PASS}
+  -mailerName string
+        [mailer] HTTP Username or AMQP Exchange name {KETCHUP_MAILER_NAME} (default "mailer")
+  -mailerPassword string
+        [mailer] HTTP Pass {KETCHUP_MAILER_PASSWORD}
   -mailerURL string
-        [mailer] URL (an instance of github.com/ViBiOh/mailer) {KETCHUP_MAILER_URL}
-  -mailerUser string
-        [mailer] User {KETCHUP_MAILER_USER}
+        [mailer] URL (https?:// or amqps?://) {KETCHUP_MAILER_URL}
+  -notifierLoginID uint
+        [notifier] Scheduler user ID {KETCHUP_NOTIFIER_LOGIN_ID} (default 1)
   -okStatus int
         [http] Healthy HTTP Status code {KETCHUP_OK_STATUS} (default 204)
   -port uint
-        [http] Listen port {KETCHUP_PORT} (default 1080)
+        [server] Listen port {KETCHUP_PORT} (default 1080)
+  -prometheusAddress string
+        [prometheus] Listen address {KETCHUP_PROMETHEUS_ADDRESS}
+  -prometheusCert string
+        [prometheus] Certificate file {KETCHUP_PROMETHEUS_CERT}
+  -prometheusIdleTimeout string
+        [prometheus] Idle Timeout {KETCHUP_PROMETHEUS_IDLE_TIMEOUT} (default "10s")
   -prometheusIgnore string
         [prometheus] Ignored path prefixes for metrics, comma separated {KETCHUP_PROMETHEUS_IGNORE}
-  -prometheusPath string
-        [prometheus] Path for exposing metrics {KETCHUP_PROMETHEUS_PATH} (default "/metrics")
+  -prometheusKey string
+        [prometheus] Key file {KETCHUP_PROMETHEUS_KEY}
+  -prometheusPort uint
+        [prometheus] Listen port {KETCHUP_PROMETHEUS_PORT} (default 9090)
+  -prometheusReadTimeout string
+        [prometheus] Read Timeout {KETCHUP_PROMETHEUS_READ_TIMEOUT} (default "5s")
+  -prometheusShutdownTimeout string
+        [prometheus] Shutdown Timeout {KETCHUP_PROMETHEUS_SHUTDOWN_TIMEOUT} (default "5s")
+  -prometheusWriteTimeout string
+        [prometheus] Write Timeout {KETCHUP_PROMETHEUS_WRITE_TIMEOUT} (default "10s")
   -publicURL string
-        [] Public URL {KETCHUP_PUBLIC_URL} (default "https://ketchup.vibioh.fr")
+        Public URL {KETCHUP_PUBLIC_URL} (default "https://ketchup.vibioh.fr")
   -readTimeout string
-        [http] Read Timeout {KETCHUP_READ_TIMEOUT} (default "5s")
+        [server] Read Timeout {KETCHUP_READ_TIMEOUT} (default "5s")
+  -schedulerEnabled
+        [scheduler] Enable cron job {KETCHUP_SCHEDULER_ENABLED} (default true)
   -schedulerHour string
         [scheduler] Hour of cron, 24-hour format {KETCHUP_SCHEDULER_HOUR} (default "08:00")
-  -schedulerLoginID uint
-        [scheduler] Scheduler user ID {KETCHUP_SCHEDULER_LOGIN_ID} (default 1)
   -schedulerTimezone string
         [scheduler] Timezone {KETCHUP_SCHEDULER_TIMEZONE} (default "Europe/Paris")
   -shutdownTimeout string
-        [http] Shutdown Timeout {KETCHUP_SHUTDOWN_TIMEOUT} (default "10s")
-  -static string
-        [] Static folder, content served directly {KETCHUP_STATIC} (default "./static/")
-  -templates string
-        [] HTML Templates folder {KETCHUP_TEMPLATES} (default "./templates/")
+        [server] Shutdown Timeout {KETCHUP_SHUTDOWN_TIMEOUT} (default "10s")
   -title string
-        [] Application title {KETCHUP_TITLE} (default "Ketchup")
+        Application title {KETCHUP_TITLE} (default "Ketchup")
   -url string
         [alcotest] URL to check {KETCHUP_URL}
   -userAgent string
         [alcotest] User-Agent for check {KETCHUP_USER_AGENT} (default "Alcotest")
   -writeTimeout string
-        [http] Write Timeout {KETCHUP_WRITE_TIMEOUT} (default "10s")
+        [server] Write Timeout {KETCHUP_WRITE_TIMEOUT} (default "10s")
 ```
 
 ## Contributing
