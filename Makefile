@@ -6,12 +6,19 @@ ifneq ("$(wildcard .env)","")
 endif
 
 APP_NAME = ketchup
+NOTIFIER_NAME = notifier
 PACKAGES ?= ./...
 
 MAIN_SOURCE = cmd/ketchup/api.go
 MAIN_RUNNER = go run $(MAIN_SOURCE)
 ifeq ($(DEBUG), true)
 	MAIN_RUNNER = dlv debug $(MAIN_SOURCE) --
+endif
+
+NOTIFIER_SOURCE = cmd/notifier/notifier.go
+NOTIFIER_RUNNER = go run $(NOTIFIER_SOURCE)
+ifeq ($(DEBUG), true)
+	NOTIFIER_RUNNER = dlv debug $(NOTIFIER_SOURCE) --
 endif
 
 .DEFAULT_GOAL := app
@@ -76,8 +83,14 @@ bench:
 .PHONY: build
 build:
 	CGO_ENABLED=0 go build -ldflags="-s -w" -installsuffix nocgo -o bin/$(APP_NAME) $(MAIN_SOURCE)
+	CGO_ENABLED=0 go build -ldflags="-s -w" -installsuffix nocgo -o bin/$(NOTIFIER_NAME) $(NOTIFIER_SOURCE)
 
 ## run: Locally run the application, e.g. node index.js, python -m myapp, go run myapp etc ...
 .PHONY: run
 run:
 	$(MAIN_RUNNER)
+
+## run-notifier: Locally run the notifier of the application
+.PHONY: run-notifier
+run-notifier:
+	$(NOTIFIER_RUNNER)
