@@ -1,0 +1,32 @@
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: ketchup-db
+  namespace: default
+spec:
+  interval: 120m
+  chart:
+    spec:
+      chart: postgres
+      version: "0.0.19"
+      sourceRef:
+        kind: HelmRepository
+        name: vibioh
+        namespace: default
+      interval: 120m
+  install:
+    skipCRDs: true
+  maxHistory: 3
+  upgrade:
+    remediation:
+      retries: 3
+  rollback:
+    cleanupOnFail: true
+  values:
+    nameOverride: ketchup-db
+    config:
+      POSTGRES_USER: ketchup
+      POSTGRES_DB: ketchup
+    secrets:
+      POSTGRES_PASSWORD: AgAr0Y20QTFxHs7/7JHFv4aZK3fCpJm617TG7PcWjjBJspGYg25EABKiYAsLFT11HEAzZAjm3AIKf80YNy+YsdFku6psgkb6JLcKLt9FjCsjogLAaoXwOrpGoXdtXh0BU7epnE7bZy4jgey0kq/Ql5RKzPnF8jGNzVXhqzOVLheCu6PHJ9vJz7pbk9oQSaI13JaroW/V6bFq3z0thPjNZoyQRCQnd1rYm3yCTRjoSYjue/0F9I7hNZldSVNsKM/2BzlafWcWHexYiq4e16z2RIyKs9M+GmRELT/ep0ZkotLXX4XczJbo+zDYzHUkUCsRdUVqENugoNORHjZM9vOy+Mr2ZuyUcfD94fYTVPC9g18Qsr2I45m6oH4dIPZT+l7BWb2GwYpB/+ScYGJbroRwTog5SA7hittbXp6mBtD7knXrr04OfM6nkDCc9AyzMN/QmwJsY28AQCXFfiOGvBmn7peYD32KOmrNHPQ7xx4QC7ZCw0wqaKIGaFfn6Ly9tdR9/9dUi2f1UfgxHsUls0QZBMZ5rjkGKPhIR0o14i/RxP8+hghQYIfuQcrP0VdS+7zT2Q7ArtxWwt2pzapoGmWJ6jN/+QxZ9js+hz+LGp7A6KXw3VrCsm6m6xhaydXEOC2EQ/oJHz4uZhLSx+mDg+gVeVPtlzlmd8xPEv9S8UvzybJGH+EU8umNDP8z3Rcldww4qJ3V2dIpBeXj0dVWKyMj+oCs6lyQCo6Bhg9zwRmFFzbn4JOf1PV7Zi5F9s2+bMGfJPj1v5kzUYDBKlPYnwQ=
+      FIBR_BACKUP_PASSWORD: AgASIOVq6rvTyG5ohWtYw/X57njWZ9IPs4dhYxBvgMPGXcnk94R2t9bfSnxO/NAZWnCvrllS1PLRp/tYd8vUcf+bOr8OZrnVqbpklHVmiWcQR2qPmStjx5zrkOJD+wHhk8OpFXkJdqzrxVcoN1Sx69EiPNwFkX312808RCztshhfzDDK+u5lTlZ696v9M3a3zMPLEfZXVkVRPMW1Uq0suUWgMVjskGoRt4UpCKPPo/bZD0yzhVVzLjEGNJMDMauQ8dmNSjjaWglPZEWEcZFCzubtrIQvkoN992SraJLsJbg7l+ZFXPE6K2aiuylgkryid83tpwGhEZO0gMzZcUWEkU98pJ1LbWyXupIifHHpc9ayrxkdOsqPb96FlwzQl+fy1T0O3LOpeOwlVQSBMidDGI1P5oRWhNzZxulZgxlx8gFfzcFRzfdh9fULJTIOd/Dfj11Qc4dCHdQfpf7YfsLyRcpAvILWp50uYpdODYZonkqsTSw1BsAG+4PTfahbYo5ugMPpIAcRruvTe0cs31+sZp+Grn4bvyPVuI1DOcAYAiymRSLuRVkSPIl8r2uWSQgFEnyuo9Hyz6ju8lZkESBV1czUTPF07rltIYhFaOI+8Bp0LciZYKRoq8BUWtFjFHaHaREmcwlori/Tb1rrI7BExi0xhQhukOtQclOUWyMImzksiVGeZCVp4EZBJXgClPxbBiScR485ARGVratV6doqmisyyqmgfnf0Qo62T8Bvqqocj/sfqWy+TxWET0PvYUfzxby8gk9tJTV08eez+wk=
