@@ -8,7 +8,7 @@ spec:
   chart:
     spec:
       chart: app
-      version: "0.0.55"
+      version: "0.0.5!"
       sourceRef:
         kind: HelmRepository
         name: vibioh
@@ -40,3 +40,6 @@ spec:
       enabled: true
       hosts:
       - ketchup.vibioh.fr
+    canary:
+      enabled: true
+      url: https://ketchup.vibioh.fr
