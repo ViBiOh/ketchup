@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"sort"
+	"strings"
 
 	authModel "github.com/ViBiOh/auth/v2/pkg/model"
 	"github.com/ViBiOh/httputils/v4/pkg/flags"
@@ -15,6 +16,7 @@ import (
 	"github.com/ViBiOh/ketchup/pkg/service/repository"
 	mailer "github.com/ViBiOh/mailer/pkg/client"
 	mailerModel "github.com/ViBiOh/mailer/pkg/model"
+	"github.com/prometheus/client_golang/prometheus/push"
 )
 
 var (
@@ -29,6 +31,7 @@ type App interface {
 // Config of package
 type Config struct {
 	loginID *uint
+	pushURL *string
 }
 
 type app struct {
@@ -36,6 +39,7 @@ type app struct {
 	ketchupService    ketchup.App
 	mailerApp         mailer.App
 
+	pushURL string
 	loginID uint64
 }
 
@@ -43,6 +47,7 @@ type app struct {
 func Flags(fs *flag.FlagSet, prefix string) Config {
 	return Config{
 		loginID: flags.New(prefix, "notifier").Name("LoginID").Default(1).Label("Scheduler user ID").ToUint(fs),
+		pushURL: flags.New(prefix, "notifier").Name("PushUrl").Default("").Label("Pushgateway URL").ToString(fs),
 	}
 }
 
@@ -50,6 +55,7 @@ func Flags(fs *flag.FlagSet, prefix string) Config {
 func New(config Config, repositoryService repository.App, ketchupService ketchup.App, mailerApp mailer.App) App {
 	return app{
 		loginID: uint64(*config.loginID),
+		pushURL: strings.TrimSpace(*config.pushURL),
 
 		repositoryService: repositoryService,
 		ketchupService:    ketchupService,
@@ -81,6 +87,17 @@ func (a app) Notify() error {
 
 	if err := a.sendNotification(ctx, ketchupsToNotify); err != nil {
 		return err
+	}
+
+	if len(a.pushURL) != 0 {
+		registry, releasesMetrics, notificationsMetrics := configurePrometheus()
+
+		releasesMetrics.Set(float64(len(newReleases)))
+		notificationsMetrics.Set(float64(len(ketchupsToNotify)))
+
+		if err := push.New(a.pushURL, "ketchup").Gatherer(registry).Push(); err != nil {
+			logger.Error("unable to push metrics: %s", err)
+		}
 	}
 
 	return nil

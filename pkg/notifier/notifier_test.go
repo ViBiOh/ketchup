@@ -39,7 +39,7 @@ func TestFlags(t *testing.T) {
 	}{
 		{
 			"simple",
-			"Usage of simple:\n  -loginID uint\n    \t[notifier] Scheduler user ID {SIMPLE_LOGIN_ID} (default 1)\n",
+			"Usage of simple:\n  -loginID uint\n    \t[notifier] Scheduler user ID {SIMPLE_LOGIN_ID} (default 1)\n  -pushUrl string\n    \t[notifier] Pushgateway URL {SIMPLE_PUSH_URL}\n",
 		},
 	}
 

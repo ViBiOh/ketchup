@@ -8,5 +8,6 @@ require (
 	github.com/ViBiOh/httputils/v4 v4.3.1
 	github.com/ViBiOh/mailer v1.16.2
 	github.com/lib/pq v1.10.0
+	github.com/prometheus/client_golang v1.9.0
 	gopkg.in/yaml.v2 v2.4.0
 )
