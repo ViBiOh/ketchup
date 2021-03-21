@@ -70,7 +70,7 @@ func (a app) Notify() error {
 		return fmt.Errorf("unable to clean repository before starting: %w", err)
 	}
 
-	newReleases, err := a.getNewReleases(ctx)
+	newReleases, repoCount, err := a.getNewReleases(ctx)
 	if err != nil {
 		return fmt.Errorf("unable to get new releases: %w", err)
 	}
@@ -90,10 +90,11 @@ func (a app) Notify() error {
 	}
 
 	if len(a.pushURL) != 0 {
-		registry, releasesMetrics, notificationsMetrics := configurePrometheus()
+		registry, metrics := configurePrometheus()
 
-		releasesMetrics.Set(float64(len(newReleases)))
-		notificationsMetrics.Set(float64(len(ketchupsToNotify)))
+		metrics.WithLabelValues("repositories").Set(float64(repoCount))
+		metrics.WithLabelValues("releases").Set(float64(len(newReleases)))
+		metrics.WithLabelValues("notifications").Set(float64(len(ketchupsToNotify)))
 
 		if err := push.New(a.pushURL, "ketchup").Gatherer(registry).Push(); err != nil {
 			logger.Error("unable to push metrics: %s", err)
@@ -103,15 +104,15 @@ func (a app) Notify() error {
 	return nil
 }
 
-func (a app) getNewReleases(ctx context.Context) ([]model.Release, error) {
+func (a app) getNewReleases(ctx context.Context) ([]model.Release, uint64, error) {
 	var newReleases []model.Release
-	count := 0
+	count := uint64(0)
 	page := uint(1)
 
 	for {
 		repositories, totalCount, err := a.repositoryService.List(ctx, page, pageSize)
 		if err != nil {
-			return nil, fmt.Errorf("unable to fetch page %d of repositories: %s", page, err)
+			return nil, count, fmt.Errorf("unable to fetch page %d of repositories: %s", page, err)
 		}
 
 		for _, repo := range repositories {
@@ -123,7 +124,7 @@ func (a app) getNewReleases(ctx context.Context) ([]model.Release, error) {
 			page++
 		} else {
 			logger.Info("%d repositories checked, %d new releases", count, len(newReleases))
-			return newReleases, nil
+			return newReleases, count, nil
 		}
 	}
 }

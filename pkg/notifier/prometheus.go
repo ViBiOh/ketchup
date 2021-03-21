@@ -2,21 +2,15 @@ package notifier
 
 import "github.com/prometheus/client_golang/prometheus"
 
-func configurePrometheus() (prometheus.Gatherer, prometheus.Gauge, prometheus.Gauge) {
+func configurePrometheus() (prometheus.Gatherer, *prometheus.GaugeVec) {
 	namespace := "ketchup"
 	promRegistry := prometheus.NewRegistry()
 
-	releasesMetrics := prometheus.NewGauge(prometheus.GaugeOpts{
+	metrics := prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Namespace: namespace,
-		Name:      "releases",
-	})
-	promRegistry.MustRegister(releasesMetrics)
+		Name:      "metrics",
+	}, []string{"item"})
+	promRegistry.MustRegister(metrics)
 
-	notificationMetrics := prometheus.NewGauge(prometheus.GaugeOpts{
-		Namespace: namespace,
-		Name:      "notification",
-	})
-	promRegistry.MustRegister(notificationMetrics)
-
-	return promRegistry, releasesMetrics, notificationMetrics
+	return promRegistry, metrics
 }

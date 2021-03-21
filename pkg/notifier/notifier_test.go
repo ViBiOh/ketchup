@@ -137,7 +137,7 @@ func TestGetNewReleases(t *testing.T) {
 	for _, tc := range cases {
 		t.Run(tc.intention, func(t *testing.T) {
 			pageSize = 1
-			got, gotErr := tc.instance.getNewReleases(tc.args.ctx)
+			got, _, gotErr := tc.instance.getNewReleases(tc.args.ctx)
 			pageSize = 20
 
 			failed := false
