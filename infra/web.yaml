@@ -39,17 +39,17 @@ spec:
     affinity:
       podAffinity:
         requiredDuringSchedulingIgnoredDuringExecution:
-          - labelSelector:
-              topologyKey: kubernetes.io/hostname
-              matchExpressions:
-                - key: app.kubernetes.io/name
-                  operator: In
-                  values:
-                    - ketchup-db
+        - labelSelector:
+            topologyKey: kubernetes.io/hostname
+            matchExpressions:
+            - key: app.kubernetes.io/name
+              operator: In
+              values:
+              - ketchup-db
     ingress:
       enabled: true
       hosts:
-        - ketchup.vibioh.fr
+      - ketchup.vibioh.fr
     canary:
       enabled: true
       url: https://ketchup.vibioh.fr
