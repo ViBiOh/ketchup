@@ -3,6 +3,7 @@ package githubtest
 import (
 	"github.com/ViBiOh/ketchup/pkg/github"
 	"github.com/ViBiOh/ketchup/pkg/semver"
+	"github.com/prometheus/client_golang/prometheus"
 )
 
 var _ github.App = &App{}
@@ -29,4 +30,8 @@ func (a *App) SetLatestVersions(latestVersions map[string]semver.Version, err er
 // LatestVersions mock
 func (a App) LatestVersions(_ string, _ []string) (map[string]semver.Version, error) {
 	return a.latestVersions, a.latestVersionsErr
+}
+
+// Start mock
+func (a App) Start(_ prometheus.Registerer, _ <-chan struct{}) {
 }

@@ -96,7 +96,8 @@ func main() {
 	authServiceApp, authMiddlewareApp := initAuth(ketchupDb)
 
 	userServiceApp := userService.New(userStore.New(ketchupDb), authServiceApp)
-	repositoryServiceApp := repositoryService.New(repositoryStore.New(ketchupDb), github.New(githubConfig), helm.New())
+	githubApp := github.New(githubConfig)
+	repositoryServiceApp := repositoryService.New(repositoryStore.New(ketchupDb), githubApp, helm.New())
 	ketchupServiceApp := ketchupService.New(ketchupStore.New(ketchupDb), repositoryServiceApp)
 
 	mailerApp, err := mailer.New(mailerConfig)
@@ -129,6 +130,7 @@ func main() {
 	})
 
 	go ketchupApp.Start(healthApp.Done())
+	go githubApp.Start(prometheusApp.Registerer(), healthApp.Done())
 	if schedulerApp != nil {
 		go schedulerApp.Start(healthApp.Done())
 	}
