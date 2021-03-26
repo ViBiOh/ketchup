@@ -39,7 +39,7 @@ spec:
     ingress:
       enabled: true
       hosts:
-      - ketchup.vibioh.fr
+        - ketchup.vibioh.fr
     canary:
       enabled: true
       url: https://ketchup.vibioh.fr
