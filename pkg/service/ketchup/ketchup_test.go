@@ -19,7 +19,6 @@ var (
 	viwsRepository    = "vibioh/viws"
 
 	errAtomicStart = errors.New("invalid context")
-	errAtomicEnd   = errors.New("invalid context")
 )
 
 func TestList(t *testing.T) {

@@ -18,7 +18,6 @@ var (
 	testEmail = "nobody@localhost"
 
 	errAtomicStart = errors.New("invalid context")
-	errAtomicEnd   = errors.New("invalid context")
 )
 
 func TestStoreInContext(t *testing.T) {

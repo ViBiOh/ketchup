@@ -21,7 +21,6 @@ var (
 	viwsRepository    = "vibioh/viws"
 
 	errAtomicStart = errors.New("invalid context")
-	errAtomicEnd   = errors.New("invalid context")
 )
 
 func safeParse(version string) semver.Version {

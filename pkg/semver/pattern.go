@@ -3,7 +3,6 @@ package semver
 import (
 	"errors"
 	"fmt"
-	"regexp"
 )
 
 type operation int
@@ -16,13 +15,7 @@ const (
 var (
 	// NonePattern is the empty pattern
 	NonePattern = Pattern{}
-
-	operationsRegex *regexp.Regexp
 )
-
-func init() {
-	operationsRegex = regexp.MustCompile(`(?i)^(^|~)([0-9]+)(?:\.([0-9]+))(?:\.([0-9]+))?(-0)?$`)
-}
 
 type constraint struct {
 	version    Version

@@ -12,10 +12,6 @@ import (
 	"github.com/ViBiOh/ketchup/pkg/notifier"
 )
 
-var (
-	pageSize = uint(20)
-)
-
 // App of package
 type App interface {
 	Start(<-chan struct{})
