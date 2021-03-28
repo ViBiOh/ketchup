@@ -2,7 +2,6 @@ package github
 
 import (
 	"context"
-	"encoding/json"
 	"flag"
 	"fmt"
 	"net/http"
@@ -11,6 +10,7 @@ import (
 
 	"github.com/ViBiOh/httputils/v4/pkg/cron"
 	"github.com/ViBiOh/httputils/v4/pkg/flags"
+	"github.com/ViBiOh/httputils/v4/pkg/httpjson"
 	"github.com/ViBiOh/httputils/v4/pkg/logger"
 	"github.com/ViBiOh/httputils/v4/pkg/request"
 	"github.com/ViBiOh/ketchup/pkg/model"
@@ -110,14 +110,9 @@ func (a app) LatestVersions(repository string, patterns []string) (map[string]se
 			return nil, fmt.Errorf("unable to list page %d of tags: %s", page, err)
 		}
 
-		payload, err := request.ReadBodyResponse(resp)
-		if err != nil {
-			return nil, fmt.Errorf("unable to read page %d tags body: %s", page, err)
-		}
-
 		var tags []Tag
-		if err := json.Unmarshal(payload, &tags); err != nil {
-			return nil, fmt.Errorf("unable to parse page %d tags body `%s`: %s", page, payload, err)
+		if err := httpjson.Read(resp, &tags, fmt.Sprintf("tags #%d", page)); err != nil {
+			return nil, err
 		}
 
 		for _, tag := range tags {
@@ -145,14 +140,9 @@ func (a app) getRateLimit() (uint64, error) {
 		return 0, fmt.Errorf("unable to get rate limit: %s", err)
 	}
 
-	payload, err := request.ReadBodyResponse(resp)
-	if err != nil {
-		return 0, fmt.Errorf("unable to read rate limit body `%s`: %s", payload, err)
-	}
-
 	var rateLimits RateLimitResponse
-	if err := json.Unmarshal(payload, &rateLimits); err != nil {
-		return 0, fmt.Errorf("unable to parse rate limit response body `%s`: %s", payload, err)
+	if err := httpjson.Read(resp, &rateLimits, "rate limit"); err != nil {
+		return 0, err
 	}
 
 	return rateLimits.Resources["core"].Remaining, nil
