@@ -27,7 +27,7 @@ spec:
     schedule: "0 8 * * *"
     image:
       name: vibioh/ketchup-notifier
-      tag: "202103282053" # {"$imagepolicy": "default:flux-ketchup-notifier:tag"}
+      tag: "202103291432" # {"$imagepolicy": "default:flux-ketchup-notifier:tag"}
     config:
       KETCHUP_DB_HOST: ketchup-db
       KETCHUP_DB_NAME: ketchup
