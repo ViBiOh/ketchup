@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"os"
 
@@ -43,11 +44,11 @@ func main() {
 	logger.Fatal(err)
 	defer mailerApp.Close()
 
-	repositoryServiceApp := repositoryService.New(repositoryStore.New(ketchupDb), github.New(githubConfig), helm.New())
+	repositoryServiceApp := repositoryService.New(repositoryStore.New(ketchupDb), github.New(githubConfig, nil), helm.New())
 	ketchupServiceApp := ketchupService.New(ketchupStore.New(ketchupDb), repositoryServiceApp)
 
 	notifierApp := notifier.New(notifierConfig, repositoryServiceApp, ketchupServiceApp, mailerApp)
-	if err := notifierApp.Notify(); err != nil {
+	if err := notifierApp.Notify(context.Background()); err != nil {
 		logger.Fatal(err)
 	}
 }

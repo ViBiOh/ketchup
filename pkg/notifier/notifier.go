@@ -25,7 +25,7 @@ var (
 
 // App of package
 type App interface {
-	Notify() error
+	Notify(context.Context) error
 }
 
 // Config of package
@@ -63,29 +63,29 @@ func New(config Config, repositoryService repository.App, ketchupService ketchup
 	}
 }
 
-func (a app) Notify() error {
-	ctx := authModel.StoreUser(context.Background(), authModel.NewUser(a.loginID, "scheduler"))
+func (a app) Notify(ctx context.Context) error {
+	userCtx := authModel.StoreUser(ctx, authModel.NewUser(a.loginID, "scheduler"))
 
-	if err := a.repositoryService.Clean(ctx); err != nil {
+	if err := a.repositoryService.Clean(userCtx); err != nil {
 		return fmt.Errorf("unable to clean repository before starting: %w", err)
 	}
 
-	newReleases, repoCount, err := a.getNewReleases(ctx)
+	newReleases, repoCount, err := a.getNewReleases(userCtx)
 	if err != nil {
 		return fmt.Errorf("unable to get new releases: %w", err)
 	}
 
 	sort.Sort(model.ReleaseByRepositoryID(newReleases))
-	if err := a.updateRepositories(ctx, newReleases); err != nil {
+	if err := a.updateRepositories(userCtx, newReleases); err != nil {
 		return fmt.Errorf("unable to update repositories: %w", err)
 	}
 
-	ketchupsToNotify, err := a.getKetchupToNotify(ctx, newReleases)
+	ketchupsToNotify, err := a.getKetchupToNotify(userCtx, newReleases)
 	if err != nil {
 		return fmt.Errorf("unable to get ketchup to notify: %w", err)
 	}
 
-	if err := a.sendNotification(ctx, ketchupsToNotify); err != nil {
+	if err := a.sendNotification(userCtx, ketchupsToNotify); err != nil {
 		return err
 	}
 

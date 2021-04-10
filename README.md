@@ -30,7 +30,9 @@ Thanks to [FontAwesome](https://fontawesome.com) for icons.
 
 You need a [Github OAuth Token](https://github.com/settings/tokens), with no particular permission, for having a decent rate-limiting when querying Github. Configuration is done by passing `-githubToken` arg or setting equivalent environment variable (cf. [Usage](#usage) section)
 
-You need a Postgres database for storing your datas. I personnaly use free tier of [ElephantSQL](https://www.elephantsql.com). Once setup, you _have to_ to create schema with [Auth DDL](https://github.com/ViBiOh/auth/blob/main/ddl.sql) and [Ketchup DDL](sql/ddl.sql). Configuration is done by passing `-dbHost`, `-dbName`, `-dbUser`, `-dbPass` arg or setting equivalent environment variables (cf. [Usage](#usage) section).
+You need a Postgres database for storing your datas. I personnaly use free tier of [ElephantSQL](https://www.elephantsql.com). Once setup, you _have to_ to create schema with [Auth DDL](https://github.com/ViBiOh/auth/blob/main/ddl.sql) and [Ketchup DDL](sql/ddl.sql). Configuration is done by passing `-dbHost`, `-dbName`, `-dbUser`, `-dbPass` args or setting equivalent environment variables (cf. [Usage](#usage) section).
+
+You need a Redis instance for storing captcha token and distributed locks accross multiples instances. Configuration is done by passing `-redisAddress`, `-redisPassword`, `-redisDatabase` args or setting equivalent environment variables (cf. [Usage](#usage) section).
 
 In order to send email, you must configure a [mailer](https://github.com/ViBiOh/mailer#getting-started). Configuration is done by passing `-mailerURL` arg or setting equivalent environment variable (cf. [Usage](#usage) section).
 
@@ -143,6 +145,12 @@ Usage of ketchup:
         Public URL {KETCHUP_PUBLIC_URL} (default "https://ketchup.vibioh.fr")
   -readTimeout string
         [server] Read Timeout {KETCHUP_READ_TIMEOUT} (default "5s")
+  -redisAddress string
+        [redis] Redis Address {KETCHUP_REDIS_ADDRESS} (default "localhost:6379")
+  -redisDatabase int
+        [redis] Redis Database {KETCHUP_REDIS_DATABASE}
+  -redisPassword string
+        [redis] Redis Password, if any {KETCHUP_REDIS_PASSWORD}
   -schedulerEnabled
         [scheduler] Enable cron job {KETCHUP_SCHEDULER_ENABLED} (default true)
   -schedulerHour string
@@ -153,12 +161,6 @@ Usage of ketchup:
         [server] Shutdown Timeout {KETCHUP_SHUTDOWN_TIMEOUT} (default "10s")
   -title string
         Application title {KETCHUP_TITLE} (default "Ketchup")
-  -tokenRedisAddress string
-        [token] Redis Address {KETCHUP_TOKEN_REDIS_ADDRESS} (default "localhost:6379")
-  -tokenRedisDatabase int
-        [token] Redis Database {KETCHUP_TOKEN_REDIS_DATABASE}
-  -tokenRedisPassword string
-        [token] Redis Password, if any {KETCHUP_TOKEN_REDIS_PASSWORD}
   -url string
         [alcotest] URL to check {KETCHUP_URL}
   -userAgent string

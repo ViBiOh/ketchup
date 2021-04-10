@@ -1,6 +1,7 @@
 package scheduler
 
 import (
+	"context"
 	"flag"
 	"strings"
 	"syscall"
@@ -10,6 +11,7 @@ import (
 	"github.com/ViBiOh/httputils/v4/pkg/flags"
 	"github.com/ViBiOh/httputils/v4/pkg/logger"
 	"github.com/ViBiOh/ketchup/pkg/notifier"
+	"github.com/ViBiOh/ketchup/pkg/redis"
 )
 
 // App of package
@@ -26,6 +28,7 @@ type Config struct {
 
 type app struct {
 	notifierApp notifier.App
+	redisApp    redis.App
 
 	timezone string
 	hour     string
@@ -41,7 +44,7 @@ func Flags(fs *flag.FlagSet, prefix string) Config {
 }
 
 // New creates new App from Config
-func New(config Config, notifierApp notifier.App) App {
+func New(config Config, notifierApp notifier.App, redisApp redis.App) App {
 	if !*config.enabled {
 		return nil
 	}
@@ -50,6 +53,7 @@ func New(config Config, notifierApp notifier.App) App {
 		timezone:    strings.TrimSpace(*config.timezone),
 		hour:        strings.TrimSpace(*config.hour),
 		notifierApp: notifierApp,
+		redisApp:    redisApp,
 	}
 }
 
@@ -57,8 +61,12 @@ func (a app) Start(done <-chan struct{}) {
 	cron.New().At(a.hour).In(a.timezone).Days().OnError(func(err error) {
 		logger.Error("error while running ketchup notify: %s", err)
 	}).OnSignal(syscall.SIGUSR1).Start(func(_ time.Time) error {
-		logger.Info("Starting ketchup notifier")
-		defer logger.Info("Ending ketchup notifier")
-		return a.notifierApp.Notify()
+		_, err := a.redisApp.DoExclusive(context.Background(), "ketchup_notify", 10*time.Minute, func(ctx context.Context) error {
+			logger.Info("Starting ketchup notifier")
+			defer logger.Info("Ending ketchup notifier")
+			return a.notifierApp.Notify(ctx)
+		})
+
+		return err
 	}, done)
 }

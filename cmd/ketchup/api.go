@@ -28,6 +28,7 @@ import (
 	"github.com/ViBiOh/ketchup/pkg/ketchup"
 	"github.com/ViBiOh/ketchup/pkg/middleware"
 	"github.com/ViBiOh/ketchup/pkg/notifier"
+	"github.com/ViBiOh/ketchup/pkg/redis"
 	"github.com/ViBiOh/ketchup/pkg/scheduler"
 	ketchupService "github.com/ViBiOh/ketchup/pkg/service/ketchup"
 	repositoryService "github.com/ViBiOh/ketchup/pkg/service/repository"
@@ -35,7 +36,6 @@ import (
 	ketchupStore "github.com/ViBiOh/ketchup/pkg/store/ketchup"
 	repositoryStore "github.com/ViBiOh/ketchup/pkg/store/repository"
 	userStore "github.com/ViBiOh/ketchup/pkg/store/user"
-	"github.com/ViBiOh/ketchup/pkg/token"
 	mailer "github.com/ViBiOh/mailer/pkg/client"
 )
 
@@ -69,7 +69,7 @@ func main() {
 	rendererConfig := renderer.Flags(fs, "", flags.NewOverride("Title", "Ketchup"), flags.NewOverride("PublicURL", "https://ketchup.vibioh.fr"))
 
 	dbConfig := db.Flags(fs, "db")
-	tokenConfig := token.Flags(fs, "token")
+	redisConfig := redis.Flags(fs, "redis")
 	mailerConfig := mailer.Flags(fs, "mailer")
 	githubConfig := github.Flags(fs, "github")
 	notifierConfig := notifier.Flags(fs, "notifier")
@@ -93,14 +93,14 @@ func main() {
 		}
 	}()
 
-	tokenApp := token.New(tokenConfig)
+	redisApp := redis.New(redisConfig)
 
-	healthApp := health.New(healthConfig, ketchupDb.Ping, tokenApp.Ping)
+	healthApp := health.New(healthConfig, ketchupDb.Ping, redisApp.Ping)
 
 	authServiceApp, authMiddlewareApp := initAuth(ketchupDb)
 
 	userServiceApp := userService.New(userStore.New(ketchupDb), authServiceApp)
-	githubApp := github.New(githubConfig)
+	githubApp := github.New(githubConfig, redisApp)
 	repositoryServiceApp := repositoryService.New(repositoryStore.New(ketchupDb), githubApp, helm.New())
 	ketchupServiceApp := ketchupService.New(ketchupStore.New(ketchupDb), repositoryServiceApp)
 
@@ -112,8 +112,8 @@ func main() {
 	logger.Fatal(err)
 
 	notifierApp := notifier.New(notifierConfig, repositoryServiceApp, ketchupServiceApp, mailerApp)
-	schedulerApp := scheduler.New(schedulerConfig, notifierApp)
-	ketchupApp := ketchup.New(publicRendererApp, ketchupServiceApp, userServiceApp, repositoryServiceApp, tokenApp)
+	schedulerApp := scheduler.New(schedulerConfig, notifierApp, redisApp)
+	ketchupApp := ketchup.New(publicRendererApp, ketchupServiceApp, userServiceApp, repositoryServiceApp, redisApp)
 
 	publicHandler := publicRendererApp.Handler(ketchupApp.PublicTemplateFunc)
 	signupHandler := http.StripPrefix(signupPath, ketchupApp.Signup())

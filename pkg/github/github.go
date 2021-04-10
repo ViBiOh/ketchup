@@ -14,6 +14,7 @@ import (
 	"github.com/ViBiOh/httputils/v4/pkg/logger"
 	"github.com/ViBiOh/httputils/v4/pkg/request"
 	"github.com/ViBiOh/ketchup/pkg/model"
+	"github.com/ViBiOh/ketchup/pkg/redis"
 	"github.com/ViBiOh/ketchup/pkg/semver"
 	"github.com/prometheus/client_golang/prometheus"
 )
@@ -49,7 +50,8 @@ type Config struct {
 }
 
 type app struct {
-	token string
+	redisApp redis.App
+	token    string
 }
 
 // Flags adds flags for configuring package
@@ -60,9 +62,10 @@ func Flags(fs *flag.FlagSet, prefix string) Config {
 }
 
 // New creates new App from Config
-func New(config Config) App {
+func New(config Config, redisApp redis.App) App {
 	return app{
-		token: strings.TrimSpace(*config.token),
+		token:    strings.TrimSpace(*config.token),
+		redisApp: redisApp,
 	}
 }
 
@@ -86,13 +89,17 @@ func (a app) Start(registerer prometheus.Registerer, done <-chan struct{}) {
 	cron.New().Now().Each(time.Minute).OnError(func(err error) {
 		logger.Error("unable to get rate limit metrics: %s", err)
 	}).Start(func(_ time.Time) error {
-		value, err := a.getRateLimit()
-		if err != nil {
-			return err
-		}
+		_, err := a.redisApp.DoExclusive(context.Background(), "github_rate_limit_metrics", 45*time.Second, func(ctx context.Context) error {
+			value, err := a.getRateLimit(ctx)
+			if err != nil {
+				return err
+			}
 
-		metrics.Set(float64(value))
-		return nil
+			metrics.Set(float64(value))
+			return nil
+		})
+
+		return err
 	}, done)
 }
 
@@ -134,8 +141,8 @@ func (a app) LatestVersions(repository string, patterns []string) (map[string]se
 	return versions, nil
 }
 
-func (a app) getRateLimit() (uint64, error) {
-	resp, err := a.newClient().Get(fmt.Sprintf("%s/rate_limit", apiURL)).Send(context.Background(), nil)
+func (a app) getRateLimit(ctx context.Context) (uint64, error) {
+	resp, err := a.newClient().Get(fmt.Sprintf("%s/rate_limit", apiURL)).Send(ctx, nil)
 	if err != nil {
 		return 0, fmt.Errorf("unable to get rate limit: %s", err)
 	}

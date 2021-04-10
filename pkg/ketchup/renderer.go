@@ -22,10 +22,10 @@ func (a app) generateToken(ctx context.Context) (string, int64, error) {
 		return "", 0, fmt.Errorf("unable to generate random int: %w", err)
 	}
 
+	token := uuid()
 	id := questionID.Int64()
 
-	token, err := a.tokenApp.Store(ctx, fmt.Sprintf("%d", id), time.Minute*5)
-	if err != nil {
+	if err := a.redisApp.Store(ctx, token, fmt.Sprintf("%d", id), time.Minute*5); err != nil {
 		return token, id, fmt.Errorf("unable to store token: %s", err)
 	}
 

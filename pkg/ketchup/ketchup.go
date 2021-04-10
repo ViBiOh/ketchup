@@ -6,10 +6,10 @@ import (
 	"strings"
 
 	"github.com/ViBiOh/httputils/v4/pkg/renderer"
+	"github.com/ViBiOh/ketchup/pkg/redis"
 	"github.com/ViBiOh/ketchup/pkg/service/ketchup"
 	"github.com/ViBiOh/ketchup/pkg/service/repository"
 	"github.com/ViBiOh/ketchup/pkg/service/user"
-	"github.com/ViBiOh/ketchup/pkg/token"
 )
 
 const (
@@ -35,17 +35,17 @@ type app struct {
 	ketchupService    ketchup.App
 	userService       user.App
 	repositoryService repository.App
-	tokenApp          token.App
+	redisApp          redis.App
 }
 
 // New creates new App from Config
-func New(rendererApp renderer.App, ketchupService ketchup.App, userService user.App, repositoryService repository.App, tokenApp token.App) App {
+func New(rendererApp renderer.App, ketchupService ketchup.App, userService user.App, repositoryService repository.App, redisApp redis.App) App {
 	return app{
 		rendererApp:       rendererApp,
 		ketchupService:    ketchupService,
 		userService:       userService,
 		repositoryService: repositoryService,
-		tokenApp:          tokenApp,
+		redisApp:          redisApp,
 	}
 }
 

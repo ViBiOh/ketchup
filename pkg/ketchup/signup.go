@@ -27,7 +27,7 @@ func (a app) Signup() http.Handler {
 		}
 
 		token := r.FormValue("token")
-		questionIDString, err := a.tokenApp.Load(r.Context(), token)
+		questionIDString, err := a.redisApp.Load(r.Context(), token)
 		if err != nil {
 			a.rendererApp.Error(w, httpModel.WrapInvalid(fmt.Errorf("unable to retrieve captcha token: %s", err)))
 			return
@@ -54,7 +54,7 @@ func (a app) Signup() http.Handler {
 			return
 		}
 
-		if err := a.tokenApp.Delete(r.Context(), token); err != nil {
+		if err := a.redisApp.Delete(r.Context(), token); err != nil {
 			logger.Warn("unable to delete token: %s", err)
 		}
 
