@@ -4,14 +4,12 @@ import (
 	"html/template"
 	"net/http"
 	"strings"
-	"time"
 
-	"github.com/ViBiOh/httputils/v4/pkg/cron"
-	"github.com/ViBiOh/httputils/v4/pkg/logger"
 	"github.com/ViBiOh/httputils/v4/pkg/renderer"
 	"github.com/ViBiOh/ketchup/pkg/service/ketchup"
 	"github.com/ViBiOh/ketchup/pkg/service/repository"
 	"github.com/ViBiOh/ketchup/pkg/service/user"
+	"github.com/ViBiOh/ketchup/pkg/token"
 )
 
 const (
@@ -26,7 +24,6 @@ var (
 
 // App of package
 type App interface {
-	Start(<-chan struct{})
 	Handler() http.Handler
 	Signup() http.Handler
 	PublicTemplateFunc(*http.Request) (string, int, map[string]interface{}, error)
@@ -38,25 +35,18 @@ type app struct {
 	ketchupService    ketchup.App
 	userService       user.App
 	repositoryService repository.App
-	tokenStore        TokenStore
+	tokenApp          token.App
 }
 
 // New creates new App from Config
-func New(rendererApp renderer.App, ketchupService ketchup.App, userService user.App, repositoryService repository.App) App {
+func New(rendererApp renderer.App, ketchupService ketchup.App, userService user.App, repositoryService repository.App, tokenApp token.App) App {
 	return app{
-		tokenStore: NewTokenStore(),
-
 		rendererApp:       rendererApp,
 		ketchupService:    ketchupService,
 		userService:       userService,
 		repositoryService: repositoryService,
+		tokenApp:          tokenApp,
 	}
-}
-
-func (a app) Start(done <-chan struct{}) {
-	cron.New().Each(time.Hour).OnError(func(err error) {
-		logger.Error("error while running token store cleanup: %s", err)
-	}).Start(a.tokenStore.Clean, done)
 }
 
 // Handler for request. Should be use with net/http
