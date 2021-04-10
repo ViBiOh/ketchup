@@ -4,9 +4,11 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strconv"
 	"strings"
 
 	authModel "github.com/ViBiOh/auth/v2/pkg/model"
+	"github.com/ViBiOh/httputils/v4/pkg/logger"
 	httpModel "github.com/ViBiOh/httputils/v4/pkg/model"
 	"github.com/ViBiOh/httputils/v4/pkg/renderer"
 	"github.com/ViBiOh/ketchup/pkg/model"
@@ -25,14 +27,20 @@ func (a app) Signup() http.Handler {
 		}
 
 		token := r.FormValue("token")
-		questionID, ok := a.tokenStore.Load(token)
-		if !ok {
-			a.rendererApp.Error(w, errors.New("token has expired"))
+		questionIDString, err := a.tokenApp.Load(r.Context(), token)
+		if err != nil {
+			a.rendererApp.Error(w, httpModel.WrapInvalid(fmt.Errorf("unable to retrieve captcha token: %s", err)))
 			return
 		}
 
-		if colors[questionID.(int64)].Answer != strings.TrimSpace(r.FormValue("answer")) {
-			a.rendererApp.Error(w, errors.New("invalid question answer"))
+		questionID, err := strconv.ParseInt(questionIDString, 10, 64)
+		if err != nil {
+			a.rendererApp.Error(w, fmt.Errorf("question id is not numerical: %s", err))
+			return
+		}
+
+		if colors[questionID].Answer != strings.TrimSpace(r.FormValue("answer")) {
+			a.rendererApp.Error(w, httpModel.WrapInvalid(errors.New("invalid question answer")))
 			return
 		}
 
@@ -46,7 +54,9 @@ func (a app) Signup() http.Handler {
 			return
 		}
 
-		a.tokenStore.Delete(token)
+		if err := a.tokenApp.Delete(r.Context(), token); err != nil {
+			logger.Warn("unable to delete token: %s", err)
+		}
 
 		renderer.Redirect(w, r, fmt.Sprintf("%s/", appPath), renderer.NewSuccessMessage("Welcome to ketchup!"))
 	})

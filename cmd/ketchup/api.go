@@ -35,6 +35,7 @@ import (
 	ketchupStore "github.com/ViBiOh/ketchup/pkg/store/ketchup"
 	repositoryStore "github.com/ViBiOh/ketchup/pkg/store/repository"
 	userStore "github.com/ViBiOh/ketchup/pkg/store/user"
+	"github.com/ViBiOh/ketchup/pkg/token"
 	mailer "github.com/ViBiOh/mailer/pkg/client"
 )
 
@@ -68,6 +69,7 @@ func main() {
 	rendererConfig := renderer.Flags(fs, "", flags.NewOverride("Title", "Ketchup"), flags.NewOverride("PublicURL", "https://ketchup.vibioh.fr"))
 
 	dbConfig := db.Flags(fs, "db")
+	tokenConfig := token.Flags(fs, "token")
 	mailerConfig := mailer.Flags(fs, "mailer")
 	githubConfig := github.Flags(fs, "github")
 	notifierConfig := notifier.Flags(fs, "notifier")
@@ -107,9 +109,11 @@ func main() {
 	publicRendererApp, err := renderer.New(rendererConfig, content, ketchup.FuncMap)
 	logger.Fatal(err)
 
+	tokenApp := token.New(tokenConfig)
+
 	notifierApp := notifier.New(notifierConfig, repositoryServiceApp, ketchupServiceApp, mailerApp)
 	schedulerApp := scheduler.New(schedulerConfig, notifierApp)
-	ketchupApp := ketchup.New(publicRendererApp, ketchupServiceApp, userServiceApp, repositoryServiceApp)
+	ketchupApp := ketchup.New(publicRendererApp, ketchupServiceApp, userServiceApp, repositoryServiceApp, tokenApp)
 
 	publicHandler := publicRendererApp.Handler(ketchupApp.PublicTemplateFunc)
 	signupHandler := http.StripPrefix(signupPath, ketchupApp.Signup())
@@ -129,7 +133,6 @@ func main() {
 		publicHandler.ServeHTTP(w, r)
 	})
 
-	go ketchupApp.Start(healthApp.Done())
 	go githubApp.Start(prometheusApp.Registerer(), healthApp.Done())
 	if schedulerApp != nil {
 		go schedulerApp.Start(healthApp.Done())

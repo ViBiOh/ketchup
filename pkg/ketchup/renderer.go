@@ -1,6 +1,7 @@
 package ketchup
 
 import (
+	"context"
 	"crypto/rand"
 	"fmt"
 	"math/big"
@@ -15,7 +16,7 @@ const (
 	suggestCount    = uint64(5)
 )
 
-func (a app) generateToken() (string, int64, error) {
+func (a app) generateToken(ctx context.Context) (string, int64, error) {
 	questionID, err := rand.Int(rand.Reader, big.NewInt(int64(len(colors))))
 	if err != nil {
 		return "", 0, fmt.Errorf("unable to generate random int: %w", err)
@@ -23,11 +24,16 @@ func (a app) generateToken() (string, int64, error) {
 
 	id := questionID.Int64()
 
-	return a.tokenStore.Store(id, time.Minute*5), id, nil
+	token, err := a.tokenApp.Store(ctx, fmt.Sprintf("%d", id), time.Minute*5)
+	if err != nil {
+		return token, id, fmt.Errorf("unable to store token: %s", err)
+	}
+
+	return token, id, nil
 }
 
 func (a app) PublicTemplateFunc(r *http.Request) (string, int, map[string]interface{}, error) {
-	token, questionID, err := a.generateToken()
+	token, questionID, err := a.generateToken(r.Context())
 	if err != nil {
 		return "", http.StatusInternalServerError, nil, err
 	}

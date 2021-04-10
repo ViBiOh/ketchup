@@ -73,6 +73,8 @@ Usage of ketchup:
         [owasp] Content-Security-Policy {KETCHUP_CSP} (default "default-src 'self'; base-uri 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'")
   -dbHost string
         [db] Host {KETCHUP_DB_HOST}
+  -dbMaxConn uint
+        [db] Max Open Connections {KETCHUP_DB_MAX_CONN} (default 5)
   -dbName string
         [db] Name {KETCHUP_DB_NAME}
   -dbPass string
@@ -113,6 +115,8 @@ Usage of ketchup:
         [mailer] URL (https?:// or amqps?://) {KETCHUP_MAILER_URL}
   -notifierLoginID uint
         [notifier] Scheduler user ID {KETCHUP_NOTIFIER_LOGIN_ID} (default 1)
+  -notifierPushUrl string
+        [notifier] Pushgateway URL {KETCHUP_NOTIFIER_PUSH_URL}
   -okStatus int
         [http] Healthy HTTP Status code {KETCHUP_OK_STATUS} (default 204)
   -port uint
@@ -149,6 +153,12 @@ Usage of ketchup:
         [server] Shutdown Timeout {KETCHUP_SHUTDOWN_TIMEOUT} (default "10s")
   -title string
         Application title {KETCHUP_TITLE} (default "Ketchup")
+  -tokenRedisAddress string
+        [token] Redis Address {KETCHUP_TOKEN_REDIS_ADDRESS} (default "localhost:6379")
+  -tokenRedisDatabase int
+        [token] Redis Database {KETCHUP_TOKEN_REDIS_DATABASE}
+  -tokenRedisPassword string
+        [token] Redis Password, if any {KETCHUP_TOKEN_REDIS_PASSWORD}
   -url string
         [alcotest] URL to check {KETCHUP_URL}
   -userAgent string
