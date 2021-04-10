@@ -93,7 +93,9 @@ func main() {
 		}
 	}()
 
-	healthApp := health.New(healthConfig, ketchupDb.Ping)
+	tokenApp := token.New(tokenConfig)
+
+	healthApp := health.New(healthConfig, ketchupDb.Ping, tokenApp.Ping)
 
 	authServiceApp, authMiddlewareApp := initAuth(ketchupDb)
 
@@ -108,8 +110,6 @@ func main() {
 
 	publicRendererApp, err := renderer.New(rendererConfig, content, ketchup.FuncMap)
 	logger.Fatal(err)
-
-	tokenApp := token.New(tokenConfig)
 
 	notifierApp := notifier.New(notifierConfig, repositoryServiceApp, ketchupServiceApp, mailerApp)
 	schedulerApp := scheduler.New(schedulerConfig, notifierApp)

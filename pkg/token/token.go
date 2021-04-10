@@ -18,6 +18,7 @@ type App interface {
 	Store(context.Context, string, time.Duration) (string, error)
 	Load(context.Context, string) (string, error)
 	Delete(context.Context, string) error
+	Ping() error
 }
 
 // Config of package
@@ -51,6 +52,10 @@ func New(config Config) App {
 			DB:       *config.redisDatabase,
 		}),
 	}
+}
+
+func (a app) Ping() error {
+	return a.redisClient.Ping(context.Background()).Err()
 }
 
 func (a app) Store(ctx context.Context, value string, duration time.Duration) (string, error) {
