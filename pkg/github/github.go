@@ -12,9 +12,9 @@ import (
 	"github.com/ViBiOh/httputils/v4/pkg/flags"
 	"github.com/ViBiOh/httputils/v4/pkg/httpjson"
 	"github.com/ViBiOh/httputils/v4/pkg/logger"
+	"github.com/ViBiOh/httputils/v4/pkg/redis"
 	"github.com/ViBiOh/httputils/v4/pkg/request"
 	"github.com/ViBiOh/ketchup/pkg/model"
-	"github.com/ViBiOh/ketchup/pkg/redis"
 	"github.com/ViBiOh/ketchup/pkg/semver"
 	"github.com/prometheus/client_golang/prometheus"
 )
@@ -88,18 +88,14 @@ func (a app) Start(registerer prometheus.Registerer, done <-chan struct{}) {
 
 	cron.New().Now().Each(time.Minute).OnError(func(err error) {
 		logger.Error("unable to get rate limit metrics: %s", err)
-	}).Start(func(_ time.Time) error {
-		_, err := a.redisApp.DoExclusive(context.Background(), "github_rate_limit_metrics", 45*time.Second, func(ctx context.Context) error {
-			value, err := a.getRateLimit(ctx)
-			if err != nil {
-				return err
-			}
+	}).Exclusive(a.redisApp, "github_rate_limit_metrics", 45*time.Second).Start(func(ctx context.Context) error {
+		value, err := a.getRateLimit(ctx)
+		if err != nil {
+			return err
+		}
 
-			metrics.Set(float64(value))
-			return nil
-		})
-
-		return err
+		metrics.Set(float64(value))
+		return nil
 	}, done)
 }
 

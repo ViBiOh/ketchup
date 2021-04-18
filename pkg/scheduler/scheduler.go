@@ -10,8 +10,8 @@ import (
 	"github.com/ViBiOh/httputils/v4/pkg/cron"
 	"github.com/ViBiOh/httputils/v4/pkg/flags"
 	"github.com/ViBiOh/httputils/v4/pkg/logger"
+	"github.com/ViBiOh/httputils/v4/pkg/redis"
 	"github.com/ViBiOh/ketchup/pkg/notifier"
-	"github.com/ViBiOh/ketchup/pkg/redis"
 )
 
 // App of package
@@ -60,13 +60,9 @@ func New(config Config, notifierApp notifier.App, redisApp redis.App) App {
 func (a app) Start(done <-chan struct{}) {
 	cron.New().At(a.hour).In(a.timezone).Days().OnError(func(err error) {
 		logger.Error("error while running ketchup notify: %s", err)
-	}).OnSignal(syscall.SIGUSR1).Start(func(_ time.Time) error {
-		_, err := a.redisApp.DoExclusive(context.Background(), "ketchup_notify", 10*time.Minute, func(ctx context.Context) error {
-			logger.Info("Starting ketchup notifier")
-			defer logger.Info("Ending ketchup notifier")
-			return a.notifierApp.Notify(ctx)
-		})
-
-		return err
+	}).OnSignal(syscall.SIGUSR1).Exclusive(a.redisApp, "ketchup_notify", 10*time.Minute).Start(func(ctx context.Context) error {
+		logger.Info("Starting ketchup notifier")
+		defer logger.Info("Ending ketchup notifier")
+		return a.notifierApp.Notify(ctx)
 	}, done)
 }
