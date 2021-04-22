@@ -9,7 +9,7 @@ Thanks to [OpenEmoji](https://openmoji.org) for favicon.
 
 Thanks to [FontAwesome](https://fontawesome.com) for icons.
 
-> Check your Github dependencies every day at 8am and send a digest by email.
+> Check your GitHub or Helm dependencies every day at 8am and send a digest by email.
 
 ![](ketchup.png)
 
@@ -28,7 +28,7 @@ Thanks to [FontAwesome](https://fontawesome.com) for icons.
 
 ### Prerequisites
 
-You need a [Github OAuth Token](https://github.com/settings/tokens), with no particular permission, for having a decent rate-limiting when querying Github. Configuration is done by passing `-githubToken` arg or setting equivalent environment variable (cf. [Usage](#usage) section)
+You need a [GitHub OAuth Token](https://github.com/settings/tokens), with no particular permission, for having a decent rate-limiting when querying GitHub. Configuration is done by passing `-githubToken` arg or setting equivalent environment variable (cf. [Usage](#usage) section)
 
 You need a Postgres database for storing your datas. I personnaly use free tier of [ElephantSQL](https://www.elephantsql.com). Once setup, you _have to_ to create schema with [Auth DDL](https://github.com/ViBiOh/auth/blob/main/ddl.sql) and [Ketchup DDL](sql/ddl.sql). Configuration is done by passing `-dbHost`, `-dbName`, `-dbUser`, `-dbPass` args or setting equivalent environment variables (cf. [Usage](#usage) section).
 
@@ -38,7 +38,7 @@ In order to send email, you must configure a [mailer](https://github.com/ViBiOh/
 
 ### Installation
 
-Golang binary is built with static link. You can download it directly from the [Github Release page](https://github.com/ViBiOh/ketchup/releases) or build it by yourself by cloning this repo and running `make`.
+Golang binary is built with static link. You can download it directly from the [GitHub Release page](https://github.com/ViBiOh/ketchup/releases) or build it by yourself by cloning this repo and running `make`.
 
 A Docker image is available for `amd64`, `arm` and `arm64` platforms on Docker Hub: [vibioh/ketchup](https://hub.docker.com/r/vibioh/ketchup/tags).
 

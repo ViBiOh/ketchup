@@ -23,7 +23,7 @@ var (
 	apiURL = "https://api.github.com"
 )
 
-// Tag describes a Github Tag
+// Tag describes a GitHub Tag
 type Tag struct {
 	Name string `json:"name"`
 }
