@@ -154,7 +154,7 @@
       border: 1px solid var(--success);
       display: inline-flex;
       flex-direction: column;
-      min-height: 20rem;
+      min-height: 18rem;
     }
 
     .suggest {
@@ -193,21 +193,55 @@
     .create-form {
       width: 25rem;
     }
+
+    .separator {
+      align-items: center;
+      color: var(--white);
+      display: flex;
+    }
+
+    .separator::before,
+    .separator::after {
+      background: var(--white);
+      content: "";
+      flex-grow: 1;
+      font-size: 0;
+      height: 1px;
+      line-height: 0;
+    }
+
+    .separator::before {
+      margin-right: 1rem;
+      max-width: 5rem;
+    }
+
+    .separator::after {
+      margin-left: 1rem;
+    }
   </style>
 
   {{ template "create-modal" }}
 
-  <article class="ketchups">
-    {{ range .Ketchups }}
+  {{ $ketchupType := "" }}
+
+  {{ with .Ketchups }}
+    {{ range . }}
       {{ template "edit-modal" . }}
       {{ template "delete-modal" . }}
 
+      {{ if ne $ketchupType .Repository.Kind.String }}
+        {{ if $ketchupType }}
+          </section>
+        {{ end }}
+
+        {{ $ketchupType = .Repository.Kind.String }}
+        <h2 class="separator full">{{ $ketchupType }}</h2>
+        <section class="ketchups">
+      {{ end }}
+
+
       <div class="ketchup center {{ if ne .Version (index .Repository.Versions .Pattern) }}ketchup--outdated{{ end }}">
         <h2 class="header small ellipsis">{{ .Repository.Name }}</h2>
-
-        <div class="padding">
-          <img class="icon" src="/svg/{{ .Repository.Kind.String }}?fill=silver" alt="{{ .Repository.Kind.String }} icon">
-        </div>
 
         <div class="ketchup__version">
           {{ if .Semver }}
@@ -257,7 +291,13 @@
       </div>
     {{ end }}
 
-    {{ range .Suggests }}
+    </section>
+  {{ end }}
+
+  {{ with .Suggests }}
+    <section class="ketchups">
+
+    {{ range . }}
       <div class="ketchup center suggest">
         <h2 class="header small ellipsis">{{ .Name }}</h2>
 
@@ -281,5 +321,7 @@
         </div>
       </div>
     {{ end }}
-  </article>
+
+    </section>
+  {{ end }}
 {{ end }}
