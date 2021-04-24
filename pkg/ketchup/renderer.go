@@ -47,6 +47,7 @@ func (a app) PublicTemplateFunc(r *http.Request) (string, int, map[string]interf
 		"Token":    token,
 		"Question": colors[questionID].Question,
 		"Suggests": suggests,
+		"Root":     "/",
 	}, nil
 }
 
