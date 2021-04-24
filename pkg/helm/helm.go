@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"strings"
 
 	"github.com/ViBiOh/httputils/v4/pkg/request"
@@ -36,6 +37,22 @@ func New() App {
 	return app{}
 }
 
+func parseHelmIndex(content io.Reader) (charts, error) {
+	decoder := yaml.NewDecoder(content)
+	var index charts
+
+	for {
+		err := decoder.Decode(&index)
+		if err != nil {
+			if err == io.EOF {
+				return index, nil
+			}
+
+			return index, fmt.Errorf("unable to parse yaml index: %s", err)
+		}
+	}
+}
+
 func (a app) LatestVersions(repository string, patterns []string) (map[string]semver.Version, error) {
 	parts := strings.SplitN(repository, "@", 2)
 	if len(parts) != 2 {
@@ -47,14 +64,9 @@ func (a app) LatestVersions(repository string, patterns []string) (map[string]se
 		return nil, fmt.Errorf("unable to request repository: %w", err)
 	}
 
-	payload, err := request.ReadBodyResponse(resp)
+	index, err := parseHelmIndex(resp.Body)
 	if err != nil {
-		return nil, fmt.Errorf("unable to read body `%s`: %s", payload, err)
-	}
-
-	var index charts
-	if err := yaml.Unmarshal(payload, &index); err != nil {
-		return nil, fmt.Errorf("unable to parse index: %w", err)
+		return nil, err
 	}
 
 	charts, ok := index.Entries[parts[0]]
