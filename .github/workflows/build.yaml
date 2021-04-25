@@ -67,7 +67,6 @@ jobs:
           DOCKER_USER: ${{ secrets.DOCKER_USER }}
           DOCKER_PASS: ${{ secrets.DOCKER_PASS }}
         run: |
-          DOCKER_IMAGE="${{ secrets.DOCKER_USER }}/$(make name)-notifier" IMAGE_VERSION="$(make version)" DOCKERFILE="Dockerfile.notifier" ./scripts/release docker
           DOCKER_IMAGE="${{ secrets.DOCKER_USER }}/$(make name)" IMAGE_VERSION="$(make version)" ./scripts/release docker
 
   publish:
@@ -87,7 +86,6 @@ jobs:
         run: |
           curl --disable --silent --show-error --location --max-time 30 "https://raw.githubusercontent.com/ViBiOh/scripts/main/bootstrap" | bash -s "docker_promote"
           scripts/docker_promote "${{ secrets.DOCKER_USER }}/$(make name)" "$(make version)"
-          scripts/docker_promote "${{ secrets.DOCKER_USER }}/$(make name)-notifier" "$(make version)"
       - name: Flux
         env:
           FLUX_TOKEN: ${{ secrets.FLUX_TOKEN }}

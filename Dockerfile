@@ -17,3 +17,4 @@ ARG TARGETOS
 ARG TARGETARCH
 
 COPY release/ketchup_${TARGETOS}_${TARGETARCH} /ketchup
+COPY release/notifier_${TARGETOS}_${TARGETARCH} /notifier
