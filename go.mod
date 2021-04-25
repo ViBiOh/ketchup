@@ -4,7 +4,7 @@ go 1.16
 
 require (
 	github.com/DATA-DOG/go-sqlmock v1.5.0
-	github.com/ViBiOh/auth/v2 v2.6.13
+	github.com/ViBiOh/auth/v2 v2.6.14
 	github.com/ViBiOh/httputils/v4 v4.7.1
 	github.com/ViBiOh/mailer v1.16.7
 	github.com/lib/pq v1.10.1
