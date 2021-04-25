@@ -27,7 +27,7 @@ spec:
     schedule: "0 8 * * *"
     image:
       name: vibioh/ketchup
-      tag: "202104250813" # {"$imagepolicy": "default:flux-ketchup-web:tag"}
+      tag: "202104251016" # {"$imagepolicy": "default:flux-ketchup-web:tag"}
     config:
       KETCHUP_DB_HOST: ketchup-db
       KETCHUP_DB_NAME: ketchup
@@ -40,6 +40,6 @@ spec:
       KETCHUP_GITHUB_TOKEN: AgCD+iRGO5gVx9cLiCo7EcLzpWukvcow8o45HP5gjlL/cgsFWRTA+zRtgWuHg1geaUwK+c7QMGQrF1vloesazl6c+woUrpbzm6kaqdZTltGCLiRz1AtPbeC4V9eyAx+snE3aQnPM/wTCP6CKaEfQpmGPScFvkm8LSPTa9LsAo1HFKaWt5elp8GTIMJ4q0cmQv3LkgvUdRwPFW6amaBpKrRfmbjdytOHzFrLOK7hLLO6rmdiGpnTIyRAGrrjPPw0zssDAv3607IUaCXomdnf1da53Pnx/FHcnBY15XG8pWQROp6j9yT16tChnQC++jccUE1/YBzTGa+gujyg6UPPx5eNslCLL+7H/brhXDkmtFP+l+OobOhiAJyMj1ojrsN7OzPiXDR36YQvc8fx6zPKf0czC706PPb2S48MfZrBe3cBDSLR8vPbpWjZ7X9cu4laIA9w/NLpVZJ2W1lpbhVmytkTc509u1u7D/ZGFsIlcx3xJLQUGIf9ahP4gU3KZIfm0TGPhaIQ28l0ovKqXWZ1E91kdnw51UHDlN/HGO3MYV2gTesAu8gJZZTeYv2vBbzrXewimxQmPCiM8mzYL4S1LO+2BhOmeFe8PRcMGqtjOaswmQ/wywhF0O8Xw8+1hthrFiFSHoATVwMsPoPVO3K0M7K3TDk37OeLdHUuXEnw4RXsh9FS7KPj638zajLE79nF4fWH1iePI7bVRGX9GIugmmOI5lKnOD6Ab2gu3Rf40pdY/QkZSs5Pldmu0
       KETCHUP_MAILER_URL: AgAxlp+YpMSMQPJFQ/mpzfIBL7b3481XO1QQgm6cys/xql6u49mbF1YBQeoFSE1telRhPbfFcbAT5PXuz6Jljr2kSg8iTT5L1u+96fxUYGoLPLfTsq1stPvohALgDxAPs8qiaw+OvLVszfTOBVtTXwJpTi7/08XVrVcKgKuFPG4GPB71EVsXEV1yK+UxJLjSICM1OQ8pIzVxBWwLYn2rVB/zcRVnYtjWQN8dPerQvG4iF40HfdN1VfPf58OOZsIavTTjIh10jO0t/+k0iR7B5W239uYA2EI8foySF/geNjxvpw7HRQvZs44pXVDGdsF/5LB138AqrdegMJ6/1/G7yGS0fEx6y7SjEcUb7CIjZJCZNd5GsonYPQa+dja61RLb4NSHT5QTnw5s0zeTjWE2JpuGHlWihxQ9NKGSY/oLUMLWbsnbfzs9Z++ZP8Bq1UyYApWcFQBcQdmJcqmuLL6dtKbzDtHTtPmE8aDqq2mSXhKX8j5TDmGM2uG9a/ijFV3IgUdTRZaYDM9LEqOctVpAcYgfTytaf3ADxOJKHVBpvRTMOsByzJ5TGruw8p2gcwSgOO1kHcNbR7n28mDHIkGYMevrdzvLKENMYCV/97rUrK7CSLFxia47ITe/q5ak8V94EyoklTESs+YT1jNF+EkNb7nL1r6axNiAnbQizQ8J4078dSofrFPzlDY6s0jmUOMt8q3I+d0MpkNAQ0vhuqXy0OBj4w3D2Lpi2tqEFJiQ8aXDH5j3IOr4MSHg27KL+hjfzxs0JVVFbMIAyOSBKZThoOls9DlmqNmBBegaEhPR2ehT1BpsMBbq
     containers:
-      - name: job
-        command:
-          - /notifier
+    - name: job
+      command:
+      - /notifier
