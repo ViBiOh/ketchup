@@ -1,12 +1,7 @@
 package ketchup
 
 import (
-	"context"
-	"crypto/rand"
-	"fmt"
-	"math/big"
 	"net/http"
-	"time"
 
 	"github.com/ViBiOh/httputils/v4/pkg/logger"
 )
@@ -16,24 +11,8 @@ const (
 	suggestCount    = uint64(5)
 )
 
-func (a app) generateToken(ctx context.Context) (string, int64, error) {
-	questionID, err := rand.Int(rand.Reader, big.NewInt(int64(len(colors))))
-	if err != nil {
-		return "", 0, fmt.Errorf("unable to generate random int: %w", err)
-	}
-
-	token := uuid()
-	id := questionID.Int64()
-
-	if err := a.redisApp.Store(ctx, token, fmt.Sprintf("%d", id), time.Minute*5); err != nil {
-		return token, id, fmt.Errorf("unable to store token: %s", err)
-	}
-
-	return token, id, nil
-}
-
 func (a app) PublicTemplateFunc(r *http.Request) (string, int, map[string]interface{}, error) {
-	token, questionID, err := a.generateToken(r.Context())
+	securityPayload, err := a.generateToken(r.Context())
 	if err != nil {
 		return "", http.StatusInternalServerError, nil, err
 	}
@@ -44,8 +23,7 @@ func (a app) PublicTemplateFunc(r *http.Request) (string, int, map[string]interf
 	}
 
 	return "public", http.StatusOK, map[string]interface{}{
-		"Token":    token,
-		"Question": colors[questionID].Question,
+		"Security": securityPayload,
 		"Suggests": suggests,
 		"Root":     "/",
 	}, nil

@@ -1,14 +1,12 @@
 package ketchup
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
-	"strconv"
-	"strings"
 
 	authModel "github.com/ViBiOh/auth/v2/pkg/model"
-	"github.com/ViBiOh/httputils/v4/pkg/logger"
 	httpModel "github.com/ViBiOh/httputils/v4/pkg/model"
 	"github.com/ViBiOh/httputils/v4/pkg/renderer"
 	"github.com/ViBiOh/ketchup/pkg/model"
@@ -27,21 +25,8 @@ func (a app) Signup() http.Handler {
 		}
 
 		token := r.FormValue("token")
-		questionIDString, err := a.redisApp.Load(r.Context(), token)
-		if err != nil {
-			a.rendererApp.Error(w, httpModel.WrapInvalid(fmt.Errorf("unable to retrieve captcha token: %s", err)))
-			return
-		}
-
-		questionID, err := strconv.ParseInt(questionIDString, 10, 64)
-		if err != nil {
-			a.rendererApp.Error(w, fmt.Errorf("question id is not numerical: %s", err))
-			return
-		}
-
-		if colors[questionID].Answer != strings.TrimSpace(r.FormValue("answer")) {
-			a.rendererApp.Error(w, httpModel.WrapInvalid(errors.New("invalid question answer")))
-			return
+		if !a.validateToken(r.Context(), token, r.FormValue("answer")) {
+			a.rendererApp.Error(w, httpModel.WrapInvalid(errors.New("unable to validate security question")))
 		}
 
 		user := model.NewUser(0, r.FormValue("email"), authModel.User{
@@ -54,9 +39,7 @@ func (a app) Signup() http.Handler {
 			return
 		}
 
-		if err := a.redisApp.Delete(r.Context(), token); err != nil {
-			logger.Warn("unable to delete token: %s", err)
-		}
+		go a.cleanToken(context.Background(), token)
 
 		renderer.Redirect(w, r, fmt.Sprintf("%s/", appPath), renderer.NewSuccessMessage("Welcome to ketchup!"))
 	})
