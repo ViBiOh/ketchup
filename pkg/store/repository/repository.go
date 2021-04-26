@@ -9,6 +9,7 @@ import (
 
 	"github.com/ViBiOh/httputils/v4/pkg/db"
 	"github.com/ViBiOh/ketchup/pkg/model"
+	"github.com/ViBiOh/ketchup/pkg/store"
 	"github.com/lib/pq"
 )
 
@@ -109,12 +110,16 @@ SELECT
   count(1) OVER() AS full_count
 FROM
   ketchup.repository
-LIMIT $1
-OFFSET $2
 `
 
 func (a app) List(ctx context.Context, page, pageSize uint) ([]model.Repository, uint64, error) {
-	return a.list(ctx, listQuery, pageSize, (page-1)*pageSize)
+	var query strings.Builder
+	query.WriteString(listQuery)
+	var queryArgs []interface{}
+
+	queryArgs = append(queryArgs, store.AddPagination(&query, len(queryArgs), page, pageSize)...)
+
+	return a.list(ctx, query.String(), queryArgs...)
 }
 
 const suggestQuery = `

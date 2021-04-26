@@ -4,9 +4,11 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"strings"
 
 	"github.com/ViBiOh/httputils/v4/pkg/db"
 	"github.com/ViBiOh/ketchup/pkg/model"
+	"github.com/ViBiOh/ketchup/pkg/store"
 	"github.com/lib/pq"
 )
 
@@ -50,12 +52,10 @@ FROM
   ketchup.repository r,
   ketchup.repository_version rv
 WHERE
-  user_id = $3
+  user_id = $1
   AND k.repository_id = r.id
   AND rv.repository_id = r.id
   AND rv.pattern = k.pattern
-LIMIT $1
-OFFSET $2
 `
 
 func (a app) List(ctx context.Context, page, pageSize uint) ([]model.Ketchup, uint64, error) {
@@ -86,7 +86,15 @@ func (a app) List(ctx context.Context, page, pageSize uint) ([]model.Ketchup, ui
 		return nil
 	}
 
-	return list, totalCount, db.List(ctx, a.db, scanner, listQuery, pageSize, (page-1)*pageSize, user.ID)
+	var query strings.Builder
+	query.WriteString(listQuery)
+	queryArgs := []interface{}{
+		user.ID,
+	}
+
+	queryArgs = append(queryArgs, store.AddPagination(&query, len(queryArgs), page, pageSize)...)
+
+	return list, totalCount, db.List(ctx, a.db, scanner, query.String(), queryArgs...)
 }
 
 const listByRepositoriesIDQuery = `

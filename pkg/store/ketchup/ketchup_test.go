@@ -121,7 +121,7 @@ func TestList(t *testing.T) {
 		t.Run(tc.intention, func(t *testing.T) {
 			testWithMock(t, func(mockDb *sql.DB, mock sqlmock.Sqlmock) {
 				rows := sqlmock.NewRows([]string{"pattern", "version", "repository_id", "name", "kind", "repository_version", "full_count"})
-				expectedQuery := mock.ExpectQuery("SELECT k.pattern, k.version, k.repository_id, r.name, r.kind, rv.version, .+ AS full_count FROM ketchup.ketchup k, ketchup.repository r, ketchup.repository_version rv WHERE user_id = .+ AND k.repository_id = r.id AND rv.repository_id = r.id AND rv.pattern = k.pattern").WithArgs(20, 0, 3).WillReturnRows(rows)
+				expectedQuery := mock.ExpectQuery("SELECT k.pattern, k.version, k.repository_id, r.name, r.kind, rv.version, .+ AS full_count FROM ketchup.ketchup k, ketchup.repository r, ketchup.repository_version rv WHERE user_id = .+ AND k.repository_id = r.id AND rv.repository_id = r.id AND rv.pattern = k.pattern").WithArgs(3, 20, 0).WillReturnRows(rows)
 
 				switch tc.intention {
 				case "simple":
