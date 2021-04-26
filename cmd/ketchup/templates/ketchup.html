@@ -310,7 +310,9 @@
         <div>
           <form method="POST" action="/app/ketchups/">
             <input type="hidden" name="method" value="POST">
+            <input type="hidden" name="kind" value="{{ .Kind }}">
             <input type="hidden" name="repository" value="{{ .Name }}">
+            <input type="hidden" name="pattern" value="stable">
             <input type="hidden" name="version" value="{{ .Versions.stable }}">
 
             <button type="submit" class="button button-icon" title="Add suggestion">

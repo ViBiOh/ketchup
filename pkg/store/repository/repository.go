@@ -129,6 +129,7 @@ SELECT
       ketchup.ketchup
     WHERE
       repository_id = id
+      AND pattern = 'stable'
   ) AS count
 FROM
   ketchup.repository

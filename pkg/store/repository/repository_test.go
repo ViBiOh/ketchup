@@ -177,7 +177,7 @@ func TestSuggest(t *testing.T) {
 		t.Run(tc.intention, func(t *testing.T) {
 			testWithMock(t, func(mockDb *sql.DB, mock sqlmock.Sqlmock) {
 				rows := sqlmock.NewRows([]string{"id", "name", "kind", "full_count"})
-				mock.ExpectQuery("SELECT id, name, kind, \\( SELECT COUNT\\(1\\) FROM ketchup.ketchup WHERE repository_id = id \\) AS count FROM ketchup.repository").WithArgs(tc.args.count, pq.Array(tc.args.ignoreIds)).WillReturnRows(rows)
+				mock.ExpectQuery("SELECT id, name, kind, \\( SELECT COUNT\\(1\\) FROM ketchup.ketchup WHERE repository_id = id AND pattern = 'stable' \\) AS count FROM ketchup.repository").WithArgs(tc.args.count, pq.Array(tc.args.ignoreIds)).WillReturnRows(rows)
 				rows.AddRow(1, ketchupRepository, "github", 2).AddRow(2, viwsRepository, "helm", 2)
 
 				mock.ExpectQuery(
