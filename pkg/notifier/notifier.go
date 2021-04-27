@@ -215,11 +215,15 @@ func (a app) getKetchupToNotify(ctx context.Context, releases []model.Release) (
 	for _, release := range releases {
 		for index < size {
 			current := ketchups[index]
+
 			if release.Repository.ID < current.Repository.ID || (release.Repository.ID == current.Repository.ID && release.Pattern < current.Pattern) {
-				break
+				break // release is out of sync, we need to advance
 			}
 
 			index++
+			if release.Repository.ID != current.Repository.ID || release.Pattern != current.Pattern {
+				continue // ketchup is not sync with release
+			}
 
 			if current.Version != release.Version.Name {
 				if userToNotify[current.User] != nil {

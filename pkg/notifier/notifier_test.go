@@ -277,18 +277,39 @@ func TestGetKetchupToNotify(t *testing.T) {
 			app{ketchupService: ketchuptest.New().SetListForRepositories([]model.Ketchup{
 				{
 					Pattern:    model.DefaultPattern,
-					Repository: model.NewRepository(1, model.Github, repositoryName).AddVersion(model.DefaultPattern, repositoryVersion).AddVersion("latest", repositoryBetaVersion),
+					Repository: model.NewRepository(1, model.Github, repositoryName),
 					User:       model.NewUser(1, testEmail, authModel.NewUser(0, "")),
-				},
-				{
-					Pattern:    "latest",
-					Repository: model.NewRepository(1, model.Github, repositoryName).AddVersion(model.DefaultPattern, repositoryVersion).AddVersion("latest", repositoryBetaVersion),
-					User:       model.NewUser(1, testEmail, authModel.NewUser(0, "")),
+					Version:    repositoryVersion,
 				},
 				{
 					Pattern:    model.DefaultPattern,
-					Repository: model.NewRepository(1, model.Github, repositoryName).AddVersion(model.DefaultPattern, repositoryVersion).AddVersion("latest", repositoryBetaVersion),
+					Repository: model.NewRepository(1, model.Github, repositoryName),
 					User:       model.NewUser(2, "guest@nowhere", authModel.NewUser(0, "")),
+					Version:    repositoryVersion,
+				},
+				{
+					Pattern:    model.DefaultPattern,
+					Repository: model.NewRepository(2, model.Github, "vibioh/dotfiles"),
+					User:       model.NewUser(1, testEmail, authModel.NewUser(0, "")),
+					Version:    repositoryVersion,
+				},
+				{
+					Pattern:    "^1.1-0",
+					Repository: model.NewRepository(2, model.Github, "vibioh/dotfiles"),
+					User:       model.NewUser(2, "guest@nowhere", authModel.NewUser(0, "")),
+					Version:    repositoryVersion,
+				},
+				{
+					Pattern:    model.DefaultPattern,
+					Repository: model.NewRepository(3, model.Github, "vibioh/zzz"),
+					User:       model.NewUser(1, testEmail, authModel.NewUser(0, "")),
+					Version:    repositoryVersion,
+				},
+				{
+					Pattern:    model.DefaultPattern,
+					Repository: model.NewRepository(3, model.Github, "vibioh/zzz"),
+					User:       model.NewUser(2, "guest@nowhere", authModel.NewUser(0, "")),
+					Version:    "1.1.0",
 				},
 			}, nil)},
 			args{
@@ -299,14 +320,21 @@ func TestGetKetchupToNotify(t *testing.T) {
 						Version: semver.Version{
 							Name: "1.1.0",
 						},
-						Repository: model.NewRepository(1, model.Github, repositoryName).AddVersion(model.DefaultPattern, repositoryVersion).AddVersion("latest", repositoryBetaVersion),
+						Repository: model.NewRepository(1, model.Github, repositoryName),
 					},
 					{
-						Pattern: "latest",
+						Pattern: model.DefaultPattern,
 						Version: semver.Version{
-							Name: "1.1.0-beta",
+							Name: "1.1.0",
 						},
-						Repository: model.NewRepository(1, model.Github, repositoryName).AddVersion(model.DefaultPattern, repositoryVersion).AddVersion("latest", repositoryBetaVersion),
+						Repository: model.NewRepository(2, model.Github, "vibioh/dotfiles"),
+					},
+					{
+						Pattern: model.DefaultPattern,
+						Version: semver.Version{
+							Name: "1.1.0",
+						},
+						Repository: model.NewRepository(3, model.Github, "vibioh/zzz"),
 					},
 				},
 			},
@@ -316,20 +344,26 @@ func TestGetKetchupToNotify(t *testing.T) {
 					Version: semver.Version{
 						Name: "1.1.0",
 					},
-					Repository: model.NewRepository(1, model.Github, repositoryName).AddVersion(model.DefaultPattern, repositoryVersion).AddVersion("latest", repositoryBetaVersion),
+					Repository: model.NewRepository(1, model.Github, repositoryName),
 				}},
 				{ID: 1, Email: testEmail}: {{
-					Pattern: "latest",
+					Pattern: model.DefaultPattern,
 					Version: semver.Version{
-						Name: "1.1.0-beta",
+						Name: "1.1.0",
 					},
-					Repository: model.NewRepository(1, model.Github, repositoryName).AddVersion(model.DefaultPattern, repositoryVersion).AddVersion("latest", repositoryBetaVersion),
+					Repository: model.NewRepository(1, model.Github, repositoryName),
 				}, {
 					Pattern: model.DefaultPattern,
 					Version: semver.Version{
 						Name: "1.1.0",
 					},
-					Repository: model.NewRepository(1, model.Github, repositoryName).AddVersion(model.DefaultPattern, repositoryVersion).AddVersion("latest", repositoryBetaVersion),
+					Repository: model.NewRepository(2, model.Github, "vibioh/dotfiles"),
+				}, {
+					Pattern: model.DefaultPattern,
+					Version: semver.Version{
+						Name: "1.1.0",
+					},
+					Repository: model.NewRepository(3, model.Github, "vibioh/zzz"),
 				}},
 			},
 			nil,
