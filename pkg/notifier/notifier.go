@@ -215,7 +215,7 @@ func (a app) getKetchupToNotify(ctx context.Context, releases []model.Release) (
 	for _, release := range releases {
 		for index < size {
 			current := ketchups[index]
-			if release.Repository.ID < current.Repository.ID || release.Pattern < current.Pattern {
+			if release.Repository.ID < current.Repository.ID || (release.Repository.ID == current.Repository.ID && release.Pattern < current.Pattern) {
 				break
 			}
 
