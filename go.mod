@@ -9,5 +9,5 @@ require (
 	github.com/ViBiOh/mailer v1.16.7
 	github.com/lib/pq v1.10.1
 	github.com/prometheus/client_golang v1.10.0
-	gopkg.in/yaml.v2 v2.4.0
+	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
 )

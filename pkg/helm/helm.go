@@ -10,7 +10,7 @@ import (
 	"github.com/ViBiOh/httputils/v4/pkg/request"
 	"github.com/ViBiOh/ketchup/pkg/model"
 	"github.com/ViBiOh/ketchup/pkg/semver"
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 )
 
 const (
