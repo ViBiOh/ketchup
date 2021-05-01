@@ -7,6 +7,7 @@ import (
 	"io"
 	"strings"
 
+	"github.com/ViBiOh/httputils/v4/pkg/logger"
 	"github.com/ViBiOh/httputils/v4/pkg/request"
 	"github.com/ViBiOh/ketchup/pkg/model"
 	"github.com/ViBiOh/ketchup/pkg/semver"
@@ -28,6 +29,7 @@ type chart struct {
 // App of package
 type App interface {
 	LatestVersions(string, []string) (map[string]semver.Version, error)
+	FetchIndex(string, map[string][]string) (map[string]map[string]semver.Version, error)
 }
 
 type app struct{}
@@ -37,20 +39,48 @@ func New() App {
 	return app{}
 }
 
-func parseHelmIndex(content io.Reader) (charts, error) {
-	decoder := yaml.NewDecoder(content)
-	var index charts
+func (a app) FetchIndex(url string, chartsPatterns map[string][]string) (map[string]map[string]semver.Version, error) {
+	resp, err := request.New().Get(fmt.Sprintf("%s/%s", url, indexName)).Send(context.Background(), nil)
+	if err != nil {
+		return nil, fmt.Errorf("unable to request repository: %w", err)
+	}
 
-	for {
-		err := decoder.Decode(&index)
+	defer func() {
+		if err := resp.Body.Close(); err != nil {
+			logger.Error("unable to close response body: %s", err)
+		}
+	}()
+
+	var index charts
+	if err := yaml.NewDecoder(resp.Body).Decode(&index); err != nil && err != io.EOF {
+		return nil, fmt.Errorf("unable to parse yaml index: %s", err)
+	}
+
+	output := make(map[string]map[string]semver.Version, len(index.Entries))
+	for key, charts := range index.Entries {
+		patterns, ok := chartsPatterns[key]
+		if !ok {
+			continue
+		}
+
+		versions, compiledPatterns, err := model.PreparePatternMatching(patterns)
 		if err != nil {
-			if err == io.EOF {
-				return index, nil
+			return nil, fmt.Errorf("unable to prepare pattern matching for `%s`: %s", key, err)
+		}
+
+		for _, chart := range charts {
+			chartVersion, err := semver.Parse(chart.Version)
+			if err != nil {
+				continue
 			}
 
-			return index, fmt.Errorf("unable to parse yaml index: %s", err)
+			model.CheckPatternsMatching(versions, compiledPatterns, chartVersion)
 		}
+
+		output[key] = versions
 	}
+
+	return output, nil
 }
 
 func (a app) LatestVersions(repository string, patterns []string) (map[string]semver.Version, error) {
@@ -59,34 +89,15 @@ func (a app) LatestVersions(repository string, patterns []string) (map[string]se
 		return nil, errors.New("invalid name for helm chart")
 	}
 
-	resp, err := request.New().Get(fmt.Sprintf("%s/%s", parts[1], indexName)).Send(context.Background(), nil)
-	if err != nil {
-		return nil, fmt.Errorf("unable to request repository: %w", err)
-	}
-
-	index, err := parseHelmIndex(resp.Body)
+	index, err := a.FetchIndex(parts[1], map[string][]string{repository: patterns})
 	if err != nil {
 		return nil, err
 	}
 
-	charts, ok := index.Entries[parts[0]]
+	charts, ok := index[parts[0]]
 	if !ok {
 		return nil, fmt.Errorf("no chart `%s` in repository", parts[0])
 	}
 
-	versions, compiledPatterns, err := model.PreparePatternMatching(patterns)
-	if err != nil {
-		return nil, fmt.Errorf("unable to prepare pattern matching: %s", err)
-	}
-
-	for _, chart := range charts {
-		chartVersion, err := semver.Parse(chart.Version)
-		if err != nil {
-			continue
-		}
-
-		model.CheckPatternsMatching(versions, compiledPatterns, chartVersion)
-	}
-
-	return versions, nil
+	return charts, nil
 }
