@@ -23,15 +23,20 @@
 
         <p class="padding no-margin">
           <label for="create-name" class="block">Name:</label>
-          <input id="create-name" type="text" name="repository" placeholder="ViBiOh/ketchup" class="full">
+          <input id="create-name" type="text" name="name" placeholder="ViBiOh/ketchup" class="full">
+        </p>
+
+        <p id="create-part-wrapper" class="padding no-margin hidden">
+          <label for="create-part" class="block">Part:</label>
+          <input id="create-part" type="text" name="part" placeholder="postgres" class="full">
         </p>
 
         <p class="padding no-margin">
-          <label for="create-pattern" class="block">Pattern: <img class="icon icon-small" title="`latest`: latest version, beta included.
-`stable`: latest version without beta.
-`^1.0`: latest with fixed major version.
-`~1.1`: latest with fixed major and minor version.
-`^1.0-0`: include beta (works also for `~`)." src="/svg/question?fill=silver" alt="question icon"></label>
+          <label for="create-pattern" class="block">Pattern: <img class="icon icon-small" title="'latest': latest version, beta included.
+'stable': latest version without beta.
+'^1.0': latest with fixed major version.
+'~1.1': latest with fixed major and minor version.
+'^1.0-0': include beta (works also for '~')." src="/svg/question?fill=silver" alt="question icon"></label>
           <input id="create-pattern" type="text" name="pattern" placeholder="stable" class="full">
         </p>
 
@@ -46,17 +51,20 @@
   </div>
 
   <script type="text/javascript">
-    const nameInput = document.getElementById('create-name');
+    const repositoryInput = document.getElementById('create-name');
+    const nameInput = document.getElementById('create-part-wrapper');
 
     document.getElementById('create-kind-github').addEventListener('change', (e) => {
       if (e.target.value === 'github') {
-        nameInput.placeholder = 'ViBiOh/ketchup';
+        repositoryInput.placeholder = 'ViBiOh/ketchup';
+        nameInput.classList.add("hidden");
       }
     });
 
     document.getElementById('create-kind-helm').addEventListener('change', (e) => {
       if (e.target.value === 'helm') {
-        nameInput.placeholder = 'app@https://charts.vibioh.fr';
+        repositoryInput.placeholder = 'https://charts.vibioh.fr';
+        nameInput.classList.remove("hidden");
       }
     });
   </script>
@@ -72,16 +80,19 @@
       </p>
 
       <p class="no-margin center padding">{{ .Repository.Name }}</p>
+      {{ if eq .Repository.Kind.String "helm"}}
+        <p class="no-margin center padding">{{ .Repository.Part }}</p>
+      {{ end }}
 
       <form method="POST" action="/app/ketchups/{{ .Repository.ID }}">
         <input type="hidden" name="method" value="PUT">
 
         <p class="padding no-margin">
-          <label for="edit-pattern-{{ .Repository.ID }}" class="block">Pattern: <img class="icon icon-small" title="`latest`: latest version, beta included.
-`stable`: latest version without beta.
-`^1.0`: latest with fixed major version.
-`~1.1`: latest with fixed major and minor version.
-`^1.0-0`: include beta (works also for `~`)." src="/svg/question?fill=silver" alt="question icon"></label>
+          <label for="edit-pattern-{{ .Repository.ID }}" class="block">Pattern: <img class="icon icon-small" title="'latest': latest version, beta included.
+'stable': latest version without beta.
+'^1.0': latest with fixed major version.
+'~1.1': latest with fixed major and minor version.
+'^1.0-0': include beta (works also for '~')." src="/svg/question?fill=silver" alt="question icon"></label>
           <input id="edit-pattern-{{ .Repository.ID }}" name="pattern" type="text" value="{{ .Pattern }}">
         </p>
 
@@ -105,7 +116,7 @@
         <input type="hidden" name="method" value="DELETE">
 
         <p class="padding no-margin center">
-          Are you sure you want to delete <strong>{{ .Repository.Name }}</strong>?
+          Are you sure you want to delete <strong>{{ .Repository.Name }}{{ if eq .Repository.Kind.String "helm"}} | {{ .Repository.Part }}{{ end }}</strong>?
         </p>
 
         {{ template "form_buttons" "Delete" }}
@@ -172,6 +183,10 @@
       flex-basis: auto;
       flex-direction: column;
       justify-content: center;
+    }
+
+    .hidden {
+      display: none;
     }
 
     .block {

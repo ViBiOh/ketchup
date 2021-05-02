@@ -22,8 +22,9 @@ var (
 // App of package
 type App interface {
 	List(ctx context.Context, page, pageSize uint) ([]model.Repository, uint64, error)
+	ListByKind(ctx context.Context, page, pageSize uint, kind model.RepositoryKind) ([]model.Repository, uint64, error)
 	Suggest(ctx context.Context, ignoreIds []uint64, count uint64) ([]model.Repository, error)
-	GetOrCreate(ctx context.Context, name string, repositoryKind model.RepositoryKind, pattern string) (model.Repository, error)
+	GetOrCreate(ctx context.Context, kind model.RepositoryKind, name, part, pattern string) (model.Repository, error)
 	Update(ctx context.Context, item model.Repository) error
 	Clean(ctx context.Context) error
 	LatestVersions(repo model.Repository) (map[string]semver.Version, error)
@@ -53,6 +54,15 @@ func (a app) List(ctx context.Context, page, pageSize uint) ([]model.Repository,
 	return list, total, nil
 }
 
+func (a app) ListByKind(ctx context.Context, page, pageSize uint, kind model.RepositoryKind) ([]model.Repository, uint64, error) {
+	list, total, err := a.repositoryStore.ListByKind(ctx, page, pageSize, kind)
+	if err != nil {
+		return nil, 0, httpModel.WrapInternal(fmt.Errorf("unable to list by kind: %w", err))
+	}
+
+	return list, total, nil
+}
+
 func (a app) Suggest(ctx context.Context, ignoreIds []uint64, count uint64) ([]model.Repository, error) {
 	list, err := a.repositoryStore.Suggest(ctx, ignoreIds, count)
 	if err != nil {
@@ -62,19 +72,19 @@ func (a app) Suggest(ctx context.Context, ignoreIds []uint64, count uint64) ([]m
 	return list, nil
 }
 
-func (a app) GetOrCreate(ctx context.Context, name string, repositoryKind model.RepositoryKind, pattern string) (model.Repository, error) {
+func (a app) GetOrCreate(ctx context.Context, kind model.RepositoryKind, name, part, pattern string) (model.Repository, error) {
 	sanitizedName := name
-	if repositoryKind == model.Github {
+	if kind == model.Github {
 		sanitizedName = sanitizeName(name)
 	}
 
-	repo, err := a.repositoryStore.GetByName(ctx, sanitizedName, repositoryKind)
+	repo, err := a.repositoryStore.GetByName(ctx, kind, sanitizedName, part)
 	if err != nil {
 		return model.NoneRepository, httpModel.WrapInternal(err)
 	}
 
 	if repo.ID == 0 {
-		return a.create(ctx, model.NewRepository(0, repositoryKind, sanitizedName).AddVersion(pattern, ""))
+		return a.create(ctx, model.NewRepository(0, kind, sanitizedName, part).AddVersion(pattern, ""))
 	}
 
 	if repo.Versions[pattern] != "" {
@@ -186,7 +196,7 @@ func (a app) check(ctx context.Context, old, new model.Repository) error {
 		output = append(output, errors.New("version is required"))
 	}
 
-	repositoryWithName, err := a.repositoryStore.GetByName(ctx, new.Name, new.Kind)
+	repositoryWithName, err := a.repositoryStore.GetByName(ctx, new.Kind, new.Name, new.Part)
 	if err != nil {
 		output = append(output, errors.New("unable to check if name already exists"))
 	} else if repositoryWithName.ID != 0 && repositoryWithName.ID != new.ID {
@@ -212,7 +222,7 @@ func (a app) LatestVersions(repo model.Repository) (map[string]semver.Version, e
 	case model.Github:
 		return a.githubApp.LatestVersions(repo.Name, patterns)
 	case model.Helm:
-		return a.helmApp.LatestVersions(repo.Name, patterns)
+		return a.helmApp.LatestVersions(repo.Name, repo.Part, patterns)
 	default:
 		return nil, fmt.Errorf("unknown repository kind %d", repo.Kind)
 	}
