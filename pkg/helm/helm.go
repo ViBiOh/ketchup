@@ -89,7 +89,7 @@ func (a app) LatestVersions(repository string, patterns []string) (map[string]se
 		return nil, errors.New("invalid name for helm chart")
 	}
 
-	index, err := a.FetchIndex(parts[1], map[string][]string{repository: patterns})
+	index, err := a.FetchIndex(parts[1], map[string][]string{parts[0]: patterns})
 	if err != nil {
 		return nil, err
 	}
