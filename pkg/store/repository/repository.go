@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"sort"
 	"strings"
 
 	"github.com/ViBiOh/httputils/v4/pkg/db"
@@ -17,9 +18,10 @@ import (
 type App interface {
 	DoAtomic(ctx context.Context, action func(context.Context) error) error
 	List(ctx context.Context, page, pageSize uint) ([]model.Repository, uint64, error)
+	ListByKind(ctx context.Context, page, pageSize uint, kind model.RepositoryKind) ([]model.Repository, uint64, error)
 	Suggest(ctx context.Context, ignoreIds []uint64, count uint64) ([]model.Repository, error)
 	Get(ctx context.Context, id uint64, forUpdate bool) (model.Repository, error)
-	GetByName(ctx context.Context, name string, repositoryKind model.RepositoryKind) (model.Repository, error)
+	GetByName(ctx context.Context, repositoryKind model.RepositoryKind, name, part string) (model.Repository, error)
 	Create(ctx context.Context, o model.Repository) (uint64, error)
 	UpdateVersions(ctx context.Context, o model.Repository) error
 	DeleteUnused(ctx context.Context) error
@@ -47,9 +49,11 @@ func (a app) list(ctx context.Context, query string, args ...interface{}) ([]mod
 
 	scanner := func(rows *sql.Rows) error {
 		var rawRepositoryKind string
-		item := model.NewRepository(0, 0, "")
+		item := model.Repository{
+			Versions: make(map[string]string),
+		}
 
-		if err := rows.Scan(&item.ID, &item.Name, &rawRepositoryKind, &count); err != nil {
+		if err := rows.Scan(&item.ID, &rawRepositoryKind, &item.Name, &item.Part, &count); err != nil {
 			return err
 		}
 
@@ -73,10 +77,12 @@ func (a app) list(ctx context.Context, query string, args ...interface{}) ([]mod
 
 func (a app) get(ctx context.Context, query string, args ...interface{}) (model.Repository, error) {
 	var rawRepositoryKind string
-	item := model.NewRepository(0, 0, "")
+	item := model.Repository{
+		Versions: make(map[string]string),
+	}
 
 	scanner := func(row *sql.Row) error {
-		err := row.Scan(&item.ID, &item.Name, &rawRepositoryKind)
+		err := row.Scan(&item.ID, &rawRepositoryKind, &item.Name, &item.Part)
 		if errors.Is(err, sql.ErrNoRows) {
 			item = model.NoneRepository
 			return nil
@@ -105,8 +111,9 @@ func (a app) get(ctx context.Context, query string, args ...interface{}) (model.
 const listQuery = `
 SELECT
   id,
-  name,
   kind,
+  name,
+  part,
   count(1) OVER() AS full_count
 FROM
   ketchup.repository
@@ -122,11 +129,39 @@ func (a app) List(ctx context.Context, page, pageSize uint) ([]model.Repository,
 	return a.list(ctx, query.String(), queryArgs...)
 }
 
+const listByKindQuery = `
+SELECT
+  id,
+  kind,
+  name,
+  part,
+  count(1) OVER() AS full_count
+FROM
+  ketchup.repository
+WHERE
+  kind = $1
+`
+
+func (a app) ListByKind(ctx context.Context, page, pageSize uint, kind model.RepositoryKind) ([]model.Repository, uint64, error) {
+	var query strings.Builder
+	query.WriteString(listByKindQuery)
+	var queryArgs []interface{}
+
+	queryArgs = append(queryArgs, kind.String())
+	queryArgs = append(queryArgs, store.AddPagination(&query, len(queryArgs), page, pageSize)...)
+
+	list, count, err := a.list(ctx, query.String(), queryArgs...)
+	sort.Sort(model.RepositoryByName(list))
+
+	return list, count, err
+}
+
 const suggestQuery = `
 SELECT
   id,
-  name,
   kind,
+  name,
+  part,
   (
     SELECT
       COUNT(1)
@@ -153,8 +188,9 @@ func (a app) Suggest(ctx context.Context, ignoreIds []uint64, count uint64) ([]m
 const getQuery = `
 SELECT
   id,
+  kind,
   name,
-  kind
+  part
 FROM
   ketchup.repository
 WHERE
@@ -173,17 +209,19 @@ func (a app) Get(ctx context.Context, id uint64, forUpdate bool) (model.Reposito
 const getByNameQuery = `
 SELECT
   id,
+  kind,
   name,
-  kind
+  part
 FROM
   ketchup.repository
 WHERE
-  name = $1
-  AND kind = $2
+  kind = $1
+  AND name = $2
+  AND part = $3
 `
 
-func (a app) GetByName(ctx context.Context, name string, repositoryKind model.RepositoryKind) (model.Repository, error) {
-	return a.get(ctx, getByNameQuery, strings.ToLower(name), repositoryKind.String())
+func (a app) GetByName(ctx context.Context, repositoryKind model.RepositoryKind, name, part string) (model.Repository, error) {
+	return a.get(ctx, getByNameQuery, repositoryKind.String(), strings.ToLower(name), strings.ToLower(part))
 }
 
 const insertLock = `
@@ -194,11 +232,13 @@ const insertQuery = `
 INSERT INTO
   ketchup.repository
 (
+  kind,
   name,
-  kind
+  part
 ) VALUES (
   $1,
-  $2
+  $2,
+  $3
 ) RETURNING id
 `
 
@@ -207,16 +247,16 @@ func (a app) Create(ctx context.Context, o model.Repository) (uint64, error) {
 		return 0, err
 	}
 
-	item, err := a.GetByName(ctx, o.Name, o.Kind)
+	item, err := a.GetByName(ctx, o.Kind, o.Name, o.Part)
 	if err != nil {
 		return 0, err
 	}
 
 	if item.ID != 0 {
-		return 0, fmt.Errorf("%s repository already exists with name `%s`", o.Kind.String(), o.Name)
+		return 0, fmt.Errorf("%s repository already exists with name=%s part=%s", o.Kind.String(), o.Name, o.Part)
 	}
 
-	id, err := db.Create(ctx, insertQuery, strings.ToLower(o.Name), o.Kind.String())
+	id, err := db.Create(ctx, insertQuery, o.Kind.String(), strings.ToLower(o.Name), strings.ToLower(o.Part))
 	if err != nil {
 		return 0, err
 	}

@@ -46,7 +46,7 @@ func TestURL(t *testing.T) {
 	}{
 		{
 			"helm",
-			NewRepository(0, Helm, "app@https://charts.vibioh.fr"),
+			NewHelmRepository(0, "https://charts.vibioh.fr", "app"),
 			args{
 				pattern: DefaultPattern,
 			},
@@ -54,7 +54,7 @@ func TestURL(t *testing.T) {
 		},
 		{
 			"invalid",
-			NewRepository(0, Helm, "charts.fr"),
+			NewHelmRepository(0, "charts.fr", ""),
 			args{
 				pattern: DefaultPattern,
 			},
@@ -62,7 +62,7 @@ func TestURL(t *testing.T) {
 		},
 		{
 			"github",
-			NewRepository(0, Github, "vibioh/ketchup").AddVersion(DefaultPattern, "1.0.0"),
+			NewGithubRepository(0, "vibioh/ketchup").AddVersion(DefaultPattern, "1.0.0"),
 			args{
 				pattern: DefaultPattern,
 			},
@@ -93,13 +93,13 @@ func TestCompareURL(t *testing.T) {
 	}{
 		{
 			"helm",
-			NewRepository(0, Helm, "app@https://charts.vibioh.fr"),
+			NewHelmRepository(0, "https://charts.vibioh.fr", "app"),
 			args{},
 			"https://charts.vibioh.fr",
 		},
 		{
 			"github",
-			NewRepository(0, Github, "vibioh/ketchup").AddVersion(DefaultPattern, "1.1.0"),
+			NewGithubRepository(0, "vibioh/ketchup").AddVersion(DefaultPattern, "1.1.0"),
 			args{
 				version: "1.0.0",
 				pattern: DefaultPattern,

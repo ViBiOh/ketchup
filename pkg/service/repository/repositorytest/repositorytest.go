@@ -16,6 +16,10 @@ type App struct {
 	listTotal        uint64
 	listErr          error
 
+	listByKindRepositories []model.Repository
+	listByKindTotal        uint64
+	listByKindErr          error
+
 	getOrCreateRepo model.Repository
 	getOrCreateErr  error
 
@@ -35,6 +39,15 @@ func (a *App) SetList(list []model.Repository, total uint64, err error) *App {
 	a.listRepositories = list
 	a.listTotal = total
 	a.listErr = err
+
+	return a
+}
+
+// SetListByKind mocks
+func (a *App) SetListByKind(list []model.Repository, total uint64, err error) *App {
+	a.listByKindRepositories = list
+	a.listByKindTotal = total
+	a.listByKindErr = err
 
 	return a
 }
@@ -67,13 +80,18 @@ func (a *App) List(_ context.Context, _, _ uint) ([]model.Repository, uint64, er
 	return a.listRepositories, a.listTotal, a.listErr
 }
 
+// ListByKind mocks
+func (a *App) ListByKind(_ context.Context, _, _ uint, _ model.RepositoryKind) ([]model.Repository, uint64, error) {
+	return a.listRepositories, a.listTotal, a.listErr
+}
+
 // Suggest mocks
 func (a *App) Suggest(_ context.Context, _ []uint64, _ uint64) ([]model.Repository, error) {
 	return nil, nil
 }
 
 // GetOrCreate mocks
-func (a *App) GetOrCreate(_ context.Context, _ string, _ model.RepositoryKind, _ string) (model.Repository, error) {
+func (a *App) GetOrCreate(_ context.Context, _ model.RepositoryKind, _ string, _ string, _ string) (model.Repository, error) {
 	return a.getOrCreateRepo, a.getOrCreateErr
 }
 

@@ -45,7 +45,19 @@ func (a app) handleCreate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	item := model.NewKetchup(r.FormValue("pattern"), r.FormValue("version"), model.NewRepository(0, repositoryKind, r.FormValue("repository")))
+	var repository model.Repository
+	name := r.FormValue("name")
+
+	switch repositoryKind {
+	case model.Github:
+		repository = model.NewGithubRepository(0, name)
+	case model.Helm:
+		repository = model.NewHelmRepository(0, name, r.FormValue("part"))
+	default:
+		a.rendererApp.Error(w, httpModel.WrapInternal(fmt.Errorf("unhandled repository kind `%s`", repositoryKind)))
+	}
+
+	item := model.NewKetchup(r.FormValue("pattern"), r.FormValue("version"), repository)
 
 	created, err := a.ketchupService.Create(r.Context(), item)
 	if err != nil {
@@ -63,7 +75,7 @@ func (a app) handleUpdate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	item := model.NewKetchup(r.FormValue("pattern"), r.FormValue("version"), model.NewRepository(id, 0, ""))
+	item := model.NewKetchup(r.FormValue("pattern"), r.FormValue("version"), model.NewGithubRepository(id, ""))
 
 	updated, err := a.ketchupService.Update(r.Context(), item)
 	if err != nil {
@@ -81,7 +93,7 @@ func (a app) handleDelete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	item := model.NewKetchup("", "", model.NewRepository(id, 0, ""))
+	item := model.NewKetchup("", "", model.NewGithubRepository(id, ""))
 
 	if err := a.ketchupService.Delete(r.Context(), item); err != nil {
 		a.rendererApp.Error(w, err)

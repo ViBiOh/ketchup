@@ -2,10 +2,8 @@ package helm
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"io"
-	"strings"
 
 	"github.com/ViBiOh/httputils/v4/pkg/logger"
 	"github.com/ViBiOh/httputils/v4/pkg/request"
@@ -28,7 +26,7 @@ type chart struct {
 
 // App of package
 type App interface {
-	LatestVersions(string, []string) (map[string]semver.Version, error)
+	LatestVersions(string, string, []string) (map[string]semver.Version, error)
 	FetchIndex(string, map[string][]string) (map[string]map[string]semver.Version, error)
 }
 
@@ -83,20 +81,15 @@ func (a app) FetchIndex(url string, chartsPatterns map[string][]string) (map[str
 	return output, nil
 }
 
-func (a app) LatestVersions(repository string, patterns []string) (map[string]semver.Version, error) {
-	parts := strings.SplitN(repository, "@", 2)
-	if len(parts) != 2 {
-		return nil, errors.New("invalid name for helm chart")
-	}
-
-	index, err := a.FetchIndex(parts[1], map[string][]string{parts[0]: patterns})
+func (a app) LatestVersions(name, part string, patterns []string) (map[string]semver.Version, error) {
+	index, err := a.FetchIndex(name, map[string][]string{part: patterns})
 	if err != nil {
 		return nil, err
 	}
 
-	charts, ok := index[parts[0]]
+	charts, ok := index[part]
 	if !ok {
-		return nil, fmt.Errorf("no chart `%s` in repository", parts[0])
+		return nil, fmt.Errorf("no chart `%s` in repository", part)
 	}
 
 	return charts, nil

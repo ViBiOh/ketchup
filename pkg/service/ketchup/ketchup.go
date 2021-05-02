@@ -66,7 +66,7 @@ func (a app) Create(ctx context.Context, item model.Ketchup) (model.Ketchup, err
 	var output model.Ketchup
 
 	err := a.ketchupStore.DoAtomic(ctx, func(ctx context.Context) error {
-		repo, err := a.repositoryService.GetOrCreate(ctx, item.Repository.Name, item.Repository.Kind, item.Pattern)
+		repo, err := a.repositoryService.GetOrCreate(ctx, item.Repository.Kind, item.Repository.Name, item.Repository.Part, item.Pattern)
 		if err != nil {
 			return err
 		}
@@ -109,7 +109,7 @@ func (a app) Update(ctx context.Context, item model.Ketchup) (model.Ketchup, err
 		}
 
 		if old.Pattern != item.Pattern {
-			repo, err := a.repositoryService.GetOrCreate(ctx, old.Repository.Name, old.Repository.Kind, item.Pattern)
+			repo, err := a.repositoryService.GetOrCreate(ctx, old.Repository.Kind, old.Repository.Name, old.Repository.Part, item.Pattern)
 			if err != nil {
 				return httpModel.WrapInternal(fmt.Errorf("unable to get repository version: %w", err))
 			}

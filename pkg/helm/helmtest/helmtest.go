@@ -30,7 +30,7 @@ func (a *App) SetLatestVersions(latestVersions map[string]semver.Version, err er
 }
 
 // LatestVersions mock
-func (a App) LatestVersions(_ string, _ []string) (map[string]semver.Version, error) {
+func (a App) LatestVersions(_, _ string, _ []string) (map[string]semver.Version, error) {
 	return a.latestVersions, a.latestVersionsErr
 }
 

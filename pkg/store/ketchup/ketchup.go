@@ -44,6 +44,7 @@ SELECT
   k.version,
   k.repository_id,
   r.name,
+  r.part,
   r.kind,
   rv.version,
   count(1) OVER() AS full_count
@@ -65,12 +66,12 @@ func (a app) List(ctx context.Context, page, pageSize uint) ([]model.Ketchup, ui
 	list := make([]model.Ketchup, 0)
 
 	scanner := func(rows *sql.Rows) error {
-		item := model.NewKetchup("", "", model.NewRepository(0, 0, ""))
+		item := model.NewKetchup("", "", model.NewRepository(0, 0, "", ""))
 		item.User = user
 		var rawRepositoryKind string
 		var repositoryVersion string
 
-		if err := rows.Scan(&item.Pattern, &item.Version, &item.Repository.ID, &item.Repository.Name, &rawRepositoryKind, &repositoryVersion, &totalCount); err != nil {
+		if err := rows.Scan(&item.Pattern, &item.Version, &item.Repository.ID, &item.Repository.Name, &item.Repository.Part, &rawRepositoryKind, &repositoryVersion, &totalCount); err != nil {
 			return err
 		}
 
@@ -117,7 +118,7 @@ func (a app) ListByRepositoriesID(ctx context.Context, ids []uint64) ([]model.Ke
 
 	scanner := func(rows *sql.Rows) error {
 		var item model.Ketchup
-		item.Repository = model.NewRepository(0, 0, "")
+		item.Repository = model.NewRepository(0, 0, "", "")
 
 		if err := rows.Scan(&item.Pattern, &item.Version, &item.Repository.ID, &item.User.ID, &item.User.Email); err != nil {
 			return err
@@ -137,6 +138,7 @@ SELECT
   k.repository_id,
   k.user_id,
   r.name,
+  r.part,
   r.kind
 FROM
   ketchup.ketchup k,
@@ -156,12 +158,12 @@ func (a app) GetByRepositoryID(ctx context.Context, id uint64, forUpdate bool) (
 	user := model.ReadUser(ctx)
 	item := model.Ketchup{
 		User:       user,
-		Repository: model.NewRepository(0, model.Github, ""),
+		Repository: model.NewGithubRepository(0, ""),
 	}
 
 	scanner := func(row *sql.Row) error {
 		var rawRepositoryKind string
-		err := row.Scan(&item.Pattern, &item.Version, &item.Repository.ID, &item.User.ID, &item.Repository.Name, &rawRepositoryKind)
+		err := row.Scan(&item.Pattern, &item.Version, &item.Repository.ID, &item.User.ID, &item.Repository.Name, &item.Repository.Part, &rawRepositoryKind)
 		if errors.Is(err, sql.ErrNoRows) {
 			item = model.NoneKetchup
 			return nil

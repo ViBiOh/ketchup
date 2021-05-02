@@ -101,7 +101,8 @@ func main() {
 
 	userServiceApp := userService.New(userStore.New(ketchupDb), authServiceApp)
 	githubApp := github.New(githubConfig, redisApp)
-	repositoryServiceApp := repositoryService.New(repositoryStore.New(ketchupDb), githubApp, helm.New())
+	helmApp := helm.New()
+	repositoryServiceApp := repositoryService.New(repositoryStore.New(ketchupDb), githubApp, helmApp)
 	ketchupServiceApp := ketchupService.New(ketchupStore.New(ketchupDb), repositoryServiceApp)
 
 	mailerApp, err := mailer.New(mailerConfig)
@@ -111,7 +112,7 @@ func main() {
 	publicRendererApp, err := renderer.New(rendererConfig, content, ketchup.FuncMap)
 	logger.Fatal(err)
 
-	notifierApp := notifier.New(notifierConfig, repositoryServiceApp, ketchupServiceApp, mailerApp)
+	notifierApp := notifier.New(notifierConfig, repositoryServiceApp, ketchupServiceApp, mailerApp, helmApp)
 	schedulerApp := scheduler.New(schedulerConfig, notifierApp, redisApp)
 	ketchupApp := ketchup.New(publicRendererApp, ketchupServiceApp, userServiceApp, repositoryServiceApp, redisApp)
 

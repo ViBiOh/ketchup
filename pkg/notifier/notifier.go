@@ -10,8 +10,8 @@ import (
 	authModel "github.com/ViBiOh/auth/v2/pkg/model"
 	"github.com/ViBiOh/httputils/v4/pkg/flags"
 	"github.com/ViBiOh/httputils/v4/pkg/logger"
+	"github.com/ViBiOh/ketchup/pkg/helm"
 	"github.com/ViBiOh/ketchup/pkg/model"
-	"github.com/ViBiOh/ketchup/pkg/semver"
 	"github.com/ViBiOh/ketchup/pkg/service/ketchup"
 	"github.com/ViBiOh/ketchup/pkg/service/repository"
 	mailer "github.com/ViBiOh/mailer/pkg/client"
@@ -38,6 +38,7 @@ type app struct {
 	repositoryService repository.App
 	ketchupService    ketchup.App
 	mailerApp         mailer.App
+	helmApp           helm.App
 
 	pushURL string
 	loginID uint64
@@ -52,7 +53,7 @@ func Flags(fs *flag.FlagSet, prefix string) Config {
 }
 
 // New creates new App from Config
-func New(config Config, repositoryService repository.App, ketchupService ketchup.App, mailerApp mailer.App) App {
+func New(config Config, repositoryService repository.App, ketchupService ketchup.App, mailerApp mailer.App, helmApp helm.App) App {
 	return app{
 		loginID: uint64(*config.loginID),
 		pushURL: strings.TrimSpace(*config.pushURL),
@@ -60,6 +61,7 @@ func New(config Config, repositoryService repository.App, ketchupService ketchup
 		repositoryService: repositoryService,
 		ketchupService:    ketchupService,
 		mailerApp:         mailerApp,
+		helmApp:           helmApp,
 	}
 }
 
@@ -102,44 +104,6 @@ func (a app) Notify(ctx context.Context) error {
 	}
 
 	return nil
-}
-
-func (a app) getNewRepositoryReleases(repo model.Repository) []model.Release {
-	versions, err := a.repositoryService.LatestVersions(repo)
-	if err != nil {
-		logger.Error("unable to get latest versions of %s: %s", repo.Name, err)
-		return nil
-	}
-
-	releases := make([]model.Release, 0)
-
-	for pattern, version := range versions {
-		repositoryVersionName := repo.Versions[pattern]
-
-		if version.Name == repositoryVersionName {
-			continue
-		}
-
-		compiledPattern, err := semver.ParsePattern(pattern)
-		if err != nil {
-			logger.Error("unable to parse pattern: %s", err)
-		}
-
-		repositoryVersion, err := semver.Parse(repositoryVersionName)
-		if err != nil {
-			continue
-		}
-
-		if !compiledPattern.Check(version) || !version.IsGreater(repositoryVersion) {
-			continue
-		}
-
-		logger.Info("New `%s` version available for %s: %s", pattern, repo.Name, version.Name)
-
-		releases = append(releases, model.NewRelease(repo, pattern, version))
-	}
-
-	return releases
 }
 
 func (a app) updateRepositories(ctx context.Context, releases []model.Release) error {

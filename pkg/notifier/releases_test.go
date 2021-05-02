@@ -12,7 +12,7 @@ import (
 	"github.com/ViBiOh/ketchup/pkg/service/repository/repositorytest"
 )
 
-func TestGetNewReleases(t *testing.T) {
+func TestGetNewGithubReleases(t *testing.T) {
 	type args struct {
 		ctx context.Context
 	}
@@ -39,7 +39,7 @@ func TestGetNewReleases(t *testing.T) {
 			"github error",
 			app{
 				repositoryService: repositorytest.New().SetList([]model.Repository{
-					model.NewRepository(1, model.Github, repositoryName).AddVersion(model.DefaultPattern, repositoryVersion)}, 0, nil).SetLatestVersions(nil, errors.New("failed")),
+					model.NewGithubRepository(1, repositoryName).AddVersion(model.DefaultPattern, repositoryVersion)}, 0, nil).SetLatestVersions(nil, errors.New("failed")),
 			},
 			args{
 				ctx: context.Background(),
@@ -51,7 +51,7 @@ func TestGetNewReleases(t *testing.T) {
 			"same version",
 			app{
 				repositoryService: repositorytest.New().SetList([]model.Repository{
-					model.NewRepository(1, model.Github, repositoryName).AddVersion(model.DefaultPattern, repositoryVersion),
+					model.NewGithubRepository(1, repositoryName).AddVersion(model.DefaultPattern, repositoryVersion),
 				}, 0, nil).SetLatestVersions(map[string]semver.Version{
 					model.DefaultPattern: {
 						Name: "1.1.0",
@@ -68,7 +68,7 @@ func TestGetNewReleases(t *testing.T) {
 			"success",
 			app{
 				repositoryService: repositorytest.New().SetList([]model.Repository{
-					model.NewRepository(1, model.Github, repositoryName).AddVersion(model.DefaultPattern, repositoryVersion),
+					model.NewGithubRepository(1, repositoryName).AddVersion(model.DefaultPattern, repositoryVersion),
 				}, 0, nil).SetLatestVersions(map[string]semver.Version{
 					model.DefaultPattern: safeParse("1.1.0"),
 				}, nil).SetUpdate(nil),
@@ -77,7 +77,7 @@ func TestGetNewReleases(t *testing.T) {
 				ctx: context.Background(),
 			},
 			[]model.Release{model.NewRelease(
-				model.NewRepository(1, model.Github, repositoryName).AddVersion(model.DefaultPattern, repositoryVersion),
+				model.NewGithubRepository(1, repositoryName).AddVersion(model.DefaultPattern, repositoryVersion),
 				model.DefaultPattern,
 				safeParse("1.1.0"),
 			)},
@@ -88,7 +88,7 @@ func TestGetNewReleases(t *testing.T) {
 	for _, tc := range cases {
 		t.Run(tc.intention, func(t *testing.T) {
 			pageSize = 1
-			got, _, gotErr := tc.instance.getNewReleases(tc.args.ctx)
+			got, _, gotErr := tc.instance.getNewGithubReleases(tc.args.ctx)
 			pageSize = 20
 
 			failed := false
@@ -104,7 +104,7 @@ func TestGetNewReleases(t *testing.T) {
 			}
 
 			if failed {
-				t.Errorf("getNewReleases() = (%+v, `%s`), want (%+v, `%s`)", got, gotErr, tc.want, tc.wantErr)
+				t.Errorf("getNewGithubReleases() = (%+v, `%s`), want (%+v, `%s`)", got, gotErr, tc.want, tc.wantErr)
 			}
 		})
 	}

@@ -40,14 +40,15 @@ CREATE TYPE ketchup.repository_kind AS ENUM ('github', 'helm');
 CREATE SEQUENCE ketchup.repository_seq;
 CREATE TABLE ketchup.repository (
   id BIGINT NOT NULL DEFAULT nextval('ketchup.repository_seq'),
-  name TEXT NOT NULL,
   kind ketchup.repository_kind NOT NULL,
+  name TEXT NOT NULL,
+  part TEXT NOT NULL DEFAULT '',
   creation_date TIMESTAMP WITH TIME ZONE DEFAULT now()
 );
 ALTER SEQUENCE ketchup.repository_seq OWNED BY ketchup.repository.id;
 
 CREATE UNIQUE INDEX repository_id ON ketchup.repository(id);
-CREATE UNIQUE INDEX repository_repository ON ketchup.repository(name);
+CREATE UNIQUE INDEX repository_repository ON ketchup.repository(name, part);
 
 -- repository_version
 CREATE TABLE ketchup.repository_version (

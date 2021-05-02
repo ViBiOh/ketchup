@@ -44,10 +44,11 @@ func main() {
 	logger.Fatal(err)
 	defer mailerApp.Close()
 
-	repositoryServiceApp := repositoryService.New(repositoryStore.New(ketchupDb), github.New(githubConfig, nil), helm.New())
+	helmApp := helm.New()
+	repositoryServiceApp := repositoryService.New(repositoryStore.New(ketchupDb), github.New(githubConfig, nil), helmApp)
 	ketchupServiceApp := ketchupService.New(ketchupStore.New(ketchupDb), repositoryServiceApp)
 
-	notifierApp := notifier.New(notifierConfig, repositoryServiceApp, ketchupServiceApp, mailerApp)
+	notifierApp := notifier.New(notifierConfig, repositoryServiceApp, ketchupServiceApp, mailerApp, helmApp)
 	if err := notifierApp.Notify(context.Background()); err != nil {
 		logger.Fatal(err)
 	}

@@ -39,11 +39,11 @@ func TestEnrichRepositoriesVersions(t *testing.T) {
 			"invalid rows",
 			args{
 				repositories: []model.Repository{
-					model.NewRepository(1, model.Github, ""),
+					model.NewGithubRepository(1, ""),
 				},
 			},
 			[]model.Repository{
-				model.NewRepository(1, model.Github, ""),
+				model.NewGithubRepository(1, ""),
 			},
 			errors.New("type string (\"a\") to a uint64"),
 		},
@@ -51,11 +51,11 @@ func TestEnrichRepositoriesVersions(t *testing.T) {
 			"invalid rows",
 			args{
 				repositories: []model.Repository{
-					model.NewRepository(1, model.Github, ""),
+					model.NewGithubRepository(1, ""),
 				},
 			},
 			[]model.Repository{
-				model.NewRepository(1, model.Github, ""),
+				model.NewGithubRepository(1, ""),
 			},
 			errors.New("type string (\"a\") to a uint64"),
 		},
@@ -63,13 +63,13 @@ func TestEnrichRepositoriesVersions(t *testing.T) {
 			"sequential",
 			args{
 				repositories: []model.Repository{
-					model.NewRepository(2, model.Github, ""),
-					model.NewRepository(1, model.Github, ""),
+					model.NewGithubRepository(2, ""),
+					model.NewGithubRepository(1, ""),
 				},
 			},
 			[]model.Repository{
-				model.NewRepository(1, model.Github, "").AddVersion(model.DefaultPattern, "1.0.0"),
-				model.NewRepository(2, model.Github, "").AddVersion(model.DefaultPattern, "1.1.0"),
+				model.NewGithubRepository(1, "").AddVersion(model.DefaultPattern, "1.0.0"),
+				model.NewGithubRepository(2, "").AddVersion(model.DefaultPattern, "1.1.0"),
 			},
 			nil,
 		},
@@ -92,9 +92,9 @@ func TestEnrichRepositoriesVersions(t *testing.T) {
 				},
 			},
 			[]model.Repository{
-				model.NewRepository(1, model.Github, "").AddVersion(model.DefaultPattern, "1.0.0").AddVersion("beta", "1.0.0-beta"),
-				model.NewRepository(2, model.Github, ""),
-				model.NewRepository(3, model.Github, "").AddVersion(model.DefaultPattern, "1.1.0").AddVersion("alpha", "2.0.0"),
+				model.NewGithubRepository(1, "").AddVersion(model.DefaultPattern, "1.0.0").AddVersion("beta", "1.0.0-beta"),
+				model.NewGithubRepository(2, ""),
+				model.NewGithubRepository(3, "").AddVersion(model.DefaultPattern, "1.1.0").AddVersion("alpha", "2.0.0"),
 			},
 			nil,
 		},
@@ -167,49 +167,49 @@ func TestUpdateVersions(t *testing.T) {
 		{
 			"create error",
 			args{
-				o: model.NewRepository(0, model.Github, "").AddVersion(model.DefaultPattern, "1.0.0"),
+				o: model.NewGithubRepository(0, "").AddVersion(model.DefaultPattern, "1.0.0"),
 			},
 			errFailed,
 		},
 		{
 			"create",
 			args{
-				o: model.NewRepository(0, model.Github, "").AddVersion(model.DefaultPattern, "1.0.0"),
+				o: model.NewGithubRepository(0, "").AddVersion(model.DefaultPattern, "1.0.0"),
 			},
 			nil,
 		},
 		{
 			"no update",
 			args{
-				o: model.NewRepository(0, model.Github, "").AddVersion(model.DefaultPattern, "1.0.0"),
+				o: model.NewGithubRepository(0, "").AddVersion(model.DefaultPattern, "1.0.0"),
 			},
 			nil,
 		},
 		{
 			"update error",
 			args{
-				o: model.NewRepository(0, model.Github, "").AddVersion(model.DefaultPattern, "1.0.0"),
+				o: model.NewGithubRepository(0, "").AddVersion(model.DefaultPattern, "1.0.0"),
 			},
 			errFailed,
 		},
 		{
 			"update",
 			args{
-				o: model.NewRepository(0, model.Github, "").AddVersion(model.DefaultPattern, "1.0.0"),
+				o: model.NewGithubRepository(0, "").AddVersion(model.DefaultPattern, "1.0.0"),
 			},
 			nil,
 		},
 		{
 			"delete error",
 			args{
-				o: model.NewRepository(0, model.Github, ""),
+				o: model.NewGithubRepository(0, ""),
 			},
 			errFailed,
 		},
 		{
 			"delete",
 			args{
-				o: model.NewRepository(0, model.Github, ""),
+				o: model.NewGithubRepository(0, ""),
 			},
 			nil,
 		},
