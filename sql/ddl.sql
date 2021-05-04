@@ -5,6 +5,7 @@ DROP TABLE IF EXISTS ketchup.repository;
 DROP TABLE IF EXISTS ketchup.user;
 
 DROP TYPE IF EXISTS ketchup.repository_kind;
+DROP TYPE IF EXISTS ketchup.ketchup_frequency;
 
 DROP INDEX IF EXISTS ketchup_user;
 DROP INDEX IF EXISTS repository_id;
@@ -59,12 +60,16 @@ CREATE TABLE ketchup.repository_version (
 
 CREATE UNIQUE INDEX repository_version_id ON ketchup.repository_version(repository_id, pattern);
 
+-- repository_kind
+CREATE TYPE ketchup.ketchup_frequency AS ENUM ('none', 'daily', 'weekly');
+
 -- ketchup
 CREATE TABLE ketchup.ketchup (
   user_id BIGINT NOT NULL REFERENCES ketchup.user(id) ON DELETE CASCADE,
   repository_id BIGINT NOT NULL REFERENCES ketchup.repository(id),
-  pattern TEXT NOT NULL default 'stable',
+  pattern TEXT NOT NULL DEFAULT 'stable',
   version TEXT NOT NULL,
+  frequency ketchup_frequency NOT NULL DEFAULT 'daily',
   creation_date TIMESTAMP WITH TIME ZONE DEFAULT now()
 );
 

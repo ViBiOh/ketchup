@@ -100,6 +100,7 @@ func (a app) Update(ctx context.Context, item model.Ketchup) (model.Ketchup, err
 		current := model.Ketchup{
 			Pattern:    item.Pattern,
 			Version:    item.Version,
+			Frequency:  item.Frequency,
 			Repository: old.Repository,
 			User:       old.User,
 		}

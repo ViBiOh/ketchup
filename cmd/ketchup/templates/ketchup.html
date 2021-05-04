@@ -41,6 +41,15 @@
         </p>
 
         <p class="padding no-margin">
+          <label for="create-frequency" class="block">Frequency:</label>
+          <select id="create-frequency" name="frequency" class="full">
+            <option value="Weekly">Weekly</option>
+            <option value="Daily" selected>Daily</option>
+            <option value="None">None</option>
+          </select>
+        </p>
+
+        <p class="padding no-margin">
           <label for="create-version" class="block">My version:</label>
           <input id="create-version" type="text" name="version" placeholder="1.0.0" class="full">
         </p>
@@ -94,6 +103,15 @@
 '~1.1': latest with fixed major and minor version.
 '^1.0-0': include beta (works also for '~')." src="/svg/question?fill=silver" alt="question icon"></label>
           <input id="edit-pattern-{{ .Repository.ID }}" name="pattern" type="text" value="{{ .Pattern }}">
+        </p>
+
+        <p class="padding no-margin">
+          <label for="edit-frequency" class="block">Frequency:</label>
+          <select id="edit-frequency" name="frequency" class="full">
+            <option value="Weekly" {{ if eq .Frequency.String "Weekly" }}selected{{ end }}>Weekly</option>
+            <option value="Daily" {{ if eq .Frequency.String "Daily" }}selected{{ end }}>Daily</option>
+            <option value="None" {{ if eq .Frequency.String "None" }}selected{{ end }}>None</option>
+          </select>
         </p>
 
         <p class="padding no-margin">
