@@ -1,13 +1,46 @@
 package model
 
 import (
+	"fmt"
+	"strings"
+
 	"github.com/ViBiOh/ketchup/pkg/semver"
 )
 
+// KetchupFrequency defines constant for ketchup frequency
+type KetchupFrequency int
+
+const (
+	// None frequency
+	None KetchupFrequency = iota
+	// Daily frequency
+	Daily
+	// Weekly frequency (on Monday)
+	Weekly
+)
+
 var (
+	// KetchupFrequencyValues string values
+	KetchupFrequencyValues = []string{"None", "Daily", "Weekly"}
+
 	// NoneKetchup is an undefined ketchup
 	NoneKetchup = Ketchup{}
 )
+
+// ParseKetchupFrequency parse raw string into a KetchupFrequency
+func ParseKetchupFrequency(value string) (KetchupFrequency, error) {
+	for i, short := range KetchupFrequencyValues {
+		if strings.EqualFold(short, value) {
+			return KetchupFrequency(i), nil
+		}
+	}
+
+	return Daily, fmt.Errorf("invalid value `%s` for ketchup frequency", value)
+}
+
+func (r KetchupFrequency) String() string {
+	return KetchupFrequencyValues[r]
+}
 
 // Ketchup of app
 type Ketchup struct {
@@ -16,13 +49,15 @@ type Ketchup struct {
 	Version    string
 	User       User
 	Repository Repository
+	Frequency  KetchupFrequency
 }
 
 // NewKetchup creates new instance
-func NewKetchup(pattern, version string, repo Repository) Ketchup {
+func NewKetchup(pattern, version string, frequency KetchupFrequency, repo Repository) Ketchup {
 	return Ketchup{
 		Pattern:    pattern,
 		Version:    version,
+		Frequency:  frequency,
 		Repository: repo,
 	}
 }

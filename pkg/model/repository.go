@@ -5,15 +5,15 @@ import (
 	"strings"
 )
 
-// RepositoryKind defines constant for repository types
-type RepositoryKind int
-
 const (
 	// DefaultPattern is the latest but non-beta version
 	DefaultPattern = "stable"
 
 	githubURL = "https://github.com"
 )
+
+// RepositoryKind defines constant for repository types
+type RepositoryKind int
 
 const (
 	// Github repository kind
@@ -25,12 +25,21 @@ const (
 var (
 	// RepositoryKindValues string values
 	RepositoryKindValues = []string{"github", "helm"}
-)
 
-var (
 	// NoneRepository is an undefined repository
 	NoneRepository = Repository{}
 )
+
+// ParseRepositoryKind parse raw string into a RepositoryKind
+func ParseRepositoryKind(value string) (RepositoryKind, error) {
+	for i, short := range RepositoryKindValues {
+		if strings.EqualFold(short, value) {
+			return RepositoryKind(i), nil
+		}
+	}
+
+	return Github, fmt.Errorf("invalid value `%s` for repository kind", value)
+}
 
 func (r RepositoryKind) String() string {
 	return RepositoryKindValues[r]
@@ -93,17 +102,6 @@ func (r Repository) CompareURL(version string, pattern string) string {
 	}
 
 	return fmt.Sprintf("%s/%s/compare/%s...%s", githubURL, r.Name, r.Versions[pattern], version)
-}
-
-// ParseRepositoryKind parse raw string into a RepositoryKind
-func ParseRepositoryKind(value string) (RepositoryKind, error) {
-	for i, short := range RepositoryKindValues {
-		if strings.EqualFold(short, value) {
-			return RepositoryKind(i), nil
-		}
-	}
-
-	return Github, fmt.Errorf("invalid value `%s` for repository kind", value)
 }
 
 // RepositoryByID sort repository by ID

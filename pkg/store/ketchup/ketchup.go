@@ -42,6 +42,7 @@ const listQuery = `
 SELECT
   k.pattern,
   k.version,
+  k.frequency,
   k.repository_id,
   r.name,
   r.part,
@@ -66,16 +67,23 @@ func (a app) List(ctx context.Context, page, pageSize uint) ([]model.Ketchup, ui
 	list := make([]model.Ketchup, 0)
 
 	scanner := func(rows *sql.Rows) error {
-		item := model.NewKetchup("", "", model.NewRepository(0, 0, "", ""))
+		item := model.NewKetchup("", "", model.Daily, model.NewRepository(0, 0, "", ""))
 		item.User = user
 		var rawRepositoryKind string
+		var rawKetchupFrequency string
 		var repositoryVersion string
 
-		if err := rows.Scan(&item.Pattern, &item.Version, &item.Repository.ID, &item.Repository.Name, &item.Repository.Part, &rawRepositoryKind, &repositoryVersion, &totalCount); err != nil {
+		if err := rows.Scan(&item.Pattern, &item.Version, &rawKetchupFrequency, &item.Repository.ID, &item.Repository.Name, &item.Repository.Part, &rawRepositoryKind, &repositoryVersion, &totalCount); err != nil {
 			return err
 		}
 
 		item.Repository.AddVersion(item.Pattern, repositoryVersion)
+
+		ketchupFrequency, err := model.ParseKetchupFrequency(rawKetchupFrequency)
+		if err != nil {
+			return err
+		}
+		item.Frequency = ketchupFrequency
 
 		repositoryKind, err := model.ParseRepositoryKind(rawRepositoryKind)
 		if err != nil {
@@ -102,6 +110,7 @@ const listByRepositoriesIDQuery = `
 SELECT
   k.pattern,
   k.version,
+  k.frequency,
   k.repository_id,
   k.user_id,
   u.email
@@ -119,10 +128,17 @@ func (a app) ListByRepositoriesID(ctx context.Context, ids []uint64) ([]model.Ke
 	scanner := func(rows *sql.Rows) error {
 		var item model.Ketchup
 		item.Repository = model.NewRepository(0, 0, "", "")
+		var rawKetchupFrequency string
 
-		if err := rows.Scan(&item.Pattern, &item.Version, &item.Repository.ID, &item.User.ID, &item.User.Email); err != nil {
+		if err := rows.Scan(&item.Pattern, &item.Version, &rawKetchupFrequency, &item.Repository.ID, &item.User.ID, &item.User.Email); err != nil {
 			return err
 		}
+
+		ketchupFrequency, err := model.ParseKetchupFrequency(rawKetchupFrequency)
+		if err != nil {
+			return err
+		}
+		item.Frequency = ketchupFrequency
 
 		list = append(list, item)
 		return nil
@@ -135,6 +151,7 @@ const getQuery = `
 SELECT
   k.pattern,
   k.version,
+  k.frequency,
   k.repository_id,
   k.user_id,
   r.name,
@@ -163,13 +180,25 @@ func (a app) GetByRepositoryID(ctx context.Context, id uint64, forUpdate bool) (
 
 	scanner := func(row *sql.Row) error {
 		var rawRepositoryKind string
-		err := row.Scan(&item.Pattern, &item.Version, &item.Repository.ID, &item.User.ID, &item.Repository.Name, &item.Repository.Part, &rawRepositoryKind)
+		var rawKetchupFrequency string
+
+		err := row.Scan(&item.Pattern, &item.Version, &rawKetchupFrequency, &item.Repository.ID, &item.User.ID, &item.Repository.Name, &item.Repository.Part, &rawRepositoryKind)
 		if errors.Is(err, sql.ErrNoRows) {
 			item = model.NoneKetchup
 			return nil
 		}
 
-		item.Repository.Kind, err = model.ParseRepositoryKind(rawRepositoryKind)
+		ketchupFrequency, err := model.ParseKetchupFrequency(rawKetchupFrequency)
+		if err != nil {
+			return err
+		}
+		item.Frequency = ketchupFrequency
+
+		repositoryKind, err := model.ParseRepositoryKind(rawRepositoryKind)
+		if err != nil {
+			return err
+		}
+		item.Repository.Kind = repositoryKind
 
 		return err
 	}
@@ -183,18 +212,20 @@ INSERT INTO
 (
   pattern,
   version,
+  frequency,
   repository_id,
   user_id
 ) VALUES (
   $1,
   $2,
   $3,
-  $4
+  $4,
+  $5
 ) RETURNING 1
 `
 
 func (a app) Create(ctx context.Context, o model.Ketchup) (uint64, error) {
-	return db.Create(ctx, insertQuery, o.Pattern, o.Version, o.Repository.ID, model.ReadUser(ctx).ID)
+	return db.Create(ctx, insertQuery, o.Pattern, o.Version, strings.ToLower(o.Frequency.String()), o.Repository.ID, model.ReadUser(ctx).ID)
 }
 
 const updateQuery = `
@@ -202,14 +233,15 @@ UPDATE
   ketchup.ketchup
 SET
   pattern = $3,
-  version = $4
+  version = $4,
+  frequency = $5
 WHERE
   repository_id = $1
   AND user_id = $2
 `
 
 func (a app) Update(ctx context.Context, o model.Ketchup) error {
-	return db.Exec(ctx, updateQuery, o.Repository.ID, model.ReadUser(ctx).ID, o.Pattern, o.Version)
+	return db.Exec(ctx, updateQuery, o.Repository.ID, model.ReadUser(ctx).ID, o.Pattern, o.Version, strings.ToLower(o.Frequency.String()))
 }
 
 const deleteQuery = `

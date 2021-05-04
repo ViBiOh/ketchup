@@ -1,12 +1,74 @@
 package model
 
 import (
+	"errors"
 	"reflect"
 	"sort"
+	"strings"
 	"testing"
 
 	"github.com/ViBiOh/ketchup/pkg/semver"
 )
+
+func TestParseKetchupFrequency(t *testing.T) {
+	type args struct {
+		value string
+	}
+
+	var cases = []struct {
+		intention string
+		args      args
+		want      KetchupFrequency
+		wantErr   error
+	}{
+		{
+			"UpperCase",
+			args{
+				value: "NONE",
+			},
+			None,
+			nil,
+		},
+		{
+			"equal",
+			args{
+				value: "Weekly",
+			},
+			Weekly,
+			nil,
+		},
+		{
+			"not found",
+			args{
+				value: "wrong",
+			},
+			Daily,
+			errors.New("invalid value `wrong` for ketchup frequency"),
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.intention, func(t *testing.T) {
+			got, gotErr := ParseKetchupFrequency(tc.args.value)
+
+			failed := false
+
+			if tc.wantErr == nil && gotErr != nil {
+				failed = true
+			} else if tc.wantErr != nil && gotErr == nil {
+				failed = true
+			} else if tc.wantErr != nil && !strings.Contains(gotErr.Error(), tc.wantErr.Error()) {
+				failed = true
+			} else if got != tc.want {
+				failed = true
+			}
+
+			if failed {
+				t.Errorf("ParseRepositoryKind() = (`%s`, `%s`), want (`%s`, `%s`)", got, gotErr, tc.want, tc.wantErr)
+			}
+		})
+	}
+}
 
 func TestKetchupByRepositoryID(t *testing.T) {
 	type args struct {
@@ -22,15 +84,15 @@ func TestKetchupByRepositoryID(t *testing.T) {
 			"simple",
 			args{
 				array: []Ketchup{
-					NewKetchup(DefaultPattern, "", NewGithubRepository(10, "")),
-					NewKetchup(DefaultPattern, "", NewGithubRepository(1, "")),
-					NewKetchup("latest", "", NewGithubRepository(1, "")),
+					NewKetchup(DefaultPattern, "", Daily, NewGithubRepository(10, "")),
+					NewKetchup(DefaultPattern, "", Daily, NewGithubRepository(1, "")),
+					NewKetchup("latest", "", Daily, NewGithubRepository(1, "")),
 				},
 			},
 			[]Ketchup{
-				NewKetchup("latest", "", NewGithubRepository(1, "")),
-				NewKetchup(DefaultPattern, "", NewGithubRepository(1, "")),
-				NewKetchup(DefaultPattern, "", NewGithubRepository(10, "")),
+				NewKetchup("latest", "", Daily, NewGithubRepository(1, "")),
+				NewKetchup(DefaultPattern, "", Daily, NewGithubRepository(1, "")),
+				NewKetchup(DefaultPattern, "", Daily, NewGithubRepository(10, "")),
 			},
 		},
 	}
@@ -59,17 +121,17 @@ func TestKetchupByPriority(t *testing.T) {
 			"alphabetic",
 			args{
 				array: []Ketchup{
-					NewKetchup("", "", NewGithubRepository(0, "abc")),
-					NewKetchup("", "", NewGithubRepository(0, "ghi")),
-					NewKetchup("", "", NewGithubRepository(0, "jkl")),
-					NewKetchup("", "", NewGithubRepository(0, "def")),
+					NewKetchup("", "", Daily, NewGithubRepository(0, "abc")),
+					NewKetchup("", "", Daily, NewGithubRepository(0, "ghi")),
+					NewKetchup("", "", Daily, NewGithubRepository(0, "jkl")),
+					NewKetchup("", "", Daily, NewGithubRepository(0, "def")),
 				},
 			},
 			[]Ketchup{
-				NewKetchup("", "", NewGithubRepository(0, "abc")),
-				NewKetchup("", "", NewGithubRepository(0, "def")),
-				NewKetchup("", "", NewGithubRepository(0, "ghi")),
-				NewKetchup("", "", NewGithubRepository(0, "jkl")),
+				NewKetchup("", "", Daily, NewGithubRepository(0, "abc")),
+				NewKetchup("", "", Daily, NewGithubRepository(0, "def")),
+				NewKetchup("", "", Daily, NewGithubRepository(0, "ghi")),
+				NewKetchup("", "", Daily, NewGithubRepository(0, "jkl")),
 			},
 		},
 		{

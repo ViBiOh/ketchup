@@ -45,6 +45,12 @@ func (a app) handleCreate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	ketchupFrequency, err := model.ParseKetchupFrequency(r.FormValue("frequency"))
+	if err != nil {
+		a.rendererApp.Error(w, httpModel.WrapInvalid(err))
+		return
+	}
+
 	var repository model.Repository
 	name := r.FormValue("name")
 
@@ -57,7 +63,7 @@ func (a app) handleCreate(w http.ResponseWriter, r *http.Request) {
 		a.rendererApp.Error(w, httpModel.WrapInternal(fmt.Errorf("unhandled repository kind `%s`", repositoryKind)))
 	}
 
-	item := model.NewKetchup(r.FormValue("pattern"), r.FormValue("version"), repository)
+	item := model.NewKetchup(r.FormValue("pattern"), r.FormValue("version"), ketchupFrequency, repository)
 
 	created, err := a.ketchupService.Create(r.Context(), item)
 	if err != nil {
@@ -75,7 +81,13 @@ func (a app) handleUpdate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	item := model.NewKetchup(r.FormValue("pattern"), r.FormValue("version"), model.NewGithubRepository(id, ""))
+	ketchupFrequency, err := model.ParseKetchupFrequency(r.FormValue("frequency"))
+	if err != nil {
+		a.rendererApp.Error(w, httpModel.WrapInvalid(err))
+		return
+	}
+
+	item := model.NewKetchup(r.FormValue("pattern"), r.FormValue("version"), ketchupFrequency, model.NewGithubRepository(id, ""))
 
 	updated, err := a.ketchupService.Update(r.Context(), item)
 	if err != nil {
@@ -93,7 +105,7 @@ func (a app) handleDelete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	item := model.NewKetchup("", "", model.NewGithubRepository(id, ""))
+	item := model.NewKetchup("", "", model.Daily, model.NewGithubRepository(id, ""))
 
 	if err := a.ketchupService.Delete(r.Context(), item); err != nil {
 		a.rendererApp.Error(w, err)

@@ -38,15 +38,15 @@ func TestList(t *testing.T) {
 		{
 			"simple",
 			New(ketchuptest.New().SetList([]model.Ketchup{
-				model.NewKetchup(model.DefaultPattern, "1.2.3", model.NewGithubRepository(2, viwsRepository).AddVersion(model.DefaultPattern, "1.2.3")),
-				model.NewKetchup(model.DefaultPattern, "1.0.0", model.NewGithubRepository(1, ketchupRepository).AddVersion(model.DefaultPattern, "1.0.2")),
+				model.NewKetchup(model.DefaultPattern, "1.2.3", model.Daily, model.NewGithubRepository(2, viwsRepository).AddVersion(model.DefaultPattern, "1.2.3")),
+				model.NewKetchup(model.DefaultPattern, "1.0.0", model.Daily, model.NewGithubRepository(1, ketchupRepository).AddVersion(model.DefaultPattern, "1.0.2")),
 			}, 2, nil), nil),
 			args{
 				page: 1,
 			},
 			[]model.Ketchup{
-				{Pattern: model.DefaultPattern, Version: "1.0.0", Semver: "Patch", Repository: model.NewGithubRepository(1, ketchupRepository).AddVersion(model.DefaultPattern, "1.0.2")},
-				{Pattern: model.DefaultPattern, Version: "1.2.3", Repository: model.NewGithubRepository(2, viwsRepository).AddVersion(model.DefaultPattern, "1.2.3")},
+				{Pattern: model.DefaultPattern, Version: "1.0.0", Frequency: model.Daily, Semver: "Patch", Repository: model.NewGithubRepository(1, ketchupRepository).AddVersion(model.DefaultPattern, "1.0.2")},
+				{Pattern: model.DefaultPattern, Version: "1.2.3", Frequency: model.Daily, Repository: model.NewGithubRepository(2, viwsRepository).AddVersion(model.DefaultPattern, "1.2.3")},
 			},
 			2,
 			nil,
@@ -99,8 +99,8 @@ func TestListForRepositories(t *testing.T) {
 		{
 			"simple",
 			New(ketchuptest.New().SetListByRepositoriesID([]model.Ketchup{
-				model.NewKetchup(model.DefaultPattern, "1.0.0", model.NewGithubRepository(1, ketchupRepository).AddVersion(model.DefaultPattern, "1.0.2")),
-				model.NewKetchup(model.DefaultPattern, "1.2.3", model.NewGithubRepository(2, viwsRepository).AddVersion(model.DefaultPattern, "1.2.3")),
+				model.NewKetchup(model.DefaultPattern, "1.0.0", model.Daily, model.NewGithubRepository(1, ketchupRepository).AddVersion(model.DefaultPattern, "1.0.2")),
+				model.NewKetchup(model.DefaultPattern, "1.2.3", model.Daily, model.NewGithubRepository(2, viwsRepository).AddVersion(model.DefaultPattern, "1.2.3")),
 			}, nil), nil),
 			args{
 				repositories: []model.Repository{
@@ -109,8 +109,8 @@ func TestListForRepositories(t *testing.T) {
 				},
 			},
 			[]model.Ketchup{
-				{Pattern: model.DefaultPattern, Version: "1.0.0", Semver: "Patch", Repository: model.NewGithubRepository(1, ketchupRepository).AddVersion(model.DefaultPattern, "1.0.2")},
-				{Pattern: model.DefaultPattern, Version: "1.2.3", Repository: model.NewGithubRepository(2, viwsRepository).AddVersion(model.DefaultPattern, "1.2.3")},
+				{Pattern: model.DefaultPattern, Version: "1.0.0", Frequency: model.Daily, Semver: "Patch", Repository: model.NewGithubRepository(1, ketchupRepository).AddVersion(model.DefaultPattern, "1.0.2")},
+				{Pattern: model.DefaultPattern, Version: "1.2.3", Frequency: model.Daily, Repository: model.NewGithubRepository(2, viwsRepository).AddVersion(model.DefaultPattern, "1.2.3")},
 			},
 			nil,
 		},
@@ -180,7 +180,7 @@ func TestCreate(t *testing.T) {
 			New(ketchuptest.New(), repositorytest.New()),
 			args{
 				ctx:  context.Background(),
-				item: model.NewKetchup(model.DefaultPattern, "", model.NewGithubRepository(1, ketchupRepository)),
+				item: model.NewKetchup(model.DefaultPattern, "", model.Daily, model.NewGithubRepository(1, ketchupRepository)),
 			},
 			model.NoneKetchup,
 			httpModel.ErrInvalid,
@@ -190,7 +190,7 @@ func TestCreate(t *testing.T) {
 			New(ketchuptest.New().SetCreate(0, errors.New("failed")), repositorytest.New()),
 			args{
 				ctx:  model.StoreUser(context.Background(), model.NewUser(1, "", authModel.NewUser(0, ""))),
-				item: model.NewKetchup(model.DefaultPattern, "0.0.0", model.NewGithubRepository(1, ketchupRepository)),
+				item: model.NewKetchup(model.DefaultPattern, "0.0.0", model.Daily, model.NewGithubRepository(1, ketchupRepository)),
 			},
 			model.NoneKetchup,
 			httpModel.ErrInternalError,
@@ -200,9 +200,9 @@ func TestCreate(t *testing.T) {
 			New(ketchuptest.New(), repositorytest.New().SetGetOrCreate(model.NewGithubRepository(1, ketchupRepository).AddVersion(model.DefaultPattern, "1.0.0"), nil)),
 			args{
 				ctx:  model.StoreUser(context.Background(), model.NewUser(1, "", authModel.NewUser(0, ""))),
-				item: model.NewKetchup(model.DefaultPattern, "1.0.0", model.NewGithubRepository(1, ketchupRepository)),
+				item: model.NewKetchup(model.DefaultPattern, "1.0.0", model.Daily, model.NewGithubRepository(1, ketchupRepository)),
 			},
-			model.NewKetchup(model.DefaultPattern, "1.0.0", model.NewGithubRepository(1, ketchupRepository).AddVersion(model.DefaultPattern, "1.0.0")),
+			model.NewKetchup(model.DefaultPattern, "1.0.0", model.Daily, model.NewGithubRepository(1, ketchupRepository).AddVersion(model.DefaultPattern, "1.0.0")),
 			nil,
 		},
 	}
@@ -261,20 +261,20 @@ func TestUpdate(t *testing.T) {
 		},
 		{
 			"check error",
-			New(ketchuptest.New().SetGetByRepositoryID(model.NewKetchup(model.DefaultPattern, "0.9.0", model.NewGithubRepository(1, ketchupRepository)), nil), repositorytest.New()),
+			New(ketchuptest.New().SetGetByRepositoryID(model.NewKetchup(model.DefaultPattern, "0.9.0", model.Daily, model.NewGithubRepository(1, ketchupRepository)), nil), repositorytest.New()),
 			args{
 				ctx:  context.Background(),
-				item: model.NewKetchup(model.DefaultPattern, "", model.NewGithubRepository(1, ketchupRepository)),
+				item: model.NewKetchup(model.DefaultPattern, "", model.Daily, model.NewGithubRepository(1, ketchupRepository)),
 			},
 			model.NoneKetchup,
 			httpModel.ErrInvalid,
 		},
 		{
 			"pattern change error",
-			New(ketchuptest.New().SetGetByRepositoryID(model.NewKetchup(model.DefaultPattern, "0.9.0", model.NewGithubRepository(1, ketchupRepository)), nil), repositorytest.New().SetGetOrCreate(model.NoneRepository, errors.New("failed"))),
+			New(ketchuptest.New().SetGetByRepositoryID(model.NewKetchup(model.DefaultPattern, "0.9.0", model.Daily, model.NewGithubRepository(1, ketchupRepository)), nil), repositorytest.New().SetGetOrCreate(model.NoneRepository, errors.New("failed"))),
 			args{
 				ctx:  model.StoreUser(context.Background(), model.NewUser(1, "", authModel.NewUser(0, ""))),
-				item: model.NewKetchup("latest", "1.0.0", model.NewGithubRepository(1, ketchupRepository)),
+				item: model.NewKetchup("latest", "1.0.0", model.Daily, model.NewGithubRepository(1, ketchupRepository)),
 			},
 			model.NoneKetchup,
 			httpModel.ErrInternalError,
@@ -284,16 +284,18 @@ func TestUpdate(t *testing.T) {
 			New(ketchuptest.New().SetGetByRepositoryID(model.Ketchup{
 				Pattern:    model.DefaultPattern,
 				Version:    "0.9.0",
+				Frequency:  model.Daily,
 				Repository: model.NewGithubRepository(1, ketchupRepository),
 				User:       model.NewUser(1, "", authModel.NewUser(0, "")),
 			}, nil), repositorytest.New().SetGetOrCreate(model.NewGithubRepository(1, ketchupRepository).AddVersion("latest", "1.0.1"), nil)),
 			args{
 				ctx:  model.StoreUser(context.Background(), model.NewUser(1, "", authModel.NewUser(0, ""))),
-				item: model.NewKetchup("latest", "1.0.0", model.NewGithubRepository(1, ketchupRepository)),
+				item: model.NewKetchup("latest", "1.0.0", model.Daily, model.NewGithubRepository(1, ketchupRepository)),
 			},
 			model.Ketchup{
 				Pattern:    "latest",
 				Version:    "1.0.0",
+				Frequency:  model.Daily,
 				Repository: model.NewGithubRepository(1, ketchupRepository).AddVersion("latest", "1.0.1"),
 				User:       model.NewUser(1, "", authModel.NewUser(0, "")),
 			},
@@ -301,10 +303,10 @@ func TestUpdate(t *testing.T) {
 		},
 		{
 			"update error",
-			New(ketchuptest.New().SetGetByRepositoryID(model.NewKetchup(model.DefaultPattern, "0.9.0", model.NewGithubRepository(1, ketchupRepository)), nil).SetUpdate(errors.New("failed")), repositorytest.New()),
+			New(ketchuptest.New().SetGetByRepositoryID(model.NewKetchup(model.DefaultPattern, "0.9.0", model.Daily, model.NewGithubRepository(1, ketchupRepository)), nil).SetUpdate(errors.New("failed")), repositorytest.New()),
 			args{
 				ctx:  model.StoreUser(context.Background(), model.NewUser(1, "", authModel.NewUser(0, ""))),
-				item: model.NewKetchup(model.DefaultPattern, "0.0.0", model.NewGithubRepository(2, "")),
+				item: model.NewKetchup(model.DefaultPattern, "0.0.0", model.Daily, model.NewGithubRepository(2, "")),
 			},
 			model.NoneKetchup,
 			httpModel.ErrInternalError,
@@ -314,16 +316,18 @@ func TestUpdate(t *testing.T) {
 			New(ketchuptest.New().SetGetByRepositoryID(model.Ketchup{
 				Pattern:    model.DefaultPattern,
 				Version:    "0.9.0",
+				Frequency:  model.Daily,
 				Repository: model.NewGithubRepository(1, ketchupRepository).AddVersion(model.DefaultPattern, "1.2.3"),
 				User:       model.NewUser(1, "", authModel.NewUser(0, "")),
 			}, nil), repositorytest.New()),
 			args{
 				ctx:  model.StoreUser(context.Background(), model.NewUser(1, "", authModel.NewUser(0, ""))),
-				item: model.NewKetchup(model.DefaultPattern, "1.0.0", model.NewGithubRepository(1, "")),
+				item: model.NewKetchup(model.DefaultPattern, "1.0.0", model.Daily, model.NewGithubRepository(1, "")),
 			},
 			model.Ketchup{
 				Pattern:    model.DefaultPattern,
 				Version:    "1.0.0",
+				Frequency:  model.Daily,
 				Repository: model.NewGithubRepository(1, ketchupRepository).AddVersion(model.DefaultPattern, "1.2.3"),
 				User:       model.NewUser(1, "", authModel.NewUser(0, "")),
 			},
@@ -376,7 +380,7 @@ func TestDelete(t *testing.T) {
 			New(ketchuptest.New().SetGetByRepositoryID(model.NoneKetchup, errors.New("failed")), repositorytest.New()),
 			args{
 				ctx:  context.Background(),
-				item: model.NewKetchup(model.DefaultPattern, "", model.NewGithubRepository(0, "")),
+				item: model.NewKetchup(model.DefaultPattern, "", model.Daily, model.NewGithubRepository(0, "")),
 			},
 			httpModel.ErrInternalError,
 		},
@@ -385,7 +389,7 @@ func TestDelete(t *testing.T) {
 			New(ketchuptest.New(), repositorytest.New()),
 			args{
 				ctx:  context.Background(),
-				item: model.NewKetchup(model.DefaultPattern, "", model.NewGithubRepository(1, "")),
+				item: model.NewKetchup(model.DefaultPattern, "", model.Daily, model.NewGithubRepository(1, "")),
 			},
 			httpModel.ErrInvalid,
 		},
@@ -394,7 +398,7 @@ func TestDelete(t *testing.T) {
 			New(ketchuptest.New().SetDelete(errors.New("failed")), repositorytest.New()),
 			args{
 				ctx:  model.StoreUser(context.Background(), model.NewUser(1, "", authModel.NewUser(0, ""))),
-				item: model.NewKetchup(model.DefaultPattern, "", model.NewGithubRepository(3, "")),
+				item: model.NewKetchup(model.DefaultPattern, "", model.Daily, model.NewGithubRepository(3, "")),
 			},
 			httpModel.ErrInternalError,
 		},
@@ -403,7 +407,7 @@ func TestDelete(t *testing.T) {
 			New(ketchuptest.New(), repositorytest.New()),
 			args{
 				ctx:  model.StoreUser(context.Background(), model.NewUser(1, "", authModel.NewUser(0, ""))),
-				item: model.NewKetchup(model.DefaultPattern, "", model.NewGithubRepository(1, "")),
+				item: model.NewKetchup(model.DefaultPattern, "", model.Daily, model.NewGithubRepository(1, "")),
 			},
 			nil,
 		},
@@ -452,7 +456,7 @@ func TestCheck(t *testing.T) {
 			app{ketchupStore: ketchuptest.New()},
 			args{
 				ctx: model.StoreUser(context.Background(), model.NewUser(1, "", authModel.NewUser(0, ""))),
-				old: model.NewKetchup(model.DefaultPattern, "1.0.0", model.NoneRepository),
+				old: model.NewKetchup(model.DefaultPattern, "1.0.0", model.Daily, model.NoneRepository),
 				new: model.NoneKetchup,
 			},
 			nil,
@@ -463,7 +467,7 @@ func TestCheck(t *testing.T) {
 			args{
 				ctx: model.StoreUser(context.Background(), model.NewUser(1, "", authModel.NewUser(0, ""))),
 				old: model.NoneKetchup,
-				new: model.NewKetchup("", "", model.NewGithubRepository(1, "")),
+				new: model.NewKetchup("", "", model.Daily, model.NewGithubRepository(1, "")),
 			},
 			errors.New("pattern is required"),
 		},
@@ -473,7 +477,7 @@ func TestCheck(t *testing.T) {
 			args{
 				ctx: model.StoreUser(context.Background(), model.NewUser(1, "", authModel.NewUser(0, ""))),
 				old: model.NoneKetchup,
-				new: model.NewKetchup("test", "", model.NewGithubRepository(1, "")),
+				new: model.NewKetchup("test", "", model.Daily, model.NewGithubRepository(1, "")),
 			},
 			errors.New("pattern is invalid"),
 		},
@@ -482,8 +486,8 @@ func TestCheck(t *testing.T) {
 			app{ketchupStore: ketchuptest.New()},
 			args{
 				ctx: model.StoreUser(context.Background(), model.NewUser(1, "", authModel.NewUser(0, ""))),
-				old: model.NewKetchup(model.DefaultPattern, "1.0.0", model.NoneRepository),
-				new: model.NewKetchup(model.DefaultPattern, "", model.NewGithubRepository(1, "")),
+				old: model.NewKetchup(model.DefaultPattern, "1.0.0", model.Daily, model.NoneRepository),
+				new: model.NewKetchup(model.DefaultPattern, "", model.Daily, model.NewGithubRepository(1, "")),
 			},
 			errors.New("version is required"),
 		},
@@ -498,7 +502,7 @@ func TestCheck(t *testing.T) {
 		},
 		{
 			"create already exists",
-			app{ketchupStore: ketchuptest.New().SetGetByRepositoryID(model.NewKetchup(model.DefaultPattern, "1.0.0", model.NewGithubRepository(1, ketchupRepository)), nil)},
+			app{ketchupStore: ketchuptest.New().SetGetByRepositoryID(model.NewKetchup(model.DefaultPattern, "1.0.0", model.Daily, model.NewGithubRepository(1, ketchupRepository)), nil)},
 			args{
 				ctx: model.StoreUser(context.Background(), model.NewUser(1, "", authModel.NewUser(0, ""))),
 				new: model.Ketchup{Pattern: model.DefaultPattern, Version: "1.0.0", Repository: model.NewGithubRepository(2, ketchupRepository), User: model.NewUser(1, "", authModel.NewUser(0, ""))},

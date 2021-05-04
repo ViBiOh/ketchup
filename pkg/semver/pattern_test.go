@@ -1,7 +1,6 @@
 package semver
 
 import (
-	"fmt"
 	"testing"
 )
 
@@ -158,8 +157,6 @@ func TestCheck(t *testing.T) {
 			true,
 		},
 	}
-
-	fmt.Println(safeParsePattern("^1.0").Check(safeParse("2.0.0")))
 
 	for _, tc := range cases {
 		t.Run(tc.intention, func(t *testing.T) {
