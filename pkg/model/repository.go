@@ -47,37 +47,23 @@ type Repository struct {
 
 // NewRepository create new Repository with initialized values
 func NewRepository(id uint64, kind RepositoryKind, name, part string) Repository {
-	switch kind {
-	case Github:
-		return NewGithubRepository(id, name)
-	case Helm:
-		return NewHelmRepository(id, name, part)
-	default:
-		return Repository{
-			Versions: make(map[string]string),
-		}
+	return Repository{
+		ID:       id,
+		Kind:     kind,
+		Name:     name,
+		Part:     part,
+		Versions: make(map[string]string),
 	}
 }
 
 // NewGithubRepository create new Repository with initialized values
 func NewGithubRepository(id uint64, name string) Repository {
-	return Repository{
-		ID:       id,
-		Kind:     Github,
-		Name:     name,
-		Versions: make(map[string]string),
-	}
+	return NewRepository(id, Github, name, "")
 }
 
 // NewHelmRepository create new Repository with initialized values
 func NewHelmRepository(id uint64, name, part string) Repository {
-	return Repository{
-		ID:       id,
-		Kind:     Helm,
-		Name:     name,
-		Part:     part,
-		Versions: make(map[string]string),
-	}
+	return NewRepository(id, Helm, name, part)
 }
 
 // AddVersion adds given pattern to versions map
@@ -133,7 +119,7 @@ type RepositoryByName []Repository
 func (a RepositoryByName) Len() int { return len(a) }
 func (a RepositoryByName) Less(i, j int) bool {
 	if a[i].Name == a[j].Name {
-		return a[i].Part == a[j].Part
+		return a[i].Part < a[j].Part
 	}
 	return a[i].Name < a[j].Name
 }

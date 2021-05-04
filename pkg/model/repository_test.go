@@ -2,6 +2,8 @@ package model
 
 import (
 	"errors"
+	"reflect"
+	"sort"
 	"strings"
 	"testing"
 )
@@ -164,6 +166,78 @@ func TestParseRepositoryKind(t *testing.T) {
 
 			if failed {
 				t.Errorf("ParseRepositoryKind() = (`%s`, `%s`), want (`%s`, `%s`)", got, gotErr, tc.want, tc.wantErr)
+			}
+		})
+	}
+}
+
+func TestRepositoryByID(t *testing.T) {
+	type args struct {
+		array []Repository
+	}
+
+	var cases = []struct {
+		intention string
+		args      args
+		want      []Repository
+	}{
+		{
+			"simple",
+			args{
+				array: []Repository{
+					NewGithubRepository(10, ""),
+					NewGithubRepository(1, ""),
+				},
+			},
+			[]Repository{
+				NewGithubRepository(1, ""),
+				NewGithubRepository(10, ""),
+			},
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.intention, func(t *testing.T) {
+			sort.Sort(RepositoryByID(tc.args.array))
+			if got := tc.args.array; !reflect.DeepEqual(got, tc.want) {
+				t.Errorf("KetchupByRepositoryID() = %+v, want %+v", got, tc.want)
+			}
+		})
+	}
+}
+
+func TestRepositoryByName(t *testing.T) {
+	type args struct {
+		array []Repository
+	}
+
+	var cases = []struct {
+		intention string
+		args      args
+		want      []Repository
+	}{
+		{
+			"simple",
+			args{
+				array: []Repository{
+					NewHelmRepository(3, "def", "abc"),
+					NewHelmRepository(2, "abc", "def"),
+					NewHelmRepository(1, "abc", "abc"),
+				},
+			},
+			[]Repository{
+				NewHelmRepository(1, "abc", "abc"),
+				NewHelmRepository(2, "abc", "def"),
+				NewHelmRepository(3, "def", "abc"),
+			},
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.intention, func(t *testing.T) {
+			sort.Sort(RepositoryByName(tc.args.array))
+			if got := tc.args.array; !reflect.DeepEqual(got, tc.want) {
+				t.Errorf("RepositoryByName() = %+v, want %+v", got, tc.want)
 			}
 		})
 	}
