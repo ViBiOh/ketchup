@@ -172,8 +172,8 @@ func TestKetchupByPriority(t *testing.T) {
 				{Semver: "Patch", Repository: NewGithubRepository(0, "jkl")},
 				{Semver: "", Repository: NewGithubRepository(0, "abcd")},
 				{Semver: "", Repository: NewGithubRepository(0, "defg")},
-				{Semver: "Patch", Repository: NewHelmRepository(0, "jjl", "def")},
 				{Semver: "Patch", Repository: NewHelmRepository(0, "jjl", "abc")},
+				{Semver: "Patch", Repository: NewHelmRepository(0, "jjl", "def")},
 			},
 		},
 	}
@@ -203,11 +203,13 @@ func TestReleaseByRepositoryID(t *testing.T) {
 			args{
 				array: []Release{
 					NewRelease(NewGithubRepository(10, ""), DefaultPattern, semver.Version{}),
-					NewRelease(NewGithubRepository(1, ""), DefaultPattern, semver.Version{}),
+					NewRelease(NewGithubRepository(1, "stable"), DefaultPattern, semver.Version{}),
+					NewRelease(NewGithubRepository(1, "~1.10"), DefaultPattern, semver.Version{}),
 				},
 			},
 			[]Release{
-				NewRelease(NewGithubRepository(1, ""), DefaultPattern, semver.Version{}),
+				NewRelease(NewGithubRepository(1, "stable"), DefaultPattern, semver.Version{}),
+				NewRelease(NewGithubRepository(1, "~1.10"), DefaultPattern, semver.Version{}),
 				NewRelease(NewGithubRepository(10, ""), DefaultPattern, semver.Version{}),
 			},
 		},

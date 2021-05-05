@@ -87,13 +87,10 @@ func (a KetchupByPriority) Less(i, j int) bool {
 	}
 
 	if first.Semver == second.Semver {
-		if first.Repository.Name != second.Repository.Name {
-			return first.Repository.Name < second.Repository.Name
-		}
-
-		if first.Repository.Name != second.Repository.Name {
+		if first.Repository.Name == second.Repository.Name {
 			return first.Repository.Part < second.Repository.Part
 		}
+		return first.Repository.Name < second.Repository.Name
 	}
 
 	if first.Semver != "" && second.Semver == "" {

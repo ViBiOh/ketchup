@@ -25,9 +25,9 @@ func PreparePatternMatching(patterns []string) (map[string]semver.Version, map[s
 }
 
 // CheckPatternsMatching check given version against pattern matching
-func CheckPatternsMatching(versions map[string]semver.Version, compiledPatterns map[string]semver.Pattern, version semver.Version) {
+func CheckPatternsMatching(versions map[string]semver.Version, patterns map[string]semver.Pattern, version semver.Version) {
 	for pattern, patternVersion := range versions {
-		if compiledPatterns[pattern].Check(version) && version.IsGreater(patternVersion) {
+		if patterns[pattern].Check(version) && version.IsGreater(patternVersion) {
 			versions[pattern] = version
 		}
 	}
