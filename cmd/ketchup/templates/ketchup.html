@@ -89,7 +89,7 @@
       </p>
 
       <p class="no-margin center padding">{{ .Repository.Name }}</p>
-      {{ if eq .Repository.Kind.String "helm"}}
+      {{ if eq .Repository.Kind.String "helm" }}
         <p class="no-margin center padding">{{ .Repository.Part }}</p>
       {{ end }}
 
@@ -134,7 +134,7 @@
         <input type="hidden" name="method" value="DELETE">
 
         <p class="padding no-margin center">
-          Are you sure you want to delete <strong>{{ .Repository.Name }}{{ if eq .Repository.Kind.String "helm"}} | {{ .Repository.Part }}{{ end }}</strong>?
+          Are you sure you want to delete <strong>{{ .Repository.Name }}{{ if eq .Repository.Kind.String "helm" }} | {{ .Repository.Part }}{{ end }}</strong>?
         </p>
 
         {{ template "form_buttons" "Delete" }}
@@ -274,7 +274,7 @@
 
 
       <div class="ketchup center {{ if ne .Version (index .Repository.Versions .Pattern) }}ketchup--outdated{{ end }}">
-        <h2 class="header small ellipsis">{{ .Repository.Name }}</h2>
+        <h2 class="header small ellipsis">{{ if eq .Repository.Kind.String "helm" }}{{ .Repository.Part }} | {{ end }}{{ .Repository.Name }}</h2>
 
         <div class="ketchup__version">
           {{ if .Semver }}
@@ -305,6 +305,7 @@
 
             <form method="POST" action="/app/ketchups/{{ .Repository.ID }}" class="inline">
               <input type="hidden" name="method" value="PUT">
+              <input type="hidden" name="frequency" value="{{ .Frequency.String }}">
               <input type="hidden" name="pattern" value="{{ .Pattern }}">
               <input type="hidden" name="version" value="{{ index .Repository.Versions .Pattern }}">
 
