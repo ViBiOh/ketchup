@@ -17,7 +17,7 @@ import (
 // App of package
 type App interface {
 	List(ctx context.Context, page, pageSize uint) ([]model.Ketchup, uint64, error)
-	ListForRepositories(ctx context.Context, repositories []model.Repository) ([]model.Ketchup, error)
+	ListForRepositories(ctx context.Context, repositories []model.Repository, frequency model.KetchupFrequency) ([]model.Ketchup, error)
 	Create(ctx context.Context, item model.Ketchup) (model.Ketchup, error)
 	Update(ctx context.Context, item model.Ketchup) (model.Ketchup, error)
 	Delete(ctx context.Context, item model.Ketchup) error
@@ -48,13 +48,13 @@ func (a app) List(ctx context.Context, page, pageSize uint) ([]model.Ketchup, ui
 	return enrichedList, total, nil
 }
 
-func (a app) ListForRepositories(ctx context.Context, repositories []model.Repository) ([]model.Ketchup, error) {
+func (a app) ListForRepositories(ctx context.Context, repositories []model.Repository, frequency model.KetchupFrequency) ([]model.Ketchup, error) {
 	ids := make([]uint64, len(repositories))
 	for index, repo := range repositories {
 		ids[index] = repo.ID
 	}
 
-	list, err := a.ketchupStore.ListByRepositoriesID(ctx, ids)
+	list, err := a.ketchupStore.ListByRepositoriesID(ctx, ids, frequency)
 	if err != nil {
 		return nil, httpModel.WrapInternal(fmt.Errorf("unable to list by ids: %w", err))
 	}

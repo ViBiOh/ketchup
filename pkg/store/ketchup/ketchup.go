@@ -16,7 +16,7 @@ import (
 type App interface {
 	DoAtomic(ctx context.Context, action func(context.Context) error) error
 	List(ctx context.Context, page, pageSize uint) ([]model.Ketchup, uint64, error)
-	ListByRepositoriesID(ctx context.Context, ids []uint64) ([]model.Ketchup, error)
+	ListByRepositoriesID(ctx context.Context, ids []uint64, frequency model.KetchupFrequency) ([]model.Ketchup, error)
 	GetByRepositoryID(ctx context.Context, id uint64, forUpdate bool) (model.Ketchup, error)
 	Create(ctx context.Context, o model.Ketchup) (uint64, error)
 	Update(ctx context.Context, o model.Ketchup) error
@@ -120,9 +120,10 @@ FROM
 WHERE
   repository_id = ANY ($1)
   AND k.user_id = u.id
+  AND k.frequency = $2
 `
 
-func (a app) ListByRepositoriesID(ctx context.Context, ids []uint64) ([]model.Ketchup, error) {
+func (a app) ListByRepositoriesID(ctx context.Context, ids []uint64, frequency model.KetchupFrequency) ([]model.Ketchup, error) {
 	list := make([]model.Ketchup, 0)
 
 	scanner := func(rows *sql.Rows) error {
@@ -144,7 +145,7 @@ func (a app) ListByRepositoriesID(ctx context.Context, ids []uint64) ([]model.Ke
 		return nil
 	}
 
-	return list, db.List(ctx, a.db, scanner, listByRepositoriesIDQuery, pq.Array(ids))
+	return list, db.List(ctx, a.db, scanner, listByRepositoriesIDQuery, pq.Array(ids), strings.ToLower(frequency.String()))
 }
 
 const getQuery = `

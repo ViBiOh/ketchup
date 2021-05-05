@@ -105,12 +105,12 @@ func (a *App) List(_ context.Context, page, pageSize uint) ([]model.Ketchup, uin
 }
 
 // ListByRepositoriesID mocks
-func (a *App) ListByRepositoriesID(_ context.Context, ids []uint64) ([]model.Ketchup, error) {
+func (a *App) ListByRepositoriesID(_ context.Context, _ []uint64, _ model.KetchupFrequency) ([]model.Ketchup, error) {
 	return a.listByRepositoriesIDKetchups, a.listByRepositoriesIDErr
 }
 
 // GetByRepositoryID mocks
-func (a *App) GetByRepositoryID(_ context.Context, id uint64, forUpdate bool) (model.Ketchup, error) {
+func (a *App) GetByRepositoryID(_ context.Context, _ uint64, _ bool) (model.Ketchup, error) {
 	return a.getByRepositoryKetchup, a.getByRepositoryErr
 }
 

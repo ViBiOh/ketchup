@@ -138,7 +138,7 @@ func (a app) getKetchupToNotify(ctx context.Context, releases []model.Release) (
 		repositories[index] = release.Repository
 	}
 
-	ketchups, err := a.ketchupService.ListForRepositories(ctx, repositories)
+	ketchups, err := a.ketchupService.ListForRepositories(ctx, repositories, model.Daily)
 	if err != nil {
 		return nil, fmt.Errorf("unable to get ketchups for repositories: %w", err)
 	}

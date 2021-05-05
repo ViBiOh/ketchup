@@ -171,7 +171,8 @@ func TestList(t *testing.T) {
 
 func TestListByRepositoriesID(t *testing.T) {
 	type args struct {
-		ids []uint64
+		ids       []uint64
+		frequency model.KetchupFrequency
 	}
 
 	var cases = []struct {
@@ -206,7 +207,8 @@ func TestListByRepositoriesID(t *testing.T) {
 		{
 			"timeout",
 			args{
-				ids: []uint64{1, 2},
+				ids:       []uint64{1, 2},
+				frequency: model.Daily,
 			},
 			make([]model.Ketchup, 0),
 			sqlmock.ErrCancelled,
@@ -225,7 +227,7 @@ func TestListByRepositoriesID(t *testing.T) {
 		t.Run(tc.intention, func(t *testing.T) {
 			testWithMock(t, func(mockDb *sql.DB, mock sqlmock.Sqlmock) {
 				rows := sqlmock.NewRows([]string{"pattern", "version", "frequency", "repository_id", "user_id", "email"})
-				expectedQuery := mock.ExpectQuery("SELECT k.pattern, k.version, k.frequency, k.repository_id, k.user_id, u.email FROM ketchup.ketchup k, ketchup.user u WHERE repository_id = ANY .+ AND k.user_id = u.id").WithArgs(pq.Array(tc.args.ids)).WillReturnRows(rows)
+				expectedQuery := mock.ExpectQuery("SELECT k.pattern, k.version, k.frequency, k.repository_id, k.user_id, u.email FROM ketchup.ketchup k, ketchup.user u WHERE repository_id = ANY .+ AND k.user_id = u.id AND k.frequency = .+").WithArgs(pq.Array(tc.args.ids), strings.ToLower(tc.args.frequency.String())).WillReturnRows(rows)
 
 				switch tc.intention {
 				case "simple":
@@ -243,7 +245,7 @@ func TestListByRepositoriesID(t *testing.T) {
 					rows.AddRow(model.DefaultPattern, "0.9.0", "Daily", "a", 1, testEmail)
 				}
 
-				got, gotErr := New(mockDb).ListByRepositoriesID(testCtx, tc.args.ids)
+				got, gotErr := New(mockDb).ListByRepositoriesID(testCtx, tc.args.ids, tc.args.frequency)
 				failed := false
 
 				if tc.wantErr == nil && gotErr != nil {

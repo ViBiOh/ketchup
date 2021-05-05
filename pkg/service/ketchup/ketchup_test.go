@@ -125,7 +125,7 @@ func TestListForRepositories(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.intention, func(t *testing.T) {
-			got, gotErr := tc.instance.ListForRepositories(context.Background(), tc.args.repositories)
+			got, gotErr := tc.instance.ListForRepositories(context.Background(), tc.args.repositories, model.Daily)
 
 			failed := false
 

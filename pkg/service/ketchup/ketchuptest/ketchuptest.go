@@ -47,7 +47,7 @@ func (a App) List(_ context.Context, _, _ uint) ([]model.Ketchup, uint64, error)
 }
 
 // ListForRepositories mocks
-func (a App) ListForRepositories(_ context.Context, _ []model.Repository) ([]model.Ketchup, error) {
+func (a App) ListForRepositories(_ context.Context, _ []model.Repository, _ model.KetchupFrequency) ([]model.Ketchup, error) {
 	return a.listForRepositoriesKetchups, a.listForRepositoriesErr
 }
 
