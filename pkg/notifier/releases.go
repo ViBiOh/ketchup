@@ -42,9 +42,8 @@ func (a app) getNewGithubReleases(ctx context.Context) ([]model.Release, uint64,
 		if uint64(page*pageSize) < totalCount {
 			page++
 		} else {
-			releasesCount := uint64(len(newReleases))
-			logger.Info("%d GitHub repositories checked, %d new releases", count, releasesCount)
-			return newReleases, releasesCount, nil
+			logger.Info("%d GitHub repositories checked, %d new releases", count, len(newReleases))
+			return newReleases, count, nil
 		}
 	}
 }
@@ -123,9 +122,8 @@ func (a app) getNewHelmReleases(ctx context.Context) ([]model.Release, uint64, e
 		if uint64(page*pageSize) < totalCount {
 			page++
 		} else {
-			releasesCount := uint64(len(newReleases))
-			logger.Info("%d Helm repositories checked, %d new releases", count, releasesCount)
-			return newReleases, releasesCount, nil
+			logger.Info("%d Helm repositories checked, %d new releases", count, len(newReleases))
+			return newReleases, count, nil
 		}
 	}
 }
