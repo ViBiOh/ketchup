@@ -160,20 +160,22 @@ func (a app) getFetchHelmSources(repos map[string]model.Repository) []model.Rele
 	releases := make([]model.Release, 0)
 
 	for chartName, patterns := range values {
-		for repoPattern, repoName := range repos[chartName].Versions {
+		for repoPattern, repoVersionName := range repos[chartName].Versions {
 			upstreamVersion := patterns[repoPattern]
 
-			if upstreamVersion.Name == repoName {
+			if upstreamVersion.Name == repoVersionName {
 				continue
 			}
 
 			compiledPattern, err := semver.ParsePattern(repoPattern)
 			if err != nil {
 				logger.Error("unable to parse pattern: %s", err)
+				continue
 			}
 
-			repositoryVersion, err := semver.Parse(repoName)
+			repositoryVersion, err := semver.Parse(repoVersionName)
 			if err != nil {
+				logger.Error("unable to parse version: %s", err)
 				continue
 			}
 

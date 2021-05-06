@@ -7,6 +7,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/ViBiOh/ketchup/pkg/helm/helmtest"
 	"github.com/ViBiOh/ketchup/pkg/model"
 	"github.com/ViBiOh/ketchup/pkg/semver"
 	"github.com/ViBiOh/ketchup/pkg/service/repository/repositorytest"
@@ -27,7 +28,7 @@ func TestGetNewGithubReleases(t *testing.T) {
 		{
 			"list error",
 			app{
-				repositoryService: repositorytest.New().SetList(nil, 0, errors.New("failed")),
+				repositoryService: repositorytest.New().SetListByKind(nil, 0, errors.New("failed")),
 			},
 			args{
 				ctx: context.Background(),
@@ -38,7 +39,7 @@ func TestGetNewGithubReleases(t *testing.T) {
 		{
 			"github error",
 			app{
-				repositoryService: repositorytest.New().SetList([]model.Repository{
+				repositoryService: repositorytest.New().SetListByKind([]model.Repository{
 					model.NewGithubRepository(1, repositoryName).AddVersion(model.DefaultPattern, repositoryVersion)}, 0, nil).SetLatestVersions(nil, errors.New("failed")),
 			},
 			args{
@@ -50,7 +51,7 @@ func TestGetNewGithubReleases(t *testing.T) {
 		{
 			"same version",
 			app{
-				repositoryService: repositorytest.New().SetList([]model.Repository{
+				repositoryService: repositorytest.New().SetListByKind([]model.Repository{
 					model.NewGithubRepository(1, repositoryName).AddVersion(model.DefaultPattern, repositoryVersion),
 				}, 0, nil).SetLatestVersions(map[string]semver.Version{
 					model.DefaultPattern: {
@@ -67,10 +68,11 @@ func TestGetNewGithubReleases(t *testing.T) {
 		{
 			"success",
 			app{
-				repositoryService: repositorytest.New().SetList([]model.Repository{
+				repositoryService: repositorytest.New().SetListByKind([]model.Repository{
 					model.NewGithubRepository(1, repositoryName).AddVersion(model.DefaultPattern, repositoryVersion),
 				}, 0, nil).SetLatestVersions(map[string]semver.Version{
 					model.DefaultPattern: safeParse("1.1.0"),
+					"1.0":                safeParse("1.0"),
 				}, nil).SetUpdate(nil),
 			},
 			args{
@@ -105,6 +107,125 @@ func TestGetNewGithubReleases(t *testing.T) {
 
 			if failed {
 				t.Errorf("getNewGithubReleases() = (%+v, `%s`), want (%+v, `%s`)", got, gotErr, tc.want, tc.wantErr)
+			}
+		})
+	}
+}
+
+func TestGetNewHelmReleases(t *testing.T) {
+	type args struct {
+		content string
+	}
+
+	var cases = []struct {
+		intention string
+		instance  app
+		args      args
+		want      []model.Release
+		wantCount uint64
+		wantErr   error
+	}{
+		{
+			"fetch error",
+			app{
+				repositoryService: repositorytest.New().SetListByKind(nil, 0, errors.New("db error")),
+				helmApp:           helmtest.New(),
+			},
+			args{
+				content: "test",
+			},
+			nil,
+			0,
+			errors.New("db error"),
+		},
+		{
+			"no repository",
+			app{
+				repositoryService: repositorytest.New().SetListByKind(nil, 0, nil),
+				helmApp:           helmtest.New(),
+			},
+			args{
+				content: "test",
+			},
+			nil,
+			0,
+			nil,
+		},
+		{
+			"helm error",
+			app{
+				repositoryService: repositorytest.New().SetListByKind([]model.Repository{
+					model.NewHelmRepository(1, "https://charts.vibioh.fr", "app"),
+					model.NewHelmRepository(1, "https://charts.vibioh.fr", "cron"),
+					model.NewHelmRepository(1, "https://charts.vibioh.fr", "flux"),
+					model.NewHelmRepository(1, "https://charts.helm.sh/stable", "postgreql"),
+				}, 0, nil),
+				helmApp: helmtest.New().SetFetchIndex(nil, errors.New("helm error")),
+			},
+			args{
+				content: "test",
+			},
+			nil,
+			4,
+			nil,
+		},
+		{
+			"helm",
+			app{
+				repositoryService: repositorytest.New().SetListByKind([]model.Repository{
+					model.NewHelmRepository(1, "https://charts.vibioh.fr", "app").AddVersion(model.DefaultPattern, "1.0.0").AddVersion("1.0", "1.0.0").AddVersion("~1.0", "a.b.c"),
+					model.NewHelmRepository(1, "https://charts.vibioh.fr", "cron").AddVersion(model.DefaultPattern, "1.0.0"),
+					model.NewHelmRepository(1, "https://charts.vibioh.fr", "flux").AddVersion(model.DefaultPattern, "1.0.0"),
+					model.NewHelmRepository(1, "https://charts.helm.sh/stable", "postgreql").AddVersion(model.DefaultPattern, "3.0.0"),
+				}, 0, nil),
+				helmApp: helmtest.New().SetFetchIndex(map[string]map[string]semver.Version{
+					"app": {
+						model.DefaultPattern: safeParse("1.1.0"),
+					},
+					"cron": {
+						model.DefaultPattern: safeParse("2.0.0"),
+					},
+					"flux": {
+						model.DefaultPattern: safeParse("1.0.0"),
+					},
+					"postgreql": {
+						model.DefaultPattern: safeParse("3.1.0"),
+					},
+				}, nil),
+			},
+			args{
+				content: "test",
+			},
+			[]model.Release{
+				model.NewRelease(model.NewHelmRepository(1, "https://charts.vibioh.fr", "app").AddVersion(model.DefaultPattern, "1.0.0").AddVersion("1.0", "1.0.0").AddVersion("~1.0", "a.b.c"), model.DefaultPattern, safeParse("1.1.0")),
+				model.NewRelease(model.NewHelmRepository(1, "https://charts.vibioh.fr", "cron").AddVersion(model.DefaultPattern, "1.0.0"), model.DefaultPattern, safeParse("2.0.0")),
+				model.NewRelease(model.NewHelmRepository(1, "https://charts.helm.sh/stable", "postgreql").AddVersion(model.DefaultPattern, "3.0.0"), model.DefaultPattern, safeParse("3.1.0")),
+			},
+			4,
+			nil,
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.intention, func(t *testing.T) {
+			got, gotCount, gotErr := tc.instance.getNewHelmReleases(context.Background())
+
+			failed := false
+
+			if tc.wantErr == nil && gotErr != nil {
+				failed = true
+			} else if tc.wantErr != nil && gotErr == nil {
+				failed = true
+			} else if tc.wantErr != nil && !strings.Contains(gotErr.Error(), tc.wantErr.Error()) {
+				failed = true
+			} else if gotCount != tc.wantCount {
+				failed = true
+			} else if !reflect.DeepEqual(got, tc.want) {
+				failed = true
+			}
+
+			if failed {
+				t.Errorf("getNewHelmReleases() = (%+v, %d, `%s`), want (%+v, %d, `%s`)", got, gotCount, gotErr, tc.want, tc.wantCount, tc.wantErr)
 			}
 		})
 	}

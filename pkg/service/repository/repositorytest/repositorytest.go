@@ -82,7 +82,7 @@ func (a *App) List(_ context.Context, _, _ uint) ([]model.Repository, uint64, er
 
 // ListByKind mocks
 func (a *App) ListByKind(_ context.Context, _, _ uint, _ model.RepositoryKind) ([]model.Repository, uint64, error) {
-	return a.listRepositories, a.listTotal, a.listErr
+	return a.listByKindRepositories, a.listByKindTotal, a.listByKindErr
 }
 
 // Suggest mocks
