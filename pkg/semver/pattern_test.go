@@ -1,6 +1,7 @@
 package semver
 
 import (
+	"fmt"
 	"testing"
 )
 
@@ -165,4 +166,12 @@ func TestCheck(t *testing.T) {
 			}
 		})
 	}
+}
+
+func safeParsePattern(pattern string) Pattern {
+	output, err := ParsePattern(pattern)
+	if err != nil {
+		fmt.Println(err)
+	}
+	return output
 }

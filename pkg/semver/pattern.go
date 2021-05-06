@@ -94,11 +94,3 @@ func ParsePattern(pattern string) (Pattern, error) {
 
 	return NewPattern(pattern, newConstraint(version, greaterOrEqual), newConstraint(safeParse(fmt.Sprintf("%d.%d%s", version.major, version.minor+1, constraintVersionSuffix)), lowerThan)), nil
 }
-
-func safeParsePattern(pattern string) Pattern {
-	output, err := ParsePattern(pattern)
-	if err != nil {
-		fmt.Println(err)
-	}
-	return output
-}

@@ -83,6 +83,16 @@ func (r Repository) AddVersion(pattern, version string) Repository {
 }
 
 // URL format the URL of given repository with current version
+func (r Repository) String() string {
+	switch r.Kind {
+	case Helm:
+		return fmt.Sprintf("%s - %s", r.Name, r.Part)
+	default:
+		return r.Name
+	}
+}
+
+// URL format the URL of given repository with current version
 func (r Repository) URL(pattern string) string {
 	if r.Kind == Helm {
 		parts := strings.SplitN(r.Name, "@", 2)

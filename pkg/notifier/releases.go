@@ -58,29 +58,7 @@ func (a app) getNewRepositoryReleases(repo model.Repository) []model.Release {
 	releases := make([]model.Release, 0)
 
 	for pattern, version := range versions {
-		repositoryVersionName := repo.Versions[pattern]
-
-		if version.Name == repositoryVersionName {
-			continue
-		}
-
-		compiledPattern, err := semver.ParsePattern(pattern)
-		if err != nil {
-			logger.Error("unable to parse pattern: %s", err)
-		}
-
-		repositoryVersion, err := semver.Parse(repositoryVersionName)
-		if err != nil {
-			continue
-		}
-
-		if !compiledPattern.Check(version) || !version.IsGreater(repositoryVersion) {
-			continue
-		}
-
-		logger.Info("New `%s` version available for %s: %s", pattern, repo.Name, version.Name)
-
-		releases = append(releases, model.NewRelease(repo, pattern, version))
+		releases = appendVersion(releases, version, repo, pattern, repo.Versions[pattern])
 	}
 
 	return releases
@@ -160,35 +138,38 @@ func (a app) getFetchHelmSources(repos map[string]model.Repository) []model.Rele
 	releases := make([]model.Release, 0)
 
 	for chartName, patterns := range values {
-		for repoPattern, repoVersionName := range repos[chartName].Versions {
-			upstreamVersion := patterns[repoPattern]
+		repo := repos[chartName]
 
-			if upstreamVersion.Name == repoVersionName {
-				continue
-			}
-
-			compiledPattern, err := semver.ParsePattern(repoPattern)
-			if err != nil {
-				logger.Error("unable to parse pattern: %s", err)
-				continue
-			}
-
-			repositoryVersion, err := semver.Parse(repoVersionName)
-			if err != nil {
-				logger.Error("unable to parse version: %s", err)
-				continue
-			}
-
-			if !compiledPattern.Check(upstreamVersion) || !upstreamVersion.IsGreater(repositoryVersion) {
-				continue
-			}
-
-			logger.Info("New `%s` version available for chart %s: %s", repoPattern, chartName, upstreamVersion.Name)
-
-			releases = append(releases, model.NewRelease(repos[chartName], repoPattern, upstreamVersion))
+		for repoPattern, repoVersionName := range repo.Versions {
+			releases = appendVersion(releases, patterns[repoPattern], repo, repoPattern, repoVersionName)
 		}
-
 	}
 
 	return releases
+}
+
+func appendVersion(releases []model.Release, upstreamVersion semver.Version, repo model.Repository, repoPattern, repoVersionName string) []model.Release {
+	if upstreamVersion.Name == repoVersionName {
+		return releases
+	}
+
+	compiledPattern, err := semver.ParsePattern(repoPattern)
+	if err != nil {
+		logger.Error("unable to parse pattern: %s", err)
+		return releases
+	}
+
+	repositoryVersion, err := semver.Parse(repoVersionName)
+	if err != nil {
+		logger.Error("unable to parse version: %s", err)
+		return releases
+	}
+
+	if !compiledPattern.Check(upstreamVersion) || !upstreamVersion.IsGreater(repositoryVersion) {
+		return releases
+	}
+
+	logger.Info("New `%s` version available for `%s`: %s", repoPattern, repo.String(), upstreamVersion.Name)
+
+	return append(releases, model.NewRelease(repo, repoPattern, upstreamVersion))
 }
