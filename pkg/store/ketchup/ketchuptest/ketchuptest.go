@@ -20,6 +20,9 @@ type App struct {
 	listByRepositoriesIDKetchups []model.Ketchup
 	listByRepositoriesIDErr      error
 
+	listOutdatedByFrequencyKetchups []model.Ketchup
+	listOutdatedByFrequencyErr      error
+
 	getByRepositoryKetchup model.Ketchup
 	getByRepositoryErr     error
 
@@ -56,6 +59,14 @@ func (a *App) SetList(ketchups []model.Ketchup, total uint64, err error) *App {
 func (a *App) SetListByRepositoriesID(ketchups []model.Ketchup, err error) *App {
 	a.listByRepositoriesIDKetchups = ketchups
 	a.listByRepositoriesIDErr = err
+
+	return a
+}
+
+// SetListOutdatedByFrequency mocks
+func (a *App) SetListOutdatedByFrequency(ketchups []model.Ketchup, err error) *App {
+	a.listOutdatedByFrequencyKetchups = ketchups
+	a.listOutdatedByFrequencyErr = err
 
 	return a
 }
@@ -106,6 +117,11 @@ func (a *App) List(_ context.Context, page, pageSize uint) ([]model.Ketchup, uin
 
 // ListByRepositoriesID mocks
 func (a *App) ListByRepositoriesID(_ context.Context, _ []uint64, _ model.KetchupFrequency) ([]model.Ketchup, error) {
+	return a.listByRepositoriesIDKetchups, a.listByRepositoriesIDErr
+}
+
+// ListOutdatedByFrequency mocks
+func (a *App) ListOutdatedByFrequency(_ context.Context, _ model.KetchupFrequency) ([]model.Ketchup, error) {
 	return a.listByRepositoriesIDKetchups, a.listByRepositoriesIDErr
 }
 

@@ -17,6 +17,9 @@ type App struct {
 
 	listForRepositoriesKetchups []model.Ketchup
 	listForRepositoriesErr      error
+
+	listOutdatedByFrequencyKetchups []model.Ketchup
+	listOutdatedByFrequencyErr      error
 }
 
 // New creates raw mock
@@ -41,6 +44,14 @@ func (a *App) SetListForRepositories(list []model.Ketchup, err error) *App {
 	return a
 }
 
+// SetListOutdatedByFrequency mocks
+func (a *App) SetListOutdatedByFrequency(list []model.Ketchup, err error) *App {
+	a.listOutdatedByFrequencyKetchups = list
+	a.listOutdatedByFrequencyErr = err
+
+	return a
+}
+
 // List mocks
 func (a App) List(_ context.Context, _, _ uint) ([]model.Ketchup, uint64, error) {
 	return a.listKetchups, a.listTotal, a.listErr
@@ -49,6 +60,11 @@ func (a App) List(_ context.Context, _, _ uint) ([]model.Ketchup, uint64, error)
 // ListForRepositories mocks
 func (a App) ListForRepositories(_ context.Context, _ []model.Repository, _ model.KetchupFrequency) ([]model.Ketchup, error) {
 	return a.listForRepositoriesKetchups, a.listForRepositoriesErr
+}
+
+// ListOutdatedByFrequency mocks
+func (a App) ListOutdatedByFrequency(_ context.Context, _ model.KetchupFrequency) ([]model.Ketchup, error) {
+	return a.listOutdatedByFrequencyKetchups, a.listOutdatedByFrequencyErr
 }
 
 // Create mocks

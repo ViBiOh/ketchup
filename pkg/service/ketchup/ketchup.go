@@ -18,6 +18,7 @@ import (
 type App interface {
 	List(ctx context.Context, page, pageSize uint) ([]model.Ketchup, uint64, error)
 	ListForRepositories(ctx context.Context, repositories []model.Repository, frequency model.KetchupFrequency) ([]model.Ketchup, error)
+	ListOutdatedByFrequency(ctx context.Context, frequency model.KetchupFrequency) ([]model.Ketchup, error)
 	Create(ctx context.Context, item model.Ketchup) (model.Ketchup, error)
 	Update(ctx context.Context, item model.Ketchup) (model.Ketchup, error)
 	Delete(ctx context.Context, item model.Ketchup) error
@@ -60,6 +61,15 @@ func (a app) ListForRepositories(ctx context.Context, repositories []model.Repos
 	}
 
 	return enrichKetchupsWithSemver(list), nil
+}
+
+func (a app) ListOutdatedByFrequency(ctx context.Context, frequency model.KetchupFrequency) ([]model.Ketchup, error) {
+	list, err := a.ketchupStore.ListOutdatedByFrequency(ctx, frequency)
+	if err != nil {
+		return nil, httpModel.WrapInternal(fmt.Errorf("unable to list outdated by frequency: %w", err))
+	}
+
+	return list, nil
 }
 
 func (a app) Create(ctx context.Context, item model.Ketchup) (model.Ketchup, error) {
@@ -192,13 +202,13 @@ func enrichKetchupsWithSemver(list []model.Ketchup) []model.Ketchup {
 }
 
 func enrichKetchupWithSemver(item model.Ketchup) model.Ketchup {
-	repositoryVersion, repositoryErr := semver.Parse(item.Repository.Versions[item.Pattern])
-	if repositoryErr != nil {
+	repositoryVersion, err := semver.Parse(item.Repository.Versions[item.Pattern])
+	if err != nil {
 		return item
 	}
 
-	ketchupVersion, ketchupErr := semver.Parse(item.Version)
-	if ketchupErr != nil {
+	ketchupVersion, err := semver.Parse(item.Version)
+	if err != nil {
 		return item
 	}
 

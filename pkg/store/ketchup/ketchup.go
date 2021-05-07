@@ -17,6 +17,7 @@ type App interface {
 	DoAtomic(ctx context.Context, action func(context.Context) error) error
 	List(ctx context.Context, page, pageSize uint) ([]model.Ketchup, uint64, error)
 	ListByRepositoriesID(ctx context.Context, ids []uint64, frequency model.KetchupFrequency) ([]model.Ketchup, error)
+	ListOutdatedByFrequency(ctx context.Context, frequency model.KetchupFrequency) ([]model.Ketchup, error)
 	GetByRepositoryID(ctx context.Context, id uint64, forUpdate bool) (model.Ketchup, error)
 	Create(ctx context.Context, o model.Ketchup) (uint64, error)
 	Update(ctx context.Context, o model.Ketchup) error
@@ -146,6 +147,52 @@ func (a app) ListByRepositoriesID(ctx context.Context, ids []uint64, frequency m
 	}
 
 	return list, db.List(ctx, a.db, scanner, listByRepositoriesIDQuery, pq.Array(ids), strings.ToLower(frequency.String()))
+}
+
+const listOutdateByFrequencyQuery = `
+SELECT
+  rv.pattern,
+  rv.version,
+  k.frequency,
+  r.id,
+  k.user_id,
+  u.email
+FROM
+  ketchup.ketchup AS k
+INNER JOIN
+  ketchup.repository r ON r.id = k.repository_id
+INNER JOIN
+  ketchup.repository_version AS rv ON rv.repository_id = r.id
+INNER JOIN
+  ketchup.user AS u ON u.id = k.user_id
+WHERE
+  k.version <> rv.version
+  AND k.frequency = $1
+`
+
+func (a app) ListOutdatedByFrequency(ctx context.Context, frequency model.KetchupFrequency) ([]model.Ketchup, error) {
+	list := make([]model.Ketchup, 0)
+
+	scanner := func(rows *sql.Rows) error {
+		var item model.Ketchup
+		item.Repository = model.NewRepository(0, 0, "", "")
+		var rawKetchupFrequency string
+
+		if err := rows.Scan(&item.Pattern, &item.Version, &rawKetchupFrequency, &item.Repository.ID, &item.User.ID, &item.User.Email); err != nil {
+			return err
+		}
+
+		ketchupFrequency, err := model.ParseKetchupFrequency(rawKetchupFrequency)
+		if err != nil {
+			return err
+		}
+		item.Frequency = ketchupFrequency
+
+		list = append(list, item)
+		return nil
+	}
+
+	return list, db.List(ctx, a.db, scanner, listOutdateByFrequencyQuery, strings.ToLower(frequency.String()))
 }
 
 const getQuery = `

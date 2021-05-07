@@ -6,12 +6,14 @@ import (
 	"fmt"
 	"sort"
 	"strings"
+	"time"
 
 	authModel "github.com/ViBiOh/auth/v2/pkg/model"
 	"github.com/ViBiOh/httputils/v4/pkg/flags"
 	"github.com/ViBiOh/httputils/v4/pkg/logger"
 	"github.com/ViBiOh/ketchup/pkg/helm"
 	"github.com/ViBiOh/ketchup/pkg/model"
+	"github.com/ViBiOh/ketchup/pkg/semver"
 	"github.com/ViBiOh/ketchup/pkg/service/ketchup"
 	"github.com/ViBiOh/ketchup/pkg/service/repository"
 	mailer "github.com/ViBiOh/mailer/pkg/client"
@@ -39,6 +41,8 @@ type app struct {
 	ketchupService    ketchup.App
 	mailerApp         mailer.App
 	helmApp           helm.App
+
+	clock *Clock
 
 	pushURL string
 	loginID uint64
@@ -172,6 +176,33 @@ func (a app) getKetchupToNotify(ctx context.Context, releases []model.Release) (
 				}
 			}
 		}
+	}
+
+	logger.Info("%d daily ketchups to notify", len(ketchups))
+
+	if a.clock.Now().Weekday() == time.Monday {
+		weeklyKetchups, err := a.ketchupService.ListOutdatedByFrequency(ctx, model.Weekly)
+		if err != nil {
+			return nil, fmt.Errorf("unable to get weekly ketchups: %w", err)
+		}
+
+		for _, ketchup := range weeklyKetchups {
+			ketchupVersion, err := semver.Parse(ketchup.Version)
+			if err != nil {
+				logger.WithField("version", ketchup.Version).Error("unable to parse version of ketchup: %s", err)
+				continue
+			}
+
+			release := model.NewRelease(ketchup.Repository, ketchup.Pattern, ketchupVersion)
+
+			if userToNotify[ketchup.User] != nil {
+				userToNotify[ketchup.User] = append(userToNotify[ketchup.User], release)
+			} else {
+				userToNotify[ketchup.User] = []model.Release{release}
+			}
+		}
+
+		logger.Info("%d weekly ketchups to notify", len(weeklyKetchups))
 	}
 
 	logger.Info("%d ketchups for %d users to notify", len(ketchups), len(userToNotify))
