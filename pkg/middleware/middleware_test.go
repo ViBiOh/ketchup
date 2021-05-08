@@ -22,7 +22,9 @@ func TestMiddleware(t *testing.T) {
 		{
 			"simple",
 			http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				w.Write([]byte(model.ReadUser(r.Context()).Email))
+				if _, err := w.Write([]byte(model.ReadUser(r.Context()).Email)); err != nil {
+					t.Errorf("unable to write: %s", err)
+				}
 			}),
 			httptest.NewRequest(http.MethodGet, "/", nil),
 			"nobody@localhost",

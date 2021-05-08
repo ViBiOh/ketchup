@@ -18,10 +18,9 @@ import (
 )
 
 var (
-	testEmail             = "nobody@localhost"
-	repositoryName        = "vibioh/ketchup"
-	repositoryVersion     = "1.0.0"
-	repositoryBetaVersion = "1.0.0-beta1"
+	testEmail         = "nobody@localhost"
+	repositoryName    = "vibioh/ketchup"
+	repositoryVersion = "1.0.0"
 )
 
 func safeParse(version string) semver.Version {
