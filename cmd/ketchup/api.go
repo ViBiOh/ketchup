@@ -49,7 +49,7 @@ var content embed.FS
 
 func initAuth(db *sql.DB) (authService.App, authMiddleware.App) {
 	authProvider := authStore.New(db)
-	identProvider := authIdent.New(authProvider)
+	identProvider := authIdent.New(authProvider, "ketchup")
 
 	return authService.New(authProvider, authProvider), authMiddleware.New(authProvider, identProvider)
 }
