@@ -80,7 +80,7 @@ func (a app) getNewHelmReleases(ctx context.Context) ([]model.Release, uint64, e
 		}
 
 		repoName := repositories[0].Name
-		repoWithNames := make(map[string]model.Repository, 0)
+		repoWithNames := make(map[string]model.Repository)
 
 		for _, repo := range repositories {
 			count++
@@ -89,7 +89,7 @@ func (a app) getNewHelmReleases(ctx context.Context) ([]model.Release, uint64, e
 				newReleases = append(newReleases, a.getFetchHelmSources(repoWithNames)...)
 
 				repoName = repo.Name
-				repoWithNames = make(map[string]model.Repository, 0)
+				repoWithNames = make(map[string]model.Repository)
 			}
 
 			repoWithNames[repo.Part] = repo
@@ -113,7 +113,7 @@ func (a app) getFetchHelmSources(repos map[string]model.Repository) []model.Rele
 
 	var url string
 
-	charts := make(map[string][]string, 0)
+	charts := make(map[string][]string)
 	for _, repo := range repos {
 		if len(url) == 0 {
 			url = repo.Name
