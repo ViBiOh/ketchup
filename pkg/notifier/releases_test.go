@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"reflect"
+	"sort"
 	"strings"
 	"testing"
 
@@ -113,6 +114,11 @@ func TestGetNewGithubReleases(t *testing.T) {
 }
 
 func TestGetNewHelmReleases(t *testing.T) {
+	appRepo := model.NewHelmRepository(1, "https://charts.vibioh.fr", "app").AddVersion(model.DefaultPattern, "1.0.0").AddVersion("1.0", "1.0.0").AddVersion("~1.0", "a.b.c")
+	cronRepo := model.NewHelmRepository(2, "https://charts.vibioh.fr", "cron").AddVersion(model.DefaultPattern, "1.0.0")
+	fluxRepo := model.NewHelmRepository(3, "https://charts.vibioh.fr", "flux").AddVersion(model.DefaultPattern, "1.0.0")
+	postgresRepo := model.NewHelmRepository(4, "https://charts.helm.sh/stable", "postgreql").AddVersion(model.DefaultPattern, "3.0.0")
+
 	type args struct {
 		content string
 	}
@@ -173,10 +179,10 @@ func TestGetNewHelmReleases(t *testing.T) {
 			"helm",
 			app{
 				repositoryService: repositorytest.New().SetListByKind([]model.Repository{
-					model.NewHelmRepository(1, "https://charts.vibioh.fr", "app").AddVersion(model.DefaultPattern, "1.0.0").AddVersion("1.0", "1.0.0").AddVersion("~1.0", "a.b.c"),
-					model.NewHelmRepository(1, "https://charts.vibioh.fr", "cron").AddVersion(model.DefaultPattern, "1.0.0"),
-					model.NewHelmRepository(1, "https://charts.vibioh.fr", "flux").AddVersion(model.DefaultPattern, "1.0.0"),
-					model.NewHelmRepository(1, "https://charts.helm.sh/stable", "postgreql").AddVersion(model.DefaultPattern, "3.0.0"),
+					appRepo,
+					cronRepo,
+					fluxRepo,
+					postgresRepo,
 				}, 0, nil),
 				helmApp: helmtest.New().SetFetchIndex(map[string]map[string]semver.Version{
 					"app": {
@@ -197,9 +203,9 @@ func TestGetNewHelmReleases(t *testing.T) {
 				content: "test",
 			},
 			[]model.Release{
-				model.NewRelease(model.NewHelmRepository(1, "https://charts.vibioh.fr", "app").AddVersion(model.DefaultPattern, "1.0.0").AddVersion("1.0", "1.0.0").AddVersion("~1.0", "a.b.c"), model.DefaultPattern, safeParse("1.1.0")),
-				model.NewRelease(model.NewHelmRepository(1, "https://charts.vibioh.fr", "cron").AddVersion(model.DefaultPattern, "1.0.0"), model.DefaultPattern, safeParse("2.0.0")),
-				model.NewRelease(model.NewHelmRepository(1, "https://charts.helm.sh/stable", "postgreql").AddVersion(model.DefaultPattern, "3.0.0"), model.DefaultPattern, safeParse("3.1.0")),
+				model.NewRelease(appRepo, model.DefaultPattern, safeParse("1.1.0")),
+				model.NewRelease(cronRepo, model.DefaultPattern, safeParse("2.0.0")),
+				model.NewRelease(postgresRepo, model.DefaultPattern, safeParse("3.1.0")),
 			},
 			4,
 			nil,
@@ -211,6 +217,8 @@ func TestGetNewHelmReleases(t *testing.T) {
 			got, gotCount, gotErr := tc.instance.getNewHelmReleases(context.Background())
 
 			failed := false
+
+			sort.Sort(model.ReleaseByRepositoryID(got))
 
 			if tc.wantErr == nil && gotErr != nil {
 				failed = true
