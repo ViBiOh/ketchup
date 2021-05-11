@@ -58,7 +58,7 @@ func (a app) handleCreate(w http.ResponseWriter, r *http.Request) {
 	case model.Github:
 		repository = model.NewGithubRepository(0, name)
 	case model.Helm:
-		repository = model.NewHelmRepository(0, name, r.FormValue("part"))
+		repository = model.NewHelmRepository(0, strings.TrimSuffix(name, "/"), r.FormValue("part"))
 	default:
 		a.rendererApp.Error(w, httpModel.WrapInternal(fmt.Errorf("unhandled repository kind `%s`", repositoryKind)))
 	}
