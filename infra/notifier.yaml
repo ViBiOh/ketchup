@@ -15,7 +15,7 @@ spec:
         namespace: default
       interval: 120m
   install:
-    skipCRDs: true
+    crds: Skip
   maxHistory: 3
   upgrade:
     remediation:
