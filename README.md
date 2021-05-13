@@ -2,7 +2,6 @@
 
 [![Build](https://github.com/ViBiOh/ketchup/workflows/Build/badge.svg)](https://github.com/ViBiOh/ketchup/actions)
 [![codecov](https://codecov.io/gh/ViBiOh/ketchup/branch/main/graph/badge.svg)](https://codecov.io/gh/ViBiOh/ketchup)
-[![Go Report Card](https://goreportcard.com/badge/github.com/ViBiOh/ketchup)](https://goreportcard.com/report/github.com/ViBiOh/ketchup)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=ViBiOh_ketchup&metric=alert_status)](https://sonarcloud.io/dashboard?id=ViBiOh_ketchup)
 
 Thanks to [OpenEmoji](https://openmoji.org) for favicon.
