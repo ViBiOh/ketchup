@@ -39,8 +39,8 @@ func testWithMock(t *testing.T, action func(*sql.DB, sqlmock.Sqlmock)) {
 
 func TestList(t *testing.T) {
 	type args struct {
-		page     uint
 		pageSize uint
+		lastKey  string
 	}
 
 	var cases = []struct {
@@ -53,7 +53,6 @@ func TestList(t *testing.T) {
 		{
 			"success",
 			args{
-				page:     1,
 				pageSize: 20,
 			},
 			[]model.Repository{
@@ -66,7 +65,6 @@ func TestList(t *testing.T) {
 		{
 			"timeout",
 			args{
-				page:     1,
 				pageSize: 20,
 			},
 			[]model.Repository{},
@@ -76,7 +74,6 @@ func TestList(t *testing.T) {
 		{
 			"invalid rows",
 			args{
-				page:     1,
 				pageSize: 20,
 			},
 			[]model.Repository{},
@@ -86,7 +83,6 @@ func TestList(t *testing.T) {
 		{
 			"invalid kind",
 			args{
-				page:     1,
 				pageSize: 20,
 			},
 			[]model.Repository{},
@@ -99,7 +95,7 @@ func TestList(t *testing.T) {
 		t.Run(tc.intention, func(t *testing.T) {
 			testWithMock(t, func(mockDb *sql.DB, mock sqlmock.Sqlmock) {
 				rows := sqlmock.NewRows([]string{"id", "kind", "name", "part", "full_count"})
-				expectedQuery := mock.ExpectQuery("SELECT id, kind, name, part, .+ AS full_count FROM ketchup.repository").WithArgs(20, 0).WillReturnRows(rows)
+				expectedQuery := mock.ExpectQuery("SELECT id, kind, name, part, .+ AS full_count FROM ketchup.repository").WithArgs(20).WillReturnRows(rows)
 
 				switch tc.intention {
 				case "success":
@@ -125,7 +121,7 @@ func TestList(t *testing.T) {
 					rows.AddRow(1, "wrong", viwsRepository, "", 1)
 				}
 
-				got, gotCount, gotErr := New(mockDb).List(context.Background(), tc.args.page, tc.args.pageSize)
+				got, gotCount, gotErr := New(mockDb).List(context.Background(), tc.args.pageSize, tc.args.lastKey)
 				failed := false
 
 				if tc.wantErr == nil && gotErr != nil {

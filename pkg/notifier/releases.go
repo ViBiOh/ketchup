@@ -27,9 +27,10 @@ func (a app) getNewGithubReleases(ctx context.Context) ([]model.Release, uint64,
 	var newReleases []model.Release
 	var count uint64
 	page := uint(1)
+	lastKey := ""
 
 	for {
-		repositories, totalCount, err := a.repositoryService.ListByKind(ctx, page, pageSize, model.Github)
+		repositories, totalCount, err := a.repositoryService.ListByKind(ctx, pageSize, lastKey, model.Github)
 		if err != nil {
 			return nil, count, fmt.Errorf("unable to fetch page %d of GitHub repositories: %s", page, err)
 		}
@@ -40,6 +41,7 @@ func (a app) getNewGithubReleases(ctx context.Context) ([]model.Release, uint64,
 		}
 
 		if uint64(page*pageSize) < totalCount {
+			lastKey = fmt.Sprintf("%d", repositories[len(repositories)-1].ID)
 			page++
 		} else {
 			logger.Info("%d GitHub repositories checked, %d new releases", count, len(newReleases))
@@ -68,9 +70,10 @@ func (a app) getNewHelmReleases(ctx context.Context) ([]model.Release, uint64, e
 	var newReleases []model.Release
 	var count uint64
 	page := uint(1)
+	lastKey := ""
 
 	for {
-		repositories, totalCount, err := a.repositoryService.ListByKind(ctx, page, pageSize, model.Helm)
+		repositories, totalCount, err := a.repositoryService.ListByKind(ctx, pageSize, lastKey, model.Helm)
 		if err != nil {
 			return nil, 0, fmt.Errorf("unable to fetch page %d of Helm repositories: %s", page, err)
 		}
@@ -98,6 +101,7 @@ func (a app) getNewHelmReleases(ctx context.Context) ([]model.Release, uint64, e
 		newReleases = append(newReleases, a.getFetchHelmSources(repoWithNames)...)
 
 		if uint64(page*pageSize) < totalCount {
+			lastKey = fmt.Sprintf("%d", repositories[len(repositories)-1].ID)
 			page++
 		} else {
 			logger.Info("%d Helm repositories checked, %d new releases", count, len(newReleases))

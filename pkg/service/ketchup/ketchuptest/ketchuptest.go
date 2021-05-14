@@ -53,7 +53,7 @@ func (a *App) SetListOutdatedByFrequency(list []model.Ketchup, err error) *App {
 }
 
 // List mocks
-func (a App) List(_ context.Context, _, _ uint) ([]model.Ketchup, uint64, error) {
+func (a App) List(_ context.Context, _ uint, _ string) ([]model.Ketchup, uint64, error) {
 	return a.listKetchups, a.listTotal, a.listErr
 }
 

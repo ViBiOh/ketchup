@@ -34,8 +34,8 @@ func safeParse(version string) semver.Version {
 
 func TestList(t *testing.T) {
 	type args struct {
-		page     uint
 		pageSize uint
+		lastKey  string
 	}
 
 	var cases = []struct {
@@ -52,9 +52,7 @@ func TestList(t *testing.T) {
 				model.NewGithubRepository(1, ketchupRepository).AddVersion(model.DefaultPattern, "1.0.0"),
 				model.NewGithubRepository(2, viwsRepository).AddVersion(model.DefaultPattern, "1.2.3"),
 			}, 2, nil), nil, nil),
-			args{
-				page: 1,
-			},
+			args{},
 			[]model.Repository{
 				model.NewGithubRepository(1, ketchupRepository).AddVersion(model.DefaultPattern, "1.0.0"),
 				model.NewGithubRepository(2, viwsRepository).AddVersion(model.DefaultPattern, "1.2.3"),
@@ -65,9 +63,7 @@ func TestList(t *testing.T) {
 		{
 			"error",
 			New(repositorytest.New().SetList(nil, 0, errors.New("failed")), nil, nil),
-			args{
-				page: 0,
-			},
+			args{},
 			nil,
 			0,
 			httpModel.ErrInternalError,
@@ -76,7 +72,7 @@ func TestList(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.intention, func(t *testing.T) {
-			got, gotCount, gotErr := tc.instance.List(context.Background(), tc.args.page, tc.args.pageSize)
+			got, gotCount, gotErr := tc.instance.List(context.Background(), tc.args.pageSize, tc.args.lastKey)
 
 			failed := false
 

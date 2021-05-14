@@ -53,7 +53,6 @@ func testWithTransaction(t *testing.T, mockDb *sql.DB, mock sqlmock.Sqlmock) con
 
 func TestList(t *testing.T) {
 	type args struct {
-		page     uint
 		pageSize uint
 	}
 
@@ -67,7 +66,6 @@ func TestList(t *testing.T) {
 		{
 			"simple",
 			args{
-				page:     1,
 				pageSize: 20,
 			},
 			[]model.Ketchup{
@@ -92,7 +90,6 @@ func TestList(t *testing.T) {
 		{
 			"timeout",
 			args{
-				page:     1,
 				pageSize: 20,
 			},
 			[]model.Ketchup{},
@@ -102,7 +99,6 @@ func TestList(t *testing.T) {
 		{
 			"invalid rows",
 			args{
-				page:     1,
 				pageSize: 20,
 			},
 			[]model.Ketchup{},
@@ -112,7 +108,6 @@ func TestList(t *testing.T) {
 		{
 			"invalid kind",
 			args{
-				page:     1,
 				pageSize: 20,
 			},
 			[]model.Ketchup{},
@@ -125,7 +120,7 @@ func TestList(t *testing.T) {
 		t.Run(tc.intention, func(t *testing.T) {
 			testWithMock(t, func(mockDb *sql.DB, mock sqlmock.Sqlmock) {
 				rows := sqlmock.NewRows([]string{"pattern", "version", "frequency", "repository_id", "name", "part", "kind", "repository_version", "full_count"})
-				expectedQuery := mock.ExpectQuery("SELECT k.pattern, k.version, k.frequency, k.repository_id, r.name, r.part, r.kind, rv.version, .+ AS full_count FROM ketchup.ketchup k, ketchup.repository r, ketchup.repository_version rv WHERE user_id = .+ AND k.repository_id = r.id AND rv.repository_id = r.id AND rv.pattern = k.pattern").WithArgs(3, 20, 0).WillReturnRows(rows)
+				expectedQuery := mock.ExpectQuery("SELECT k.pattern, k.version, k.frequency, k.repository_id, r.name, r.part, r.kind, rv.version, .+ AS full_count FROM ketchup.ketchup k, ketchup.repository r, ketchup.repository_version rv WHERE user_id = .+ AND k.repository_id = r.id AND rv.repository_id = r.id AND rv.pattern = k.pattern ORDER BY k.repository_id ASC, k.pattern ASC").WithArgs(3, 20).WillReturnRows(rows)
 
 				switch tc.intention {
 				case "simple":
@@ -146,7 +141,7 @@ func TestList(t *testing.T) {
 					rows.AddRow(model.DefaultPattern, repositoryVersion, "Daily", 2, viwsRepository, "", "wrong", repositoryVersion, 1)
 				}
 
-				got, gotCount, gotErr := New(mockDb).List(testCtx, tc.args.page, tc.args.pageSize)
+				got, gotCount, gotErr := New(mockDb).List(testCtx, tc.args.pageSize, "")
 				failed := false
 
 				if tc.wantErr == nil && gotErr != nil {

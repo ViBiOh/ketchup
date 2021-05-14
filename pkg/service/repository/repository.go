@@ -21,8 +21,8 @@ var (
 
 // App of package
 type App interface {
-	List(ctx context.Context, page, pageSize uint) ([]model.Repository, uint64, error)
-	ListByKind(ctx context.Context, page, pageSize uint, kind model.RepositoryKind) ([]model.Repository, uint64, error)
+	List(ctx context.Context, pageSize uint, lastKey string) ([]model.Repository, uint64, error)
+	ListByKind(ctx context.Context, pageSize uint, lastKey string, kind model.RepositoryKind) ([]model.Repository, uint64, error)
 	Suggest(ctx context.Context, ignoreIds []uint64, count uint64) ([]model.Repository, error)
 	GetOrCreate(ctx context.Context, kind model.RepositoryKind, name, part, pattern string) (model.Repository, error)
 	Update(ctx context.Context, item model.Repository) error
@@ -45,8 +45,8 @@ func New(repositoryStore repository.App, githubApp github.App, helmApp helm.App)
 	}
 }
 
-func (a app) List(ctx context.Context, page, pageSize uint) ([]model.Repository, uint64, error) {
-	list, total, err := a.repositoryStore.List(ctx, page, pageSize)
+func (a app) List(ctx context.Context, pageSize uint, lastKey string) ([]model.Repository, uint64, error) {
+	list, total, err := a.repositoryStore.List(ctx, pageSize, lastKey)
 	if err != nil {
 		return nil, 0, httpModel.WrapInternal(fmt.Errorf("unable to list: %w", err))
 	}
@@ -54,8 +54,8 @@ func (a app) List(ctx context.Context, page, pageSize uint) ([]model.Repository,
 	return list, total, nil
 }
 
-func (a app) ListByKind(ctx context.Context, page, pageSize uint, kind model.RepositoryKind) ([]model.Repository, uint64, error) {
-	list, total, err := a.repositoryStore.ListByKind(ctx, page, pageSize, kind)
+func (a app) ListByKind(ctx context.Context, pageSize uint, lastKey string, kind model.RepositoryKind) ([]model.Repository, uint64, error) {
+	list, total, err := a.repositoryStore.ListByKind(ctx, pageSize, lastKey, kind)
 	if err != nil {
 		return nil, 0, httpModel.WrapInternal(fmt.Errorf("unable to list by kind: %w", err))
 	}

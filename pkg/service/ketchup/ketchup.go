@@ -16,7 +16,7 @@ import (
 
 // App of package
 type App interface {
-	List(ctx context.Context, page, pageSize uint) ([]model.Ketchup, uint64, error)
+	List(ctx context.Context, pageSize uint, lastKey string) ([]model.Ketchup, uint64, error)
 	ListForRepositories(ctx context.Context, repositories []model.Repository, frequency model.KetchupFrequency) ([]model.Ketchup, error)
 	ListOutdatedByFrequency(ctx context.Context, frequency model.KetchupFrequency) ([]model.Ketchup, error)
 	Create(ctx context.Context, item model.Ketchup) (model.Ketchup, error)
@@ -37,8 +37,8 @@ func New(ketchupStore ketchup.App, repositoryService repository.App) App {
 	}
 }
 
-func (a app) List(ctx context.Context, page, pageSize uint) ([]model.Ketchup, uint64, error) {
-	list, total, err := a.ketchupStore.List(ctx, page, pageSize)
+func (a app) List(ctx context.Context, pageSize uint, lastKey string) ([]model.Ketchup, uint64, error) {
+	list, total, err := a.ketchupStore.List(ctx, pageSize, lastKey)
 	if err != nil {
 		return nil, 0, httpModel.WrapInternal(fmt.Errorf("unable to list: %w", err))
 	}

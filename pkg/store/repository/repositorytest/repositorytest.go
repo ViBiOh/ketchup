@@ -133,12 +133,12 @@ func (a *App) DoAtomic(ctx context.Context, action func(context.Context) error) 
 }
 
 // List mocks
-func (a *App) List(_ context.Context, _, _ uint) ([]model.Repository, uint64, error) {
+func (a *App) List(_ context.Context, _ uint, _ string) ([]model.Repository, uint64, error) {
 	return a.listRepositories, a.listTotal, a.listErr
 }
 
 // ListByKind mocks
-func (a *App) ListByKind(_ context.Context, _, _ uint, _ model.RepositoryKind) ([]model.Repository, uint64, error) {
+func (a *App) ListByKind(_ context.Context, _ uint, _ string, _ model.RepositoryKind) ([]model.Repository, uint64, error) {
 	return a.listByKindRepositories, a.listByKindTotal, a.listByKindErr
 }
 

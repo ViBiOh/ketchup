@@ -10,15 +10,14 @@ import (
 
 	"github.com/ViBiOh/httputils/v4/pkg/db"
 	"github.com/ViBiOh/ketchup/pkg/model"
-	"github.com/ViBiOh/ketchup/pkg/store"
 	"github.com/lib/pq"
 )
 
 // App of package
 type App interface {
 	DoAtomic(ctx context.Context, action func(context.Context) error) error
-	List(ctx context.Context, page, pageSize uint) ([]model.Repository, uint64, error)
-	ListByKind(ctx context.Context, page, pageSize uint, kind model.RepositoryKind) ([]model.Repository, uint64, error)
+	List(ctx context.Context, pageSize uint, lastKey string) ([]model.Repository, uint64, error)
+	ListByKind(ctx context.Context, pageSize uint, lastKey string, kind model.RepositoryKind) ([]model.Repository, uint64, error)
 	Suggest(ctx context.Context, ignoreIds []uint64, count uint64) ([]model.Repository, error)
 	Get(ctx context.Context, id uint64, forUpdate bool) (model.Repository, error)
 	GetByName(ctx context.Context, repositoryKind model.RepositoryKind, name, part string) (model.Repository, error)
@@ -117,14 +116,24 @@ SELECT
   count(1) OVER() AS full_count
 FROM
   ketchup.repository
+WHERE
+  TRUE
 `
 
-func (a app) List(ctx context.Context, page, pageSize uint) ([]model.Repository, uint64, error) {
+func (a app) List(ctx context.Context, pageSize uint, lastKey string) ([]model.Repository, uint64, error) {
 	var query strings.Builder
 	query.WriteString(listQuery)
 	var queryArgs []interface{}
 
-	queryArgs = append(queryArgs, store.AddPagination(&query, len(queryArgs), page, pageSize)...)
+	if len(lastKey) != 0 {
+		query.WriteString(fmt.Sprintf(" AND id > $%d", len(queryArgs)+1))
+		queryArgs = append(queryArgs, lastKey)
+	}
+
+	query.WriteString(" ORDER BY id ASC")
+
+	query.WriteString(fmt.Sprintf(" LIMIT $%d", len(queryArgs)+1))
+	queryArgs = append(queryArgs, pageSize)
 
 	return a.list(ctx, query.String(), queryArgs...)
 }
@@ -142,13 +151,22 @@ WHERE
   kind = $1
 `
 
-func (a app) ListByKind(ctx context.Context, page, pageSize uint, kind model.RepositoryKind) ([]model.Repository, uint64, error) {
+func (a app) ListByKind(ctx context.Context, pageSize uint, lastKey string, kind model.RepositoryKind) ([]model.Repository, uint64, error) {
 	var query strings.Builder
 	query.WriteString(listByKindQuery)
 	var queryArgs []interface{}
 
 	queryArgs = append(queryArgs, kind.String())
-	queryArgs = append(queryArgs, store.AddPagination(&query, len(queryArgs), page, pageSize)...)
+
+	if len(lastKey) != 0 {
+		query.WriteString(fmt.Sprintf(" AND id > $%d", len(queryArgs)+1))
+		queryArgs = append(queryArgs, lastKey)
+	}
+
+	query.WriteString(" ORDER BY id ASC")
+
+	query.WriteString(fmt.Sprintf(" LIMIT $%d", len(queryArgs)+1))
+	queryArgs = append(queryArgs, pageSize)
 
 	list, count, err := a.list(ctx, query.String(), queryArgs...)
 	sort.Sort(model.RepositoryByName(list))

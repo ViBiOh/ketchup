@@ -4,18 +4,18 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 	"strings"
 
 	"github.com/ViBiOh/httputils/v4/pkg/db"
 	"github.com/ViBiOh/ketchup/pkg/model"
-	"github.com/ViBiOh/ketchup/pkg/store"
 	"github.com/lib/pq"
 )
 
 // App of package
 type App interface {
 	DoAtomic(ctx context.Context, action func(context.Context) error) error
-	List(ctx context.Context, page, pageSize uint) ([]model.Ketchup, uint64, error)
+	List(ctx context.Context, page uint, lastKey string) ([]model.Ketchup, uint64, error)
 	ListByRepositoriesID(ctx context.Context, ids []uint64, frequency model.KetchupFrequency) ([]model.Ketchup, error)
 	ListOutdatedByFrequency(ctx context.Context, frequency model.KetchupFrequency) ([]model.Ketchup, error)
 	GetByRepositoryID(ctx context.Context, id uint64, forUpdate bool) (model.Ketchup, error)
@@ -61,7 +61,18 @@ WHERE
   AND rv.pattern = k.pattern
 `
 
-func (a app) List(ctx context.Context, page, pageSize uint) ([]model.Ketchup, uint64, error) {
+const listQueryRestart = `
+  AND (
+    (
+      k.repository_id = $%d
+      AND k.pattern > $%d
+    ) OR (
+      k.repository_id > $%d
+    )
+  )
+`
+
+func (a app) List(ctx context.Context, pageSize uint, lastKey string) ([]model.Ketchup, uint64, error) {
 	user := model.ReadUser(ctx)
 
 	var totalCount uint64
@@ -102,7 +113,21 @@ func (a app) List(ctx context.Context, page, pageSize uint) ([]model.Ketchup, ui
 		user.ID,
 	}
 
-	queryArgs = append(queryArgs, store.AddPagination(&query, len(queryArgs), page, pageSize)...)
+	if len(lastKey) != 0 {
+		parts := strings.Split(lastKey, "|")
+		if len(parts) != 2 {
+			return nil, 0, fmt.Errorf("invalid last key format: %s", lastKey)
+		}
+
+		value := len(queryArgs)
+		query.WriteString(fmt.Sprintf(listQueryRestart, value+1, value+2, value+3))
+		queryArgs = append(queryArgs, parts[0], parts[1], parts[0])
+	}
+
+	query.WriteString(" ORDER BY k.repository_id ASC, k.pattern ASC")
+
+	query.WriteString(fmt.Sprintf(" LIMIT $%d", len(queryArgs)+1))
+	queryArgs = append(queryArgs, pageSize)
 
 	return list, totalCount, db.List(ctx, a.db, scanner, query.String(), queryArgs...)
 }

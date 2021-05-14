@@ -111,7 +111,7 @@ func (a *App) DoAtomic(ctx context.Context, action func(context.Context) error) 
 }
 
 // List mocks
-func (a *App) List(_ context.Context, page, pageSize uint) ([]model.Ketchup, uint64, error) {
+func (a *App) List(_ context.Context, _ uint, _ string) ([]model.Ketchup, uint64, error) {
 	return a.listKetchups, a.listTotal, a.listErr
 }
 
