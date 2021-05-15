@@ -49,7 +49,12 @@ func main() {
 	ketchupServiceApp := ketchupService.New(ketchupStore.New(ketchupDb), repositoryServiceApp)
 
 	notifierApp := notifier.New(notifierConfig, repositoryServiceApp, ketchupServiceApp, mailerApp, helmApp)
+
+	logger.Info("Starting notifier...")
+
 	if err := notifierApp.Notify(context.Background()); err != nil {
 		logger.Fatal(err)
 	}
+
+	logger.Info("Notifier ended!")
 }

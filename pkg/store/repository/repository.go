@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"sort"
+	"strconv"
 	"strings"
 
 	"github.com/ViBiOh/httputils/v4/pkg/db"
@@ -126,14 +127,19 @@ func (a app) List(ctx context.Context, pageSize uint, lastKey string) ([]model.R
 	var queryArgs []interface{}
 
 	if len(lastKey) != 0 {
-		query.WriteString(fmt.Sprintf(" AND id > $%d", len(queryArgs)+1))
-		queryArgs = append(queryArgs, lastKey)
+		lastID, err := strconv.ParseUint(lastKey, 10, 64)
+		if err != nil {
+			return nil, 0, fmt.Errorf("invalid last key: %s", err)
+		}
+
+		queryArgs = append(queryArgs, lastID)
+		query.WriteString(fmt.Sprintf(" AND id > $%d", len(queryArgs)))
 	}
 
 	query.WriteString(" ORDER BY id ASC")
 
-	query.WriteString(fmt.Sprintf(" LIMIT $%d", len(queryArgs)+1))
 	queryArgs = append(queryArgs, pageSize)
+	query.WriteString(fmt.Sprintf(" LIMIT $%d", len(queryArgs)))
 
 	return a.list(ctx, query.String(), queryArgs...)
 }
@@ -151,6 +157,16 @@ WHERE
   kind = $1
 `
 
+const listByKindRestartQuery = `
+  AND (
+    (
+      name = $%d AND part > $%d
+    ) OR (
+      name > $%d
+    )
+  )
+`
+
 func (a app) ListByKind(ctx context.Context, pageSize uint, lastKey string, kind model.RepositoryKind) ([]model.Repository, uint64, error) {
 	var query strings.Builder
 	query.WriteString(listByKindQuery)
@@ -159,14 +175,20 @@ func (a app) ListByKind(ctx context.Context, pageSize uint, lastKey string, kind
 	queryArgs = append(queryArgs, kind.String())
 
 	if len(lastKey) != 0 {
-		query.WriteString(fmt.Sprintf(" AND id > $%d", len(queryArgs)+1))
-		queryArgs = append(queryArgs, lastKey)
+		parts := strings.Split(lastKey, "|")
+		if len(parts) != 2 {
+			return nil, 0, errors.New("invalid last key format")
+		}
+
+		queryIndex := len(queryArgs)
+		query.WriteString(fmt.Sprintf(listByKindRestartQuery, queryIndex+1, queryIndex+2, queryIndex+3))
+		queryArgs = append(queryArgs, parts[0], parts[1], parts[0])
 	}
 
-	query.WriteString(" ORDER BY id ASC")
+	query.WriteString(" ORDER BY name ASC, part ASC")
 
-	query.WriteString(fmt.Sprintf(" LIMIT $%d", len(queryArgs)+1))
 	queryArgs = append(queryArgs, pageSize)
+	query.WriteString(fmt.Sprintf(" LIMIT $%d", len(queryArgs)))
 
 	list, count, err := a.list(ctx, query.String(), queryArgs...)
 	sort.Sort(model.RepositoryByName(list))

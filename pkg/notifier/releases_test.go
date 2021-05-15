@@ -41,7 +41,7 @@ func TestGetNewGithubReleases(t *testing.T) {
 			"github error",
 			app{
 				repositoryService: repositorytest.New().SetListByKind([]model.Repository{
-					model.NewGithubRepository(1, repositoryName).AddVersion(model.DefaultPattern, repositoryVersion)}, 0, nil).SetLatestVersions(nil, errors.New("failed")),
+					model.NewGithubRepository(1, repositoryName).AddVersion(model.DefaultPattern, repositoryVersion)}, 1, nil).SetLatestVersions(nil, errors.New("failed")),
 			},
 			args{
 				ctx: context.Background(),
@@ -54,7 +54,7 @@ func TestGetNewGithubReleases(t *testing.T) {
 			app{
 				repositoryService: repositorytest.New().SetListByKind([]model.Repository{
 					model.NewGithubRepository(1, repositoryName).AddVersion(model.DefaultPattern, repositoryVersion),
-				}, 0, nil).SetLatestVersions(map[string]semver.Version{
+				}, 1, nil).SetLatestVersions(map[string]semver.Version{
 					model.DefaultPattern: {
 						Name: "1.1.0",
 					},
@@ -71,7 +71,7 @@ func TestGetNewGithubReleases(t *testing.T) {
 			app{
 				repositoryService: repositorytest.New().SetListByKind([]model.Repository{
 					model.NewGithubRepository(1, repositoryName).AddVersion(model.DefaultPattern, repositoryVersion),
-				}, 0, nil).SetLatestVersions(map[string]semver.Version{
+				}, 1, nil).SetLatestVersions(map[string]semver.Version{
 					model.DefaultPattern: safeParse("1.1.0"),
 					"1.0":                safeParse("1.0"),
 				}, nil).SetUpdate(nil),
@@ -90,7 +90,6 @@ func TestGetNewGithubReleases(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.intention, func(t *testing.T) {
-			pageSize = 1
 			got, _, gotErr := tc.instance.getNewGithubReleases(tc.args.ctx)
 			pageSize = 20
 
@@ -114,10 +113,10 @@ func TestGetNewGithubReleases(t *testing.T) {
 }
 
 func TestGetNewHelmReleases(t *testing.T) {
+	postgresRepo := model.NewHelmRepository(4, "https://charts.helm.sh/stable", "postgreql").AddVersion(model.DefaultPattern, "3.0.0")
 	appRepo := model.NewHelmRepository(1, "https://charts.vibioh.fr", "app").AddVersion(model.DefaultPattern, "1.0.0").AddVersion("1.0", "1.0.0").AddVersion("~1.0", "a.b.c")
 	cronRepo := model.NewHelmRepository(2, "https://charts.vibioh.fr", "cron").AddVersion(model.DefaultPattern, "1.0.0")
 	fluxRepo := model.NewHelmRepository(3, "https://charts.vibioh.fr", "flux").AddVersion(model.DefaultPattern, "1.0.0")
-	postgresRepo := model.NewHelmRepository(4, "https://charts.helm.sh/stable", "postgreql").AddVersion(model.DefaultPattern, "3.0.0")
 
 	type args struct {
 		content string
@@ -165,7 +164,7 @@ func TestGetNewHelmReleases(t *testing.T) {
 					model.NewHelmRepository(1, "https://charts.vibioh.fr", "cron"),
 					model.NewHelmRepository(1, "https://charts.vibioh.fr", "flux"),
 					model.NewHelmRepository(1, "https://charts.helm.sh/stable", "postgreql"),
-				}, 0, nil),
+				}, 4, nil),
 				helmApp: helmtest.New().SetFetchIndex(nil, errors.New("helm error")),
 			},
 			args{
@@ -179,10 +178,10 @@ func TestGetNewHelmReleases(t *testing.T) {
 			"helm",
 			app{
 				repositoryService: repositorytest.New().SetListByKind([]model.Repository{
+					postgresRepo,
 					appRepo,
 					cronRepo,
 					fluxRepo,
-					postgresRepo,
 				}, 0, nil),
 				helmApp: helmtest.New().SetFetchIndex(map[string]map[string]semver.Version{
 					"app": {

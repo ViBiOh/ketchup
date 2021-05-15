@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/ViBiOh/httputils/v4/pkg/db"
@@ -119,15 +120,20 @@ func (a app) List(ctx context.Context, pageSize uint, lastKey string) ([]model.K
 			return nil, 0, fmt.Errorf("invalid last key format: %s", lastKey)
 		}
 
+		lastID, err := strconv.ParseUint(parts[0], 10, 64)
+		if err != nil {
+			return nil, 0, fmt.Errorf("invalid last key id: %d", err)
+		}
+
 		value := len(queryArgs)
 		query.WriteString(fmt.Sprintf(listQueryRestart, value+1, value+2, value+3))
-		queryArgs = append(queryArgs, parts[0], parts[1], parts[0])
+		queryArgs = append(queryArgs, lastID, parts[1], lastID)
 	}
 
 	query.WriteString(" ORDER BY k.repository_id ASC, k.pattern ASC")
 
-	query.WriteString(fmt.Sprintf(" LIMIT $%d", len(queryArgs)+1))
 	queryArgs = append(queryArgs, pageSize)
+	query.WriteString(fmt.Sprintf(" LIMIT $%d", len(queryArgs)))
 
 	return list, totalCount, db.List(ctx, a.db, scanner, query.String(), queryArgs...)
 }
