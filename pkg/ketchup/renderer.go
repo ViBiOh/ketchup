@@ -2,7 +2,6 @@ package ketchup
 
 import (
 	"net/http"
-	"strings"
 
 	"github.com/ViBiOh/httputils/v4/pkg/logger"
 	"github.com/ViBiOh/httputils/v4/pkg/query"
@@ -39,12 +38,12 @@ func min(a, b uint64) uint64 {
 }
 
 func (a app) AppTemplateFunc(r *http.Request) (string, int, map[string]interface{}, error) {
-	pagination, err := query.ParsePagination(r, 1, 100, 100)
+	pagination, err := query.ParsePagination(r, 100, 100)
 	if err != nil {
 		return "", http.StatusBadRequest, nil, err
 	}
 
-	ketchups, _, err := a.ketchupService.List(r.Context(), pagination.PageSize, strings.TrimSpace(r.URL.Query().Get("lastKey")))
+	ketchups, _, err := a.ketchupService.List(r.Context(), pagination.PageSize, pagination.LastKey)
 	if err != nil {
 		return "", http.StatusInternalServerError, nil, err
 	}

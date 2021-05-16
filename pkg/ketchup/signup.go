@@ -41,6 +41,6 @@ func (a app) Signup() http.Handler {
 
 		go a.cleanToken(context.Background(), token)
 
-		renderer.Redirect(w, r, fmt.Sprintf("%s/", appPath), renderer.NewSuccessMessage("Welcome to ketchup!"))
+		a.rendererApp.Redirect(w, r, fmt.Sprintf("%s/", appPath), renderer.NewSuccessMessage("Welcome to ketchup!"))
 	})
 }
