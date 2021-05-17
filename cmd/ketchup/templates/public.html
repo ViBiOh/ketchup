@@ -29,7 +29,7 @@
 {{ end}}
 
 {{ define "header-part" }}
-  {{ if .Root }}
+  {{ if ne .Root "/" }}
     <a href="#create-modal" class="button bg-primary">Create</a>
   {{ end }}
 {{ end }}
