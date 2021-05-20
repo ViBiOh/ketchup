@@ -30,7 +30,7 @@ func TestCheck(t *testing.T) {
 			true,
 		},
 		{
-			"no veersion",
+			"no version",
 			safeParsePattern("^latest"),
 			args{
 				version: safeParse(stableVersion),
