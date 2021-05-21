@@ -87,7 +87,7 @@ Usage of ketchup:
   -dbUser string
         [db] User {KETCHUP_DB_USER}
   -dockerOAuth URL string
-        [docker] Registry API URL {KETCHUP_DOCKER_OAUTH _URL} (default "https://auth.docker.io/token")
+        [docker] Registry OAuth URL {KETCHUP_DOCKER_OAUTH _URL} (default "https://auth.docker.io/token")
   -dockerPassword string
         [docker] Registry Password {KETCHUP_DOCKER_PASSWORD}
   -dockerRegistry string

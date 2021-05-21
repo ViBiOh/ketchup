@@ -45,10 +45,10 @@ type app struct {
 // Flags adds flags for configuring package
 func Flags(fs *flag.FlagSet, prefix string, overrides ...flags.Override) Config {
 	return Config{
-		registryURL: flags.New(prefix, "FlagPrefix").Name("Registry").Default(flags.Default("Registry", "https://index.docker.io/v2/", overrides)).Label("Registry API URL").ToString(fs),
-		authURL:     flags.New(prefix, "FlagPrefix").Name("OAuth URL").Default(flags.Default("Registry", "https://auth.docker.io/token", overrides)).Label("Registry API URL").ToString(fs),
-		username:    flags.New(prefix, "FlagPrefix").Name("Username").Default(flags.Default("Username", "", overrides)).Label("Registry Username").ToString(fs),
-		password:    flags.New(prefix, "FlagPrefix").Name("Password").Default(flags.Default("Password", "", overrides)).Label("Registry Password").ToString(fs),
+		registryURL: flags.New(prefix, "docker").Name("Registry").Default(flags.Default("Registry", "https://index.docker.io/v2/", overrides)).Label("Registry API URL").ToString(fs),
+		authURL:     flags.New(prefix, "docker").Name("OAuth URL").Default(flags.Default("Registry", "https://auth.docker.io/token", overrides)).Label("Registry OAuth URL").ToString(fs),
+		username:    flags.New(prefix, "docker").Name("Username").Default(flags.Default("Username", "", overrides)).Label("Registry Username").ToString(fs),
+		password:    flags.New(prefix, "docker").Name("Password").Default(flags.Default("Password", "", overrides)).Label("Registry Password").ToString(fs),
 	}
 }
 
