@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	httpModel "github.com/ViBiOh/httputils/v4/pkg/model"
+	"github.com/ViBiOh/ketchup/pkg/docker"
 	"github.com/ViBiOh/ketchup/pkg/github"
 	"github.com/ViBiOh/ketchup/pkg/helm"
 	"github.com/ViBiOh/ketchup/pkg/model"
@@ -34,14 +35,16 @@ type app struct {
 	repositoryStore repository.App
 	githubApp       github.App
 	helmApp         helm.App
+	dockerApp       docker.App
 }
 
 // New creates new App from Config
-func New(repositoryStore repository.App, githubApp github.App, helmApp helm.App) App {
+func New(repositoryStore repository.App, githubApp github.App, helmApp helm.App, dockerApp docker.App) App {
 	return app{
 		repositoryStore: repositoryStore,
 		githubApp:       githubApp,
 		helmApp:         helmApp,
+		dockerApp:       dockerApp,
 	}
 }
 
@@ -223,6 +226,8 @@ func (a app) LatestVersions(repo model.Repository) (map[string]semver.Version, e
 		return a.githubApp.LatestVersions(repo.Name, patterns)
 	case model.Helm:
 		return a.helmApp.LatestVersions(repo.Name, repo.Part, patterns)
+	case model.Docker:
+		return a.dockerApp.LatestVersions(repo.Name, patterns)
 	default:
 		return nil, fmt.Errorf("unknown repository kind %d", repo.Kind)
 	}

@@ -25,6 +25,7 @@ import (
 	"github.com/ViBiOh/httputils/v4/pkg/redis"
 	"github.com/ViBiOh/httputils/v4/pkg/renderer"
 	"github.com/ViBiOh/httputils/v4/pkg/server"
+	"github.com/ViBiOh/ketchup/pkg/docker"
 	"github.com/ViBiOh/ketchup/pkg/github"
 	"github.com/ViBiOh/ketchup/pkg/helm"
 	"github.com/ViBiOh/ketchup/pkg/ketchup"
@@ -73,6 +74,7 @@ func main() {
 	redisConfig := redis.Flags(fs, "redis")
 	mailerConfig := mailer.Flags(fs, "mailer")
 	githubConfig := github.Flags(fs, "github")
+	dockerConfig := docker.Flags(fs, "docker")
 	notifierConfig := notifier.Flags(fs, "notifier")
 	schedulerConfig := scheduler.Flags(fs, "scheduler")
 
@@ -102,8 +104,9 @@ func main() {
 
 	userServiceApp := userService.New(userStore.New(ketchupDb), authServiceApp)
 	githubApp := github.New(githubConfig, redisApp)
+	dockerApp := docker.New(dockerConfig)
 	helmApp := helm.New()
-	repositoryServiceApp := repositoryService.New(repositoryStore.New(ketchupDb), githubApp, helmApp)
+	repositoryServiceApp := repositoryService.New(repositoryStore.New(ketchupDb), githubApp, helmApp, dockerApp)
 	ketchupServiceApp := ketchupService.New(ketchupStore.New(ketchupDb), repositoryServiceApp)
 
 	mailerApp, err := mailer.New(mailerConfig)

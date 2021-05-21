@@ -7,6 +7,7 @@ import (
 
 	"github.com/ViBiOh/httputils/v4/pkg/db"
 	"github.com/ViBiOh/httputils/v4/pkg/logger"
+	"github.com/ViBiOh/ketchup/pkg/docker"
 	"github.com/ViBiOh/ketchup/pkg/github"
 	"github.com/ViBiOh/ketchup/pkg/helm"
 	"github.com/ViBiOh/ketchup/pkg/notifier"
@@ -25,6 +26,7 @@ func main() {
 	dbConfig := db.Flags(fs, "db")
 	mailerConfig := mailer.Flags(fs, "mailer")
 	githubConfig := github.Flags(fs, "github")
+	dockerConfig := docker.Flags(fs, "docker")
 	notifierConfig := notifier.Flags(fs, "notifier")
 
 	logger.Fatal(fs.Parse(os.Args[1:]))
@@ -45,7 +47,7 @@ func main() {
 	defer mailerApp.Close()
 
 	helmApp := helm.New()
-	repositoryServiceApp := repositoryService.New(repositoryStore.New(ketchupDb), github.New(githubConfig, nil), helmApp)
+	repositoryServiceApp := repositoryService.New(repositoryStore.New(ketchupDb), github.New(githubConfig, nil), helmApp, docker.New(dockerConfig))
 	ketchupServiceApp := ketchupService.New(ketchupStore.New(ketchupDb), repositoryServiceApp)
 
 	notifierApp := notifier.New(notifierConfig, repositoryServiceApp, ketchupServiceApp, mailerApp, helmApp)

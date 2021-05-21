@@ -20,6 +20,8 @@ const (
 	Github RepositoryKind = iota
 	// Helm repository kind
 	Helm
+	// Docker repository kind
+	Docker
 )
 
 var (
