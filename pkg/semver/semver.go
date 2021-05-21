@@ -29,7 +29,7 @@ const (
 
 var (
 	// According to https://semver.org/#spec-item-11
-	semverMatcher = regexp.MustCompile(`(?i)^[a-zA-Z]*([0-9]+)\.([0-9]+)(?:\.([0-9]+))?(-[a-zA-Z0-9.]+)?(?:\+[a-zA-Z0-9.]+)?$`)
+	semverMatcher = regexp.MustCompile(`(?i)^[a-zA-Z]*([0-9]+)(?:\.([0-9]+))?(?:\.([0-9]+))?(-[a-zA-Z0-9.]+)?(?:\+[a-zA-Z0-9.]+)?$`)
 
 	nonFinalVersions = []string{"alpha", "beta", "canary", "rc", "test"}
 
