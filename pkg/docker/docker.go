@@ -70,6 +70,10 @@ func (a app) LatestVersions(repository string, patterns []string) (map[string]se
 		return nil, fmt.Errorf("unable to prepare pattern matching: %s", err)
 	}
 
+	if !strings.Contains(repository, "/") {
+		repository = fmt.Sprintf("library/%s", repository)
+	}
+
 	bearerToken, err := a.login(ctx, repository)
 	if err != nil {
 		return nil, fmt.Errorf("unable to login to registry: %s", err)
