@@ -66,7 +66,7 @@ func (p Pattern) Check(version Version) bool {
 
 // ParsePattern parse given constraint to extract pattern matcher
 func ParsePattern(pattern string) (Pattern, error) {
-	if len(pattern) < 4 {
+	if len(pattern) < 2 {
 		return NonePattern, errors.New("pattern is invalid")
 	}
 

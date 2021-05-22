@@ -23,7 +23,7 @@ func TestCheck(t *testing.T) {
 	}{
 		{
 			"too short",
-			safeParsePattern("tst"),
+			safeParsePattern("1"),
 			args{
 				version: safeParse(stableVersion),
 			},
@@ -70,6 +70,22 @@ func TestCheck(t *testing.T) {
 			false,
 		},
 		{
+			"simple caret",
+			safeParsePattern("^2"),
+			args{
+				version: safeParse(stableVersion),
+			},
+			false,
+		},
+		{
+			"simple caret match",
+			safeParsePattern("^1"),
+			args{
+				version: safeParse(stableVersion),
+			},
+			true,
+		},
+		{
 			"caret",
 			safeParsePattern("^1.0"),
 			args{
@@ -111,7 +127,7 @@ func TestCheck(t *testing.T) {
 		},
 		{
 			"caret beta",
-			safeParsePattern("^1.1.0-0"),
+			safeParsePattern("^1-0"),
 			args{
 				version: safeParse("1.1.0-beta1"),
 			},
