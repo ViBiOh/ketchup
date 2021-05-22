@@ -18,7 +18,7 @@ import (
 type App interface {
 	DoAtomic(ctx context.Context, action func(context.Context) error) error
 	List(ctx context.Context, pageSize uint, lastKey string) ([]model.Repository, uint64, error)
-	ListByKind(ctx context.Context, pageSize uint, lastKey string, kind model.RepositoryKind) ([]model.Repository, uint64, error)
+	ListByKinds(ctx context.Context, pageSize uint, lastKey string, kinds ...model.RepositoryKind) ([]model.Repository, uint64, error)
 	Suggest(ctx context.Context, ignoreIds []uint64, count uint64) ([]model.Repository, error)
 	Get(ctx context.Context, id uint64, forUpdate bool) (model.Repository, error)
 	GetByName(ctx context.Context, repositoryKind model.RepositoryKind, name, part string) (model.Repository, error)
@@ -144,7 +144,7 @@ func (a app) List(ctx context.Context, pageSize uint, lastKey string) ([]model.R
 	return a.list(ctx, query.String(), queryArgs...)
 }
 
-const listByKindQuery = `
+const listByKindsQuery = `
 SELECT
   id,
   kind,
@@ -154,7 +154,7 @@ SELECT
 FROM
   ketchup.repository
 WHERE
-  kind = $1
+  kind = ALL($1)
 `
 
 const listByKindRestartQuery = `
@@ -167,12 +167,12 @@ const listByKindRestartQuery = `
   )
 `
 
-func (a app) ListByKind(ctx context.Context, pageSize uint, lastKey string, kind model.RepositoryKind) ([]model.Repository, uint64, error) {
+func (a app) ListByKinds(ctx context.Context, pageSize uint, lastKey string, kinds ...model.RepositoryKind) ([]model.Repository, uint64, error) {
 	var query strings.Builder
-	query.WriteString(listByKindQuery)
+	query.WriteString(listByKindsQuery)
 	var queryArgs []interface{}
 
-	queryArgs = append(queryArgs, kind.String())
+	queryArgs = append(queryArgs, pq.Array(kinds))
 
 	if len(lastKey) != 0 {
 		parts := strings.Split(lastKey, "|")

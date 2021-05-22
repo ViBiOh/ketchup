@@ -23,7 +23,7 @@ var (
 // App of package
 type App interface {
 	List(ctx context.Context, pageSize uint, lastKey string) ([]model.Repository, uint64, error)
-	ListByKind(ctx context.Context, pageSize uint, lastKey string, kind model.RepositoryKind) ([]model.Repository, uint64, error)
+	ListByKinds(ctx context.Context, pageSize uint, lastKey string, kinds ...model.RepositoryKind) ([]model.Repository, uint64, error)
 	Suggest(ctx context.Context, ignoreIds []uint64, count uint64) ([]model.Repository, error)
 	GetOrCreate(ctx context.Context, kind model.RepositoryKind, name, part, pattern string) (model.Repository, error)
 	Update(ctx context.Context, item model.Repository) error
@@ -57,8 +57,8 @@ func (a app) List(ctx context.Context, pageSize uint, lastKey string) ([]model.R
 	return list, total, nil
 }
 
-func (a app) ListByKind(ctx context.Context, pageSize uint, lastKey string, kind model.RepositoryKind) ([]model.Repository, uint64, error) {
-	list, total, err := a.repositoryStore.ListByKind(ctx, pageSize, lastKey, kind)
+func (a app) ListByKinds(ctx context.Context, pageSize uint, lastKey string, kinds ...model.RepositoryKind) ([]model.Repository, uint64, error) {
+	list, total, err := a.repositoryStore.ListByKinds(ctx, pageSize, lastKey, kinds...)
 	if err != nil {
 		return nil, 0, httpModel.WrapInternal(fmt.Errorf("unable to list by kind: %w", err))
 	}

@@ -14,7 +14,7 @@ import (
 	"github.com/ViBiOh/ketchup/pkg/service/repository/repositorytest"
 )
 
-func TestGetNewGithubReleases(t *testing.T) {
+func TestGetNewStandardReleases(t *testing.T) {
 	type args struct {
 		ctx context.Context
 	}
@@ -29,7 +29,7 @@ func TestGetNewGithubReleases(t *testing.T) {
 		{
 			"list error",
 			app{
-				repositoryService: repositorytest.New().SetListByKind(nil, 0, errors.New("failed")),
+				repositoryService: repositorytest.New().SetListByKinds(nil, 0, errors.New("failed")),
 			},
 			args{
 				ctx: context.Background(),
@@ -40,7 +40,7 @@ func TestGetNewGithubReleases(t *testing.T) {
 		{
 			"github error",
 			app{
-				repositoryService: repositorytest.New().SetListByKind([]model.Repository{
+				repositoryService: repositorytest.New().SetListByKinds([]model.Repository{
 					model.NewGithubRepository(1, repositoryName).AddVersion(model.DefaultPattern, repositoryVersion)}, 1, nil).SetLatestVersions(nil, errors.New("failed")),
 			},
 			args{
@@ -52,7 +52,7 @@ func TestGetNewGithubReleases(t *testing.T) {
 		{
 			"same version",
 			app{
-				repositoryService: repositorytest.New().SetListByKind([]model.Repository{
+				repositoryService: repositorytest.New().SetListByKinds([]model.Repository{
 					model.NewGithubRepository(1, repositoryName).AddVersion(model.DefaultPattern, repositoryVersion),
 				}, 1, nil).SetLatestVersions(map[string]semver.Version{
 					model.DefaultPattern: {
@@ -69,7 +69,7 @@ func TestGetNewGithubReleases(t *testing.T) {
 		{
 			"success",
 			app{
-				repositoryService: repositorytest.New().SetListByKind([]model.Repository{
+				repositoryService: repositorytest.New().SetListByKinds([]model.Repository{
 					model.NewGithubRepository(1, repositoryName).AddVersion(model.DefaultPattern, repositoryVersion),
 				}, 1, nil).SetLatestVersions(map[string]semver.Version{
 					model.DefaultPattern: safeParse("1.1.0"),
@@ -90,7 +90,7 @@ func TestGetNewGithubReleases(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.intention, func(t *testing.T) {
-			got, _, gotErr := tc.instance.getNewGithubReleases(tc.args.ctx)
+			got, _, gotErr := tc.instance.getNewStandardReleases(tc.args.ctx)
 			pageSize = 20
 
 			failed := false
@@ -106,7 +106,7 @@ func TestGetNewGithubReleases(t *testing.T) {
 			}
 
 			if failed {
-				t.Errorf("getNewGithubReleases() = (%+v, `%s`), want (%+v, `%s`)", got, gotErr, tc.want, tc.wantErr)
+				t.Errorf("getNewStandardReleases() = (%+v, `%s`), want (%+v, `%s`)", got, gotErr, tc.want, tc.wantErr)
 			}
 		})
 	}
@@ -133,7 +133,7 @@ func TestGetNewHelmReleases(t *testing.T) {
 		{
 			"fetch error",
 			app{
-				repositoryService: repositorytest.New().SetListByKind(nil, 0, errors.New("db error")),
+				repositoryService: repositorytest.New().SetListByKinds(nil, 0, errors.New("db error")),
 				helmApp:           helmtest.New(),
 			},
 			args{
@@ -146,7 +146,7 @@ func TestGetNewHelmReleases(t *testing.T) {
 		{
 			"no repository",
 			app{
-				repositoryService: repositorytest.New().SetListByKind(nil, 0, nil),
+				repositoryService: repositorytest.New().SetListByKinds(nil, 0, nil),
 				helmApp:           helmtest.New(),
 			},
 			args{
@@ -159,7 +159,7 @@ func TestGetNewHelmReleases(t *testing.T) {
 		{
 			"helm error",
 			app{
-				repositoryService: repositorytest.New().SetListByKind([]model.Repository{
+				repositoryService: repositorytest.New().SetListByKinds([]model.Repository{
 					model.NewHelmRepository(1, "https://charts.vibioh.fr", "app"),
 					model.NewHelmRepository(1, "https://charts.vibioh.fr", "cron"),
 					model.NewHelmRepository(1, "https://charts.vibioh.fr", "flux"),
@@ -177,7 +177,7 @@ func TestGetNewHelmReleases(t *testing.T) {
 		{
 			"helm",
 			app{
-				repositoryService: repositorytest.New().SetListByKind([]model.Repository{
+				repositoryService: repositorytest.New().SetListByKinds([]model.Repository{
 					postgresRepo,
 					appRepo,
 					cronRepo,

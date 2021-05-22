@@ -10,7 +10,7 @@ import (
 )
 
 func (a app) getNewReleases(ctx context.Context) ([]model.Release, uint64, error) {
-	githubReleases, githubCount, err := a.getNewGithubReleases(ctx)
+	releases, releasesCount, err := a.getNewStandardReleases(ctx)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -20,18 +20,18 @@ func (a app) getNewReleases(ctx context.Context) ([]model.Release, uint64, error
 		return nil, 0, err
 	}
 
-	return append(githubReleases, helmReleases...), githubCount + helmCount, nil
+	return append(releases, helmReleases...), releasesCount + helmCount, nil
 }
 
-func (a app) getNewGithubReleases(ctx context.Context) ([]model.Release, uint64, error) {
+func (a app) getNewStandardReleases(ctx context.Context) ([]model.Release, uint64, error) {
 	var newReleases []model.Release
 	var count uint64
 	var lastKey string
 
 	for {
-		repositories, _, err := a.repositoryService.ListByKind(ctx, pageSize, lastKey, model.Github)
+		repositories, _, err := a.repositoryService.ListByKinds(ctx, pageSize, lastKey, model.Github, model.Docker)
 		if err != nil {
-			return nil, count, fmt.Errorf("unable to fetch GitHub repositories: %s", err)
+			return nil, count, fmt.Errorf("unable to fetch standard repositories: %s", err)
 		}
 
 		repoCount := len(repositories)
@@ -59,7 +59,7 @@ func (a app) getNewGithubReleases(ctx context.Context) ([]model.Release, uint64,
 func (a app) getNewRepositoryReleases(repo model.Repository) []model.Release {
 	versions, err := a.repositoryService.LatestVersions(repo)
 	if err != nil {
-		logger.Error("unable to get latest versions of %s: %s", repo.Name, err)
+		logger.Error("unable to get latest versions of %s `%s`: %s", repo.Kind, repo.Name, err)
 		return nil
 	}
 
@@ -78,7 +78,7 @@ func (a app) getNewHelmReleases(ctx context.Context) ([]model.Release, uint64, e
 	var lastKey string
 
 	for {
-		repositories, _, err := a.repositoryService.ListByKind(ctx, pageSize, lastKey, model.Helm)
+		repositories, _, err := a.repositoryService.ListByKinds(ctx, pageSize, lastKey, model.Helm)
 		if err != nil {
 			return nil, count, fmt.Errorf("unable to fetch Helm repositories: %s", err)
 		}
