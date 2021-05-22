@@ -4,6 +4,7 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	"net/http"
 	"net/url"
 	"runtime"
 	"strings"
@@ -72,16 +73,14 @@ func (a app) LatestVersions(repository string, patterns []string) (map[string]se
 		return nil, fmt.Errorf("unable to prepare pattern matching: %s", err)
 	}
 
-	if !strings.Contains(repository, "/") {
-		repository = fmt.Sprintf("library/%s", repository)
+	var resp *http.Response
+
+	if registryURL, parseErr := url.Parse(repository); parseErr == nil && len(registryURL.Host) == 0 {
+		resp, err = a.dockerRegistry(ctx, repository)
+	} else {
+		resp, err = request.New().Get(fmt.Sprintf("%s/tags/list", repository)).Send(ctx, nil)
 	}
 
-	bearerToken, err := a.login(ctx, repository)
-	if err != nil {
-		return nil, fmt.Errorf("unable to login to registry: %s", err)
-	}
-
-	resp, err := request.New().Get(fmt.Sprintf("%s%s/tags/list", a.registryURL, repository)).Header("Authorization", fmt.Sprintf("Bearer %s", bearerToken)).Send(ctx, nil)
 	if err != nil {
 		return nil, fmt.Errorf("unable to fetch tags: %s", err)
 	}
@@ -112,6 +111,24 @@ func (a app) LatestVersions(repository string, patterns []string) (map[string]se
 	wg.Wait()
 
 	return versions, nil
+}
+
+func (a app) dockerRegistry(ctx context.Context, repository string) (*http.Response, error) {
+	if !strings.Contains(repository, "/") {
+		repository = fmt.Sprintf("library/%s", repository)
+	}
+
+	bearerToken, err := a.login(ctx, repository)
+	if err != nil {
+		return nil, fmt.Errorf("unable to login to registry: %s", err)
+	}
+
+	resp, err := request.New().Get(fmt.Sprintf("%s%s/tags/list", a.registryURL, repository)).Header("Authorization", fmt.Sprintf("Bearer %s", bearerToken)).Send(ctx, nil)
+	if err != nil {
+		return nil, fmt.Errorf("unable to fetch tags: %s", err)
+	}
+
+	return resp, nil
 }
 
 func (a app) login(ctx context.Context, repository string) (string, error) {
