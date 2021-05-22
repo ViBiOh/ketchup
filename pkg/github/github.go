@@ -114,8 +114,8 @@ func (a app) LatestVersions(repository string, patterns []string) (map[string]se
 		}
 
 		var tags []Tag
-		if err := httpjson.Read(resp, &tags, fmt.Sprintf("tags #%d", page)); err != nil {
-			return nil, err
+		if err := httpjson.Read(resp, &tags); err != nil {
+			return nil, fmt.Errorf("unable to read tags page #%d: %s", page, err)
 		}
 
 		for _, tag := range tags {
@@ -144,8 +144,8 @@ func (a app) getRateLimit(ctx context.Context) (uint64, error) {
 	}
 
 	var rateLimits RateLimitResponse
-	if err := httpjson.Read(resp, &rateLimits, "rate limit"); err != nil {
-		return 0, err
+	if err := httpjson.Read(resp, &rateLimits); err != nil {
+		return 0, fmt.Errorf("unable to read rate limit: %s", err)
 	}
 
 	return rateLimits.Resources["core"].Remaining, nil

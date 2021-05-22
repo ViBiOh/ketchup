@@ -12,7 +12,7 @@ const (
 	suggestCount    = uint64(5)
 )
 
-func (a app) PublicTemplateFunc(r *http.Request) (string, int, map[string]interface{}, error) {
+func (a app) PublicTemplateFunc(_ http.ResponseWriter, r *http.Request) (string, int, map[string]interface{}, error) {
 	securityPayload, err := a.generateToken(r.Context())
 	if err != nil {
 		return "", http.StatusInternalServerError, nil, err
@@ -37,7 +37,7 @@ func min(a, b uint64) uint64 {
 	return b
 }
 
-func (a app) AppTemplateFunc(r *http.Request) (string, int, map[string]interface{}, error) {
+func (a app) AppTemplateFunc(_ http.ResponseWriter, r *http.Request) (string, int, map[string]interface{}, error) {
 	pagination, err := query.ParsePagination(r, 100, 100)
 	if err != nil {
 		return "", http.StatusBadRequest, nil, err

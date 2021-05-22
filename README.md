@@ -128,6 +128,8 @@ Usage of ketchup:
         [notifier] Pushgateway URL {KETCHUP_NOTIFIER_PUSH_URL}
   -okStatus int
         [http] Healthy HTTP Status code {KETCHUP_OK_STATUS} (default 204)
+  -pathPrefix string
+        Root Path Prefix {KETCHUP_PATH_PREFIX}
   -port uint
         [server] Listen port {KETCHUP_PORT} (default 1080)
   -prometheusAddress string

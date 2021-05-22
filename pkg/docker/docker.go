@@ -85,8 +85,8 @@ func (a app) LatestVersions(repository string, patterns []string) (map[string]se
 	}
 
 	var tagsContent tagsResponse
-	if err := httpjson.Read(resp, &tagsContent, "docker-tags"); err != nil {
-		return nil, err
+	if err := httpjson.Read(resp, &tagsContent); err != nil {
+		return nil, fmt.Errorf("unable to read tags: %s", err)
 	}
 
 	for _, tag := range tagsContent.Tags {
@@ -116,8 +116,8 @@ func (a app) login(ctx context.Context, repository string) (string, error) {
 	}
 
 	var authContent authResponse
-	if err := httpjson.Read(resp, &authContent, "docker-login"); err != nil {
-		return "", err
+	if err := httpjson.Read(resp, &authContent); err != nil {
+		return "", fmt.Errorf("unable to read auth token: %s", err)
 	}
 
 	return authContent.AccessToken, nil

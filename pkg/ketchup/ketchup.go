@@ -26,8 +26,8 @@ var (
 type App interface {
 	Handler() http.Handler
 	Signup() http.Handler
-	PublicTemplateFunc(*http.Request) (string, int, map[string]interface{}, error)
-	AppTemplateFunc(*http.Request) (string, int, map[string]interface{}, error)
+	PublicTemplateFunc(http.ResponseWriter, *http.Request) (string, int, map[string]interface{}, error)
+	AppTemplateFunc(http.ResponseWriter, *http.Request) (string, int, map[string]interface{}, error)
 }
 
 type app struct {
