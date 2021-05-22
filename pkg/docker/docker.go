@@ -21,10 +21,6 @@ type authResponse struct {
 	AccessToken string `json:"access_token"`
 }
 
-type tagsResponse struct {
-	Tags []string `json:"tags"`
-}
-
 // App of package
 type App interface {
 	LatestVersions(string, []string) (map[string]semver.Version, error)
