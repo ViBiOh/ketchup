@@ -5,7 +5,9 @@ import (
 	"flag"
 	"fmt"
 	"net/url"
+	"runtime"
 	"strings"
+	"sync"
 
 	"github.com/ViBiOh/httputils/v4/pkg/flags"
 	"github.com/ViBiOh/httputils/v4/pkg/httpjson"
@@ -84,19 +86,30 @@ func (a app) LatestVersions(repository string, patterns []string) (map[string]se
 		return nil, fmt.Errorf("unable to fetch tags: %s", err)
 	}
 
-	var tagsContent tagsResponse
-	if err := httpjson.Read(resp, &tagsContent); err != nil {
+	var wg sync.WaitGroup
+	versionsStream := make(chan interface{}, runtime.NumCPU())
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+
+		for tag := range versionsStream {
+			tagVersion, err := semver.Parse(*(tag.(*string)))
+			if err != nil {
+				continue
+			}
+
+			model.CheckPatternsMatching(versions, compiledPatterns, tagVersion)
+		}
+	}()
+
+	if err := httpjson.Stream(resp.Body, func() interface{} {
+		return new(string)
+	}, versionsStream, "tags"); err != nil {
 		return nil, fmt.Errorf("unable to read tags: %s", err)
 	}
 
-	for _, tag := range tagsContent.Tags {
-		tagVersion, err := semver.Parse(tag)
-		if err != nil {
-			continue
-		}
-
-		model.CheckPatternsMatching(versions, compiledPatterns, tagVersion)
-	}
+	wg.Wait()
 
 	return versions, nil
 }
