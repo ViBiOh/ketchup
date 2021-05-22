@@ -35,7 +35,7 @@ CREATE UNIQUE INDEX user_login_id ON ketchup.user(login_id);
 CREATE UNIQUE INDEX user_email ON ketchup.user(email);
 
 -- repository_kind
-CREATE TYPE ketchup.repository_kind AS ENUM ('github', 'helm');
+CREATE TYPE ketchup.repository_kind AS ENUM ('github', 'helm', 'docker');
 
 -- repository
 CREATE SEQUENCE ketchup.repository_seq;
@@ -49,7 +49,7 @@ CREATE TABLE ketchup.repository (
 ALTER SEQUENCE ketchup.repository_seq OWNED BY ketchup.repository.id;
 
 CREATE UNIQUE INDEX repository_id ON ketchup.repository(id);
-CREATE UNIQUE INDEX repository_repository ON ketchup.repository(name, part);
+CREATE UNIQUE INDEX repository_repository ON ketchup.repository(kind, name, part);
 
 -- repository_version
 CREATE TABLE ketchup.repository_version (

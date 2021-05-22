@@ -27,6 +27,7 @@ func (a app) Signup() http.Handler {
 		token := r.FormValue("token")
 		if !a.validateToken(r.Context(), token, r.FormValue("answer")) {
 			a.rendererApp.Error(w, httpModel.WrapInvalid(errors.New("unable to validate security question")))
+			return
 		}
 
 		user := model.NewUser(0, r.FormValue("email"), authModel.User{

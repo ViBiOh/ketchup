@@ -19,6 +19,12 @@
             </label>
             <input id="create-kind-helm" type="radio" name="kind" value="helm">
           </span>
+          <span class="flex-grow center">
+            <label for="create-kind-docker" class="block">
+              <img class="icon icon-large clickable" src="/svg/docker?fill=silver" alt="Docker icon">
+            </label>
+            <input id="create-kind-docker" type="radio" name="kind" value="docker">
+          </span>
         </p>
 
         <p class="padding no-margin">
@@ -74,6 +80,13 @@
       if (e.target.value === 'helm') {
         repositoryInput.placeholder = 'https://charts.vibioh.fr';
         nameInput.classList.remove("hidden");
+      }
+    });
+
+    document.getElementById('create-kind-docker').addEventListener('change', (e) => {
+      if (e.target.value === 'docker') {
+        repositoryInput.placeholder = 'vibioh/ketchup';
+        nameInput.classList.add("hidden");
       }
     });
   </script>

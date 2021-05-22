@@ -26,7 +26,7 @@ const (
 
 var (
 	// RepositoryKindValues string values
-	RepositoryKindValues = []string{"github", "helm"}
+	RepositoryKindValues = []string{"github", "helm", "docker"}
 
 	// NoneRepository is an undefined repository
 	NoneRepository = Repository{}
@@ -75,6 +75,11 @@ func NewGithubRepository(id uint64, name string) Repository {
 // NewHelmRepository create new Repository with initialized values
 func NewHelmRepository(id uint64, name, part string) Repository {
 	return NewRepository(id, Helm, name, part)
+}
+
+// NewDockerRepository create new Repository with initialized values
+func NewDockerRepository(id uint64, name string) Repository {
+	return NewRepository(id, Docker, name, "")
 }
 
 // AddVersion adds given pattern to versions map

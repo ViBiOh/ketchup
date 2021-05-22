@@ -29,8 +29,10 @@
 {{ end}}
 
 {{ define "header-part" }}
-  {{ if ne .Root "/" }}
-    <a href="#create-modal" class="button bg-primary">Create</a>
+  {{ with .Root }}
+    {{ if ne . "/" }}
+      <a href="#create-modal" class="button bg-primary">Create</a>
+    {{ end }}
   {{ end }}
 {{ end }}
 
