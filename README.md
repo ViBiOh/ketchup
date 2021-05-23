@@ -8,7 +8,7 @@ Thanks to [OpenEmoji](https://openmoji.org) for favicon.
 
 Thanks to [FontAwesome](https://fontawesome.com) for icons.
 
-> Check your GitHub or Helm dependencies every day at 8am and send a digest by email.
+> Check your GitHub, Helm or Docker dependencies every day at 8am and send a digest by email.
 
 ![](ketchup.png)
 
