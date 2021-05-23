@@ -8,7 +8,6 @@ import (
 	"net/url"
 	"runtime"
 	"strings"
-	"sync"
 
 	"github.com/ViBiOh/httputils/v4/pkg/flags"
 	"github.com/ViBiOh/httputils/v4/pkg/httpjson"
@@ -81,12 +80,11 @@ func (a app) LatestVersions(repository string, patterns []string) (map[string]se
 		return nil, fmt.Errorf("unable to fetch tags: %s", err)
 	}
 
-	var wg sync.WaitGroup
+	done := make(chan struct{})
 	versionsStream := make(chan interface{}, runtime.NumCPU())
 
-	wg.Add(1)
 	go func() {
-		defer wg.Done()
+		defer close(done)
 
 		for tag := range versionsStream {
 			tagVersion, err := semver.Parse(*(tag.(*string)))
@@ -104,7 +102,7 @@ func (a app) LatestVersions(repository string, patterns []string) (map[string]se
 		return nil, fmt.Errorf("unable to read tags: %s", err)
 	}
 
-	wg.Wait()
+	<-done
 
 	return versions, nil
 }
