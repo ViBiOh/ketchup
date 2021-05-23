@@ -172,7 +172,12 @@ func (a app) ListByKinds(ctx context.Context, pageSize uint, lastKey string, kin
 	query.WriteString(listByKindsQuery)
 	var queryArgs []interface{}
 
-	queryArgs = append(queryArgs, pq.Array(kinds))
+	kindsValue := make([]string, len(kinds))
+	for i, kind := range kinds {
+		kindsValue[i] = kind.String()
+	}
+
+	queryArgs = append(queryArgs, pq.Array(kindsValue))
 
 	if len(lastKey) != 0 {
 		parts := strings.Split(lastKey, "|")
