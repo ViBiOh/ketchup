@@ -154,7 +154,7 @@ SELECT
 FROM
   ketchup.repository
 WHERE
-  kind = ALL($1)
+  kind = ANY($1)
 `
 
 const listByKindRestartQuery = `
