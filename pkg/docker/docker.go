@@ -16,6 +16,11 @@ import (
 	"github.com/ViBiOh/ketchup/pkg/semver"
 )
 
+const (
+	registryURL = "https://index.docker.io"
+	authURL     = "https://auth.docker.io/token"
+)
+
 type authResponse struct {
 	AccessToken string `json:"access_token"`
 }
@@ -43,10 +48,8 @@ type app struct {
 // Flags adds flags for configuring package
 func Flags(fs *flag.FlagSet, prefix string, overrides ...flags.Override) Config {
 	return Config{
-		registryURL: flags.New(prefix, "docker").Name("Registry").Default(flags.Default("Registry", "https://index.docker.io/v2/", overrides)).Label("Registry API URL").ToString(fs),
-		authURL:     flags.New(prefix, "docker").Name("OAuth URL").Default(flags.Default("Registry", "https://auth.docker.io/token", overrides)).Label("Registry OAuth URL").ToString(fs),
-		username:    flags.New(prefix, "docker").Name("Username").Default(flags.Default("Username", "", overrides)).Label("Registry Username").ToString(fs),
-		password:    flags.New(prefix, "docker").Name("Password").Default(flags.Default("Password", "", overrides)).Label("Registry Password").ToString(fs),
+		username: flags.New(prefix, "docker").Name("Username").Default(flags.Default("Username", "", overrides)).Label("Registry Username").ToString(fs),
+		password: flags.New(prefix, "docker").Name("Password").Default(flags.Default("Password", "", overrides)).Label("Registry Password").ToString(fs),
 	}
 }
 
@@ -68,61 +71,80 @@ func (a app) LatestVersions(repository string, patterns []string) (map[string]se
 		return nil, fmt.Errorf("unable to prepare pattern matching: %s", err)
 	}
 
-	var resp *http.Response
+	var registry, bearerToken string
 
-	if registryURL, parseErr := url.Parse(repository); parseErr == nil && len(registryURL.Host) == 0 {
-		resp, err = a.dockerRegistry(ctx, repository)
-	} else {
-		resp, err = request.New().Get(fmt.Sprintf("%s/tags/list", repository)).Send(ctx, nil)
-	}
-
-	if err != nil {
-		return nil, fmt.Errorf("unable to fetch tags: %s", err)
-	}
-
-	done := make(chan struct{})
-	versionsStream := make(chan interface{}, runtime.NumCPU())
-
-	go func() {
-		defer close(done)
-
-		for tag := range versionsStream {
-			tagVersion, err := semver.Parse(*(tag.(*string)))
-			if err != nil {
-				continue
-			}
-
-			model.CheckPatternsMatching(versions, compiledPatterns, tagVersion)
+	parts := strings.Split(repository, "/")
+	if len(parts) < 3 {
+		if len(parts) == 1 {
+			repository = fmt.Sprintf("library/%s", repository)
 		}
-	}()
 
-	if err := httpjson.Stream(resp.Body, func() interface{} {
-		return new(string)
-	}, versionsStream, "tags"); err != nil {
-		return nil, fmt.Errorf("unable to read tags: %s", err)
+		token, err := a.login(ctx, repository)
+		if err != nil {
+			return nil, fmt.Errorf("unable to authenticate to docker hub: %s", err)
+		}
+
+		bearerToken = token
+		registry = registryURL
+	} else {
+		registry = fmt.Sprintf("https://%s", parts[0])
+		repository = strings.Join(parts[1:], "/")
 	}
 
-	<-done
+	url := fmt.Sprintf("%s/v2/%s/tags/list", registry, repository)
+
+	for len(url) != 0 {
+		req := request.New().Get(url)
+
+		if registry == registryURL {
+			req.Header("Authorization", fmt.Sprintf("Bearer %s", bearerToken))
+		}
+
+		resp, err := req.Send(ctx, nil)
+		if err != nil {
+			return nil, fmt.Errorf("unable to fetch tags: %s", err)
+		}
+
+		done := make(chan struct{})
+		versionsStream := make(chan interface{}, runtime.NumCPU())
+
+		go func() {
+			defer close(done)
+
+			for tag := range versionsStream {
+				tagVersion, err := semver.Parse(*(tag.(*string)))
+				if err != nil {
+					continue
+				}
+
+				model.CheckPatternsMatching(versions, compiledPatterns, tagVersion)
+			}
+		}()
+
+		if err := httpjson.Stream(resp.Body, func() interface{} {
+			return new(string)
+		}, versionsStream, "tags"); err != nil {
+			return nil, fmt.Errorf("unable to read tags: %s", err)
+		}
+
+		<-done
+
+		url = getNextURL(resp, registry)
+	}
 
 	return versions, nil
 }
 
-func (a app) dockerRegistry(ctx context.Context, repository string) (*http.Response, error) {
-	if !strings.Contains(repository, "/") {
-		repository = fmt.Sprintf("library/%s", repository)
+func getNextURL(resp *http.Response, registry string) string {
+	link := resp.Header.Get("link")
+	if len(link) == 0 {
+		return ""
 	}
 
-	bearerToken, err := a.login(ctx, repository)
-	if err != nil {
-		return nil, fmt.Errorf("unable to login to registry: %s", err)
-	}
+	parts := strings.Split(link, ";")
+	path := strings.Trim(strings.Trim(parts[0], "<"), ">")
 
-	resp, err := request.New().Get(fmt.Sprintf("%s%s/tags/list", a.registryURL, repository)).Header("Authorization", fmt.Sprintf("Bearer %s", bearerToken)).Send(ctx, nil)
-	if err != nil {
-		return nil, fmt.Errorf("unable to fetch tags: %s", err)
-	}
-
-	return resp, nil
+	return fmt.Sprintf("%s%s", registry, path)
 }
 
 func (a app) login(ctx context.Context, repository string) (string, error) {

@@ -64,7 +64,7 @@ func (v Version) IsGreater(other Version) bool {
 		return v.suffix > other.suffix
 	}
 
-	return false
+	return v.Name > other.Name
 }
 
 // Compare return version diff in semver nomenclture
