@@ -32,17 +32,13 @@ type App interface {
 
 // Config of package
 type Config struct {
-	registryURL *string
-	authURL     *string
-	username    *string
-	password    *string
+	username *string
+	password *string
 }
 
 type app struct {
-	registryURL string
-	authURL     string
-	username    string
-	password    string
+	username string
+	password string
 }
 
 // Flags adds flags for configuring package
@@ -56,10 +52,8 @@ func Flags(fs *flag.FlagSet, prefix string, overrides ...flags.Override) Config 
 // New creates new App from Config
 func New(config Config) App {
 	return app{
-		registryURL: strings.TrimSpace(*config.registryURL),
-		authURL:     strings.TrimSpace(*config.authURL),
-		username:    strings.TrimSpace(*config.username),
-		password:    strings.TrimSpace(*config.password),
+		username: strings.TrimSpace(*config.username),
+		password: strings.TrimSpace(*config.password),
 	}
 }
 
@@ -71,24 +65,9 @@ func (a app) LatestVersions(repository string, patterns []string) (map[string]se
 		return nil, fmt.Errorf("unable to prepare pattern matching: %s", err)
 	}
 
-	var registry, bearerToken string
-
-	parts := strings.Split(repository, "/")
-	if len(parts) < 3 {
-		if len(parts) == 1 {
-			repository = fmt.Sprintf("library/%s", repository)
-		}
-
-		token, err := a.login(ctx, repository)
-		if err != nil {
-			return nil, fmt.Errorf("unable to authenticate to docker hub: %s", err)
-		}
-
-		bearerToken = token
-		registry = registryURL
-	} else {
-		registry = fmt.Sprintf("https://%s", parts[0])
-		repository = strings.Join(parts[1:], "/")
+	registry, repository, bearerToken, err := a.getImageDetails(ctx, repository)
+	if err != nil {
+		return nil, fmt.Errorf("unable to compute image details: %s", err)
 	}
 
 	url := fmt.Sprintf("%s/v2/%s/tags/list", registry, repository)
@@ -135,6 +114,24 @@ func (a app) LatestVersions(repository string, patterns []string) (map[string]se
 	return versions, nil
 }
 
+func (a app) getImageDetails(ctx context.Context, repository string) (string, string, string, error) {
+	parts := strings.Split(repository, "/")
+	if len(parts) > 2 {
+		return fmt.Sprintf("https://%s", parts[0]), strings.Join(parts[1:], "/"), "", nil
+	}
+
+	if len(parts) == 1 {
+		repository = fmt.Sprintf("library/%s", repository)
+	}
+
+	token, err := a.login(ctx, repository)
+	if err != nil {
+		return "", "", "", fmt.Errorf("unable to authenticate to docker hub: %s", err)
+	}
+
+	return registryURL, repository, token, nil
+}
+
 func getNextURL(resp *http.Response, registry string) string {
 	link := resp.Header.Get("link")
 	if len(link) == 0 {
@@ -156,9 +153,9 @@ func (a app) login(ctx context.Context, repository string) (string, error) {
 	values.Set("username", a.username)
 	values.Set("password", a.password)
 
-	resp, err := request.New().Post(a.authURL).Form(ctx, values)
+	resp, err := request.New().Post(authURL).Form(ctx, values)
 	if err != nil {
-		return "", fmt.Errorf("unable to authenticate to `%s`: %s", a.authURL, err)
+		return "", fmt.Errorf("unable to authenticate to `%s`: %s", authURL, err)
 	}
 
 	var authContent authResponse
