@@ -19,6 +19,7 @@ import (
 const (
 	registryURL = "https://index.docker.io"
 	authURL     = "https://auth.docker.io/token"
+	nextLink    = `rel="next"`
 )
 
 type authResponse struct {
@@ -108,7 +109,7 @@ func (a app) LatestVersions(repository string, patterns []string) (map[string]se
 
 		<-done
 
-		url = getNextURL(resp, registry)
+		url = getNextURL(resp.Header, registry)
 	}
 
 	return versions, nil
@@ -132,16 +133,27 @@ func (a app) getImageDetails(ctx context.Context, repository string) (string, st
 	return registryURL, repository, token, nil
 }
 
-func getNextURL(resp *http.Response, registry string) string {
-	link := resp.Header.Get("link")
-	if len(link) == 0 {
+func getNextURL(headers http.Header, registry string) string {
+	links := headers.Values("link")
+	if len(links) == 0 {
 		return ""
 	}
 
-	parts := strings.Split(link, ";")
-	path := strings.Trim(strings.Trim(parts[0], "<"), ">")
+	for _, link := range links {
+		if !strings.Contains(link, nextLink) {
+			continue
+		}
 
-	return fmt.Sprintf("%s%s", registry, path)
+		for _, part := range strings.Split(link, ";") {
+			if strings.Contains(part, nextLink) {
+				continue
+			}
+
+			return fmt.Sprintf("%s%s", registry, strings.TrimSpace(strings.Trim(strings.Trim(part, "<"), ">")))
+		}
+	}
+
+	return ""
 }
 
 func (a app) login(ctx context.Context, repository string) (string, error) {
