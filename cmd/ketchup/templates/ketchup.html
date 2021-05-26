@@ -34,6 +34,13 @@
             </label>
             <input id="create-kind-npm" type="radio" name="kind" value="npm">
           </span>
+
+          <span class="flex-grow center">
+            <label for="create-kind-pypi" class="block">
+              <img class="icon icon-large clickable" src="{{ url "/svg/pypi?fill=silver" }}" alt="Pypi icon">
+            </label>
+            <input id="create-kind-pypi" type="radio" name="kind" value="pypi">
+          </span>
         </p>
 
         <p class="padding no-margin">
@@ -102,6 +109,13 @@
     document.getElementById('create-kind-npm').addEventListener('change', (e) => {
       if (e.target.value === 'npm') {
         repositoryInput.placeholder = 'funtch';
+        nameInput.classList.add("hidden");
+      }
+    });
+
+    document.getElementById('create-kind-pypi').addEventListener('change', (e) => {
+      if (e.target.value === 'pypi') {
+        repositoryInput.placeholder = 'pip';
         nameInput.classList.add("hidden");
       }
     });
@@ -257,7 +271,7 @@
     }
 
     .create-form {
-      width: 25rem;
+      width: 30rem;
     }
 
     .separator {

@@ -24,11 +24,13 @@ const (
 	Docker
 	// NPM repository kind
 	NPM
+	// Pypi repository kind
+	Pypi
 )
 
 var (
 	// RepositoryKindValues string values
-	RepositoryKindValues = []string{"github", "helm", "docker", "npm"}
+	RepositoryKindValues = []string{"github", "helm", "docker", "npm", "pypi"}
 
 	// NoneRepository is an undefined repository
 	NoneRepository = Repository{}
@@ -128,6 +130,8 @@ func (r Repository) URL(pattern string) string {
 		}
 	case NPM:
 		return fmt.Sprintf("https://www.npmjs.com/package/%s/v/%s", r.Name, r.Versions[pattern])
+	case Pypi:
+		return fmt.Sprintf("https://pypi.org/project/%s/%s/", r.Name, r.Versions[pattern])
 	default:
 		return "#"
 	}

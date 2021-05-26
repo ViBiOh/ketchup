@@ -55,17 +55,10 @@ func (a app) handleCreate(w http.ResponseWriter, r *http.Request) {
 	name := r.FormValue("name")
 
 	switch repositoryKind {
-	case model.Github:
-		repository = model.NewGithubRepository(0, name)
 	case model.Helm:
 		repository = model.NewHelmRepository(0, strings.TrimSuffix(name, "/"), r.FormValue("part"))
-	case model.Docker:
-		repository = model.NewDockerRepository(0, name)
-	case model.NPM:
-		repository = model.NewNPMRepository(0, name)
 	default:
-		a.rendererApp.Error(w, httpModel.WrapInternal(fmt.Errorf("unhandled repository kind `%s`", repositoryKind)))
-		return
+		repository = model.NewRepository(0, repositoryKind, name, "")
 	}
 
 	item := model.NewKetchup(r.FormValue("pattern"), r.FormValue("version"), ketchupFrequency, repository)

@@ -29,7 +29,7 @@ func (a app) getNewStandardReleases(ctx context.Context) ([]model.Release, uint6
 	var lastKey string
 
 	for {
-		repositories, _, err := a.repositoryService.ListByKinds(ctx, pageSize, lastKey, model.Github, model.Docker, model.NPM)
+		repositories, _, err := a.repositoryService.ListByKinds(ctx, pageSize, lastKey, model.Github, model.Docker, model.NPM, model.Pypi)
 		if err != nil {
 			return nil, count, fmt.Errorf("unable to fetch standard repositories: %s", err)
 		}

@@ -12,6 +12,7 @@ import (
 	"github.com/ViBiOh/ketchup/pkg/provider/github"
 	"github.com/ViBiOh/ketchup/pkg/provider/helm"
 	"github.com/ViBiOh/ketchup/pkg/provider/npm"
+	"github.com/ViBiOh/ketchup/pkg/provider/pypi"
 	ketchupService "github.com/ViBiOh/ketchup/pkg/service/ketchup"
 	repositoryService "github.com/ViBiOh/ketchup/pkg/service/repository"
 	ketchupStore "github.com/ViBiOh/ketchup/pkg/store/ketchup"
@@ -49,7 +50,8 @@ func main() {
 
 	helmApp := helm.New()
 	npmApp := npm.New()
-	repositoryServiceApp := repositoryService.New(repositoryStore.New(ketchupDb), github.New(githubConfig, nil), helmApp, docker.New(dockerConfig), npmApp)
+	pypiApp := pypi.New()
+	repositoryServiceApp := repositoryService.New(repositoryStore.New(ketchupDb), github.New(githubConfig, nil), helmApp, docker.New(dockerConfig), npmApp, pypiApp)
 	ketchupServiceApp := ketchupService.New(ketchupStore.New(ketchupDb), repositoryServiceApp)
 
 	notifierApp := notifier.New(notifierConfig, repositoryServiceApp, ketchupServiceApp, mailerApp, helmApp)
