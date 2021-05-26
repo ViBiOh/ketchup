@@ -108,24 +108,39 @@ func (r Repository) String() string {
 
 // URL format the URL of given repository with current version
 func (r Repository) URL(pattern string) string {
-	if r.Kind == Helm {
+	switch r.Kind {
+	case Github:
+		return fmt.Sprintf("%s/%s/releases/tag/%s", githubURL, r.Name, r.Versions[pattern])
+	case Helm:
 		parts := strings.SplitN(r.Name, "@", 2)
 		if len(parts) > 1 {
 			return parts[1]
 		}
 		return r.Name
+	case Docker:
+		switch strings.Count(r.Name, "/") {
+		case 0:
+			return fmt.Sprintf("https://hub.docker.com/_/%s?tab=tags&page=1&ordering=last_updated&name=%s", r.Name, r.Versions[pattern])
+		case 1:
+			return fmt.Sprintf("https://hub.docker.com/r/%s/tags?page=1&ordering=last_updated&name=%s", r.Name, r.Versions[pattern])
+		default:
+			return fmt.Sprintf("https://%s", r.Name)
+		}
+	case NPM:
+		return fmt.Sprintf("https://www.npmjs.com/package/%s/v/%s", r.Name, r.Versions[pattern])
+	default:
+		return "#"
 	}
-
-	return fmt.Sprintf("%s/%s/releases/tag/%s", githubURL, r.Name, r.Versions[pattern])
 }
 
 // CompareURL format the URL of given repository compared against given version
 func (r Repository) CompareURL(version string, pattern string) string {
-	if r.Kind == Helm {
+	switch r.Kind {
+	case Github:
+		return fmt.Sprintf("%s/%s/compare/%s...%s", githubURL, r.Name, r.Versions[pattern], version)
+	default:
 		return r.URL(pattern)
 	}
-
-	return fmt.Sprintf("%s/%s/compare/%s...%s", githubURL, r.Name, r.Versions[pattern], version)
 }
 
 // RepositoryByID sort repository by ID
