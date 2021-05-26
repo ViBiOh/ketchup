@@ -8,8 +8,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ViBiOh/ketchup/pkg/helm/helmtest"
 	"github.com/ViBiOh/ketchup/pkg/model"
+	"github.com/ViBiOh/ketchup/pkg/provider/helm/helmtest"
 	"github.com/ViBiOh/ketchup/pkg/semver"
 	"github.com/ViBiOh/ketchup/pkg/service/repository/repositorytest"
 )

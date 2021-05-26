@@ -1,7 +1,7 @@
 package helmtest
 
 import (
-	"github.com/ViBiOh/ketchup/pkg/helm"
+	"github.com/ViBiOh/ketchup/pkg/provider/helm"
 	"github.com/ViBiOh/ketchup/pkg/semver"
 )
 

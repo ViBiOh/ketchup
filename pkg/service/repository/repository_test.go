@@ -9,9 +9,9 @@ import (
 	"testing"
 
 	httpModel "github.com/ViBiOh/httputils/v4/pkg/model"
-	"github.com/ViBiOh/ketchup/pkg/github/githubtest"
-	"github.com/ViBiOh/ketchup/pkg/helm/helmtest"
 	"github.com/ViBiOh/ketchup/pkg/model"
+	"github.com/ViBiOh/ketchup/pkg/provider/github/githubtest"
+	"github.com/ViBiOh/ketchup/pkg/provider/helm/helmtest"
 	"github.com/ViBiOh/ketchup/pkg/semver"
 	"github.com/ViBiOh/ketchup/pkg/store/repository/repositorytest"
 )

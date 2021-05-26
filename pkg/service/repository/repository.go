@@ -8,11 +8,11 @@ import (
 	"strings"
 
 	httpModel "github.com/ViBiOh/httputils/v4/pkg/model"
-	"github.com/ViBiOh/ketchup/pkg/docker"
-	"github.com/ViBiOh/ketchup/pkg/github"
-	"github.com/ViBiOh/ketchup/pkg/helm"
 	"github.com/ViBiOh/ketchup/pkg/model"
-	"github.com/ViBiOh/ketchup/pkg/npm"
+	"github.com/ViBiOh/ketchup/pkg/provider/docker"
+	"github.com/ViBiOh/ketchup/pkg/provider/github"
+	"github.com/ViBiOh/ketchup/pkg/provider/helm"
+	"github.com/ViBiOh/ketchup/pkg/provider/npm"
 	"github.com/ViBiOh/ketchup/pkg/semver"
 	"github.com/ViBiOh/ketchup/pkg/store/repository"
 )

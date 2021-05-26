@@ -1,7 +1,7 @@
 package githubtest
 
 import (
-	"github.com/ViBiOh/ketchup/pkg/github"
+	"github.com/ViBiOh/ketchup/pkg/provider/github"
 	"github.com/ViBiOh/ketchup/pkg/semver"
 	"github.com/prometheus/client_golang/prometheus"
 )
