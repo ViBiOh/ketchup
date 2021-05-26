@@ -51,7 +51,7 @@ func TestList(t *testing.T) {
 			New(repositorytest.New().SetList([]model.Repository{
 				model.NewGithubRepository(1, ketchupRepository).AddVersion(model.DefaultPattern, "1.0.0"),
 				model.NewGithubRepository(2, viwsRepository).AddVersion(model.DefaultPattern, "1.2.3"),
-			}, 2, nil), nil, nil, nil),
+			}, 2, nil), nil, nil, nil, nil),
 			args{},
 			[]model.Repository{
 				model.NewGithubRepository(1, ketchupRepository).AddVersion(model.DefaultPattern, "1.0.0"),
@@ -62,7 +62,7 @@ func TestList(t *testing.T) {
 		},
 		{
 			"error",
-			New(repositorytest.New().SetList(nil, 0, errors.New("failed")), nil, nil, nil),
+			New(repositorytest.New().SetList(nil, 0, errors.New("failed")), nil, nil, nil, nil),
 			args{},
 			nil,
 			0,
@@ -109,7 +109,7 @@ func TestSuggest(t *testing.T) {
 			"simple",
 			New(repositorytest.New().SetSuggest([]model.Repository{
 				model.NewGithubRepository(1, ketchupRepository).AddVersion(model.DefaultPattern, "1.2.3"),
-			}, nil), nil, nil, nil),
+			}, nil), nil, nil, nil, nil),
 			args{
 				ctx: context.Background(),
 			},
@@ -120,7 +120,7 @@ func TestSuggest(t *testing.T) {
 		},
 		{
 			"error",
-			New(repositorytest.New().SetSuggest(nil, errors.New("failed")), nil, nil, nil),
+			New(repositorytest.New().SetSuggest(nil, errors.New("failed")), nil, nil, nil, nil),
 			args{
 				ctx: context.Background(),
 			},
@@ -166,7 +166,7 @@ func TestGetOrCreate(t *testing.T) {
 	}{
 		{
 			"get error",
-			New(repositorytest.New().SetGetByName(model.NoneRepository, errors.New("failed")), githubtest.New(), nil, nil),
+			New(repositorytest.New().SetGetByName(model.NoneRepository, errors.New("failed")), githubtest.New(), nil, nil, nil),
 			args{
 				ctx:            context.Background(),
 				name:           "error",
@@ -178,7 +178,7 @@ func TestGetOrCreate(t *testing.T) {
 		},
 		{
 			"exists with pattern",
-			New(repositorytest.New().SetGetByName(model.NewGithubRepository(1, ketchupRepository).AddVersion(model.DefaultPattern, "1.0.0"), nil), githubtest.New(), nil, nil),
+			New(repositorytest.New().SetGetByName(model.NewGithubRepository(1, ketchupRepository).AddVersion(model.DefaultPattern, "1.0.0"), nil), githubtest.New(), nil, nil, nil),
 			args{
 				ctx:            context.Background(),
 				name:           "exist",
@@ -190,7 +190,7 @@ func TestGetOrCreate(t *testing.T) {
 		},
 		{
 			"exists no pattern error",
-			New(repositorytest.New().SetGetByName(model.NewGithubRepository(1, ketchupRepository), nil), githubtest.New().SetLatestVersions(nil, errors.New("failed")), nil, nil),
+			New(repositorytest.New().SetGetByName(model.NewGithubRepository(1, ketchupRepository), nil), githubtest.New().SetLatestVersions(nil, errors.New("failed")), nil, nil, nil),
 			args{
 				ctx:            context.Background(),
 				name:           "exist",
@@ -204,7 +204,7 @@ func TestGetOrCreate(t *testing.T) {
 			"exists pattern not found",
 			New(repositorytest.New().SetGetByName(model.NewGithubRepository(1, ketchupRepository), nil), githubtest.New().SetLatestVersions(map[string]semver.Version{
 				"latest": safeParse("1.0.0"),
-			}, nil), nil, nil),
+			}, nil), nil, nil, nil),
 			args{
 				ctx:            context.Background(),
 				name:           "exist",
@@ -218,7 +218,7 @@ func TestGetOrCreate(t *testing.T) {
 			"exists but no pattern",
 			New(repositorytest.New().SetGetByName(model.NewGithubRepository(1, ketchupRepository), nil), githubtest.New().SetLatestVersions(map[string]semver.Version{
 				model.DefaultPattern: safeParse("1.0.0"),
-			}, nil), nil, nil),
+			}, nil), nil, nil, nil),
 			args{
 				ctx:            context.Background(),
 				name:           "exist",
@@ -232,7 +232,7 @@ func TestGetOrCreate(t *testing.T) {
 			"update error",
 			New(repositorytest.New().SetGetByName(model.NewHelmRepository(1, chartRepository, "app"), nil).SetUpdateVersions(errors.New("failed")), githubtest.New(), helmtest.New().SetLatestVersions(map[string]semver.Version{
 				model.DefaultPattern: safeParse("1.0.0"),
-			}, nil), nil),
+			}, nil), nil, nil),
 			args{
 				ctx:            context.Background(),
 				name:           "exist",
@@ -246,7 +246,7 @@ func TestGetOrCreate(t *testing.T) {
 			"create",
 			New(repositorytest.New().SetCreate(1, nil), githubtest.New().SetLatestVersions(map[string]semver.Version{
 				model.DefaultPattern: safeParse("1.0.0"),
-			}, nil), nil, nil),
+			}, nil), nil, nil, nil),
 			args{
 				ctx:            context.Background(),
 				name:           "not found",
@@ -381,7 +381,7 @@ func TestUpdate(t *testing.T) {
 	}{
 		{
 			"start atomic error",
-			New(repositorytest.New().SetDoAtomic(errAtomicStart), nil, nil, nil),
+			New(repositorytest.New().SetDoAtomic(errAtomicStart), nil, nil, nil, nil),
 			args{
 				ctx:  context.TODO(),
 				item: model.NoneRepository,
@@ -390,7 +390,7 @@ func TestUpdate(t *testing.T) {
 		},
 		{
 			"fetch error",
-			New(repositorytest.New().SetGet(model.NoneRepository, errors.New("failed")), nil, nil, nil),
+			New(repositorytest.New().SetGet(model.NoneRepository, errors.New("failed")), nil, nil, nil, nil),
 			args{
 				ctx:  context.Background(),
 				item: model.NewGithubRepository(0, ""),
@@ -399,7 +399,7 @@ func TestUpdate(t *testing.T) {
 		},
 		{
 			"invalid check",
-			New(repositorytest.New().SetGet(model.NewGithubRepository(1, ketchupRepository), nil), nil, nil, nil),
+			New(repositorytest.New().SetGet(model.NewGithubRepository(1, ketchupRepository), nil), nil, nil, nil, nil),
 			args{
 				ctx:  context.Background(),
 				item: model.NewGithubRepository(1, ""),
@@ -408,7 +408,7 @@ func TestUpdate(t *testing.T) {
 		},
 		{
 			"update error",
-			New(repositorytest.New().SetGet(model.NewGithubRepository(1, ketchupRepository), nil).SetUpdateVersions(errors.New("failed")), nil, nil, nil),
+			New(repositorytest.New().SetGet(model.NewGithubRepository(1, ketchupRepository), nil).SetUpdateVersions(errors.New("failed")), nil, nil, nil, nil),
 			args{
 				ctx:  context.Background(),
 				item: model.NewGithubRepository(1, "").AddVersion(model.DefaultPattern, "1.2.3"),
@@ -417,7 +417,7 @@ func TestUpdate(t *testing.T) {
 		},
 		{
 			"success",
-			New(repositorytest.New().SetGet(model.NewGithubRepository(1, ketchupRepository), nil), nil, nil, nil),
+			New(repositorytest.New().SetGet(model.NewGithubRepository(1, ketchupRepository), nil), nil, nil, nil, nil),
 			args{
 				ctx:  context.Background(),
 				item: model.NewGithubRepository(3, "").AddVersion(model.DefaultPattern, "1.2.3"),
@@ -456,7 +456,7 @@ func TestClean(t *testing.T) {
 	}{
 		{
 			"error",
-			New(repositorytest.New().SetDeleteUnused(errors.New("failed")), nil, nil, nil),
+			New(repositorytest.New().SetDeleteUnused(errors.New("failed")), nil, nil, nil, nil),
 			args{
 				ctx: context.Background(),
 			},
@@ -464,7 +464,7 @@ func TestClean(t *testing.T) {
 		},
 		{
 			"error versions",
-			New(repositorytest.New().SetDeleteUnusedVersions(errors.New("failed")), nil, nil, nil),
+			New(repositorytest.New().SetDeleteUnusedVersions(errors.New("failed")), nil, nil, nil, nil),
 			args{
 				ctx: context.Background(),
 			},
@@ -472,7 +472,7 @@ func TestClean(t *testing.T) {
 		},
 		{
 			"success",
-			New(repositorytest.New(), nil, nil, nil),
+			New(repositorytest.New(), nil, nil, nil, nil),
 			args{
 				ctx: context.Background(),
 			},

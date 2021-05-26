@@ -13,17 +13,26 @@
             </label>
             <input id="create-kind-github" type="radio" name="kind" value="github" checked>
           </span>
+
           <span class="flex-grow center">
             <label for="create-kind-helm" class="block">
               <img class="icon icon-large clickable" src="{{ url "/svg/helm?fill=silver" }}" alt="Helm icon">
             </label>
             <input id="create-kind-helm" type="radio" name="kind" value="helm">
           </span>
+
           <span class="flex-grow center">
             <label for="create-kind-docker" class="block">
               <img class="icon icon-large clickable" src="{{ url "/svg/docker?fill=silver" }}" alt="Docker icon">
             </label>
             <input id="create-kind-docker" type="radio" name="kind" value="docker">
+          </span>
+
+          <span class="flex-grow center">
+            <label for="create-kind-npm" class="block">
+              <img class="icon icon-large clickable" src="{{ url "/svg/npm?fill=silver" }}" alt="npm icon">
+            </label>
+            <input id="create-kind-npm" type="radio" name="kind" value="npm">
           </span>
         </p>
 
@@ -86,6 +95,13 @@
     document.getElementById('create-kind-docker').addEventListener('change', (e) => {
       if (e.target.value === 'docker') {
         repositoryInput.placeholder = 'vibioh/ketchup';
+        nameInput.classList.add("hidden");
+      }
+    });
+
+    document.getElementById('create-kind-npm').addEventListener('change', (e) => {
+      if (e.target.value === 'npm') {
+        repositoryInput.placeholder = 'funtch';
         nameInput.classList.add("hidden");
       }
     });

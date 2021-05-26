@@ -61,6 +61,8 @@ func (a app) handleCreate(w http.ResponseWriter, r *http.Request) {
 		repository = model.NewHelmRepository(0, strings.TrimSuffix(name, "/"), r.FormValue("part"))
 	case model.Docker:
 		repository = model.NewDockerRepository(0, name)
+	case model.NPM:
+		repository = model.NewNPMRepository(0, name)
 	default:
 		a.rendererApp.Error(w, httpModel.WrapInternal(fmt.Errorf("unhandled repository kind `%s`", repositoryKind)))
 		return

@@ -12,6 +12,7 @@ import (
 	"github.com/ViBiOh/ketchup/pkg/github"
 	"github.com/ViBiOh/ketchup/pkg/helm"
 	"github.com/ViBiOh/ketchup/pkg/model"
+	"github.com/ViBiOh/ketchup/pkg/npm"
 	"github.com/ViBiOh/ketchup/pkg/semver"
 	"github.com/ViBiOh/ketchup/pkg/store/repository"
 )
@@ -36,15 +37,17 @@ type app struct {
 	githubApp       github.App
 	helmApp         helm.App
 	dockerApp       docker.App
+	npmApp          npm.App
 }
 
 // New creates new App from Config
-func New(repositoryStore repository.App, githubApp github.App, helmApp helm.App, dockerApp docker.App) App {
+func New(repositoryStore repository.App, githubApp github.App, helmApp helm.App, dockerApp docker.App, npmApp npm.App) App {
 	return app{
 		repositoryStore: repositoryStore,
 		githubApp:       githubApp,
 		helmApp:         helmApp,
 		dockerApp:       dockerApp,
+		npmApp:          npmApp,
 	}
 }
 
@@ -228,6 +231,8 @@ func (a app) LatestVersions(repo model.Repository) (map[string]semver.Version, e
 		return a.helmApp.LatestVersions(repo.Name, repo.Part, patterns)
 	case model.Docker:
 		return a.dockerApp.LatestVersions(repo.Name, patterns)
+	case model.NPM:
+		return a.npmApp.LatestVersions(repo.Name, patterns)
 	default:
 		return nil, fmt.Errorf("unknown repository kind %d", repo.Kind)
 	}

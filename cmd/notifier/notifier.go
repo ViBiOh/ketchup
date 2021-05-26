@@ -11,6 +11,7 @@ import (
 	"github.com/ViBiOh/ketchup/pkg/github"
 	"github.com/ViBiOh/ketchup/pkg/helm"
 	"github.com/ViBiOh/ketchup/pkg/notifier"
+	"github.com/ViBiOh/ketchup/pkg/npm"
 	ketchupService "github.com/ViBiOh/ketchup/pkg/service/ketchup"
 	repositoryService "github.com/ViBiOh/ketchup/pkg/service/repository"
 	ketchupStore "github.com/ViBiOh/ketchup/pkg/store/ketchup"
@@ -47,7 +48,8 @@ func main() {
 	defer mailerApp.Close()
 
 	helmApp := helm.New()
-	repositoryServiceApp := repositoryService.New(repositoryStore.New(ketchupDb), github.New(githubConfig, nil), helmApp, docker.New(dockerConfig))
+	npmApp := npm.New()
+	repositoryServiceApp := repositoryService.New(repositoryStore.New(ketchupDb), github.New(githubConfig, nil), helmApp, docker.New(dockerConfig), npmApp)
 	ketchupServiceApp := ketchupService.New(ketchupStore.New(ketchupDb), repositoryServiceApp)
 
 	notifierApp := notifier.New(notifierConfig, repositoryServiceApp, ketchupServiceApp, mailerApp, helmApp)

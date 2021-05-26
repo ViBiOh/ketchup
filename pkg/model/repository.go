@@ -22,11 +22,13 @@ const (
 	Helm
 	// Docker repository kind
 	Docker
+	// NPM repository kind
+	NPM
 )
 
 var (
 	// RepositoryKindValues string values
-	RepositoryKindValues = []string{"github", "helm", "docker"}
+	RepositoryKindValues = []string{"github", "helm", "docker", "npm"}
 
 	// NoneRepository is an undefined repository
 	NoneRepository = Repository{}
@@ -80,6 +82,11 @@ func NewHelmRepository(id uint64, name, part string) Repository {
 // NewDockerRepository create new Repository with initialized values
 func NewDockerRepository(id uint64, name string) Repository {
 	return NewRepository(id, Docker, name, "")
+}
+
+// NewNPMRepository create new Repository with initialized values
+func NewNPMRepository(id uint64, name string) Repository {
+	return NewRepository(id, NPM, name, "")
 }
 
 // AddVersion adds given pattern to versions map
