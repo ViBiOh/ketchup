@@ -110,6 +110,7 @@ type Release struct {
 	Repository Repository     `json:"repository"`
 	Pattern    string         `json:"pattern"`
 	Version    semver.Version `json:"version"`
+	URL        string         `json:"url"`
 }
 
 // NewRelease creates a new version from its objects
@@ -118,6 +119,7 @@ func NewRelease(repository Repository, pattern string, version semver.Version) R
 		Repository: repository,
 		Pattern:    pattern,
 		Version:    version,
+		URL:        repository.URL(pattern),
 	}
 }
 
