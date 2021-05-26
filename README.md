@@ -86,12 +86,8 @@ Usage of ketchup:
         [db] SSL Mode {KETCHUP_DB_SSLMODE} (default "disable")
   -dbUser string
         [db] User {KETCHUP_DB_USER}
-  -dockerOAuth URL string
-        [docker] Registry OAuth URL {KETCHUP_DOCKER_OAUTH _URL} (default "https://auth.docker.io/token")
   -dockerPassword string
         [docker] Registry Password {KETCHUP_DOCKER_PASSWORD}
-  -dockerRegistry string
-        [docker] Registry API URL {KETCHUP_DOCKER_REGISTRY} (default "https://index.docker.io/v2/")
   -dockerUsername string
         [docker] Registry Username {KETCHUP_DOCKER_USERNAME}
   -frameOptions string
