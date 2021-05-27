@@ -7,6 +7,7 @@ import (
 
 	"github.com/ViBiOh/httputils/v4/pkg/redis"
 	"github.com/ViBiOh/httputils/v4/pkg/renderer"
+	"github.com/ViBiOh/ketchup/pkg/model"
 	"github.com/ViBiOh/ketchup/pkg/service/ketchup"
 	"github.com/ViBiOh/ketchup/pkg/service/repository"
 	"github.com/ViBiOh/ketchup/pkg/service/user"
@@ -19,7 +20,18 @@ const (
 
 var (
 	// FuncMap for template rendering
-	FuncMap = template.FuncMap{}
+	FuncMap = template.FuncMap{
+		"frequencyImage": func(frequency model.KetchupFrequency) string {
+			switch frequency {
+			case model.None:
+				return "bell-slash"
+			case model.Weekly:
+				return "calendar"
+			default:
+				return "clock"
+			}
+		},
+	}
 )
 
 // App of package
