@@ -66,7 +66,7 @@ CREATE TYPE ketchup.ketchup_frequency AS ENUM ('none', 'daily', 'weekly');
 -- ketchup
 CREATE TABLE ketchup.ketchup (
   user_id BIGINT NOT NULL REFERENCES ketchup.user(id) ON DELETE CASCADE,
-  repository_id BIGINT NOT NULL REFERENCES ketchup.repository(id),
+  repository_id BIGINT NOT NULL REFERENCES ketchup.repository(id) ON DELETE CASCADE,
   pattern TEXT NOT NULL DEFAULT 'stable',
   version TEXT NOT NULL,
   frequency ketchup_frequency NOT NULL DEFAULT 'daily',
