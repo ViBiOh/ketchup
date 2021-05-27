@@ -55,7 +55,7 @@ func (p Pattern) Check(version Version) bool {
 				return false
 			}
 		case lowerThan:
-			if !constraint.version.IsGreater(version) {
+			if version.IsGreater(constraint.version) || version.Equals(constraint.version) {
 				return false
 			}
 		}

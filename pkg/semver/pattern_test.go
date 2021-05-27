@@ -86,6 +86,14 @@ func TestCheck(t *testing.T) {
 			true,
 		},
 		{
+			"simple caret match",
+			safeParsePattern("^11"),
+			args{
+				version: safeParse("12"),
+			},
+			false,
+		},
+		{
 			"caret",
 			safeParsePattern("^1.0"),
 			args{
