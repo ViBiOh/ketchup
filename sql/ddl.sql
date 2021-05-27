@@ -7,9 +7,12 @@ DROP TABLE IF EXISTS ketchup.user;
 DROP TYPE IF EXISTS ketchup.repository_kind;
 DROP TYPE IF EXISTS ketchup.ketchup_frequency;
 
-DROP INDEX IF EXISTS ketchup_user;
-DROP INDEX IF EXISTS repository_id;
+DROP INDEX IF EXISTS ketchup_id;
+DROP INDEX IF EXISTS repository_version_id;
 DROP INDEX IF EXISTS repository_repository;
+DROP INDEX IF EXISTS repository_id;
+DROP INDEX IF EXISTS user_email;
+DROP INDEX IF EXISTS user_login_id;
 DROP INDEX IF EXISTS user_id;
 
 DROP SEQUENCE IF EXISTS ketchup.repository_seq;
@@ -73,7 +76,7 @@ CREATE TABLE ketchup.ketchup (
   creation_date TIMESTAMP WITH TIME ZONE DEFAULT now()
 );
 
-CREATE UNIQUE INDEX ketchup_id ON ketchup.ketchup(user_id, repository_id);
+CREATE UNIQUE INDEX ketchup_id ON ketchup.ketchup(user_id, repository_id, pattern);
 
 -- data
 DO $$

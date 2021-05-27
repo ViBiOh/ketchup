@@ -261,9 +261,10 @@ func TestListByRepositoriesID(t *testing.T) {
 	}
 }
 
-func TestGetByRepositoryID(t *testing.T) {
+func TestGetByRepository(t *testing.T) {
 	type args struct {
 		id        uint64
+		pattern   string
 		forUpdate bool
 	}
 
@@ -277,9 +278,10 @@ func TestGetByRepositoryID(t *testing.T) {
 		{
 			"simple",
 			args{
-				id: 1,
+				id:      1,
+				pattern: "stable",
 			},
-			"SELECT k.pattern, k.version, k.frequency, k.repository_id, k.user_id, r.name, r.part, r.kind FROM ketchup.ketchup k, ketchup.repository r WHERE k.repository_id = .+ AND k.user_id = .+ AND k.repository_id = r.id",
+			"SELECT k.pattern, k.version, k.frequency, k.repository_id, k.user_id, r.name, r.part, r.kind FROM ketchup.ketchup k, ketchup.repository r WHERE k.repository_id = .+ AND k.user_id = .+ AND k.pattern = .+ AND k.repository_id = r.id",
 			model.Ketchup{
 				Pattern:    model.DefaultPattern,
 				Version:    "0.9.0",
@@ -292,9 +294,10 @@ func TestGetByRepositoryID(t *testing.T) {
 		{
 			"no rows",
 			args{
-				id: 1,
+				id:      1,
+				pattern: "stable",
 			},
-			"SELECT k.pattern, k.version, k.frequency, k.repository_id, k.user_id, r.name, r.part, r.kind FROM ketchup.ketchup k, ketchup.repository r WHERE k.repository_id = .+ AND k.user_id = .+ AND k.repository_id = r.id",
+			"SELECT k.pattern, k.version, k.frequency, k.repository_id, k.user_id, r.name, r.part, r.kind FROM ketchup.ketchup k, ketchup.repository r WHERE k.repository_id = .+ AND k.user_id = .+ AND k.pattern = .+ AND k.repository_id = r.id",
 			model.NoneKetchup,
 			nil,
 		},
@@ -302,9 +305,10 @@ func TestGetByRepositoryID(t *testing.T) {
 			"for update",
 			args{
 				id:        1,
+				pattern:   "stable",
 				forUpdate: true,
 			},
-			"SELECT k.pattern, k.version, k.frequency, k.repository_id, k.user_id, r.name, r.part, r.kind FROM ketchup.ketchup k, ketchup.repository r WHERE k.repository_id = .+ AND k.user_id = .+ AND k.repository_id = r.id FOR UPDATE",
+			"SELECT k.pattern, k.version, k.frequency, k.repository_id, k.user_id, r.name, r.part, r.kind FROM ketchup.ketchup k, ketchup.repository r WHERE k.repository_id = .+ AND k.user_id = .+ AND k.pattern = .+ AND k.repository_id = r.id FOR UPDATE",
 			model.Ketchup{
 				Pattern:    model.DefaultPattern,
 				Version:    "0.9.0",
@@ -319,8 +323,8 @@ func TestGetByRepositoryID(t *testing.T) {
 	for _, tc := range cases {
 		t.Run(tc.intention, func(t *testing.T) {
 			testWithMock(t, func(mockDb *sql.DB, mock sqlmock.Sqlmock) {
-				rows := sqlmock.NewRows([]string{"patter", "version", "frequency", "repository_id", "user_id", "name", "part", "kind"})
-				mock.ExpectQuery(tc.expectSQL).WithArgs(1, 3).WillReturnRows(rows)
+				rows := sqlmock.NewRows([]string{"pattern", "version", "frequency", "repository_id", "user_id", "name", "part", "kind"})
+				mock.ExpectQuery(tc.expectSQL).WithArgs(1, 3, tc.args.pattern).WillReturnRows(rows)
 
 				switch tc.intention {
 				case "for update":
@@ -330,7 +334,7 @@ func TestGetByRepositoryID(t *testing.T) {
 					rows.AddRow(model.DefaultPattern, "0.9.0", "Daily", 1, 3, repositoryName, "", "github")
 				}
 
-				got, gotErr := New(mockDb).GetByRepositoryID(testCtx, tc.args.id, tc.args.forUpdate)
+				got, gotErr := New(mockDb).GetByRepository(testCtx, tc.args.id, tc.args.pattern, tc.args.forUpdate)
 
 				failed := false
 
@@ -341,7 +345,7 @@ func TestGetByRepositoryID(t *testing.T) {
 				}
 
 				if failed {
-					t.Errorf("GetByRepositoryID() = (%+v, `%s`), want (%+v, `%s`)", got, gotErr, tc.want, tc.wantErr)
+					t.Errorf("GetByRepository() = (%+v, `%s`), want (%+v, `%s`)", got, gotErr, tc.want, tc.wantErr)
 				}
 			})
 		})
@@ -401,7 +405,8 @@ func TestCreate(t *testing.T) {
 
 func TestUpdate(t *testing.T) {
 	type args struct {
-		o model.Ketchup
+		o          model.Ketchup
+		oldPattern string
 	}
 
 	var cases = []struct {
@@ -418,6 +423,7 @@ func TestUpdate(t *testing.T) {
 					Frequency:  model.Daily,
 					Repository: model.NewGithubRepository(1, ""),
 				},
+				oldPattern: "stable",
 			},
 			nil,
 		},
@@ -428,9 +434,9 @@ func TestUpdate(t *testing.T) {
 			testWithMock(t, func(mockDb *sql.DB, mock sqlmock.Sqlmock) {
 				ctx := testWithTransaction(t, mockDb, mock)
 
-				mock.ExpectExec("UPDATE ketchup.ketchup SET pattern = .+, version = .+").WithArgs(1, 3, model.DefaultPattern, "0.9.0", "daily").WillReturnResult(sqlmock.NewResult(0, 1))
+				mock.ExpectExec("UPDATE ketchup.ketchup SET pattern = .+, version = .+").WithArgs(1, 3, tc.args.oldPattern, model.DefaultPattern, "0.9.0", "daily").WillReturnResult(sqlmock.NewResult(0, 1))
 
-				gotErr := New(mockDb).Update(ctx, tc.args.o)
+				gotErr := New(mockDb).Update(ctx, tc.args.o, tc.args.oldPattern)
 
 				failed := false
 
@@ -460,6 +466,7 @@ func TestDelete(t *testing.T) {
 			"simple",
 			args{
 				o: model.Ketchup{
+					Pattern:    "stable",
 					Repository: model.NewGithubRepository(1, ""),
 				},
 			},
@@ -472,7 +479,7 @@ func TestDelete(t *testing.T) {
 			testWithMock(t, func(mockDb *sql.DB, mock sqlmock.Sqlmock) {
 				ctx := testWithTransaction(t, mockDb, mock)
 
-				mock.ExpectExec("DELETE FROM ketchup.ketchup").WithArgs(1, 3).WillReturnResult(sqlmock.NewResult(0, 1))
+				mock.ExpectExec("DELETE FROM ketchup.ketchup").WithArgs(1, 3, "stable").WillReturnResult(sqlmock.NewResult(0, 1))
 
 				gotErr := New(mockDb).Delete(ctx, tc.args.o)
 

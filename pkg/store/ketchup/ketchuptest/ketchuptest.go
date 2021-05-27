@@ -71,8 +71,8 @@ func (a *App) SetListOutdatedByFrequency(ketchups []model.Ketchup, err error) *A
 	return a
 }
 
-// SetGetByRepositoryID mocks
-func (a *App) SetGetByRepositoryID(ketchup model.Ketchup, err error) *App {
+// SetGetByRepository mocks
+func (a *App) SetGetByRepository(ketchup model.Ketchup, err error) *App {
 	a.getByRepositoryKetchup = ketchup
 	a.getByRepositoryErr = err
 
@@ -125,22 +125,22 @@ func (a *App) ListOutdatedByFrequency(_ context.Context, _ model.KetchupFrequenc
 	return a.listByRepositoriesIDKetchups, a.listByRepositoriesIDErr
 }
 
-// GetByRepositoryID mocks
-func (a *App) GetByRepositoryID(_ context.Context, _ uint64, _ bool) (model.Ketchup, error) {
+// GetByRepository mocks
+func (a *App) GetByRepository(_ context.Context, _ uint64, _ string, _ bool) (model.Ketchup, error) {
 	return a.getByRepositoryKetchup, a.getByRepositoryErr
 }
 
 // Create mocks
-func (a *App) Create(_ context.Context, o model.Ketchup) (uint64, error) {
+func (a *App) Create(_ context.Context, _ model.Ketchup) (uint64, error) {
 	return a.createID, a.createErr
 }
 
 // Update mocks
-func (a *App) Update(_ context.Context, o model.Ketchup) error {
+func (a *App) Update(_ context.Context, _ model.Ketchup, _ string) error {
 	return a.updateErr
 }
 
 // Delete mocks
-func (a *App) Delete(_ context.Context, o model.Ketchup) error {
+func (a *App) Delete(_ context.Context, _ model.Ketchup) error {
 	return a.deleteErr
 }

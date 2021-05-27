@@ -102,9 +102,13 @@ func (a app) Update(ctx context.Context, item model.Ketchup) (model.Ketchup, err
 	var output model.Ketchup
 
 	err := a.ketchupStore.DoAtomic(ctx, func(ctx context.Context) error {
-		old, err := a.ketchupStore.GetByRepositoryID(ctx, item.Repository.ID, true)
+		old, err := a.ketchupStore.GetByRepository(ctx, item.Repository.ID, item.Pattern, true)
 		if err != nil {
 			return httpModel.WrapInternal(fmt.Errorf("unable to fetch: %w", err))
+		}
+
+		if old.Repository.ID == 0 {
+			return httpModel.WrapNotFound(errors.New("unable to found repository"))
 		}
 
 		current := model.Ketchup{
@@ -128,7 +132,7 @@ func (a app) Update(ctx context.Context, item model.Ketchup) (model.Ketchup, err
 			current.Repository = repo
 		}
 
-		if err := a.ketchupStore.Update(ctx, current); err != nil {
+		if err := a.ketchupStore.Update(ctx, current, old.Pattern); err != nil {
 			return httpModel.WrapInternal(fmt.Errorf("unable to update: %w", err))
 		}
 
@@ -141,9 +145,13 @@ func (a app) Update(ctx context.Context, item model.Ketchup) (model.Ketchup, err
 
 func (a app) Delete(ctx context.Context, item model.Ketchup) (err error) {
 	return a.ketchupStore.DoAtomic(ctx, func(ctx context.Context) error {
-		old, err := a.ketchupStore.GetByRepositoryID(ctx, item.Repository.ID, true)
+		old, err := a.ketchupStore.GetByRepository(ctx, item.Repository.ID, item.Pattern, true)
 		if err != nil {
 			return httpModel.WrapInternal(fmt.Errorf("unable to fetch current: %w", err))
+		}
+
+		if old.Repository.ID == 0 {
+			return httpModel.WrapNotFound(errors.New("unable to found repository"))
 		}
 
 		if err = a.check(ctx, old, model.NoneKetchup); err != nil {
@@ -179,12 +187,12 @@ func (a app) check(ctx context.Context, old, new model.Ketchup) error {
 		output = append(output, errors.New("version is required"))
 	}
 
-	if old.Repository.ID == 0 && old.User.ID == 0 {
-		o, err := a.ketchupStore.GetByRepositoryID(ctx, new.Repository.ID, false)
+	if old.Repository.ID == 0 && new.Repository.ID != 0 {
+		o, err := a.ketchupStore.GetByRepository(ctx, new.Repository.ID, new.Pattern, false)
 		if err != nil {
 			output = append(output, errors.New("unable to check if ketchup already exists"))
 		} else if o.Repository.ID != 0 {
-			output = append(output, fmt.Errorf("ketchup for %s already exists", new.Repository.Name))
+			output = append(output, fmt.Errorf("ketchup for `%s` with pattern `%s` already exists", new.Repository.Name, new.Pattern))
 		}
 	}
 

@@ -175,9 +175,10 @@
 
       <form method="POST" action="/app/ketchups/{{ .Repository.ID }}">
         <input type="hidden" name="method" value="DELETE">
+        <input type="hidden" name="pattern" value="{{ .Pattern }}">
 
         <p class="padding no-margin center">
-          Are you sure you want to delete <strong>{{ .Repository.Name }}{{ if eq .Repository.Kind.String "helm" }} | {{ .Repository.Part }}{{ end }}</strong>?
+          Are you sure you want to delete <strong>{{ .Repository.Name }}{{ if eq .Repository.Kind.String "helm" }} | {{ .Repository.Part }}{{ end }}</strong> for <strong>{{ .Pattern }}</strong>?
         </p>
 
         {{ template "form_buttons" "Delete" }}

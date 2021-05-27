@@ -19,9 +19,9 @@ type App interface {
 	List(ctx context.Context, page uint, lastKey string) ([]model.Ketchup, uint64, error)
 	ListByRepositoriesID(ctx context.Context, ids []uint64, frequency model.KetchupFrequency) ([]model.Ketchup, error)
 	ListOutdatedByFrequency(ctx context.Context, frequency model.KetchupFrequency) ([]model.Ketchup, error)
-	GetByRepositoryID(ctx context.Context, id uint64, forUpdate bool) (model.Ketchup, error)
+	GetByRepository(ctx context.Context, id uint64, pattern string, forUpdate bool) (model.Ketchup, error)
 	Create(ctx context.Context, o model.Ketchup) (uint64, error)
-	Update(ctx context.Context, o model.Ketchup) error
+	Update(ctx context.Context, o model.Ketchup, oldPattern string) error
 	Delete(ctx context.Context, o model.Ketchup) error
 }
 
@@ -242,10 +242,11 @@ FROM
 WHERE
   k.repository_id = $1
   AND k.user_id = $2
+  AND k.pattern = $3
   AND k.repository_id = r.id
 `
 
-func (a app) GetByRepositoryID(ctx context.Context, id uint64, forUpdate bool) (model.Ketchup, error) {
+func (a app) GetByRepository(ctx context.Context, id uint64, pattern string, forUpdate bool) (model.Ketchup, error) {
 	query := getQuery
 	if forUpdate {
 		query += " FOR UPDATE"
@@ -282,7 +283,7 @@ func (a app) GetByRepositoryID(ctx context.Context, id uint64, forUpdate bool) (
 		return err
 	}
 
-	return item, db.Get(ctx, a.db, scanner, query, id, user.ID)
+	return item, db.Get(ctx, a.db, scanner, query, id, user.ID, pattern)
 }
 
 const insertQuery = `
@@ -311,16 +312,17 @@ const updateQuery = `
 UPDATE
   ketchup.ketchup
 SET
-  pattern = $3,
-  version = $4,
-  frequency = $5
+  pattern = $4,
+  version = $5,
+  frequency = $6
 WHERE
   repository_id = $1
   AND user_id = $2
+  AND pattern = $3
 `
 
-func (a app) Update(ctx context.Context, o model.Ketchup) error {
-	return db.Exec(ctx, updateQuery, o.Repository.ID, model.ReadUser(ctx).ID, o.Pattern, o.Version, strings.ToLower(o.Frequency.String()))
+func (a app) Update(ctx context.Context, o model.Ketchup, oldPattern string) error {
+	return db.Exec(ctx, updateQuery, o.Repository.ID, model.ReadUser(ctx).ID, oldPattern, o.Pattern, o.Version, strings.ToLower(o.Frequency.String()))
 }
 
 const deleteQuery = `
@@ -329,8 +331,9 @@ DELETE FROM
 WHERE
   repository_id = $1
   AND user_id = $2
+  AND pattern = $3
 `
 
 func (a app) Delete(ctx context.Context, o model.Ketchup) error {
-	return db.Exec(ctx, deleteQuery, o.Repository.ID, model.ReadUser(ctx).ID)
+	return db.Exec(ctx, deleteQuery, o.Repository.ID, model.ReadUser(ctx).ID, o.Pattern)
 }

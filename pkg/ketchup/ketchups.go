@@ -103,7 +103,7 @@ func (a app) handleDelete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	item := model.NewKetchup("", "", model.Daily, model.NewGithubRepository(id, ""))
+	item := model.NewKetchup(r.FormValue("pattern"), "", model.Daily, model.NewGithubRepository(id, ""))
 
 	if err := a.ketchupService.Delete(r.Context(), item); err != nil {
 		a.rendererApp.Error(w, err)
