@@ -217,7 +217,7 @@ func TestGetNewHelmReleases(t *testing.T) {
 
 			failed := false
 
-			sort.Sort(model.ReleaseByRepositoryID(got))
+			sort.Sort(model.ReleaseByRepositoryIDAndPattern(got))
 
 			if tc.wantErr == nil && gotErr != nil {
 				failed = true

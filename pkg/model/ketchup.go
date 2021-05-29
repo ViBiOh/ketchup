@@ -62,12 +62,12 @@ func NewKetchup(pattern, version string, frequency KetchupFrequency, repo Reposi
 	}
 }
 
-// KetchupByRepositoryID sort ketchup by repository ID
-type KetchupByRepositoryID []Ketchup
+// KetchupByRepositoryIDAndPattern sort ketchup by repository ID
+type KetchupByRepositoryIDAndPattern []Ketchup
 
-func (a KetchupByRepositoryID) Len() int      { return len(a) }
-func (a KetchupByRepositoryID) Swap(i, j int) { a[i], a[j] = a[j], a[i] }
-func (a KetchupByRepositoryID) Less(i, j int) bool {
+func (a KetchupByRepositoryIDAndPattern) Len() int      { return len(a) }
+func (a KetchupByRepositoryIDAndPattern) Swap(i, j int) { a[i], a[j] = a[j], a[i] }
+func (a KetchupByRepositoryIDAndPattern) Less(i, j int) bool {
 	if a[i].Repository.ID == a[j].Repository.ID {
 		return a[i].Pattern < a[j].Pattern
 	}
@@ -123,12 +123,12 @@ func NewRelease(repository Repository, pattern string, version semver.Version) R
 	}
 }
 
-// ReleaseByRepositoryID sort release by repository ID
-type ReleaseByRepositoryID []Release
+// ReleaseByRepositoryIDAndPattern sort release by repository ID
+type ReleaseByRepositoryIDAndPattern []Release
 
-func (a ReleaseByRepositoryID) Len() int      { return len(a) }
-func (a ReleaseByRepositoryID) Swap(i, j int) { a[i], a[j] = a[j], a[i] }
-func (a ReleaseByRepositoryID) Less(i, j int) bool {
+func (a ReleaseByRepositoryIDAndPattern) Len() int      { return len(a) }
+func (a ReleaseByRepositoryIDAndPattern) Swap(i, j int) { a[i], a[j] = a[j], a[i] }
+func (a ReleaseByRepositoryIDAndPattern) Less(i, j int) bool {
 	if a[i].Repository.ID == a[j].Repository.ID {
 		return a[i].Pattern < a[j].Pattern
 	}

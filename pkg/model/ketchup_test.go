@@ -99,7 +99,7 @@ func TestKetchupByRepositoryID(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.intention, func(t *testing.T) {
-			sort.Sort(KetchupByRepositoryID(tc.args.array))
+			sort.Sort(KetchupByRepositoryIDAndPattern(tc.args.array))
 			if got := tc.args.array; !reflect.DeepEqual(got, tc.want) {
 				t.Errorf("KetchupByRepositoryID() = %+v, want %+v", got, tc.want)
 			}
@@ -217,7 +217,7 @@ func TestReleaseByRepositoryID(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.intention, func(t *testing.T) {
-			sort.Sort(ReleaseByRepositoryID(tc.args.array))
+			sort.Sort(ReleaseByRepositoryIDAndPattern(tc.args.array))
 			if got := tc.args.array; !reflect.DeepEqual(got, tc.want) {
 				t.Errorf("ReleaseByRepositoryID() = %+v, want %+v", got, tc.want)
 			}

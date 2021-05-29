@@ -81,7 +81,7 @@ func (a app) Notify(ctx context.Context) error {
 		return fmt.Errorf("unable to get new releases: %w", err)
 	}
 
-	sort.Sort(model.ReleaseByRepositoryID(newReleases))
+	sort.Sort(model.ReleaseByRepositoryIDAndPattern(newReleases))
 	if err := a.updateRepositories(userCtx, newReleases); err != nil {
 		return fmt.Errorf("unable to update repositories: %w", err)
 	}
@@ -147,10 +147,29 @@ func (a app) getKetchupToNotify(ctx context.Context, releases []model.Release) (
 		return nil, fmt.Errorf("unable to get ketchups for repositories: %w", err)
 	}
 
-	userToNotify := make(map[model.User][]model.Release)
+	userToNotify := syncReleasesByUser(releases, ketchups)
+	logger.Info("%d daily ketchups to notify", len(ketchups))
 
-	sort.Sort(model.ReleaseByRepositoryID(releases))
-	sort.Sort(model.KetchupByRepositoryID(ketchups))
+	if a.clock.Now().Weekday() == time.Monday {
+		weeklyKetchups, err := a.ketchupService.ListOutdatedByFrequency(ctx, model.Weekly)
+		if err != nil {
+			return nil, fmt.Errorf("unable to get weekly ketchups: %w", err)
+		}
+
+		logger.Info("%d weekly ketchups to notify", len(weeklyKetchups))
+		addWeeklyKetchups(weeklyKetchups, userToNotify)
+	}
+
+	logger.Info("%d users to notify", len(userToNotify))
+
+	return userToNotify, nil
+}
+
+func syncReleasesByUser(releases []model.Release, ketchups []model.Ketchup) map[model.User][]model.Release {
+	usersToNotify := make(map[model.User][]model.Release)
+
+	sort.Sort(model.ReleaseByRepositoryIDAndPattern(releases))
+	sort.Sort(model.KetchupByRepositoryIDAndPattern(ketchups))
 
 	index := 0
 	size := len(ketchups)
@@ -160,54 +179,44 @@ func (a app) getKetchupToNotify(ctx context.Context, releases []model.Release) (
 			current := ketchups[index]
 
 			if release.Repository.ID < current.Repository.ID || (release.Repository.ID == current.Repository.ID && release.Pattern < current.Pattern) {
-				break // release is out of sync, we need to advance
+				break // release is out of sync, we need to go foward release
 			}
 
 			index++
+
 			if release.Repository.ID != current.Repository.ID || release.Pattern != current.Pattern {
-				continue // ketchup is not sync with release
+				continue // ketchup is not sync with release, we need for go forward ketchup
 			}
 
 			if current.Version != release.Version.Name {
-				if userToNotify[current.User] != nil {
-					userToNotify[current.User] = append(userToNotify[current.User], release)
+				if usersToNotify[current.User] != nil {
+					usersToNotify[current.User] = append(usersToNotify[current.User], release)
 				} else {
-					userToNotify[current.User] = []model.Release{release}
+					usersToNotify[current.User] = []model.Release{release}
 				}
 			}
 		}
 	}
 
-	logger.Info("%d daily ketchups to notify", len(ketchups))
+	return usersToNotify
+}
 
-	if a.clock.Now().Weekday() == time.Monday {
-		weeklyKetchups, err := a.ketchupService.ListOutdatedByFrequency(ctx, model.Weekly)
+func addWeeklyKetchups(ketchups []model.Ketchup, usersToNotify map[model.User][]model.Release) {
+	for _, ketchup := range ketchups {
+		ketchupVersion, err := semver.Parse(ketchup.Version)
 		if err != nil {
-			return nil, fmt.Errorf("unable to get weekly ketchups: %w", err)
+			logger.WithField("version", ketchup.Version).Error("unable to parse version of ketchup: %s", err)
+			continue
 		}
 
-		for _, ketchup := range weeklyKetchups {
-			ketchupVersion, err := semver.Parse(ketchup.Version)
-			if err != nil {
-				logger.WithField("version", ketchup.Version).Error("unable to parse version of ketchup: %s", err)
-				continue
-			}
+		release := model.NewRelease(ketchup.Repository, ketchup.Pattern, ketchupVersion)
 
-			release := model.NewRelease(ketchup.Repository, ketchup.Pattern, ketchupVersion)
-
-			if userToNotify[ketchup.User] != nil {
-				userToNotify[ketchup.User] = append(userToNotify[ketchup.User], release)
-			} else {
-				userToNotify[ketchup.User] = []model.Release{release}
-			}
+		if usersToNotify[ketchup.User] != nil {
+			usersToNotify[ketchup.User] = append(usersToNotify[ketchup.User], release)
+		} else {
+			usersToNotify[ketchup.User] = []model.Release{release}
 		}
-
-		logger.Info("%d weekly ketchups to notify", len(weeklyKetchups))
 	}
-
-	logger.Info("%d ketchups for %d users to notify", len(ketchups), len(userToNotify))
-
-	return userToNotify, nil
 }
 
 func (a app) sendNotification(ctx context.Context, ketchupToNotify map[model.User][]model.Release) error {
