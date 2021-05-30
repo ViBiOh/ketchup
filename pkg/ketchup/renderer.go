@@ -43,7 +43,7 @@ func (a app) AppTemplateFunc(_ http.ResponseWriter, r *http.Request) (string, in
 		return "", http.StatusBadRequest, nil, err
 	}
 
-	ketchups, _, err := a.ketchupService.List(r.Context(), pagination.PageSize, pagination.LastKey)
+	ketchups, _, err := a.ketchupService.List(r.Context(), pagination.PageSize, pagination.Last)
 	if err != nil {
 		return "", http.StatusInternalServerError, nil, err
 	}

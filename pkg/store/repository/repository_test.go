@@ -40,7 +40,7 @@ func testWithMock(t *testing.T, action func(*sql.DB, sqlmock.Sqlmock)) {
 func TestList(t *testing.T) {
 	type args struct {
 		pageSize uint
-		lastKey  string
+		last     string
 	}
 
 	var cases = []struct {
@@ -121,7 +121,7 @@ func TestList(t *testing.T) {
 					rows.AddRow(1, "wrong", viwsRepository, "", 1)
 				}
 
-				got, gotCount, gotErr := New(mockDb).List(context.Background(), tc.args.pageSize, tc.args.lastKey)
+				got, gotCount, gotErr := New(mockDb).List(context.Background(), tc.args.pageSize, tc.args.last)
 				failed := false
 
 				if tc.wantErr == nil && gotErr != nil {

@@ -17,8 +17,8 @@ import (
 // App of package
 type App interface {
 	DoAtomic(ctx context.Context, action func(context.Context) error) error
-	List(ctx context.Context, pageSize uint, lastKey string) ([]model.Repository, uint64, error)
-	ListByKinds(ctx context.Context, pageSize uint, lastKey string, kinds ...model.RepositoryKind) ([]model.Repository, uint64, error)
+	List(ctx context.Context, pageSize uint, last string) ([]model.Repository, uint64, error)
+	ListByKinds(ctx context.Context, pageSize uint, last string, kinds ...model.RepositoryKind) ([]model.Repository, uint64, error)
 	Suggest(ctx context.Context, ignoreIds []uint64, count uint64) ([]model.Repository, error)
 	Get(ctx context.Context, id uint64, forUpdate bool) (model.Repository, error)
 	GetByName(ctx context.Context, repositoryKind model.RepositoryKind, name, part string) (model.Repository, error)
@@ -121,13 +121,13 @@ WHERE
   TRUE
 `
 
-func (a app) List(ctx context.Context, pageSize uint, lastKey string) ([]model.Repository, uint64, error) {
+func (a app) List(ctx context.Context, pageSize uint, last string) ([]model.Repository, uint64, error) {
 	var query strings.Builder
 	query.WriteString(listQuery)
 	var queryArgs []interface{}
 
-	if len(lastKey) != 0 {
-		lastID, err := strconv.ParseUint(lastKey, 10, 64)
+	if len(last) != 0 {
+		lastID, err := strconv.ParseUint(last, 10, 64)
 		if err != nil {
 			return nil, 0, fmt.Errorf("invalid last key: %s", err)
 		}
@@ -167,7 +167,7 @@ const listByKindRestartQuery = `
   )
 `
 
-func (a app) ListByKinds(ctx context.Context, pageSize uint, lastKey string, kinds ...model.RepositoryKind) ([]model.Repository, uint64, error) {
+func (a app) ListByKinds(ctx context.Context, pageSize uint, last string, kinds ...model.RepositoryKind) ([]model.Repository, uint64, error) {
 	var query strings.Builder
 	query.WriteString(listByKindsQuery)
 	var queryArgs []interface{}
@@ -179,8 +179,8 @@ func (a app) ListByKinds(ctx context.Context, pageSize uint, lastKey string, kin
 
 	queryArgs = append(queryArgs, pq.Array(kindsValue))
 
-	if len(lastKey) != 0 {
-		parts := strings.Split(lastKey, "|")
+	if len(last) != 0 {
+		parts := strings.Split(last, "|")
 		if len(parts) != 2 {
 			return nil, 0, errors.New("invalid last key format")
 		}
