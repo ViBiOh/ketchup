@@ -24,7 +24,7 @@ var (
 func TestList(t *testing.T) {
 	type args struct {
 		pageSize uint
-		lastKey  string
+		last     string
 	}
 
 	var cases = []struct {
@@ -61,7 +61,7 @@ func TestList(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.intention, func(t *testing.T) {
-			got, gotCount, gotErr := tc.instance.List(context.Background(), tc.args.pageSize, tc.args.lastKey)
+			got, gotCount, gotErr := tc.instance.List(context.Background(), tc.args.pageSize, tc.args.last)
 
 			failed := false
 

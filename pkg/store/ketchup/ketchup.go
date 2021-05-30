@@ -16,7 +16,7 @@ import (
 // App of package
 type App interface {
 	DoAtomic(ctx context.Context, action func(context.Context) error) error
-	List(ctx context.Context, page uint, lastKey string) ([]model.Ketchup, uint64, error)
+	List(ctx context.Context, page uint, last string) ([]model.Ketchup, uint64, error)
 	ListByRepositoriesID(ctx context.Context, ids []uint64, frequency model.KetchupFrequency) ([]model.Ketchup, error)
 	ListOutdatedByFrequency(ctx context.Context, frequency model.KetchupFrequency) ([]model.Ketchup, error)
 	GetByRepository(ctx context.Context, id uint64, pattern string, forUpdate bool) (model.Ketchup, error)
@@ -73,7 +73,7 @@ const listQueryRestart = `
   )
 `
 
-func (a app) List(ctx context.Context, pageSize uint, lastKey string) ([]model.Ketchup, uint64, error) {
+func (a app) List(ctx context.Context, pageSize uint, last string) ([]model.Ketchup, uint64, error) {
 	user := model.ReadUser(ctx)
 
 	var totalCount uint64
@@ -114,10 +114,10 @@ func (a app) List(ctx context.Context, pageSize uint, lastKey string) ([]model.K
 		user.ID,
 	}
 
-	if len(lastKey) != 0 {
-		parts := strings.Split(lastKey, "|")
+	if len(last) != 0 {
+		parts := strings.Split(last, "|")
 		if len(parts) != 2 {
-			return nil, 0, fmt.Errorf("invalid last key format: %s", lastKey)
+			return nil, 0, fmt.Errorf("invalid last key format: %s", last)
 		}
 
 		lastID, err := strconv.ParseUint(parts[0], 10, 64)
