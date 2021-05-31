@@ -186,6 +186,9 @@ SELECT
   rv.version,
   k.frequency,
   r.id,
+  r.name,
+  r.part,
+  r.kind
   k.user_id,
   u.email
 FROM
@@ -207,9 +210,9 @@ func (a app) ListOutdatedByFrequency(ctx context.Context, frequency model.Ketchu
 	scanner := func(rows *sql.Rows) error {
 		var item model.Ketchup
 		item.Repository = model.NewRepository(0, 0, "", "")
-		var rawKetchupFrequency string
+		var rawKetchupFrequency, rawRepositoryKind string
 
-		if err := rows.Scan(&item.Pattern, &item.Version, &rawKetchupFrequency, &item.Repository.ID, &item.User.ID, &item.User.Email); err != nil {
+		if err := rows.Scan(&item.Pattern, &item.Version, &rawKetchupFrequency, &item.Repository.ID, &item.Repository.Name, &item.Repository.Part, &rawRepositoryKind, &item.User.ID, &item.User.Email); err != nil {
 			return err
 		}
 
@@ -218,6 +221,12 @@ func (a app) ListOutdatedByFrequency(ctx context.Context, frequency model.Ketchu
 			return err
 		}
 		item.Frequency = ketchupFrequency
+
+		repositoryKind, err := model.ParseRepositoryKind(rawRepositoryKind)
+		if err != nil {
+			return err
+		}
+		item.Repository.Kind = repositoryKind
 
 		list = append(list, item)
 		return nil
@@ -259,8 +268,7 @@ func (a app) GetByRepository(ctx context.Context, id uint64, pattern string, for
 	}
 
 	scanner := func(row *sql.Row) error {
-		var rawRepositoryKind string
-		var rawKetchupFrequency string
+		var rawRepositoryKind, rawKetchupFrequency string
 
 		err := row.Scan(&item.Pattern, &item.Version, &rawKetchupFrequency, &item.Repository.ID, &item.User.ID, &item.Repository.Name, &item.Repository.Part, &rawRepositoryKind)
 		if errors.Is(err, sql.ErrNoRows) {
