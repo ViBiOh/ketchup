@@ -12,13 +12,13 @@ PACKAGES ?= ./...
 MAIN_SOURCE = cmd/ketchup/api.go
 MAIN_RUNNER = go run $(MAIN_SOURCE)
 ifeq ($(DEBUG), true)
-	MAIN_RUNNER = dlv debug $(MAIN_SOURCE) --
+	MAIN_RUNNER = gdlv -d $(shell dirname $(MAIN_SOURCE)) debug --
 endif
 
 NOTIFIER_SOURCE = cmd/notifier/notifier.go
 NOTIFIER_RUNNER = go run $(NOTIFIER_SOURCE)
 ifeq ($(DEBUG), true)
-	NOTIFIER_RUNNER = dlv debug $(NOTIFIER_SOURCE) --
+	NOTIFIER_RUNNER = gdlv -d $(shell dirname $(NOTIFIER_SOURCE)) debug --
 endif
 
 .DEFAULT_GOAL := app
