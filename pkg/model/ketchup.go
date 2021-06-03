@@ -119,7 +119,7 @@ func NewRelease(repository Repository, pattern string, version semver.Version) R
 		Repository: repository,
 		Pattern:    pattern,
 		Version:    version,
-		URL:        repository.URL(pattern),
+		URL:        repository.VersionURL(version.Name),
 	}
 }
 

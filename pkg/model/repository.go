@@ -108,11 +108,16 @@ func (r Repository) String() string {
 	}
 }
 
-// URL format the URL of given repository with current version
+// URL format the URL of given repository with pattern version
 func (r Repository) URL(pattern string) string {
+	return r.VersionURL(r.Versions[pattern])
+}
+
+// VersionURL format the URL of given repository with given version
+func (r Repository) VersionURL(version string) string {
 	switch r.Kind {
 	case Github:
-		return fmt.Sprintf("%s/%s/releases/tag/%s", githubURL, r.Name, r.Versions[pattern])
+		return fmt.Sprintf("%s/%s/releases/tag/%s", githubURL, r.Name, version)
 	case Helm:
 		parts := strings.SplitN(r.Name, "@", 2)
 		if len(parts) > 1 {
@@ -122,16 +127,16 @@ func (r Repository) URL(pattern string) string {
 	case Docker:
 		switch strings.Count(r.Name, "/") {
 		case 0:
-			return fmt.Sprintf("https://hub.docker.com/_/%s?tab=tags&page=1&ordering=last_updated&name=%s", r.Name, r.Versions[pattern])
+			return fmt.Sprintf("https://hub.docker.com/_/%s?tab=tags&page=1&ordering=last_updated&name=%s", r.Name, version)
 		case 1:
-			return fmt.Sprintf("https://hub.docker.com/r/%s/tags?page=1&ordering=last_updated&name=%s", r.Name, r.Versions[pattern])
+			return fmt.Sprintf("https://hub.docker.com/r/%s/tags?page=1&ordering=last_updated&name=%s", r.Name, version)
 		default:
 			return fmt.Sprintf("https://%s", r.Name)
 		}
 	case NPM:
-		return fmt.Sprintf("https://www.npmjs.com/package/%s/v/%s", r.Name, r.Versions[pattern])
+		return fmt.Sprintf("https://www.npmjs.com/package/%s/v/%s", r.Name, version)
 	case Pypi:
-		return fmt.Sprintf("https://pypi.org/project/%s/%s/", r.Name, r.Versions[pattern])
+		return fmt.Sprintf("https://pypi.org/project/%s/%s/", r.Name, version)
 	default:
 		return "#"
 	}
