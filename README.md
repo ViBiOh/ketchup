@@ -127,11 +127,13 @@ Usage of ketchup:
   -pathPrefix string
         Root Path Prefix {KETCHUP_PATH_PREFIX}
   -port uint
-        [server] Listen port {KETCHUP_PORT} (default 1080)
+        [server] Listen port (0 to disable) {KETCHUP_PORT} (default 1080)
   -prometheusAddress string
         [prometheus] Listen address {KETCHUP_PROMETHEUS_ADDRESS}
   -prometheusCert string
         [prometheus] Certificate file {KETCHUP_PROMETHEUS_CERT}
+  -prometheusGzip
+        [prometheus] Enable gzip compression of metrics output {KETCHUP_PROMETHEUS_GZIP}
   -prometheusIdleTimeout string
         [prometheus] Idle Timeout {KETCHUP_PROMETHEUS_IDLE_TIMEOUT} (default "10s")
   -prometheusIgnore string
@@ -139,7 +141,7 @@ Usage of ketchup:
   -prometheusKey string
         [prometheus] Key file {KETCHUP_PROMETHEUS_KEY}
   -prometheusPort uint
-        [prometheus] Listen port {KETCHUP_PROMETHEUS_PORT} (default 9090)
+        [prometheus] Listen port (0 to disable) {KETCHUP_PROMETHEUS_PORT} (default 9090)
   -prometheusReadTimeout string
         [prometheus] Read Timeout {KETCHUP_PROMETHEUS_READ_TIMEOUT} (default "5s")
   -prometheusShutdownTimeout string
