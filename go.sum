@@ -6,9 +6,8 @@ github.com/DATA-DOG/go-sqlmock v1.5.0/go.mod h1:f/Ixk793poVmq4qj/V1dPUg2JEAKC73Q
 github.com/Knetic/govaluate v3.0.1-0.20171022003610-9aa49832a739+incompatible/go.mod h1:r7JcOSlj0wfOMncg0iLm8Leh48TZaKVeNIfJntJ2wa0=
 github.com/Shopify/sarama v1.19.0/go.mod h1:FVkBWblsNy7DGZRfXLU0O9RCGt5g3g3yEuWXgklEdEo=
 github.com/Shopify/toxiproxy v2.1.4+incompatible/go.mod h1:OXgGpZ6Cli1/URJOF1DMxUHB2q5Ap20/P/eIdh4G0pI=
-github.com/ViBiOh/auth/v2 v2.8.5 h1:5V2mimAjLnubUVN3ZnmrZRqjXtp+i997VPOMO8ZAs0E=
-github.com/ViBiOh/auth/v2 v2.8.5/go.mod h1:E2MziRiZPJF7Asf7c4fwEk2vTYIVVlDMGtFCbHk5SkM=
-github.com/ViBiOh/httputils/v4 v4.12.1/go.mod h1:F34nMF5ethfNcMHEyv6cYKrhTJQmPjm41xLIhCVmKDQ=
+github.com/ViBiOh/auth/v2 v2.8.6 h1:u58dJnzipEAmqRregd4pE6hdphvsVZ80fuo6IcPoZyA=
+github.com/ViBiOh/auth/v2 v2.8.6/go.mod h1:6Perk6RuZ6B51m+xoSXGjjRCgb73tZkY1i8pnHNzVIk=
 github.com/ViBiOh/httputils/v4 v4.13.0 h1:Hb2oFWH81D6PYg6CNAyQhuomHAaaq64YgWUA5fGgDmk=
 github.com/ViBiOh/httputils/v4 v4.13.0/go.mod h1:X7p2FfmcB4Yb8sDA+BcUkS8j9lf2/GqNkK8rap2KkfI=
 github.com/ViBiOh/mailer v1.20.0 h1:GTogOs+7tZx9zyHaiUIJFQ6Tx8Q14TSFd/k9T8S2d5U=
@@ -77,7 +76,6 @@ github.com/go-kit/kit v0.10.0/go.mod h1:xUsJbQ/Fp4kEt7AFgCuvyX4a71u8h9jB8tj/ORgO
 github.com/go-logfmt/logfmt v0.3.0/go.mod h1:Qt1PoO58o5twSAckw1HlFXLmHsOX5/0LbT9GBnD5lWE=
 github.com/go-logfmt/logfmt v0.4.0/go.mod h1:3RMwSq7FuexP4Kalkev3ejPJsZTpXXBr9+V4qmtdjCk=
 github.com/go-logfmt/logfmt v0.5.0/go.mod h1:wCYkCAKZfumFQihp8CzCvQ3paCTfi41vtzG1KdI/P7A=
-github.com/go-redis/redis/v8 v8.9.0/go.mod h1:ik7vb7+gm8Izylxu6kf6wG26/t2VljgCfSQ1DM4O1uU=
 github.com/go-redis/redis/v8 v8.10.0 h1:OZwrQKuZqdJ4QIM8wn8rnuz868Li91xA3J2DEq+TPGA=
 github.com/go-redis/redis/v8 v8.10.0/go.mod h1:vXLTvigok0VtUX0znvbcEW1SOt4OA9CU1ZfnOtKOaiM=
 github.com/go-sql-driver/mysql v1.4.0/go.mod h1:zAC/RDZ24gD3HViQzih4MyKcchzm+sOG5ZlKdlhCg5w=
