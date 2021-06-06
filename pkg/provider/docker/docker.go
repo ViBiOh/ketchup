@@ -99,7 +99,13 @@ func (a app) LatestVersions(repository string, patterns []string) (map[string]se
 func (a app) getImageDetails(ctx context.Context, repository string) (string, string, string, error) {
 	parts := strings.Split(repository, "/")
 	if len(parts) > 2 {
-		return fmt.Sprintf("https://%s", parts[0]), strings.Join(parts[1:], "/"), "", nil
+		var token string
+
+		if parts[0] == "ghcr.io" {
+			token = "token"
+		}
+
+		return fmt.Sprintf("https://%s", parts[0]), strings.Join(parts[1:], "/"), token, nil
 	}
 
 	if len(parts) == 1 {
