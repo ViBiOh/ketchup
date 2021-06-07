@@ -188,7 +188,7 @@ SELECT
   r.id,
   r.name,
   r.part,
-  r.kind
+  r.kind,
   k.user_id,
   u.email
 FROM
