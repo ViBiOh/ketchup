@@ -21,6 +21,9 @@ type App struct {
 
 	createID  uint64
 	createErr error
+
+	count    uint64
+	countErr error
 }
 
 // New creates raw mock
@@ -59,6 +62,14 @@ func (a *App) SetCreate(id uint64, err error) *App {
 	return a
 }
 
+// SetCount mocks
+func (a *App) SetCount(count uint64, err error) *App {
+	a.count = count
+	a.countErr = err
+
+	return a
+}
+
 // DoAtomic mocks
 func (a *App) DoAtomic(ctx context.Context, action func(context.Context) error) error {
 	if ctx == context.TODO() {
@@ -80,4 +91,9 @@ func (a *App) GetByLoginID(ctx context.Context, loginID uint64) (model.User, err
 // Create mocks
 func (a *App) Create(ctx context.Context, o model.User) (uint64, error) {
 	return a.createID, a.createErr
+}
+
+// Count mocks
+func (a *App) Count(ctx context.Context) (uint64, error) {
+	return a.count, a.countErr
 }

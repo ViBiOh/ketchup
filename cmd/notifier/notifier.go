@@ -15,8 +15,10 @@ import (
 	"github.com/ViBiOh/ketchup/pkg/provider/pypi"
 	ketchupService "github.com/ViBiOh/ketchup/pkg/service/ketchup"
 	repositoryService "github.com/ViBiOh/ketchup/pkg/service/repository"
+	userService "github.com/ViBiOh/ketchup/pkg/service/user"
 	ketchupStore "github.com/ViBiOh/ketchup/pkg/store/ketchup"
 	repositoryStore "github.com/ViBiOh/ketchup/pkg/store/repository"
+	userStore "github.com/ViBiOh/ketchup/pkg/store/user"
 	mailer "github.com/ViBiOh/mailer/pkg/client"
 )
 
@@ -53,8 +55,9 @@ func main() {
 	pypiApp := pypi.New()
 	repositoryServiceApp := repositoryService.New(repositoryStore.New(ketchupDb), github.New(githubConfig, nil), helmApp, docker.New(dockerConfig), npmApp, pypiApp)
 	ketchupServiceApp := ketchupService.New(ketchupStore.New(ketchupDb), repositoryServiceApp)
+	userServiceApp := userService.New(userStore.New(ketchupDb), nil)
 
-	notifierApp := notifier.New(notifierConfig, repositoryServiceApp, ketchupServiceApp, mailerApp, helmApp)
+	notifierApp := notifier.New(notifierConfig, repositoryServiceApp, ketchupServiceApp, userServiceApp, mailerApp, helmApp)
 
 	logger.Info("Starting notifier...")
 

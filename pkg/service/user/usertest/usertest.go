@@ -24,3 +24,7 @@ func (a app) Create(_ context.Context, _ model.User) (model.User, error) {
 func (a app) StoreInContext(ctx context.Context) context.Context {
 	return model.StoreUser(ctx, model.NewUser(0, "nobody@localhost", authModel.NewUser(0, "")))
 }
+
+func (a app) Count(ctx context.Context) (uint64, error) {
+	return 2, nil
+}

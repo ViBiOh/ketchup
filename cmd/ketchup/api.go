@@ -120,7 +120,7 @@ func main() {
 	publicRendererApp, err := renderer.New(rendererConfig, content, ketchup.FuncMap)
 	logger.Fatal(err)
 
-	notifierApp := notifier.New(notifierConfig, repositoryServiceApp, ketchupServiceApp, mailerApp, helmApp)
+	notifierApp := notifier.New(notifierConfig, repositoryServiceApp, ketchupServiceApp, userServiceApp, mailerApp, helmApp)
 	schedulerApp := scheduler.New(schedulerConfig, notifierApp, redisApp)
 	ketchupApp := ketchup.New(publicRendererApp, ketchupServiceApp, userServiceApp, repositoryServiceApp, redisApp)
 

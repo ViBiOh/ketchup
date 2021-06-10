@@ -18,6 +18,7 @@ import (
 type App interface {
 	Create(ctx context.Context, o model.User) (model.User, error)
 	StoreInContext(ctx context.Context) context.Context
+	Count(ctx context.Context) (uint64, error)
 }
 
 type app struct {
@@ -102,4 +103,8 @@ func (a app) check(ctx context.Context, _, new model.User) error {
 	}
 
 	return httpModel.ConcatError(output)
+}
+
+func (a app) Count(ctx context.Context) (uint64, error) {
+	return a.Count(ctx)
 }

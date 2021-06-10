@@ -17,6 +17,7 @@ type App interface {
 	GetByEmail(ctx context.Context, email string) (model.User, error)
 	GetByLoginID(ctx context.Context, loginID uint64) (model.User, error)
 	Create(ctx context.Context, o model.User) (uint64, error)
+	Count(ctx context.Context) (uint64, error)
 }
 
 type app struct {
@@ -102,4 +103,19 @@ INSERT INTO
 
 func (a app) Create(ctx context.Context, o model.User) (uint64, error) {
 	return db.Create(ctx, insertQuery, strings.ToLower(o.Email), o.Login.ID)
+}
+
+const countQuery = `
+SELECT
+  COUNT(1)
+FROM
+  ketchup.user
+`
+
+func (a app) Count(ctx context.Context) (uint64, error) {
+	var count uint64
+
+	return count, db.Get(ctx, a.db, func(row *sql.Row) error {
+		return row.Scan(&count)
+	}, countQuery)
 }

@@ -16,6 +16,7 @@ import (
 	"github.com/ViBiOh/ketchup/pkg/semver"
 	"github.com/ViBiOh/ketchup/pkg/service/ketchup"
 	"github.com/ViBiOh/ketchup/pkg/service/repository"
+	"github.com/ViBiOh/ketchup/pkg/service/user"
 	mailer "github.com/ViBiOh/mailer/pkg/client"
 	mailerModel "github.com/ViBiOh/mailer/pkg/model"
 	"github.com/prometheus/client_golang/prometheus/push"
@@ -39,6 +40,7 @@ type Config struct {
 type app struct {
 	repositoryService repository.App
 	ketchupService    ketchup.App
+	userService       user.App
 	mailerApp         mailer.App
 	helmApp           helm.App
 
@@ -57,13 +59,14 @@ func Flags(fs *flag.FlagSet, prefix string) Config {
 }
 
 // New creates new App from Config
-func New(config Config, repositoryService repository.App, ketchupService ketchup.App, mailerApp mailer.App, helmApp helm.App) App {
+func New(config Config, repositoryService repository.App, ketchupService ketchup.App, userService user.App, mailerApp mailer.App, helmApp helm.App) App {
 	return app{
 		loginID: uint64(*config.loginID),
 		pushURL: strings.TrimSpace(*config.pushURL),
 
 		repositoryService: repositoryService,
 		ketchupService:    ketchupService,
+		userService:       userService,
 		mailerApp:         mailerApp,
 		helmApp:           helmApp,
 	}
@@ -97,6 +100,13 @@ func (a app) Notify(ctx context.Context) error {
 
 	if len(a.pushURL) != 0 {
 		registry, metrics := configurePrometheus()
+
+		userCount, err := a.userService.Count(ctx)
+		if err != nil {
+			logger.Error("unable to get users count: %s", err)
+		} else {
+			metrics.WithLabelValues("users").Set(float64(userCount))
+		}
 
 		metrics.WithLabelValues("repositories").Set(float64(repoCount))
 		metrics.WithLabelValues("releases").Set(float64(len(newReleases)))
