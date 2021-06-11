@@ -106,5 +106,5 @@ func (a app) check(ctx context.Context, _, new model.User) error {
 }
 
 func (a app) Count(ctx context.Context) (uint64, error) {
-	return a.Count(ctx)
+	return a.userStore.Count(ctx)
 }
