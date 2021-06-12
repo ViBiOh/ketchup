@@ -141,7 +141,7 @@ func TestList(t *testing.T) {
 					rows.AddRow(model.DefaultPattern, repositoryVersion, "Daily", 2, viwsRepository, "", "wrong", repositoryVersion, 1)
 				}
 
-				got, gotCount, gotErr := New(mockDb).List(testCtx, tc.args.pageSize, "")
+				got, gotCount, gotErr := New(db.NewFromSQL(mockDb)).List(testCtx, tc.args.pageSize, "")
 				failed := false
 
 				if tc.wantErr == nil && gotErr != nil {
@@ -240,7 +240,7 @@ func TestListByRepositoriesID(t *testing.T) {
 					rows.AddRow(model.DefaultPattern, "0.9.0", "Daily", "a", 1, testEmail)
 				}
 
-				got, gotErr := New(mockDb).ListByRepositoriesID(testCtx, tc.args.ids, tc.args.frequency)
+				got, gotErr := New(db.NewFromSQL(mockDb)).ListByRepositoriesID(testCtx, tc.args.ids, tc.args.frequency)
 				failed := false
 
 				if tc.wantErr == nil && gotErr != nil {
@@ -334,7 +334,7 @@ func TestGetByRepository(t *testing.T) {
 					rows.AddRow(model.DefaultPattern, "0.9.0", "Daily", 1, 3, repositoryName, "", "github")
 				}
 
-				got, gotErr := New(mockDb).GetByRepository(testCtx, tc.args.id, tc.args.pattern, tc.args.forUpdate)
+				got, gotErr := New(db.NewFromSQL(mockDb)).GetByRepository(testCtx, tc.args.id, tc.args.pattern, tc.args.forUpdate)
 
 				failed := false
 
@@ -385,7 +385,7 @@ func TestCreate(t *testing.T) {
 
 				mock.ExpectQuery("INSERT INTO ketchup.ketchup").WithArgs(model.DefaultPattern, "0.9.0", "daily", 1, 3).WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(1))
 
-				got, gotErr := New(mockDb).Create(ctx, tc.args.o)
+				got, gotErr := New(db.NewFromSQL(mockDb)).Create(ctx, tc.args.o)
 
 				failed := false
 
@@ -436,7 +436,7 @@ func TestUpdate(t *testing.T) {
 
 				mock.ExpectExec("UPDATE ketchup.ketchup SET pattern = .+, version = .+").WithArgs(1, 3, tc.args.oldPattern, model.DefaultPattern, "0.9.0", "daily").WillReturnResult(sqlmock.NewResult(0, 1))
 
-				gotErr := New(mockDb).Update(ctx, tc.args.o, tc.args.oldPattern)
+				gotErr := New(db.NewFromSQL(mockDb)).Update(ctx, tc.args.o, tc.args.oldPattern)
 
 				failed := false
 
@@ -481,7 +481,7 @@ func TestDelete(t *testing.T) {
 
 				mock.ExpectExec("DELETE FROM ketchup.ketchup").WithArgs(1, 3, "stable").WillReturnResult(sqlmock.NewResult(0, 1))
 
-				gotErr := New(mockDb).Delete(ctx, tc.args.o)
+				gotErr := New(db.NewFromSQL(mockDb)).Delete(ctx, tc.args.o)
 
 				failed := false
 

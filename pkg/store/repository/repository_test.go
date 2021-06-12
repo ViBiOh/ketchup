@@ -121,7 +121,7 @@ func TestList(t *testing.T) {
 					rows.AddRow(1, "wrong", viwsRepository, "", 1)
 				}
 
-				got, gotCount, gotErr := New(mockDb).List(context.Background(), tc.args.pageSize, tc.args.last)
+				got, gotCount, gotErr := New(db.NewFromSQL(mockDb)).List(context.Background(), tc.args.pageSize, tc.args.last)
 				failed := false
 
 				if tc.wantErr == nil && gotErr != nil {
@@ -185,7 +185,7 @@ func TestSuggest(t *testing.T) {
 					sqlmock.NewRows([]string{"repository_id", "pattern", "version"}).AddRow(1, model.DefaultPattern, "1.0.0").AddRow(2, model.DefaultPattern, "1.2.3"),
 				)
 
-				got, gotErr := New(mockDb).Suggest(context.Background(), tc.args.ignoreIds, tc.args.count)
+				got, gotErr := New(db.NewFromSQL(mockDb)).Suggest(context.Background(), tc.args.ignoreIds, tc.args.count)
 				failed := false
 
 				if tc.wantErr == nil && gotErr != nil {
@@ -269,7 +269,7 @@ func TestGet(t *testing.T) {
 					)
 				}
 
-				got, gotErr := New(mockDb).Get(context.Background(), tc.args.id, tc.args.forUpdate)
+				got, gotErr := New(db.NewFromSQL(mockDb)).Get(context.Background(), tc.args.id, tc.args.forUpdate)
 
 				failed := false
 
@@ -345,7 +345,7 @@ func TestGetByName(t *testing.T) {
 					rows.AddRow(1, "wrong", ketchupRepository, "")
 				}
 
-				got, gotErr := New(mockDb).GetByName(context.Background(), tc.args.repositoryKind, tc.args.name, tc.args.part)
+				got, gotErr := New(db.NewFromSQL(mockDb)).GetByName(context.Background(), tc.args.repositoryKind, tc.args.name, tc.args.part)
 
 				failed := false
 
@@ -464,7 +464,7 @@ func TestCreate(t *testing.T) {
 					mock.ExpectExec("INSERT INTO ketchup.repository_version").WithArgs(1, model.DefaultPattern, "1.0.0").WillReturnResult(sqlmock.NewResult(0, 1))
 				}
 
-				got, gotErr := New(mockDb).Create(ctx, tc.args.o)
+				got, gotErr := New(db.NewFromSQL(mockDb)).Create(ctx, tc.args.o)
 
 				failed := false
 
@@ -510,7 +510,7 @@ func TestDeleteUnused(t *testing.T) {
 
 				mock.ExpectExec("DELETE FROM ketchup.repository WHERE id NOT IN").WillReturnResult(sqlmock.NewResult(0, 1))
 
-				gotErr := New(mockDb).DeleteUnused(ctx)
+				gotErr := New(db.NewFromSQL(mockDb)).DeleteUnused(ctx)
 
 				failed := false
 
@@ -550,7 +550,7 @@ func TestDeleteUnusedVersions(t *testing.T) {
 
 				mock.ExpectExec("DELETE FROM ketchup.repository_version r WHERE NOT EXISTS").WillReturnResult(sqlmock.NewResult(0, 1))
 
-				gotErr := New(mockDb).DeleteUnusedVersions(ctx)
+				gotErr := New(db.NewFromSQL(mockDb)).DeleteUnusedVersions(ctx)
 
 				failed := false
 

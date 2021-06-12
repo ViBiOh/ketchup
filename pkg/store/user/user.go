@@ -21,18 +21,18 @@ type App interface {
 }
 
 type app struct {
-	db *sql.DB
+	db db.App
 }
 
 // New creates new App from Config
-func New(db *sql.DB) App {
+func New(db db.App) App {
 	return app{
 		db: db,
 	}
 }
 
 func (a app) DoAtomic(ctx context.Context, action func(context.Context) error) error {
-	return db.DoAtomic(ctx, a.db, action)
+	return a.db.DoAtomic(ctx, action)
 }
 
 const getByEmailQuery = `
@@ -58,8 +58,7 @@ func (a app) GetByEmail(ctx context.Context, email string) (model.User, error) {
 		return err
 	}
 
-	err := db.Get(ctx, a.db, scanner, getByEmailQuery, email)
-	return item, err
+	return item, a.db.Get(ctx, scanner, getByEmailQuery, email)
 }
 
 const getByLoginIDQuery = `
@@ -85,8 +84,7 @@ func (a app) GetByLoginID(ctx context.Context, loginID uint64) (model.User, erro
 		return err
 	}
 
-	err := db.Get(ctx, a.db, scanner, getByLoginIDQuery, loginID)
-	return item, err
+	return item, a.db.Get(ctx, scanner, getByLoginIDQuery, loginID)
 }
 
 const insertQuery = `
@@ -102,7 +100,7 @@ INSERT INTO
 `
 
 func (a app) Create(ctx context.Context, o model.User) (uint64, error) {
-	return db.Create(ctx, insertQuery, strings.ToLower(o.Email), o.Login.ID)
+	return a.db.Create(ctx, insertQuery, strings.ToLower(o.Email), o.Login.ID)
 }
 
 const countQuery = `
@@ -115,7 +113,7 @@ FROM
 func (a app) Count(ctx context.Context) (uint64, error) {
 	var count uint64
 
-	return count, db.Get(ctx, a.db, func(row *sql.Row) error {
+	return count, a.db.Get(ctx, func(row *sql.Row) error {
 		return row.Scan(&count)
 	}, countQuery)
 }

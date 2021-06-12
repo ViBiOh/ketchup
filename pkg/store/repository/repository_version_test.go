@@ -126,7 +126,7 @@ func TestEnrichRepositoriesVersions(t *testing.T) {
 				rows.AddRow(3, model.DefaultPattern, "1.1.0")
 			}
 
-			gotErr := app{db: mockDb}.enrichRepositoriesVersions(context.Background(), tc.args.repositories)
+			gotErr := app{db: db.NewFromSQL(mockDb)}.enrichRepositoriesVersions(context.Background(), tc.args.repositories)
 
 			failed := false
 
@@ -261,7 +261,7 @@ func TestUpdateVersions(t *testing.T) {
 				mock.ExpectExec("DELETE FROM ketchup.repository_version WHERE repository_id =").WillReturnResult(sqlmock.NewResult(0, 1))
 			}
 
-			gotErr := New(mockDb).UpdateVersions(ctx, tc.args.o)
+			gotErr := New(db.NewFromSQL(mockDb)).UpdateVersions(ctx, tc.args.o)
 
 			failed := false
 

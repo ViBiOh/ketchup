@@ -1,7 +1,6 @@
 package main
 
 import (
-	"database/sql"
 	"embed"
 	"flag"
 	"net/http"
@@ -51,7 +50,7 @@ const (
 //go:embed templates static
 var content embed.FS
 
-func initAuth(db *sql.DB) (authService.App, authMiddleware.App) {
+func initAuth(db db.App) (authService.App, authMiddleware.App) {
 	authProvider := authStore.New(db)
 	identProvider := authIdent.New(authProvider, "ketchup")
 

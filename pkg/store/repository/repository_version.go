@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"sort"
 
-	"github.com/ViBiOh/httputils/v4/pkg/db"
 	"github.com/ViBiOh/ketchup/pkg/model"
 	"github.com/lib/pq"
 )
@@ -54,7 +53,7 @@ func (a app) enrichRepositoriesVersions(ctx context.Context, repositories []mode
 		return nil
 	}
 
-	return db.List(ctx, a.db, scanner, listRepositoryVersionsForIDsQuery, pq.Array(ids))
+	return a.db.List(ctx, scanner, listRepositoryVersionsForIDsQuery, pq.Array(ids))
 }
 
 const listRepositoryVersionQuery = `
@@ -114,7 +113,7 @@ func (a app) UpdateVersions(ctx context.Context, o model.Repository) error {
 		return nil
 	}
 
-	err := db.List(ctx, a.db, scanner, listRepositoryVersionQuery, o.ID)
+	err := a.db.List(ctx, scanner, listRepositoryVersionQuery, o.ID)
 	if err != nil {
 		return fmt.Errorf("unable to list repository version: %w", err)
 	}
@@ -122,18 +121,18 @@ func (a app) UpdateVersions(ctx context.Context, o model.Repository) error {
 	for pattern, version := range patterns {
 		if repositoryVersion, ok := o.Versions[pattern]; ok {
 			if repositoryVersion != version {
-				if err := db.Exec(ctx, updateRepositoryVersionQuery, o.ID, pattern, repositoryVersion); err != nil {
+				if err := a.db.Exec(ctx, updateRepositoryVersionQuery, o.ID, pattern, repositoryVersion); err != nil {
 					return fmt.Errorf("unable to update repository version: %w", err)
 				}
 			}
-		} else if err := db.Exec(ctx, deleteRepositoryVersionQuery, o.ID, pattern); err != nil {
+		} else if err := a.db.Exec(ctx, deleteRepositoryVersionQuery, o.ID, pattern); err != nil {
 			return fmt.Errorf("unable to delete repository version: %w", err)
 		}
 	}
 
 	for pattern, version := range o.Versions {
 		if _, ok := patterns[pattern]; !ok {
-			if err := db.Exec(ctx, createRepositoryVersionQuery, o.ID, pattern, version); err != nil {
+			if err := a.db.Exec(ctx, createRepositoryVersionQuery, o.ID, pattern, version); err != nil {
 				return fmt.Errorf("unable to create repository version: %w", err)
 			}
 		}

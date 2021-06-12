@@ -70,7 +70,7 @@ func TestGetByEmail(t *testing.T) {
 					rows.AddRow(1, testEmail, 1)
 				}
 
-				got, gotErr := New(mockDb).GetByEmail(context.Background(), tc.args.email)
+				got, gotErr := New(db.NewFromSQL(mockDb)).GetByEmail(context.Background(), tc.args.email)
 
 				failed := false
 
@@ -127,7 +127,7 @@ func TestGetByLoginID(t *testing.T) {
 					rows.AddRow(1, testEmail, 2)
 				}
 
-				got, gotErr := New(mockDb).GetByLoginID(context.Background(), tc.args.loginID)
+				got, gotErr := New(db.NewFromSQL(mockDb)).GetByLoginID(context.Background(), tc.args.loginID)
 
 				failed := false
 
@@ -184,7 +184,7 @@ func TestCreate(t *testing.T) {
 
 				mock.ExpectQuery("INSERT INTO ketchup.user").WithArgs(testEmail, 1).WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(1))
 
-				got, gotErr := New(mockDb).Create(ctx, tc.args.o)
+				got, gotErr := New(db.NewFromSQL(mockDb)).Create(ctx, tc.args.o)
 
 				failed := false
 

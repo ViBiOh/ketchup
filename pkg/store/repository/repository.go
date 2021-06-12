@@ -29,18 +29,18 @@ type App interface {
 }
 
 type app struct {
-	db *sql.DB
+	db db.App
 }
 
 // New creates new App from Config
-func New(db *sql.DB) App {
+func New(db db.App) App {
 	return app{
 		db: db,
 	}
 }
 
 func (a app) DoAtomic(ctx context.Context, action func(context.Context) error) error {
-	return db.DoAtomic(ctx, a.db, action)
+	return a.db.DoAtomic(ctx, action)
 }
 
 func (a app) list(ctx context.Context, query string, args ...interface{}) ([]model.Repository, uint64, error) {
@@ -67,7 +67,7 @@ func (a app) list(ctx context.Context, query string, args ...interface{}) ([]mod
 		return nil
 	}
 
-	err := db.List(ctx, a.db, scanner, query, args...)
+	err := a.db.List(ctx, scanner, query, args...)
 	if err != nil {
 		return list, 0, err
 	}
@@ -97,7 +97,7 @@ func (a app) get(ctx context.Context, query string, args ...interface{}) (model.
 		return err
 	}
 
-	if err := db.Get(ctx, a.db, scanner, query, args...); err != nil {
+	if err := a.db.Get(ctx, scanner, query, args...); err != nil {
 		return model.NoneRepository, err
 	}
 
@@ -288,7 +288,7 @@ INSERT INTO
 `
 
 func (a app) Create(ctx context.Context, o model.Repository) (uint64, error) {
-	if err := db.Exec(ctx, insertLock); err != nil {
+	if err := a.db.Exec(ctx, insertLock); err != nil {
 		return 0, err
 	}
 
@@ -301,7 +301,7 @@ func (a app) Create(ctx context.Context, o model.Repository) (uint64, error) {
 		return 0, fmt.Errorf("%s repository already exists with name=%s part=%s", o.Kind.String(), o.Name, o.Part)
 	}
 
-	id, err := db.Create(ctx, insertQuery, o.Kind.String(), strings.ToLower(o.Name), strings.ToLower(o.Part))
+	id, err := a.db.Create(ctx, insertQuery, o.Kind.String(), strings.ToLower(o.Name), strings.ToLower(o.Part))
 	if err != nil {
 		return 0, err
 	}
@@ -323,7 +323,7 @@ WHERE
 `
 
 func (a app) DeleteUnused(ctx context.Context) error {
-	return db.Exec(ctx, deleteQuery)
+	return a.db.Exec(ctx, deleteQuery)
 }
 
 const deleteVersionsQuery = `
@@ -340,5 +340,5 @@ WHERE NOT EXISTS (
 `
 
 func (a app) DeleteUnusedVersions(ctx context.Context) error {
-	return db.Exec(ctx, deleteVersionsQuery)
+	return a.db.Exec(ctx, deleteVersionsQuery)
 }

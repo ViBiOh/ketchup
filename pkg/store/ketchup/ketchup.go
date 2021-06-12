@@ -26,18 +26,18 @@ type App interface {
 }
 
 type app struct {
-	db *sql.DB
+	db db.App
 }
 
 // New creates new App from Config
-func New(db *sql.DB) App {
+func New(db db.App) App {
 	return app{
 		db: db,
 	}
 }
 
 func (a app) DoAtomic(ctx context.Context, action func(context.Context) error) error {
-	return db.DoAtomic(ctx, a.db, action)
+	return a.db.DoAtomic(ctx, action)
 }
 
 const listQuery = `
@@ -135,7 +135,7 @@ func (a app) List(ctx context.Context, pageSize uint, last string) ([]model.Ketc
 	queryArgs = append(queryArgs, pageSize)
 	query.WriteString(fmt.Sprintf(" LIMIT $%d", len(queryArgs)))
 
-	return list, totalCount, db.List(ctx, a.db, scanner, query.String(), queryArgs...)
+	return list, totalCount, a.db.List(ctx, scanner, query.String(), queryArgs...)
 }
 
 const listByRepositoriesIDQuery = `
@@ -177,7 +177,7 @@ func (a app) ListByRepositoriesID(ctx context.Context, ids []uint64, frequency m
 		return nil
 	}
 
-	return list, db.List(ctx, a.db, scanner, listByRepositoriesIDQuery, pq.Array(ids), strings.ToLower(frequency.String()))
+	return list, a.db.List(ctx, scanner, listByRepositoriesIDQuery, pq.Array(ids), strings.ToLower(frequency.String()))
 }
 
 const listOutdateByFrequencyQuery = `
@@ -232,7 +232,7 @@ func (a app) ListOutdatedByFrequency(ctx context.Context, frequency model.Ketchu
 		return nil
 	}
 
-	return list, db.List(ctx, a.db, scanner, listOutdateByFrequencyQuery, strings.ToLower(frequency.String()))
+	return list, a.db.List(ctx, scanner, listOutdateByFrequencyQuery, strings.ToLower(frequency.String()))
 }
 
 const getQuery = `
@@ -291,7 +291,7 @@ func (a app) GetByRepository(ctx context.Context, id uint64, pattern string, for
 		return err
 	}
 
-	return item, db.Get(ctx, a.db, scanner, query, id, user.ID, pattern)
+	return item, a.db.Get(ctx, scanner, query, id, user.ID, pattern)
 }
 
 const insertQuery = `
@@ -313,7 +313,7 @@ INSERT INTO
 `
 
 func (a app) Create(ctx context.Context, o model.Ketchup) (uint64, error) {
-	return db.Create(ctx, insertQuery, o.Pattern, o.Version, strings.ToLower(o.Frequency.String()), o.Repository.ID, model.ReadUser(ctx).ID)
+	return a.db.Create(ctx, insertQuery, o.Pattern, o.Version, strings.ToLower(o.Frequency.String()), o.Repository.ID, model.ReadUser(ctx).ID)
 }
 
 const updateQuery = `
@@ -330,7 +330,7 @@ WHERE
 `
 
 func (a app) Update(ctx context.Context, o model.Ketchup, oldPattern string) error {
-	return db.Exec(ctx, updateQuery, o.Repository.ID, model.ReadUser(ctx).ID, oldPattern, o.Pattern, o.Version, strings.ToLower(o.Frequency.String()))
+	return a.db.Exec(ctx, updateQuery, o.Repository.ID, model.ReadUser(ctx).ID, oldPattern, o.Pattern, o.Version, strings.ToLower(o.Frequency.String()))
 }
 
 const deleteQuery = `
@@ -343,5 +343,5 @@ WHERE
 `
 
 func (a app) Delete(ctx context.Context, o model.Ketchup) error {
-	return db.Exec(ctx, deleteQuery, o.Repository.ID, model.ReadUser(ctx).ID, o.Pattern)
+	return a.db.Exec(ctx, deleteQuery, o.Repository.ID, model.ReadUser(ctx).ID, o.Pattern)
 }
