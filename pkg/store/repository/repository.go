@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"sort"
 	"strconv"
 	"strings"
 
@@ -196,7 +195,6 @@ func (a app) ListByKinds(ctx context.Context, pageSize uint, last string, kinds 
 	query.WriteString(fmt.Sprintf(" LIMIT $%d", len(queryArgs)))
 
 	list, count, err := a.list(ctx, query.String(), queryArgs...)
-	sort.Sort(model.RepositoryByName(list))
 
 	return list, count, err
 }

@@ -151,22 +151,3 @@ func (r Repository) CompareURL(version string, pattern string) string {
 		return r.URL(pattern)
 	}
 }
-
-// RepositoryByID sort repository by ID
-type RepositoryByID []Repository
-
-func (a RepositoryByID) Len() int           { return len(a) }
-func (a RepositoryByID) Less(i, j int) bool { return a[i].ID < a[j].ID }
-func (a RepositoryByID) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
-
-// RepositoryByName sort repository by Name
-type RepositoryByName []Repository
-
-func (a RepositoryByName) Len() int { return len(a) }
-func (a RepositoryByName) Less(i, j int) bool {
-	if a[i].Name == a[j].Name {
-		return a[i].Part < a[j].Part
-	}
-	return a[i].Name < a[j].Name
-}
-func (a RepositoryByName) Swap(i, j int) { a[i], a[j] = a[j], a[i] }

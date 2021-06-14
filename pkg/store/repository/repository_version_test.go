@@ -68,8 +68,8 @@ func TestEnrichRepositoriesVersions(t *testing.T) {
 				},
 			},
 			[]model.Repository{
-				model.NewGithubRepository(1, "").AddVersion(model.DefaultPattern, "1.0.0"),
 				model.NewGithubRepository(2, "").AddVersion(model.DefaultPattern, "1.1.0"),
+				model.NewGithubRepository(1, "").AddVersion(model.DefaultPattern, "1.0.0"),
 			},
 			nil,
 		},
@@ -92,9 +92,9 @@ func TestEnrichRepositoriesVersions(t *testing.T) {
 				},
 			},
 			[]model.Repository{
-				model.NewGithubRepository(1, "").AddVersion(model.DefaultPattern, "1.0.0").AddVersion("beta", "1.0.0-beta"),
 				model.NewGithubRepository(2, ""),
 				model.NewGithubRepository(3, "").AddVersion(model.DefaultPattern, "1.1.0").AddVersion("alpha", "2.0.0"),
+				model.NewGithubRepository(1, "").AddVersion(model.DefaultPattern, "1.0.0").AddVersion("beta", "1.0.0-beta"),
 			},
 			nil,
 		},

@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"sort"
 
 	"github.com/ViBiOh/ketchup/pkg/model"
 	"github.com/lib/pq"
@@ -34,9 +33,8 @@ func (a app) enrichRepositoriesVersions(ctx context.Context, repositories []mode
 		ids[index] = repository.ID
 	}
 
-	sort.Sort(model.RepositoryByID(repositories))
+	var repository model.Repository
 
-	index := 0
 	scanner := func(rows *sql.Rows) error {
 		var repositoryID uint64
 		var pattern, version string
@@ -45,15 +43,26 @@ func (a app) enrichRepositoriesVersions(ctx context.Context, repositories []mode
 			return err
 		}
 
-		for ; repositoryID != repositories[index].ID; index++ {
+		if repository.ID != repositoryID {
+			repository = findRepository(repositories, repositoryID)
 		}
 
-		repositories[index].Versions[pattern] = version
+		repository.Versions[pattern] = version
 
 		return nil
 	}
 
 	return a.db.List(ctx, scanner, listRepositoryVersionsForIDsQuery, pq.Array(ids))
+}
+
+func findRepository(repositories []model.Repository, id uint64) model.Repository {
+	for _, repo := range repositories {
+		if repo.ID == id {
+			return repo
+		}
+	}
+
+	return model.NoneRepository
 }
 
 const listRepositoryVersionQuery = `
@@ -119,22 +128,30 @@ func (a app) UpdateVersions(ctx context.Context, o model.Repository) error {
 	}
 
 	for pattern, version := range patterns {
-		if repositoryVersion, ok := o.Versions[pattern]; ok {
-			if repositoryVersion != version {
-				if err := a.db.Exec(ctx, updateRepositoryVersionQuery, o.ID, pattern, repositoryVersion); err != nil {
-					return fmt.Errorf("unable to update repository version: %w", err)
-				}
+		repositoryVersion, ok := o.Versions[pattern]
+		if !ok {
+			if err := a.db.Exec(ctx, deleteRepositoryVersionQuery, o.ID, pattern); err != nil {
+				return fmt.Errorf("unable to delete repository version: %w", err)
 			}
-		} else if err := a.db.Exec(ctx, deleteRepositoryVersionQuery, o.ID, pattern); err != nil {
-			return fmt.Errorf("unable to delete repository version: %w", err)
+			continue
+		}
+
+		if repositoryVersion == version {
+			continue
+		}
+
+		if err := a.db.Exec(ctx, updateRepositoryVersionQuery, o.ID, pattern, repositoryVersion); err != nil {
+			return fmt.Errorf("unable to update repository version: %w", err)
 		}
 	}
 
 	for pattern, version := range o.Versions {
-		if _, ok := patterns[pattern]; !ok {
-			if err := a.db.Exec(ctx, createRepositoryVersionQuery, o.ID, pattern, version); err != nil {
-				return fmt.Errorf("unable to create repository version: %w", err)
-			}
+		if _, ok := patterns[pattern]; ok {
+			continue
+		}
+
+		if err := a.db.Exec(ctx, createRepositoryVersionQuery, o.ID, pattern, version); err != nil {
+			return fmt.Errorf("unable to create repository version: %w", err)
 		}
 	}
 
