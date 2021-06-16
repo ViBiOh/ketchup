@@ -34,4 +34,5 @@ func (a App) LatestVersions(_ string, _ []string) (map[string]semver.Version, er
 
 // Start mock
 func (a App) Start(_ prometheus.Registerer, _ <-chan struct{}) {
+	// no mock action
 }

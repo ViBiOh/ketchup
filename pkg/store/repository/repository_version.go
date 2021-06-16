@@ -108,23 +108,9 @@ WHERE
 `
 
 func (a app) UpdateVersions(ctx context.Context, o model.Repository) error {
-	patterns := make(map[string]string)
-
-	scanner := func(rows *sql.Rows) error {
-		var pattern string
-		var version string
-
-		if err := rows.Scan(&pattern, &version); err != nil {
-			return err
-		}
-
-		patterns[pattern] = version
-		return nil
-	}
-
-	err := a.db.List(ctx, scanner, listRepositoryVersionQuery, o.ID)
+	patterns, err := a.getRepositoryVersions(ctx, o)
 	if err != nil {
-		return fmt.Errorf("unable to list repository version: %w", err)
+		return fmt.Errorf("unable to fetch repository versions: %w", err)
 	}
 
 	for pattern, version := range patterns {
@@ -156,4 +142,27 @@ func (a app) UpdateVersions(ctx context.Context, o model.Repository) error {
 	}
 
 	return nil
+}
+
+func (a app) getRepositoryVersions(ctx context.Context, o model.Repository) (map[string]string, error) {
+	patterns := make(map[string]string)
+
+	scanner := func(rows *sql.Rows) error {
+		var pattern string
+		var version string
+
+		if err := rows.Scan(&pattern, &version); err != nil {
+			return err
+		}
+
+		patterns[pattern] = version
+		return nil
+	}
+
+	err := a.db.List(ctx, scanner, listRepositoryVersionQuery, o.ID)
+	if err != nil {
+		return nil, fmt.Errorf("unable to list repository version: %w", err)
+	}
+
+	return patterns, err
 }
