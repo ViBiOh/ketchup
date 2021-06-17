@@ -81,16 +81,6 @@ func NewHelmRepository(id uint64, name, part string) Repository {
 	return NewRepository(id, Helm, name, part)
 }
 
-// NewDockerRepository create new Repository with initialized values
-func NewDockerRepository(id uint64, name string) Repository {
-	return NewRepository(id, Docker, name, "")
-}
-
-// NewNPMRepository create new Repository with initialized values
-func NewNPMRepository(id uint64, name string) Repository {
-	return NewRepository(id, NPM, name, "")
-}
-
 // AddVersion adds given pattern to versions map
 func (r Repository) AddVersion(pattern, version string) Repository {
 	r.Versions[pattern] = version

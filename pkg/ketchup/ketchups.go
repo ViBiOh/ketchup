@@ -57,6 +57,8 @@ func (a app) handleCreate(w http.ResponseWriter, r *http.Request) {
 	switch repositoryKind {
 	case model.Helm:
 		repository = model.NewHelmRepository(0, strings.TrimSuffix(name, "/"), r.FormValue("part"))
+	case model.Docker:
+		repository = model.NewRepository(0, repositoryKind, strings.TrimPrefix(name, "docker.io/"), "")
 	default:
 		repository = model.NewRepository(0, repositoryKind, name, "")
 	}
