@@ -3,8 +3,9 @@ github.com/DATA-DOG/go-sqlmock v1.5.0 h1:Shsta01QNfFxHCfpW6YH2STWB0MudeXXEWMr20O
 github.com/DATA-DOG/go-sqlmock v1.5.0/go.mod h1:f/Ixk793poVmq4qj/V1dPUg2JEAKC73Q5eFN3EC/SaM=
 github.com/ViBiOh/auth/v2 v2.8.7 h1:OwtOC7r64n1P8hYvdBGYHR2zQonO9BPdUTP0N7Hd8xg=
 github.com/ViBiOh/auth/v2 v2.8.7/go.mod h1:VLVA0m0mv26fGNQCOiKev9j3aM3U+SaKh0E7B9U52B8=
-github.com/ViBiOh/httputils/v4 v4.14.2 h1:uKrKsnzBpai4Y3j2cmmKX0TNzs4shf+uTMI+qqHL98g=
 github.com/ViBiOh/httputils/v4 v4.14.2/go.mod h1:jDIAVfCqDrHTMITjtQpn2glCLXfDeaIKrrkbLLa8tpQ=
+github.com/ViBiOh/httputils/v4 v4.14.3 h1:6Y0r0BEHWaJkNWM9Ltx15E2w8K9ImU8D7uhSKlHQt9g=
+github.com/ViBiOh/httputils/v4 v4.14.3/go.mod h1:jDIAVfCqDrHTMITjtQpn2glCLXfDeaIKrrkbLLa8tpQ=
 github.com/ViBiOh/mailer v1.20.1 h1:iD10UH6HRZpQEupr2RVh2VFHS92gGxgd09eqWDv5FBE=
 github.com/ViBiOh/mailer v1.20.1/go.mod h1:d11bkEhDp4TCCYQf9pZgoySdOSwGNiYh3QCOmAki9o8=
 github.com/alecthomas/template v0.0.0-20160405071501-a0175ee3bccc/go.mod h1:LOuyumcjzFXgccqObfd/Ljyb9UuFJ6TxHnclSeseNhc=
