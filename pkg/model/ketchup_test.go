@@ -224,3 +224,40 @@ func TestReleaseByRepositoryID(t *testing.T) {
 		})
 	}
 }
+
+func TestReleaseByKindAndName(t *testing.T) {
+	type args struct {
+		array []Release
+	}
+
+	var cases = []struct {
+		intention string
+		args      args
+		want      []Release
+	}{
+		{
+			"simple",
+			args{
+				array: []Release{
+					NewRelease(NewHelmRepository(3, "http://chart", "app"), DefaultPattern, semver.Version{}),
+					NewRelease(NewGithubRepository(1, "vibioh/github"), DefaultPattern, semver.Version{}),
+					NewRelease(NewHelmRepository(2, "http://chart", "cron"), DefaultPattern, semver.Version{}),
+				},
+			},
+			[]Release{
+				NewRelease(NewGithubRepository(1, "vibioh/github"), DefaultPattern, semver.Version{}),
+				NewRelease(NewHelmRepository(3, "http://chart", "app"), DefaultPattern, semver.Version{}),
+				NewRelease(NewHelmRepository(2, "http://chart", "cron"), DefaultPattern, semver.Version{}),
+			},
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.intention, func(t *testing.T) {
+			sort.Sort(ReleaseByKindAndName(tc.args.array))
+			if got := tc.args.array; !reflect.DeepEqual(got, tc.want) {
+				t.Errorf("ReleaseByRepositoryID() = %+v, want %+v", got, tc.want)
+			}
+		})
+	}
+}

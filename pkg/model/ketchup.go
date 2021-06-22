@@ -134,3 +134,18 @@ func (a ReleaseByRepositoryIDAndPattern) Less(i, j int) bool {
 	}
 	return a[i].Repository.ID < a[j].Repository.ID
 }
+
+// ReleaseByKindAndName sort release by repository kind and repository name
+type ReleaseByKindAndName []Release
+
+func (a ReleaseByKindAndName) Len() int      { return len(a) }
+func (a ReleaseByKindAndName) Swap(i, j int) { a[i], a[j] = a[j], a[i] }
+func (a ReleaseByKindAndName) Less(i, j int) bool {
+	if a[i].Repository.Kind == a[j].Repository.Kind {
+		if a[i].Repository.Name == a[j].Repository.Name {
+			return a[i].Repository.Part < a[j].Repository.Part
+		}
+		return a[i].Repository.Name < a[j].Repository.Name
+	}
+	return a[i].Repository.Kind < a[j].Repository.Kind
+}

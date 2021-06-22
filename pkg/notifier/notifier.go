@@ -242,6 +242,8 @@ func (a app) sendNotification(ctx context.Context, ketchupToNotify map[model.Use
 	for user, releases := range ketchupToNotify {
 		logger.Info("Sending email to %s for %d releases", user.Email, len(releases))
 
+		sort.Sort(model.ReleaseByKindAndName(releases))
+
 		payload := map[string]interface{}{
 			"releases": releases,
 		}
