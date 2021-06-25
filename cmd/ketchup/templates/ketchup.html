@@ -197,7 +197,7 @@
 {{ end }}
 
 {{ define "ketchups" }}
-  <style>
+  <style type="text/css">
     {{ range .Ketchups }}
       #delete-modal-{{ .Repository.ID }}:target,
       #edit-modal-{{ .Repository.ID }}:target,
@@ -316,7 +316,10 @@
         {{ end }}
 
         {{ $ketchupType = .Repository.Kind.String }}
-        <h2 class="separator full">{{ $ketchupType }}</h2>
+        <h2 class="separator full">
+          <img class="icon-large" src="{{ url "/svg/" }}{{ $ketchupType }}?fill=silver" alt="{{ $ketchupType }} Logo" title="{{ $ketchupType }}">
+        </h2>
+
         <section class="ketchups">
       {{ end }}
 
