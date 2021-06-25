@@ -22,6 +22,7 @@ type App interface {
 	GetByRepository(ctx context.Context, id uint64, pattern string, forUpdate bool) (model.Ketchup, error)
 	Create(ctx context.Context, o model.Ketchup) (uint64, error)
 	Update(ctx context.Context, o model.Ketchup, oldPattern string) error
+	UpdateAll(ctx context.Context) error
 	Delete(ctx context.Context, o model.Ketchup) error
 }
 
@@ -331,6 +332,26 @@ WHERE
 
 func (a app) Update(ctx context.Context, o model.Ketchup, oldPattern string) error {
 	return a.db.Exec(ctx, updateQuery, o.Repository.ID, model.ReadUser(ctx).ID, oldPattern, o.Pattern, o.Version, strings.ToLower(o.Frequency.String()))
+}
+
+const updateAllQuery = `
+UPDATE
+  ketchup.ketchup AS k
+SET
+  version = rv.version
+FROM
+  ketchup.repository AS r,
+  ketchup.repository_version AS rv
+WHERE
+  k.repository_id = r.id
+  AND k.repository_id = rv.repository_id
+  AND k.pattern = rv.pattern
+  AND k.version <> rv.version
+  AND k.user_id = $1
+`
+
+func (a app) UpdateAll(ctx context.Context) error {
+	return a.db.Exec(ctx, updateAllQuery, model.ReadUser(ctx).ID)
 }
 
 const deleteQuery = `

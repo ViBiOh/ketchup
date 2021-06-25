@@ -77,6 +77,11 @@ func (a App) Update(_ context.Context, _ model.Ketchup) (model.Ketchup, error) {
 	return model.NoneKetchup, nil
 }
 
+// UpdateAll mocks
+func (a App) UpdateAll(_ context.Context) error {
+	return nil
+}
+
 // Delete mocks
 func (a App) Delete(_ context.Context, _ model.Ketchup) error {
 	return nil

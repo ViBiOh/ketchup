@@ -21,6 +21,7 @@ type App interface {
 	ListOutdatedByFrequency(ctx context.Context, frequency model.KetchupFrequency) ([]model.Ketchup, error)
 	Create(ctx context.Context, item model.Ketchup) (model.Ketchup, error)
 	Update(ctx context.Context, item model.Ketchup) (model.Ketchup, error)
+	UpdateAll(ctx context.Context) error
 	Delete(ctx context.Context, item model.Ketchup) error
 }
 
@@ -96,6 +97,17 @@ func (a app) Create(ctx context.Context, item model.Ketchup) (model.Ketchup, err
 	})
 
 	return output, err
+}
+
+func (a app) UpdateAll(ctx context.Context) error {
+	err := a.ketchupStore.DoAtomic(ctx, func(ctx context.Context) error {
+		return a.ketchupStore.UpdateAll(ctx)
+	})
+	if err != nil {
+		return fmt.Errorf("unable to update all ketchup: %s", err)
+	}
+
+	return nil
 }
 
 func (a app) Update(ctx context.Context, item model.Ketchup) (model.Ketchup, error) {

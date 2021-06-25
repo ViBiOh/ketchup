@@ -31,6 +31,14 @@
 {{ define "header-part" }}
   {{ with .Root }}
     {{ if ne . "/" }}
+      <form method="POST" action="/app/ketchups/all" class="inline">
+        <input type="hidden" name="method" value="PUT">
+
+        <button type="submit" class="button bg-grey margin-right" title="Update all ketchups to pattern's latest">
+          Update all
+        </button>
+      </form>
+
       <a href="#create-modal" class="button bg-primary">Create</a>
     {{ end }}
   {{ end }}

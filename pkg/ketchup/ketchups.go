@@ -75,6 +75,17 @@ func (a app) handleCreate(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a app) handleUpdate(w http.ResponseWriter, r *http.Request) {
+	rawID := strings.Trim(r.URL.Path, "/")
+	if rawID == "all" {
+		if err := a.ketchupService.UpdateAll(r.Context()); err != nil {
+			a.rendererApp.Error(w, err)
+		} else {
+			a.rendererApp.Redirect(w, r, fmt.Sprintf("%s/", appPath), renderer.NewSuccessMessage("All ketchups are up-to-date!"))
+		}
+
+		return
+	}
+
 	id, err := strconv.ParseUint(strings.Trim(r.URL.Path, "/"), 10, 64)
 	if err != nil {
 		a.rendererApp.Error(w, httpModel.WrapInvalid(err))
