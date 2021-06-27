@@ -8,8 +8,7 @@ import (
 )
 
 const (
-	suggestThresold = uint64(10)
-	suggestCount    = uint64(5)
+	suggestThresold = uint64(5)
 )
 
 func (a app) PublicTemplateFunc(_ http.ResponseWriter, r *http.Request) (string, int, map[string]interface{}, error) {
@@ -61,7 +60,7 @@ func (a app) AppTemplateFunc(_ http.ResponseWriter, r *http.Request) (string, in
 			ketchupIds[index] = ketchup.Repository.ID
 		}
 
-		suggests, err := a.repositoryService.Suggest(r.Context(), ketchupIds, min(suggestThresold-ketchupsCount, suggestCount))
+		suggests, err := a.repositoryService.Suggest(r.Context(), ketchupIds, min(suggestThresold-ketchupsCount, suggestThresold))
 		if err != nil {
 			logger.Warn("unable to get suggest repositories: %s", err)
 		} else {

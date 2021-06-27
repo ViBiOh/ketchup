@@ -382,11 +382,19 @@
   {{ end }}
 
   {{ with .Suggests }}
+    <h2 class="separator full">
+      Suggestions
+    </h2>
+
     <section class="ketchups">
 
     {{ range . }}
       <div class="ketchup center suggest">
         <h2 class="header small ellipsis">{{ .Name }}</h2>
+
+          <div class="padding">
+            <img class="icon" src="{{ url "/svg/" }}{{ .Kind.String }}?fill=silver" alt="{{ .Kind.String }} icon">
+          </div>
 
         <div class="ketchup__version">
           <span>
@@ -398,7 +406,9 @@
           <form method="POST" action="/app/ketchups/">
             <input type="hidden" name="method" value="POST">
             <input type="hidden" name="kind" value="{{ .Kind }}">
-            <input type="hidden" name="repository" value="{{ .Name }}">
+            <input type="hidden" name="name" value="{{ .Name }}">
+            <input type="hidden" name="part" value="{{ .Part }}">
+            <input type="hidden" name="frequency" value="Daily">
             <input type="hidden" name="pattern" value="stable">
             <input type="hidden" name="version" value="{{ .Versions.stable }}">
 
