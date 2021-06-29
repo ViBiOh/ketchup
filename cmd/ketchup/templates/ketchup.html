@@ -9,35 +9,35 @@
         <p class="padding no-margin flex">
           <span class="flex-grow center">
             <label for="create-kind-github" class="block">
-              <img class="icon icon-large clickable" src="{{ url "/svg/github?fill=silver" }}" alt="Github icon">
+              <img class="icon icon-large clickable" src="{{ url "/svg/github?fill=silver" }}" alt="Github logo" title="Github">
             </label>
             <input id="create-kind-github" type="radio" name="kind" value="github" checked>
           </span>
 
           <span class="flex-grow center">
             <label for="create-kind-helm" class="block">
-              <img class="icon icon-large clickable" src="{{ url "/svg/helm?fill=silver" }}" alt="Helm icon">
+              <img class="icon icon-large clickable" src="{{ url "/svg/helm?fill=silver" }}" alt="Helm logo" title="Helm">
             </label>
             <input id="create-kind-helm" type="radio" name="kind" value="helm">
           </span>
 
           <span class="flex-grow center">
             <label for="create-kind-docker" class="block">
-              <img class="icon icon-large clickable" src="{{ url "/svg/docker?fill=silver" }}" alt="Docker icon">
+              <img class="icon icon-large clickable" src="{{ url "/svg/docker?fill=silver" }}" alt="Docker logo" title="Docker">
             </label>
             <input id="create-kind-docker" type="radio" name="kind" value="docker">
           </span>
 
           <span class="flex-grow center">
             <label for="create-kind-npm" class="block">
-              <img class="icon icon-large clickable" src="{{ url "/svg/npm?fill=silver" }}" alt="npm icon">
+              <img class="icon icon-large clickable" src="{{ url "/svg/npm?fill=silver" }}" alt="NPM logo" title="NPM">
             </label>
             <input id="create-kind-npm" type="radio" name="kind" value="npm">
           </span>
 
           <span class="flex-grow center">
             <label for="create-kind-pypi" class="block">
-              <img class="icon icon-large clickable" src="{{ url "/svg/pypi?fill=silver" }}" alt="Pypi icon">
+              <img class="icon icon-large clickable" src="{{ url "/svg/pypi?fill=silver" }}" alt="Pypi logo" title="Pypi">
             </label>
             <input id="create-kind-pypi" type="radio" name="kind" value="pypi">
           </span>
@@ -58,7 +58,7 @@
 'stable': latest version without beta.
 '^1': latest with fixed major version.
 '~1.1': latest with fixed major and minor version.
-'^1-0': include beta (works also for '~')." src="{{ url "/svg/question?fill=silver" }}" alt="question icon"></label>
+'^1-0': include beta (works also for '~')." src="{{ url "/svg/question?fill=silver" }}" alt="Question icon"></label>
           <input id="create-pattern" type="text" name="pattern" placeholder="stable" class="full">
         </p>
 
@@ -128,7 +128,7 @@
       <h2 class="header">Edit ketchup</h2>
 
       <p class="padding no-margin center">
-        <img class="icon" src="{{ url "/svg/" }}{{ .Repository.Kind.String }}?fill=silver" alt="{{ .Repository.Kind.String }} icon">
+        <img class="icon" src="{{ url "/svg/" }}{{ .Repository.Kind.String }}?fill=silver" alt="{{ .Repository.Kind.String }} logo">
       </p>
 
       <p class="no-margin center padding">{{ .Repository.Name }}</p>
@@ -144,7 +144,7 @@
 'stable': latest version without beta.
 '^1': latest with fixed major version.
 '~1.1': latest with fixed major and minor version.
-'^1-0': include beta (works also for '~')." src="{{ url "/svg/question?fill=silver" }}" alt="question icon"></label>
+'^1-0': include beta (works also for '~')." src="{{ url "/svg/question?fill=silver" }}" alt="Question icon"></label>
           <input id="edit-pattern-{{ .Repository.ID }}" name="pattern" type="text" value="{{ .Pattern }}">
         </p>
 
@@ -317,7 +317,7 @@
 
         {{ $ketchupType = .Repository.Kind.String }}
         <h2 class="separator full">
-          <img class="icon-large" src="{{ url "/svg/" }}{{ $ketchupType }}?fill=silver" alt="{{ $ketchupType }} Logo" title="{{ $ketchupType }}">
+          <img class="icon-large" src="{{ url "/svg/" }}{{ $ketchupType }}?fill=silver" alt="{{ $ketchupType }} logo" title="{{ $ketchupType }}">
         </h2>
 
         <section class="ketchups">
@@ -393,7 +393,7 @@
         <h2 class="header small ellipsis">{{ .Name }}</h2>
 
           <div class="padding">
-            <img class="icon" src="{{ url "/svg/" }}{{ .Kind.String }}?fill=silver" alt="{{ .Kind.String }} icon">
+            <img class="icon" src="{{ url "/svg/" }}{{ .Kind.String }}?fill=silver" alt="{{ .Kind.String }} logo" title="{{ .Kind.String }}">
           </div>
 
         <div class="ketchup__version">
