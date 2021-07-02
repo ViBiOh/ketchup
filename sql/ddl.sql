@@ -72,7 +72,7 @@ CREATE TABLE ketchup.ketchup (
   repository_id BIGINT NOT NULL REFERENCES ketchup.repository(id) ON DELETE CASCADE,
   pattern TEXT NOT NULL DEFAULT 'stable',
   version TEXT NOT NULL,
-  frequency ketchup_frequency NOT NULL DEFAULT 'daily',
+  frequency ketchup.ketchup_frequency NOT NULL DEFAULT 'daily',
   creation_date TIMESTAMP WITH TIME ZONE DEFAULT now()
 );
 
