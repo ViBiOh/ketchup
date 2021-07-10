@@ -42,6 +42,7 @@ spec:
       KETCHUP_DOCKER_PASSWORD: AgDDaXqK5BiRAtOjVK0XCtqHOdvcqC/UixTiim/k8JUnM9LzL3M5u8VRNazijYWSVYH01BktjcHWXH2dJM05L6nfgxJHznPMMiU0Hoqnozn7bErC24lb4GYBO0RFBPEMAVMlhoppMpMY2ScGp1RJOxTnR5rVKgiSZG/jnqCqnHuLDL50aZh0wDscxAntAdxn/RryjnT/sv4FMTtc6G8JXwGr/E8EUQg/bsiQi+i2gB1UEjuQQr0/E700j5PWp1t75yFz3/EmdbDQ3AjsObiuz15HuQG5LSt0Ph0k4/ZR/BplNipLkiOrUbeTRBRFB4Q1Hm4aATa7wUq1njfHhleIkjsskYKerdsZCfER9p8dU2eoVHnEX8eg8rAEITxceGPA00vsLIDOXCRh2IL+QymhHL/Xr9QHmdwxJYIrYSMy7hto+3zC2rzZ28eh9pDP7kHg9gLnYLIK2ylzP7qHZO2o6nyxySp4MCUHZ1HTScb/1JgZb53s/hMDoE4fo6q80SIbtBjkmmpKrlSy1oO3K6Lc6Q0r5x3V2RtHVE/cD3UYcpHEpLHlbkrfdlygCOaGcO4b1Exhop+PgAWBdk6Oi0sMQd31RLV+mr4LXj7RXs9SsQz9AG70wAtPo5Sl+QG1ZTjG+KYmJQ4BGBHWZhkvi4jNr4xwm0HCkBzaxvYNWqz4Ntu1ESOdPREZ6iCOIUG6Tzirv7gZznMi4xkwwHUTujajYRAOUexUpXVeqXI93hpn9RZDK9tuO84=
     ingress:
       enabled: true
+      compress: true
       hosts:
         - ketchup.vibioh.fr
     canary:
