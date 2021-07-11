@@ -84,6 +84,8 @@ Usage of ketchup:
         [db] Port {KETCHUP_DB_PORT} (default 5432)
   -dbSslmode string
         [db] SSL Mode {KETCHUP_DB_SSLMODE} (default "disable")
+  -dbTimeout uint
+        [db] Connect timeout {KETCHUP_DB_TIMEOUT} (default 10)
   -dbUser string
         [db] User {KETCHUP_DB_USER}
   -dockerPassword string
@@ -118,6 +120,8 @@ Usage of ketchup:
         [mailer] HTTP Pass {KETCHUP_MAILER_PASSWORD}
   -mailerURL string
         [mailer] URL (https?:// or amqps?://) {KETCHUP_MAILER_URL}
+  -minify
+        Minify HTML {KETCHUP_MINIFY} (default true)
   -notifierLoginID uint
         [notifier] Scheduler user ID {KETCHUP_NOTIFIER_LOGIN_ID} (default 1)
   -notifierPushUrl string
