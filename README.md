@@ -47,12 +47,16 @@ You'll find a Kubernetes exemple in the [`infra/`](infra/) folder, using my [`ap
 
 ## Endpoints
 
-- `GET /health`: healthcheck of server, respond [`okStatus (default 204)`](#usage) or `503` during [`graceDuration`](#usage) when SIGTERM is received
-- `GET /ready`: same response than `/health` but it also checks external dependencies availability
+- `GET /health`: healthcheck of server, always respond [`okStatus (default 204)`](#usage)
+- `GET /ready`: checks external dependencies availability and then respond [`okStatus (default 204)`](#usage) or `503` during [`graceDuration`](#usage) when `SIGTERM` is received
 - `GET /version`: value of `VERSION` environment variable
-- `GET /metrics`: Prometheus metrics values
+- `GET /metrics`: Prometheus metrics, on a dedicated port [`prometheusPort (default 9090)`](#usage)
 
 ## Usage
+
+The application can be configured by passing CLI args described below or their equivalent as environment variable. CLI values take precedence over environments variables.
+
+Be careful when using the CLI values, if someone list the processes on the system, they will appear in plain-text. Pass secrets by environment variables: it's less easily visible.
 
 ```bash
 Usage of ketchup:
