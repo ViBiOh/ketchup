@@ -122,12 +122,12 @@ func (a app) getImageDetails(ctx context.Context, repository string) (string, st
 
 func (a app) login(ctx context.Context, repository string) (string, error) {
 	values := url.Values{}
-	values.Set("grant_type", "password")
-	values.Set("service", "registry.docker.io")
-	values.Set("client_id", "ketchup")
-	values.Set("scope", fmt.Sprintf("repository:%s:pull", repository))
-	values.Set("username", a.username)
-	values.Set("password", a.password)
+	values.Add("grant_type", "password")
+	values.Add("service", "registry.docker.io")
+	values.Add("client_id", "ketchup")
+	values.Add("scope", fmt.Sprintf("repository:%s:pull", repository))
+	values.Add("username", a.username)
+	values.Add("password", a.password)
 
 	resp, err := request.New().Post(authURL).Form(ctx, values)
 	if err != nil {
