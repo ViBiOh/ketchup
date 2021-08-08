@@ -53,7 +53,7 @@ func uuid() string {
 	return fmt.Sprintf("%x-%x-%x-%x-%x", raw[0:4], raw[4:6], raw[6:8], raw[8:10], raw[10:])
 }
 
-func (a app) generateToken(ctx context.Context) (SecurityPayload, error) {
+func (a App) generateToken(ctx context.Context) (SecurityPayload, error) {
 	questionID, err := rand.Int(rand.Reader, big.NewInt(int64(len(colors))))
 	if err != nil {
 		return SecurityPayload{}, fmt.Errorf("unable to generate random int: %w", err)
@@ -72,7 +72,7 @@ func (a app) generateToken(ctx context.Context) (SecurityPayload, error) {
 	}, nil
 }
 
-func (a app) validateToken(ctx context.Context, token, answer string) bool {
+func (a App) validateToken(ctx context.Context, token, answer string) bool {
 	questionIDString, err := a.redisApp.Load(ctx, token)
 	if err != nil {
 		logger.Warn("unable to retrieve captcha token: %s", err)
@@ -93,7 +93,7 @@ func (a app) validateToken(ctx context.Context, token, answer string) bool {
 	return true
 }
 
-func (a app) cleanToken(ctx context.Context, token string) {
+func (a App) cleanToken(ctx context.Context, token string) {
 	if err := a.redisApp.Delete(ctx, token); err != nil {
 		logger.WithField("token", token).Error("unable to delete token: %s", err)
 	}

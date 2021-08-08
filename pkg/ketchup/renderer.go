@@ -11,7 +11,8 @@ const (
 	suggestThresold = uint64(5)
 )
 
-func (a app) PublicTemplateFunc(_ http.ResponseWriter, r *http.Request) (string, int, map[string]interface{}, error) {
+// PublicTemplateFunc rendering public GUI
+func (a App) PublicTemplateFunc(_ http.ResponseWriter, r *http.Request) (string, int, map[string]interface{}, error) {
 	securityPayload, err := a.generateToken(r.Context())
 	if err != nil {
 		return "", http.StatusInternalServerError, nil, err
@@ -36,7 +37,8 @@ func min(a, b uint64) uint64 {
 	return b
 }
 
-func (a app) AppTemplateFunc(_ http.ResponseWriter, r *http.Request) (string, int, map[string]interface{}, error) {
+// AppTemplateFunc rendering private GUI
+func (a App) AppTemplateFunc(_ http.ResponseWriter, r *http.Request) (string, int, map[string]interface{}, error) {
 	pagination, err := query.ParsePagination(r, 100, 100)
 	if err != nil {
 		return "", http.StatusBadRequest, nil, err

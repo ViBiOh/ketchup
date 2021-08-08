@@ -35,24 +35,17 @@ var (
 )
 
 // App of package
-type App interface {
-	Handler() http.Handler
-	Signup() http.Handler
-	PublicTemplateFunc(http.ResponseWriter, *http.Request) (string, int, map[string]interface{}, error)
-	AppTemplateFunc(http.ResponseWriter, *http.Request) (string, int, map[string]interface{}, error)
-}
-
-type app struct {
-	rendererApp       renderer.App
-	ketchupService    ketchup.App
+type App struct {
 	userService       user.App
+	ketchupService    ketchup.App
 	repositoryService repository.App
 	redisApp          redis.App
+	rendererApp       renderer.App
 }
 
 // New creates new App from Config
 func New(rendererApp renderer.App, ketchupService ketchup.App, userService user.App, repositoryService repository.App, redisApp redis.App) App {
-	return app{
+	return App{
 		rendererApp:       rendererApp,
 		ketchupService:    ketchupService,
 		userService:       userService,
@@ -62,7 +55,7 @@ func New(rendererApp renderer.App, ketchupService ketchup.App, userService user.
 }
 
 // Handler for request. Should be use with net/http
-func (a app) Handler() http.Handler {
+func (a App) Handler() http.Handler {
 	rendererHandler := a.rendererApp.Handler(a.AppTemplateFunc)
 	ketchupHandler := http.StripPrefix(ketchupsPath, a.ketchups())
 

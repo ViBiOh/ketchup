@@ -11,7 +11,7 @@ import (
 	"github.com/ViBiOh/ketchup/pkg/model"
 )
 
-func (a app) ketchups() http.Handler {
+func (a App) ketchups() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodPost {
 			a.rendererApp.Error(w, httpModel.WrapMethodNotAllowed(fmt.Errorf("invalid method %s", r.Method)))
@@ -38,7 +38,7 @@ func (a app) ketchups() http.Handler {
 	})
 }
 
-func (a app) handleCreate(w http.ResponseWriter, r *http.Request) {
+func (a App) handleCreate(w http.ResponseWriter, r *http.Request) {
 	repositoryKind, err := model.ParseRepositoryKind(r.FormValue("kind"))
 	if err != nil {
 		a.rendererApp.Error(w, httpModel.WrapInvalid(err))
@@ -74,7 +74,7 @@ func (a app) handleCreate(w http.ResponseWriter, r *http.Request) {
 	a.rendererApp.Redirect(w, r, fmt.Sprintf("%s/", appPath), renderer.NewSuccessMessage(fmt.Sprintf("%s created with success!", created.Repository.Name)))
 }
 
-func (a app) handleUpdate(w http.ResponseWriter, r *http.Request) {
+func (a App) handleUpdate(w http.ResponseWriter, r *http.Request) {
 	rawID := strings.Trim(r.URL.Path, "/")
 	if rawID == "all" {
 		if err := a.ketchupService.UpdateAll(r.Context()); err != nil {
@@ -109,7 +109,7 @@ func (a app) handleUpdate(w http.ResponseWriter, r *http.Request) {
 	a.rendererApp.Redirect(w, r, fmt.Sprintf("%s/", appPath), renderer.NewSuccessMessage(fmt.Sprintf("Updated %s with success!", updated.Version)))
 }
 
-func (a app) handleDelete(w http.ResponseWriter, r *http.Request) {
+func (a App) handleDelete(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.ParseUint(strings.Trim(r.URL.Path, "/"), 10, 64)
 	if err != nil {
 		a.rendererApp.Error(w, httpModel.WrapInvalid(err))
