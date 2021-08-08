@@ -10,23 +10,31 @@ import (
 	"github.com/ViBiOh/httputils/v4/pkg/logger"
 	httpModel "github.com/ViBiOh/httputils/v4/pkg/model"
 	"github.com/ViBiOh/ketchup/pkg/model"
-	"github.com/ViBiOh/ketchup/pkg/store/user"
 )
 
-// AuthService defines interaction with storage and provider from User
+// AuthService defines interaction with underlying User
 type AuthService interface {
 	Create(context.Context, authModel.User) (authModel.User, error)
 	Check(context.Context, authModel.User, authModel.User) error
 }
 
+// Store defines interaction with User storage
+type Store interface {
+	DoAtomic(context.Context, func(context.Context) error) error
+	GetByLoginID(context.Context, uint64) (model.User, error)
+	GetByEmail(context.Context, string) (model.User, error)
+	Create(context.Context, model.User) (uint64, error)
+	Count(context.Context) (uint64, error)
+}
+
 // App of package
 type App struct {
-	userStore user.App
+	userStore Store
 	authApp   AuthService
 }
 
 // New creates new App from Config
-func New(userStore user.App, authApp AuthService) App {
+func New(userStore Store, authApp AuthService) App {
 	return App{
 		userStore: userStore,
 		authApp:   authApp,
