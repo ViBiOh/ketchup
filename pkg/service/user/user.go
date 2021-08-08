@@ -7,36 +7,34 @@ import (
 	"strings"
 
 	authModel "github.com/ViBiOh/auth/v2/pkg/model"
-	authService "github.com/ViBiOh/auth/v2/pkg/service"
 	"github.com/ViBiOh/httputils/v4/pkg/logger"
 	httpModel "github.com/ViBiOh/httputils/v4/pkg/model"
 	"github.com/ViBiOh/ketchup/pkg/model"
 	"github.com/ViBiOh/ketchup/pkg/store/user"
 )
 
-// App of package
-type App interface {
-	Create(ctx context.Context, o model.User) (model.User, error)
-	StoreInContext(ctx context.Context) context.Context
-	Count(ctx context.Context) (uint64, error)
+// AuthService defines interaction with storage and provider from User
+type AuthService interface {
+	Create(context.Context, authModel.User) (authModel.User, error)
+	Check(context.Context, authModel.User, authModel.User) error
 }
 
-type app struct {
+// App of package
+type App struct {
 	userStore user.App
-
-	authService authService.App
+	authApp   AuthService
 }
 
 // New creates new App from Config
-func New(userStore user.App, authService authService.App) App {
-	return app{
+func New(userStore user.App, authApp AuthService) App {
+	return App{
 		userStore: userStore,
-
-		authService: authService,
+		authApp:   authApp,
 	}
 }
 
-func (a app) StoreInContext(ctx context.Context) context.Context {
+// StoreInContext read login user from context and store app user in context
+func (a App) StoreInContext(ctx context.Context) context.Context {
 	id := authModel.ReadUser(ctx).ID
 	if id == 0 {
 		logger.Warn("no login user in context")
@@ -52,19 +50,20 @@ func (a app) StoreInContext(ctx context.Context) context.Context {
 	return model.StoreUser(ctx, item)
 }
 
-func (a app) Create(ctx context.Context, item model.User) (model.User, error) {
+// Create user
+func (a App) Create(ctx context.Context, item model.User) (model.User, error) {
 	if err := a.check(ctx, model.NoneUser, item); err != nil {
 		return model.NoneUser, httpModel.WrapInvalid(err)
 	}
 
-	if err := a.authService.Check(ctx, authModel.NoneUser, item.Login); err != nil {
+	if err := a.authApp.Check(ctx, authModel.NoneUser, item.Login); err != nil {
 		return model.NoneUser, httpModel.WrapInvalid(err)
 	}
 
 	var output model.User
 
 	err := a.userStore.DoAtomic(ctx, func(ctx context.Context) error {
-		loginUser, err := a.authService.Create(ctx, item.Login)
+		loginUser, err := a.authApp.Create(ctx, item.Login)
 		if err != nil {
 			return httpModel.WrapInternal(fmt.Errorf("unable to create login: %w", err))
 		}
@@ -85,7 +84,7 @@ func (a app) Create(ctx context.Context, item model.User) (model.User, error) {
 	return output, err
 }
 
-func (a app) check(ctx context.Context, _, new model.User) error {
+func (a App) check(ctx context.Context, _, new model.User) error {
 	if new == model.NoneUser {
 		return nil
 	}
@@ -105,6 +104,7 @@ func (a app) check(ctx context.Context, _, new model.User) error {
 	return httpModel.ConcatError(output)
 }
 
-func (a app) Count(ctx context.Context) (uint64, error) {
+// Count users
+func (a App) Count(ctx context.Context) (uint64, error) {
 	return a.userStore.Count(ctx)
 }

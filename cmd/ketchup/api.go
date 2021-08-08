@@ -103,7 +103,7 @@ func main() {
 
 	authServiceApp, authMiddlewareApp := initAuth(ketchupDb)
 
-	userServiceApp := userService.New(userStore.New(ketchupDb), authServiceApp)
+	userServiceApp := userService.New(userStore.New(ketchupDb), &authServiceApp)
 	githubApp := github.New(githubConfig, redisApp)
 	dockerApp := docker.New(dockerConfig)
 	helmApp := helm.New()
