@@ -17,7 +17,6 @@ import (
 	"github.com/ViBiOh/ketchup/pkg/service/ketchup"
 	"github.com/ViBiOh/ketchup/pkg/service/repository"
 	"github.com/ViBiOh/ketchup/pkg/service/user"
-	mailer "github.com/ViBiOh/mailer/pkg/client"
 	mailerModel "github.com/ViBiOh/mailer/pkg/model"
 	"github.com/prometheus/client_golang/prometheus/push"
 )
@@ -25,6 +24,12 @@ import (
 var (
 	pageSize = uint(20)
 )
+
+// Mailer interface client
+type Mailer interface {
+	Enabled() bool
+	Send(context.Context, mailerModel.MailRequest) error
+}
 
 // App of package
 type App interface {
@@ -41,7 +46,7 @@ type app struct {
 	repositoryService repository.App
 	ketchupService    ketchup.App
 	userService       user.App
-	mailerApp         mailer.App
+	mailerApp         Mailer
 	helmApp           helm.App
 
 	clock *Clock
@@ -59,7 +64,7 @@ func Flags(fs *flag.FlagSet, prefix string) Config {
 }
 
 // New creates new App from Config
-func New(config Config, repositoryService repository.App, ketchupService ketchup.App, userService user.App, mailerApp mailer.App, helmApp helm.App) App {
+func New(config Config, repositoryService repository.App, ketchupService ketchup.App, userService user.App, mailerApp Mailer, helmApp helm.App) App {
 	return app{
 		loginID: uint64(*config.loginID),
 		pushURL: strings.TrimSpace(*config.pushURL),
