@@ -10,11 +10,12 @@ import (
 	"testing"
 
 	authModel "github.com/ViBiOh/auth/v2/pkg/model"
+	"github.com/ViBiOh/ketchup/pkg/mocks"
 	"github.com/ViBiOh/ketchup/pkg/model"
 	"github.com/ViBiOh/ketchup/pkg/semver"
 	"github.com/ViBiOh/ketchup/pkg/service/ketchup/ketchuptest"
 	"github.com/ViBiOh/ketchup/pkg/service/repository/repositorytest"
-	"github.com/ViBiOh/mailer/pkg/client/clienttest"
+	"github.com/golang/mock/gomock"
 )
 
 var (
@@ -338,9 +339,7 @@ func TestSendNotification(t *testing.T) {
 		},
 		{
 			"mailer disabled",
-			app{
-				mailerApp: clienttest.New(false),
-			},
+			app{},
 			args{
 				ctx: context.Background(),
 				ketchupToNotify: map[model.User][]model.Release{
@@ -361,9 +360,7 @@ func TestSendNotification(t *testing.T) {
 		},
 		{
 			"mailer error",
-			app{
-				mailerApp: clienttest.New(true),
-			},
+			app{},
 			args{
 				ctx: context.TODO(),
 				ketchupToNotify: map[model.User][]model.Release{
@@ -384,9 +381,7 @@ func TestSendNotification(t *testing.T) {
 		},
 		{
 			"multiple releases",
-			app{
-				mailerApp: clienttest.New(true),
-			},
+			app{},
 			args{
 				ctx: context.Background(),
 				ketchupToNotify: map[model.User][]model.Release{
@@ -415,6 +410,24 @@ func TestSendNotification(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.intention, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			mailerApp := mocks.NewMailer(ctrl)
+			tc.instance.mailerApp = mailerApp
+
+			switch tc.intention {
+			case "no mailer":
+				tc.instance.mailerApp = nil
+			case "mailer disabled":
+				mailerApp.EXPECT().Enabled().Return(false)
+			case "mailer error":
+				mailerApp.EXPECT().Enabled().Return(true)
+				mailerApp.EXPECT().Send(gomock.Any(), gomock.Any()).Return(errors.New("invalid context"))
+			case "multiple releases":
+				mailerApp.EXPECT().Enabled().Return(false)
+			}
+
 			gotErr := tc.instance.sendNotification(tc.args.ctx, tc.args.ketchupToNotify)
 
 			failed := false

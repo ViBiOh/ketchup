@@ -21,6 +21,14 @@ import (
 
 var (
 	apiURL = "https://api.github.com"
+
+	httpClient = &http.Client{
+		Timeout: 30 * time.Second,
+		CheckRedirect: func(r *http.Request, via []*http.Request) error {
+			logger.Info("Redirect from %s to %s", via[len(via)-1].URL.Path, r.URL.Path)
+			return nil
+		},
+	}
 )
 
 // Tag describes a GitHub Tag
@@ -70,13 +78,7 @@ func New(config Config, redisApp redis.App) App {
 }
 
 func (a app) newClient() *request.Request {
-	return request.New().Header("Authorization", fmt.Sprintf("token %s", a.token)).WithClient(http.Client{
-		Timeout: 30 * time.Second,
-		CheckRedirect: func(r *http.Request, via []*http.Request) error {
-			logger.Info("Redirect from %s to %s", via[len(via)-1].URL.Path, r.URL.Path)
-			return nil
-		},
-	})
+	return request.New().Header("Authorization", fmt.Sprintf("token %s", a.token)).WithClient(httpClient)
 }
 
 func (a app) Start(registerer prometheus.Registerer, done <-chan struct{}) {
