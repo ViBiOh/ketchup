@@ -75,6 +75,7 @@ style:
 mocks:
 	find . -name "mocks" -type d -exec rm -r "{}" \+
 	mockgen -destination pkg/mocks/mailer.go -mock_names Mailer=Mailer -package mocks github.com/ViBiOh/ketchup/pkg/notifier Mailer
+	mockgen -destination pkg/mocks/auth.go -mock_names AuthService=Auth -package mocks github.com/ViBiOh/ketchup/pkg/service/user AuthService
 
 ## test: Shortcut to launch all the test tasks (unit, functional and integration).
 .PHONY: test

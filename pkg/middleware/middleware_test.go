@@ -1,13 +1,16 @@
 package middleware
 
 import (
+	"context"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
+	authModel "github.com/ViBiOh/auth/v2/pkg/model"
 	"github.com/ViBiOh/httputils/v4/pkg/request"
 	"github.com/ViBiOh/ketchup/pkg/model"
-	"github.com/ViBiOh/ketchup/pkg/service/user/usertest"
+	"github.com/ViBiOh/ketchup/pkg/service/user"
+	"github.com/ViBiOh/ketchup/pkg/store/user/usertest"
 )
 
 func TestMiddleware(t *testing.T) {
@@ -26,7 +29,7 @@ func TestMiddleware(t *testing.T) {
 					t.Errorf("unable to write: %s", err)
 				}
 			}),
-			httptest.NewRequest(http.MethodGet, "/", nil),
+			httptest.NewRequest(http.MethodGet, "/", nil).WithContext(authModel.StoreUser(context.Background(), authModel.NewUser(8000, "test"))),
 			"nobody@localhost",
 			http.StatusOK,
 			http.Header{},
@@ -44,7 +47,8 @@ func TestMiddleware(t *testing.T) {
 	for _, tc := range cases {
 		t.Run(tc.intention, func(t *testing.T) {
 			writer := httptest.NewRecorder()
-			New(usertest.NewApp()).Middleware(tc.next).ServeHTTP(writer, tc.request)
+			userService := user.New(usertest.New().SetGetByLoginID(model.NewUser(1, "nobody@localhost", authModel.NewUser(8000, "test")), nil), nil)
+			New(userService).Middleware(tc.next).ServeHTTP(writer, tc.request)
 
 			if got := writer.Code; got != tc.wantStatus {
 				t.Errorf("Middleware = %d, want %d", got, tc.wantStatus)

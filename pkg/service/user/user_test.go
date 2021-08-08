@@ -8,10 +8,11 @@ import (
 	"testing"
 
 	authModel "github.com/ViBiOh/auth/v2/pkg/model"
-	"github.com/ViBiOh/auth/v2/pkg/service/servicetest"
 	httpModel "github.com/ViBiOh/httputils/v4/pkg/model"
+	"github.com/ViBiOh/ketchup/pkg/mocks"
 	"github.com/ViBiOh/ketchup/pkg/model"
 	"github.com/ViBiOh/ketchup/pkg/store/user/usertest"
+	"github.com/golang/mock/gomock"
 )
 
 var (
@@ -89,7 +90,9 @@ func TestCreate(t *testing.T) {
 	}{
 		{
 			"invalid user",
-			New(usertest.New(), servicetest.New()),
+			App{
+				userStore: usertest.New(),
+			},
 			args{
 				ctx:  context.TODO(),
 				item: model.NewUser(1, "", authModel.NewUser(1, "")),
@@ -99,7 +102,9 @@ func TestCreate(t *testing.T) {
 		},
 		{
 			"invalid auth",
-			New(usertest.New(), servicetest.New().SetCheck(errors.New("failed"))),
+			App{
+				userStore: usertest.New(),
+			},
 			args{
 				ctx:  context.TODO(),
 				item: model.NewUser(0, testEmail, authModel.NewUser(0, "")),
@@ -109,7 +114,9 @@ func TestCreate(t *testing.T) {
 		},
 		{
 			"start atomic error",
-			New(usertest.New().SetGetByEmail(model.NoneUser, nil).SetDoAtomic(errAtomicStart), servicetest.New()),
+			App{
+				userStore: usertest.New().SetGetByEmail(model.NoneUser, nil).SetDoAtomic(errAtomicStart),
+			},
 			args{
 				ctx:  context.TODO(),
 				item: model.NewUser(1, testEmail, authModel.NewUser(1, "")),
@@ -119,7 +126,9 @@ func TestCreate(t *testing.T) {
 		},
 		{
 			"login create error",
-			New(usertest.New().SetGetByEmail(model.NoneUser, nil), servicetest.New().SetCreate(authModel.NoneUser, errors.New("failed"))),
+			App{
+				userStore: usertest.New().SetGetByEmail(model.NoneUser, nil),
+			},
 			args{
 				ctx:  context.Background(),
 				item: model.NewUser(1, testEmail, authModel.NewUser(1, "")),
@@ -129,7 +138,9 @@ func TestCreate(t *testing.T) {
 		},
 		{
 			"user create error",
-			New(usertest.New().SetGetByEmail(model.NoneUser, nil).SetCreate(0, errors.New("failed")), servicetest.New()),
+			App{
+				userStore: usertest.New().SetGetByEmail(model.NoneUser, nil).SetCreate(0, errors.New("failed")),
+			},
 			args{
 				ctx:  context.Background(),
 				item: model.NewUser(2, testEmail, authModel.NewUser(2, "")),
@@ -139,7 +150,9 @@ func TestCreate(t *testing.T) {
 		},
 		{
 			"success",
-			New(usertest.New().SetGetByEmail(model.NoneUser, nil).SetCreate(2, nil), servicetest.New().SetCreate(authModel.NewUser(2, "admin"), nil)),
+			App{
+				userStore: usertest.New().SetGetByEmail(model.NoneUser, nil).SetCreate(2, nil),
+			},
 			args{
 				ctx:  context.Background(),
 				item: model.NewUser(2, testEmail, authModel.NewUser(2, "")),
@@ -151,6 +164,28 @@ func TestCreate(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.intention, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			authApp := mocks.NewAuth(ctrl)
+			tc.instance.authApp = authApp
+
+			switch tc.intention {
+			case "invalid auth":
+				authApp.EXPECT().Check(gomock.Any(), gomock.Any(), gomock.Any()).Return(errors.New("failed"))
+			case "start atomic error":
+				authApp.EXPECT().Check(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+			case "login create error":
+				authApp.EXPECT().Check(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+				authApp.EXPECT().Create(gomock.Any(), gomock.Any()).Return(authModel.NoneUser, errors.New("failed"))
+			case "user create error":
+				authApp.EXPECT().Check(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+				authApp.EXPECT().Create(gomock.Any(), gomock.Any()).Return(authModel.NoneUser, errors.New("failed"))
+			case "success":
+				authApp.EXPECT().Check(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+				authApp.EXPECT().Create(gomock.Any(), gomock.Any()).Return(authModel.NewUser(2, "admin"), nil)
+			}
+
 			got, gotErr := tc.instance.Create(tc.args.ctx, tc.args.item)
 
 			failed := false
@@ -177,13 +212,13 @@ func TestCheck(t *testing.T) {
 
 	var cases = []struct {
 		intention string
-		instance  app
+		instance  App
 		args      args
 		wantErr   error
 	}{
 		{
 			"delete",
-			app{userStore: usertest.New()},
+			App{userStore: usertest.New()},
 			args{
 				ctx: context.Background(),
 			},
@@ -191,7 +226,7 @@ func TestCheck(t *testing.T) {
 		},
 		{
 			"no name",
-			app{userStore: usertest.New()},
+			App{userStore: usertest.New()},
 			args{
 				ctx: context.Background(),
 				new: model.NewUser(1, "", authModel.NewUser(1, "")),
@@ -200,7 +235,7 @@ func TestCheck(t *testing.T) {
 		},
 		{
 			"get error",
-			app{userStore: usertest.New().SetGetByEmail(model.NoneUser, errors.New("failed"))},
+			App{userStore: usertest.New().SetGetByEmail(model.NoneUser, errors.New("failed"))},
 			args{
 				ctx: context.Background(),
 				new: model.NewUser(1, testEmail, authModel.NewUser(1, "")),
@@ -209,7 +244,7 @@ func TestCheck(t *testing.T) {
 		},
 		{
 			"already used",
-			app{userStore: usertest.New().SetGetByEmail(model.NewUser(1, testEmail, authModel.NewUser(1, "")), nil)},
+			App{userStore: usertest.New().SetGetByEmail(model.NewUser(1, testEmail, authModel.NewUser(1, "")), nil)},
 			args{
 				ctx: context.Background(),
 				new: model.NewUser(1, testEmail, authModel.NewUser(1, "")),
