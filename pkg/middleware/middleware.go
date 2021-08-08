@@ -1,22 +1,18 @@
 package middleware
 
 import (
-	"context"
 	"net/http"
-)
 
-// UserService for storing user in context
-type UserService interface {
-	StoreInContext(context.Context) context.Context
-}
+	"github.com/ViBiOh/ketchup/pkg/model"
+)
 
 // App of package
 type App struct {
-	userService UserService
+	userService model.UserService
 }
 
 // New creates new App from Config
-func New(userService UserService) App {
+func New(userService model.UserService) App {
 	return App{
 		userService: userService,
 	}

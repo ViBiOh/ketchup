@@ -12,29 +12,14 @@ import (
 	"github.com/ViBiOh/ketchup/pkg/model"
 )
 
-// AuthService defines interaction with underlying User
-type AuthService interface {
-	Create(context.Context, authModel.User) (authModel.User, error)
-	Check(context.Context, authModel.User, authModel.User) error
-}
-
-// Store defines interaction with User storage
-type Store interface {
-	DoAtomic(context.Context, func(context.Context) error) error
-	GetByLoginID(context.Context, uint64) (model.User, error)
-	GetByEmail(context.Context, string) (model.User, error)
-	Create(context.Context, model.User) (uint64, error)
-	Count(context.Context) (uint64, error)
-}
-
 // App of package
 type App struct {
-	userStore Store
-	authApp   AuthService
+	userStore model.UserStore
+	authApp   model.AuthService
 }
 
 // New creates new App from Config
-func New(userStore Store, authApp AuthService) App {
+func New(userStore model.UserStore, authApp model.AuthService) App {
 	return App{
 		userStore: userStore,
 		authApp:   authApp,

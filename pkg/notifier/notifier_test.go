@@ -14,7 +14,6 @@ import (
 	"github.com/ViBiOh/ketchup/pkg/model"
 	"github.com/ViBiOh/ketchup/pkg/semver"
 	"github.com/ViBiOh/ketchup/pkg/service/ketchup/ketchuptest"
-	"github.com/ViBiOh/ketchup/pkg/service/repository/repositorytest"
 	"github.com/golang/mock/gomock"
 )
 
@@ -74,9 +73,7 @@ func TestGetNewRepositoryReleases(t *testing.T) {
 	}{
 		{
 			"empty",
-			App{
-				repositoryService: repositorytest.New().SetLatestVersions(nil, nil),
-			},
+			App{},
 			args{
 				repo: model.NewGithubRepository(0, ""),
 			},
@@ -84,11 +81,7 @@ func TestGetNewRepositoryReleases(t *testing.T) {
 		},
 		{
 			"no new",
-			App{
-				repositoryService: repositorytest.New().SetLatestVersions(map[string]semver.Version{
-					model.DefaultPattern: safeParse(repositoryVersion),
-				}, nil),
-			},
+			App{},
 			args{
 				repo: model.NewGithubRepository(1, repositoryName).AddVersion(model.DefaultPattern, repositoryVersion),
 			},
@@ -96,11 +89,7 @@ func TestGetNewRepositoryReleases(t *testing.T) {
 		},
 		{
 			"invalid version",
-			App{
-				repositoryService: repositorytest.New().SetLatestVersions(map[string]semver.Version{
-					model.DefaultPattern: safeParse(repositoryVersion),
-				}, nil),
-			},
+			App{},
 			args{
 				repo: model.NewGithubRepository(1, repositoryName).AddVersion(model.DefaultPattern, "abcde"),
 			},
@@ -108,11 +97,7 @@ func TestGetNewRepositoryReleases(t *testing.T) {
 		},
 		{
 			"not greater",
-			App{
-				repositoryService: repositorytest.New().SetLatestVersions(map[string]semver.Version{
-					model.DefaultPattern: safeParse(repositoryVersion),
-				}, nil),
-			},
+			App{},
 			args{
 				repo: model.NewGithubRepository(1, repositoryName).AddVersion(model.DefaultPattern, "1.1.0"),
 			},
@@ -120,11 +105,7 @@ func TestGetNewRepositoryReleases(t *testing.T) {
 		},
 		{
 			"greater",
-			App{
-				repositoryService: repositorytest.New().SetLatestVersions(map[string]semver.Version{
-					model.DefaultPattern: safeParse("1.1.0"),
-				}, nil),
-			},
+			App{},
 			args{
 				repo: model.NewGithubRepository(1, repositoryName).AddVersion(model.DefaultPattern, repositoryVersion),
 			},
@@ -136,6 +117,34 @@ func TestGetNewRepositoryReleases(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.intention, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			mockRepositoryService := mocks.NewRepositoryService(ctrl)
+
+			tc.instance.repositoryService = mockRepositoryService
+
+			switch tc.intention {
+			case "empty":
+				mockRepositoryService.EXPECT().LatestVersions(gomock.Any()).Return(nil, nil)
+			case "no new":
+				mockRepositoryService.EXPECT().LatestVersions(gomock.Any()).Return(map[string]semver.Version{
+					model.DefaultPattern: safeParse(repositoryVersion),
+				}, nil)
+			case "invalid version":
+				mockRepositoryService.EXPECT().LatestVersions(gomock.Any()).Return(map[string]semver.Version{
+					model.DefaultPattern: safeParse(repositoryVersion),
+				}, nil)
+			case "not greater":
+				mockRepositoryService.EXPECT().LatestVersions(gomock.Any()).Return(map[string]semver.Version{
+					model.DefaultPattern: safeParse(repositoryVersion),
+				}, nil)
+			case "greater":
+				mockRepositoryService.EXPECT().LatestVersions(gomock.Any()).Return(map[string]semver.Version{
+					model.DefaultPattern: safeParse("1.1.0"),
+				}, nil)
+			}
+
 			if got := tc.instance.getNewRepositoryReleases(tc.args.repo); !reflect.DeepEqual(got, tc.want) {
 				t.Errorf("getNewRepositoryReleases() = %+v, want %+v", got, tc.want)
 			}

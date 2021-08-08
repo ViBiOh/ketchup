@@ -19,18 +19,16 @@ type packageResp struct {
 }
 
 // App of package
-type App interface {
-	LatestVersions(string, []string) (map[string]semver.Version, error)
+type App struct {
 }
 
-type app struct{}
-
-// New creates new App from Config
+// New creates new App
 func New() App {
-	return app{}
+	return App{}
 }
 
-func (a app) LatestVersions(name string, patterns []string) (map[string]semver.Version, error) {
+// LatestVersions retrieves latest version for package name on given patterns
+func (a App) LatestVersions(name string, patterns []string) (map[string]semver.Version, error) {
 	ctx := context.Background()
 
 	versions, compiledPatterns, err := model.PreparePatternMatching(patterns)

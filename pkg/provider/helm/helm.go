@@ -25,19 +25,16 @@ type chart struct {
 }
 
 // App of package
-type App interface {
-	LatestVersions(string, string, []string) (map[string]semver.Version, error)
-	FetchIndex(string, map[string][]string) (map[string]map[string]semver.Version, error)
+type App struct {
 }
-
-type app struct{}
 
 // New creates new App from Config
 func New() App {
-	return app{}
+	return App{}
 }
 
-func (a app) FetchIndex(url string, chartsPatterns map[string][]string) (map[string]map[string]semver.Version, error) {
+// FetchIndex of given URL for given charts patterns
+func (a App) FetchIndex(url string, chartsPatterns map[string][]string) (map[string]map[string]semver.Version, error) {
 	resp, err := request.New().Get(fmt.Sprintf("%s/%s", url, indexName)).Send(context.Background(), nil)
 	if err != nil {
 		return nil, fmt.Errorf("unable to request repository: %w", err)
@@ -81,7 +78,8 @@ func (a app) FetchIndex(url string, chartsPatterns map[string][]string) (map[str
 	return output, nil
 }
 
-func (a app) LatestVersions(name, part string, patterns []string) (map[string]semver.Version, error) {
+// LatestVersions for repo and name, on given patterns
+func (a App) LatestVersions(name, part string, patterns []string) (map[string]semver.Version, error) {
 	index, err := a.FetchIndex(name, map[string][]string{part: patterns})
 	if err != nil {
 		return nil, err

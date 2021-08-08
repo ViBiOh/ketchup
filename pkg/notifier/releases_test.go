@@ -8,10 +8,10 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/ViBiOh/ketchup/pkg/mocks"
 	"github.com/ViBiOh/ketchup/pkg/model"
-	"github.com/ViBiOh/ketchup/pkg/provider/helm/helmtest"
 	"github.com/ViBiOh/ketchup/pkg/semver"
-	"github.com/ViBiOh/ketchup/pkg/service/repository/repositorytest"
+	"github.com/golang/mock/gomock"
 )
 
 func TestGetNewStandardReleases(t *testing.T) {
@@ -28,9 +28,7 @@ func TestGetNewStandardReleases(t *testing.T) {
 	}{
 		{
 			"list error",
-			App{
-				repositoryService: repositorytest.New().SetListByKinds(nil, 0, errors.New("failed")),
-			},
+			App{},
 			args{
 				ctx: context.Background(),
 			},
@@ -39,10 +37,7 @@ func TestGetNewStandardReleases(t *testing.T) {
 		},
 		{
 			"github error",
-			App{
-				repositoryService: repositorytest.New().SetListByKinds([]model.Repository{
-					model.NewGithubRepository(1, repositoryName).AddVersion(model.DefaultPattern, repositoryVersion)}, 1, nil).SetLatestVersions(nil, errors.New("failed")),
-			},
+			App{},
 			args{
 				ctx: context.Background(),
 			},
@@ -51,15 +46,7 @@ func TestGetNewStandardReleases(t *testing.T) {
 		},
 		{
 			"same version",
-			App{
-				repositoryService: repositorytest.New().SetListByKinds([]model.Repository{
-					model.NewGithubRepository(1, repositoryName).AddVersion(model.DefaultPattern, repositoryVersion),
-				}, 1, nil).SetLatestVersions(map[string]semver.Version{
-					model.DefaultPattern: {
-						Name: "1.1.0",
-					},
-				}, nil).SetUpdate(errors.New("failed")),
-			},
+			App{},
 			args{
 				ctx: context.Background(),
 			},
@@ -68,14 +55,7 @@ func TestGetNewStandardReleases(t *testing.T) {
 		},
 		{
 			"success",
-			App{
-				repositoryService: repositorytest.New().SetListByKinds([]model.Repository{
-					model.NewGithubRepository(1, repositoryName).AddVersion(model.DefaultPattern, repositoryVersion),
-				}, 1, nil).SetLatestVersions(map[string]semver.Version{
-					model.DefaultPattern: safeParse("1.1.0"),
-					"1.0":                safeParse("1.0"),
-				}, nil).SetUpdate(nil),
-			},
+			App{},
 			args{
 				ctx: context.Background(),
 			},
@@ -90,6 +70,39 @@ func TestGetNewStandardReleases(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.intention, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			mockRepositoryService := mocks.NewRepositoryService(ctrl)
+
+			tc.instance.repositoryService = mockRepositoryService
+
+			switch tc.intention {
+			case "list error":
+				mockRepositoryService.EXPECT().ListByKinds(gomock.Any(), gomock.Any(), gomock.Any(), model.Github, model.Docker, model.NPM, model.Pypi).Return(nil, uint64(0), errors.New("failed"))
+			case "github error":
+				mockRepositoryService.EXPECT().ListByKinds(gomock.Any(), gomock.Any(), gomock.Any(), model.Github, model.Docker, model.NPM, model.Pypi).Return([]model.Repository{
+					model.NewGithubRepository(1, repositoryName).AddVersion(model.DefaultPattern, repositoryVersion)}, uint64(1), nil)
+				mockRepositoryService.EXPECT().LatestVersions(gomock.Any()).Return(nil, errors.New("failed"))
+			case "same version":
+				mockRepositoryService.EXPECT().ListByKinds(gomock.Any(), gomock.Any(), gomock.Any(), model.Github, model.Docker, model.NPM, model.Pypi).Return([]model.Repository{
+					model.NewGithubRepository(1, repositoryName).AddVersion(model.DefaultPattern, repositoryVersion),
+				}, uint64(1), nil)
+				mockRepositoryService.EXPECT().LatestVersions(gomock.Any()).Return(map[string]semver.Version{
+					model.DefaultPattern: {
+						Name: "1.1.0",
+					},
+				}, nil)
+			case "success":
+				mockRepositoryService.EXPECT().ListByKinds(gomock.Any(), gomock.Any(), gomock.Any(), model.Github, model.Docker, model.NPM, model.Pypi).Return([]model.Repository{
+					model.NewGithubRepository(1, repositoryName).AddVersion(model.DefaultPattern, repositoryVersion),
+				}, uint64(1), nil)
+				mockRepositoryService.EXPECT().LatestVersions(gomock.Any()).Return(map[string]semver.Version{
+					model.DefaultPattern: safeParse("1.1.0"),
+					"1.0":                safeParse("1.0"),
+				}, nil)
+			}
+
 			got, _, gotErr := tc.instance.getNewStandardReleases(tc.args.ctx)
 			pageSize = 20
 
@@ -132,10 +145,7 @@ func TestGetNewHelmReleases(t *testing.T) {
 	}{
 		{
 			"fetch error",
-			App{
-				repositoryService: repositorytest.New().SetListByKinds(nil, 0, errors.New("db error")),
-				helmApp:           helmtest.New(),
-			},
+			App{},
 			args{
 				content: "test",
 			},
@@ -145,10 +155,7 @@ func TestGetNewHelmReleases(t *testing.T) {
 		},
 		{
 			"no repository",
-			App{
-				repositoryService: repositorytest.New().SetListByKinds(nil, 0, nil),
-				helmApp:           helmtest.New(),
-			},
+			App{},
 			args{
 				content: "test",
 			},
@@ -158,15 +165,7 @@ func TestGetNewHelmReleases(t *testing.T) {
 		},
 		{
 			"helm error",
-			App{
-				repositoryService: repositorytest.New().SetListByKinds([]model.Repository{
-					model.NewHelmRepository(1, "https://charts.vibioh.fr", "app"),
-					model.NewHelmRepository(1, "https://charts.vibioh.fr", "cron"),
-					model.NewHelmRepository(1, "https://charts.vibioh.fr", "flux"),
-					model.NewHelmRepository(1, "https://charts.helm.sh/stable", "postgreql"),
-				}, 4, nil),
-				helmApp: helmtest.New().SetFetchIndex(nil, errors.New("helm error")),
-			},
+			App{},
 			args{
 				content: "test",
 			},
@@ -176,28 +175,7 @@ func TestGetNewHelmReleases(t *testing.T) {
 		},
 		{
 			"helm",
-			App{
-				repositoryService: repositorytest.New().SetListByKinds([]model.Repository{
-					postgresRepo,
-					appRepo,
-					cronRepo,
-					fluxRepo,
-				}, 0, nil),
-				helmApp: helmtest.New().SetFetchIndex(map[string]map[string]semver.Version{
-					"app": {
-						model.DefaultPattern: safeParse("1.1.0"),
-					},
-					"cron": {
-						model.DefaultPattern: safeParse("2.0.0"),
-					},
-					"flux": {
-						model.DefaultPattern: safeParse("1.0.0"),
-					},
-					"postgreql": {
-						model.DefaultPattern: safeParse("3.1.0"),
-					},
-				}, nil),
-			},
+			App{},
 			args{
 				content: "test",
 			},
@@ -213,6 +191,51 @@ func TestGetNewHelmReleases(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.intention, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			mockRepositoryService := mocks.NewRepositoryService(ctrl)
+			mockHelmProvider := mocks.NewHelmProvider(ctrl)
+
+			tc.instance.repositoryService = mockRepositoryService
+			tc.instance.helmApp = mockHelmProvider
+
+			switch tc.intention {
+			case "fetch error":
+				mockRepositoryService.EXPECT().ListByKinds(gomock.Any(), gomock.Any(), gomock.Any(), model.Helm).Return(nil, uint64(0), errors.New("db error"))
+			case "no repository":
+				mockRepositoryService.EXPECT().ListByKinds(gomock.Any(), gomock.Any(), gomock.Any(), model.Helm).Return(nil, uint64(0), nil)
+			case "helm error":
+				mockRepositoryService.EXPECT().ListByKinds(gomock.Any(), gomock.Any(), gomock.Any(), model.Helm).Return([]model.Repository{
+					model.NewHelmRepository(1, "https://charts.vibioh.fr", "app"),
+					model.NewHelmRepository(1, "https://charts.vibioh.fr", "cron"),
+					model.NewHelmRepository(1, "https://charts.vibioh.fr", "flux"),
+					model.NewHelmRepository(1, "https://charts.helm.sh/stable", "postgreql"),
+				}, uint64(4), nil)
+				mockHelmProvider.EXPECT().FetchIndex(gomock.Any(), gomock.Any()).Times(2).Return(nil, errors.New("helm error"))
+			case "helm":
+				mockRepositoryService.EXPECT().ListByKinds(gomock.Any(), gomock.Any(), gomock.Any(), model.Helm).Return([]model.Repository{
+					postgresRepo,
+					appRepo,
+					cronRepo,
+					fluxRepo,
+				}, uint64(0), nil)
+				mockHelmProvider.EXPECT().FetchIndex(gomock.Any(), gomock.Any()).Times(2).Return(map[string]map[string]semver.Version{
+					"app": {
+						model.DefaultPattern: safeParse("1.1.0"),
+					},
+					"cron": {
+						model.DefaultPattern: safeParse("2.0.0"),
+					},
+					"flux": {
+						model.DefaultPattern: safeParse("1.0.0"),
+					},
+					"postgreql": {
+						model.DefaultPattern: safeParse("3.1.0"),
+					},
+				}, nil)
+			}
+
 			got, gotCount, gotErr := tc.instance.getNewHelmReleases(context.Background())
 
 			failed := false

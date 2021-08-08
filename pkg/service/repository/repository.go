@@ -9,11 +9,6 @@ import (
 
 	httpModel "github.com/ViBiOh/httputils/v4/pkg/model"
 	"github.com/ViBiOh/ketchup/pkg/model"
-	"github.com/ViBiOh/ketchup/pkg/provider/docker"
-	"github.com/ViBiOh/ketchup/pkg/provider/github"
-	"github.com/ViBiOh/ketchup/pkg/provider/helm"
-	"github.com/ViBiOh/ketchup/pkg/provider/npm"
-	"github.com/ViBiOh/ketchup/pkg/provider/pypi"
 	"github.com/ViBiOh/ketchup/pkg/semver"
 	"github.com/ViBiOh/ketchup/pkg/store/repository"
 )
@@ -23,28 +18,18 @@ var (
 )
 
 // App of package
-type App interface {
-	List(ctx context.Context, pageSize uint, last string) ([]model.Repository, uint64, error)
-	ListByKinds(ctx context.Context, pageSize uint, last string, kinds ...model.RepositoryKind) ([]model.Repository, uint64, error)
-	Suggest(ctx context.Context, ignoreIds []uint64, count uint64) ([]model.Repository, error)
-	GetOrCreate(ctx context.Context, kind model.RepositoryKind, name, part, pattern string) (model.Repository, error)
-	Update(ctx context.Context, item model.Repository) error
-	Clean(ctx context.Context) error
-	LatestVersions(repo model.Repository) (map[string]semver.Version, error)
-}
-
-type app struct {
+type App struct {
 	repositoryStore repository.App
-	githubApp       github.App
-	helmApp         helm.App
-	dockerApp       docker.App
-	npmApp          npm.App
-	pypiApp         pypi.App
+	githubApp       model.GenericProvider
+	helmApp         model.HelmProvider
+	dockerApp       model.GenericProvider
+	npmApp          model.GenericProvider
+	pypiApp         model.GenericProvider
 }
 
 // New creates new App from Config
-func New(repositoryStore repository.App, githubApp github.App, helmApp helm.App, dockerApp docker.App, npmApp npm.App, pypiApp pypi.App) App {
-	return app{
+func New(repositoryStore repository.App, githubApp model.GenericProvider, helmApp model.HelmProvider, dockerApp model.GenericProvider, npmApp model.GenericProvider, pypiApp model.GenericProvider) App {
+	return App{
 		repositoryStore: repositoryStore,
 		githubApp:       githubApp,
 		helmApp:         helmApp,
@@ -54,7 +39,8 @@ func New(repositoryStore repository.App, githubApp github.App, helmApp helm.App,
 	}
 }
 
-func (a app) List(ctx context.Context, pageSize uint, last string) ([]model.Repository, uint64, error) {
+// List repositories
+func (a App) List(ctx context.Context, pageSize uint, last string) ([]model.Repository, uint64, error) {
 	list, total, err := a.repositoryStore.List(ctx, pageSize, last)
 	if err != nil {
 		return nil, 0, httpModel.WrapInternal(fmt.Errorf("unable to list: %w", err))
@@ -63,7 +49,8 @@ func (a app) List(ctx context.Context, pageSize uint, last string) ([]model.Repo
 	return list, total, nil
 }
 
-func (a app) ListByKinds(ctx context.Context, pageSize uint, last string, kinds ...model.RepositoryKind) ([]model.Repository, uint64, error) {
+// ListByKinds repositories by kind
+func (a App) ListByKinds(ctx context.Context, pageSize uint, last string, kinds ...model.RepositoryKind) ([]model.Repository, uint64, error) {
 	list, total, err := a.repositoryStore.ListByKinds(ctx, pageSize, last, kinds...)
 	if err != nil {
 		return nil, 0, httpModel.WrapInternal(fmt.Errorf("unable to list by kind: %w", err))
@@ -72,7 +59,8 @@ func (a app) ListByKinds(ctx context.Context, pageSize uint, last string, kinds 
 	return list, total, nil
 }
 
-func (a app) Suggest(ctx context.Context, ignoreIds []uint64, count uint64) ([]model.Repository, error) {
+// Suggest repositories
+func (a App) Suggest(ctx context.Context, ignoreIds []uint64, count uint64) ([]model.Repository, error) {
 	list, err := a.repositoryStore.Suggest(ctx, ignoreIds, count)
 	if err != nil {
 		return nil, httpModel.WrapInternal(fmt.Errorf("unable to suggest: %w", err))
@@ -81,7 +69,8 @@ func (a app) Suggest(ctx context.Context, ignoreIds []uint64, count uint64) ([]m
 	return list, nil
 }
 
-func (a app) GetOrCreate(ctx context.Context, kind model.RepositoryKind, name, part, pattern string) (model.Repository, error) {
+// GetOrCreate repository
+func (a App) GetOrCreate(ctx context.Context, kind model.RepositoryKind, name, part, pattern string) (model.Repository, error) {
 	sanitizedName := name
 	if kind == model.Github {
 		sanitizedName = sanitizeName(name)
@@ -119,7 +108,7 @@ func (a app) GetOrCreate(ctx context.Context, kind model.RepositoryKind, name, p
 	return repo, nil
 }
 
-func (a app) create(ctx context.Context, item model.Repository) (model.Repository, error) {
+func (a App) create(ctx context.Context, item model.Repository) (model.Repository, error) {
 	if err := a.check(ctx, model.NoneRepository, item); err != nil {
 		return model.NoneRepository, httpModel.WrapInvalid(err)
 	}
@@ -146,7 +135,8 @@ func (a app) create(ctx context.Context, item model.Repository) (model.Repositor
 	return item, err
 }
 
-func (a app) Update(ctx context.Context, item model.Repository) error {
+// Update repository
+func (a App) Update(ctx context.Context, item model.Repository) error {
 	return a.repositoryStore.DoAtomic(ctx, func(ctx context.Context) error {
 		old, err := a.repositoryStore.Get(ctx, item.ID, true)
 		if err != nil {
@@ -172,7 +162,8 @@ func (a app) Update(ctx context.Context, item model.Repository) error {
 	})
 }
 
-func (a app) Clean(ctx context.Context) error {
+// Clean unused
+func (a App) Clean(ctx context.Context) error {
 	return a.repositoryStore.DoAtomic(ctx, func(ctx context.Context) error {
 		if err := a.repositoryStore.DeleteUnused(ctx); err != nil {
 			return httpModel.WrapInternal(fmt.Errorf("unable to delete unused repository: %w", err))
@@ -186,7 +177,7 @@ func (a app) Clean(ctx context.Context) error {
 	})
 }
 
-func (a app) check(ctx context.Context, old, new model.Repository) error {
+func (a App) check(ctx context.Context, old, new model.Repository) error {
 	if new.ID == 0 && new.Kind == 0 && len(new.Name) == 0 {
 		return nil
 	}
@@ -215,7 +206,8 @@ func (a app) check(ctx context.Context, old, new model.Repository) error {
 	return httpModel.ConcatError(output)
 }
 
-func (a app) LatestVersions(repo model.Repository) (map[string]semver.Version, error) {
+// LatestVersions of a repository
+func (a App) LatestVersions(repo model.Repository) (map[string]semver.Version, error) {
 	if len(repo.Versions) == 0 {
 		return nil, errors.New("no pattern for fetching latest versions")
 	}

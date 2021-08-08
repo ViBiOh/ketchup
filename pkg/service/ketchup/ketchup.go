@@ -10,7 +10,6 @@ import (
 	httpModel "github.com/ViBiOh/httputils/v4/pkg/model"
 	"github.com/ViBiOh/ketchup/pkg/model"
 	"github.com/ViBiOh/ketchup/pkg/semver"
-	"github.com/ViBiOh/ketchup/pkg/service/repository"
 	"github.com/ViBiOh/ketchup/pkg/store/ketchup"
 )
 
@@ -27,11 +26,11 @@ type App interface {
 
 type app struct {
 	ketchupStore      ketchup.App
-	repositoryService repository.App
+	repositoryService model.RepositoryService
 }
 
 // New creates new App from Config
-func New(ketchupStore ketchup.App, repositoryService repository.App) App {
+func New(ketchupStore ketchup.App, repositoryService model.RepositoryService) App {
 	return app{
 		ketchupStore:      ketchupStore,
 		repositoryService: repositoryService,

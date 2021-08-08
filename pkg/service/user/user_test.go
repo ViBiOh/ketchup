@@ -169,7 +169,7 @@ func TestCreate(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			authApp := mocks.NewAuth(ctrl)
+			authApp := mocks.NewAuthService(ctrl)
 			mockUserStore := mocks.NewUserStore(ctrl)
 			tc.instance.authApp = authApp
 			tc.instance.userStore = mockUserStore

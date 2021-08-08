@@ -9,11 +9,12 @@ import (
 	"testing"
 
 	httpModel "github.com/ViBiOh/httputils/v4/pkg/model"
+	"github.com/ViBiOh/ketchup/pkg/mocks"
 	"github.com/ViBiOh/ketchup/pkg/model"
 	"github.com/ViBiOh/ketchup/pkg/provider/github/githubtest"
-	"github.com/ViBiOh/ketchup/pkg/provider/helm/helmtest"
 	"github.com/ViBiOh/ketchup/pkg/semver"
 	"github.com/ViBiOh/ketchup/pkg/store/repository/repositorytest"
+	"github.com/golang/mock/gomock"
 )
 
 var (
@@ -230,9 +231,7 @@ func TestGetOrCreate(t *testing.T) {
 		},
 		{
 			"update error",
-			New(repositorytest.New().SetGetByName(model.NewHelmRepository(1, chartRepository, "app"), nil).SetUpdateVersions(errors.New("failed")), githubtest.New(), helmtest.New().SetLatestVersions(map[string]semver.Version{
-				model.DefaultPattern: safeParse("1.0.0"),
-			}, nil), nil, nil, nil),
+			New(repositorytest.New().SetGetByName(model.NewHelmRepository(1, chartRepository, "app"), nil).SetUpdateVersions(errors.New("failed")), githubtest.New(), nil, nil, nil, nil),
 			args{
 				ctx:            context.Background(),
 				name:           "exist",
@@ -260,6 +259,20 @@ func TestGetOrCreate(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.intention, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			mockHelmProvider := mocks.NewHelmProvider(ctrl)
+
+			tc.instance.helmApp = mockHelmProvider
+
+			switch tc.intention {
+			case "update error":
+				mockHelmProvider.EXPECT().LatestVersions(gomock.Any(), gomock.Any(), gomock.Any()).Return(map[string]semver.Version{
+					model.DefaultPattern: safeParse("1.0.0"),
+				}, nil)
+			}
+
 			got, gotErr := tc.instance.GetOrCreate(tc.args.ctx, tc.args.repositoryKind, tc.args.name, tc.args.part, tc.args.pattern)
 
 			failed := false
@@ -285,14 +298,14 @@ func TestCreate(t *testing.T) {
 
 	var cases = []struct {
 		intention string
-		instance  app
+		instance  App
 		args      args
 		want      model.Repository
 		wantErr   error
 	}{
 		{
 			"invalid",
-			app{
+			App{
 				repositoryStore: repositorytest.New(),
 				githubApp:       githubtest.New(),
 			},
@@ -305,7 +318,7 @@ func TestCreate(t *testing.T) {
 		},
 		{
 			"release error",
-			app{
+			App{
 				repositoryStore: repositorytest.New(),
 				githubApp:       githubtest.New().SetLatestVersions(nil, errors.New("failed")),
 			},
@@ -318,7 +331,7 @@ func TestCreate(t *testing.T) {
 		},
 		{
 			"create error",
-			app{
+			App{
 				repositoryStore: repositorytest.New().SetCreate(0, errors.New("failed")),
 				githubApp: githubtest.New().SetLatestVersions(map[string]semver.Version{
 					model.DefaultPattern: safeParse("1.0.0"),
@@ -333,7 +346,7 @@ func TestCreate(t *testing.T) {
 		},
 		{
 			"success",
-			app{
+			App{
 				repositoryStore: repositorytest.New().SetCreate(1, nil),
 				githubApp: githubtest.New().SetLatestVersions(map[string]semver.Version{
 					model.DefaultPattern: safeParse("1.0.0"),
@@ -506,13 +519,13 @@ func TestCheck(t *testing.T) {
 
 	var cases = []struct {
 		intention string
-		instance  app
+		instance  App
 		args      args
 		wantErr   error
 	}{
 		{
 			"delete",
-			app{repositoryStore: repositorytest.New()},
+			App{repositoryStore: repositorytest.New()},
 			args{
 				old: model.NewGithubRepository(1, ""),
 			},
@@ -520,7 +533,7 @@ func TestCheck(t *testing.T) {
 		},
 		{
 			"name required",
-			app{repositoryStore: repositorytest.New()},
+			App{repositoryStore: repositorytest.New()},
 			args{
 				new: model.NewGithubRepository(1, "").AddVersion(model.DefaultPattern, "1.0.0"),
 			},
@@ -528,7 +541,7 @@ func TestCheck(t *testing.T) {
 		},
 		{
 			"no kind change",
-			app{repositoryStore: repositorytest.New()},
+			App{repositoryStore: repositorytest.New()},
 			args{
 				old: model.NewGithubRepository(1, ketchupRepository).AddVersion(model.DefaultPattern, "1.0.0"),
 				new: model.NewHelmRepository(1, chartRepository, "app"),
@@ -537,7 +550,7 @@ func TestCheck(t *testing.T) {
 		},
 		{
 			"version required for update",
-			app{repositoryStore: repositorytest.New()},
+			App{repositoryStore: repositorytest.New()},
 			args{
 				old: model.NewGithubRepository(1, ketchupRepository).AddVersion(model.DefaultPattern, "1.0.0"),
 				new: model.NewGithubRepository(1, ketchupRepository),
@@ -546,7 +559,7 @@ func TestCheck(t *testing.T) {
 		},
 		{
 			"get error",
-			app{repositoryStore: repositorytest.New().SetGetByName(model.NoneRepository, errors.New("failed"))},
+			App{repositoryStore: repositorytest.New().SetGetByName(model.NoneRepository, errors.New("failed"))},
 			args{
 				new: model.NewGithubRepository(1, "error"),
 			},
@@ -554,7 +567,7 @@ func TestCheck(t *testing.T) {
 		},
 		{
 			"exist",
-			app{repositoryStore: repositorytest.New().SetGetByName(model.NewGithubRepository(2, ketchupRepository), nil)},
+			App{repositoryStore: repositorytest.New().SetGetByName(model.NewGithubRepository(2, ketchupRepository), nil)},
 			args{
 				new: model.NewGithubRepository(1, "exist"),
 			},

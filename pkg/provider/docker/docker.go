@@ -28,19 +28,15 @@ type authResponse struct {
 }
 
 // App of package
-type App interface {
-	LatestVersions(string, []string) (map[string]semver.Version, error)
+type App struct {
+	username string
+	password string
 }
 
 // Config of package
 type Config struct {
 	username *string
 	password *string
-}
-
-type app struct {
-	username string
-	password string
 }
 
 // Flags adds flags for configuring package
@@ -53,13 +49,14 @@ func Flags(fs *flag.FlagSet, prefix string, overrides ...flags.Override) Config 
 
 // New creates new App from Config
 func New(config Config) App {
-	return app{
+	return App{
 		username: strings.TrimSpace(*config.username),
 		password: strings.TrimSpace(*config.password),
 	}
 }
 
-func (a app) LatestVersions(repository string, patterns []string) (map[string]semver.Version, error) {
+// LatestVersions retrieve latest version of repository for given patterns
+func (a App) LatestVersions(repository string, patterns []string) (map[string]semver.Version, error) {
 	ctx := context.Background()
 
 	versions, compiledPatterns, err := model.PreparePatternMatching(patterns)
@@ -96,7 +93,7 @@ func (a app) LatestVersions(repository string, patterns []string) (map[string]se
 	return versions, nil
 }
 
-func (a app) getImageDetails(ctx context.Context, repository string) (string, string, string, error) {
+func (a App) getImageDetails(ctx context.Context, repository string) (string, string, string, error) {
 	parts := strings.Split(repository, "/")
 	if len(parts) > 2 {
 		var token string
@@ -120,7 +117,7 @@ func (a app) getImageDetails(ctx context.Context, repository string) (string, st
 	return registryURL, repository, fmt.Sprintf("Bearer %s", bearerToken), nil
 }
 
-func (a app) login(ctx context.Context, repository string) (string, error) {
+func (a App) login(ctx context.Context, repository string) (string, error) {
 	values := url.Values{}
 	values.Add("grant_type", "password")
 	values.Add("service", "registry.docker.io")
