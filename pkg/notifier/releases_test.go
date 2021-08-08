@@ -21,14 +21,14 @@ func TestGetNewStandardReleases(t *testing.T) {
 
 	var cases = []struct {
 		intention string
-		instance  app
+		instance  App
 		args      args
 		want      []model.Release
 		wantErr   error
 	}{
 		{
 			"list error",
-			app{
+			App{
 				repositoryService: repositorytest.New().SetListByKinds(nil, 0, errors.New("failed")),
 			},
 			args{
@@ -39,7 +39,7 @@ func TestGetNewStandardReleases(t *testing.T) {
 		},
 		{
 			"github error",
-			app{
+			App{
 				repositoryService: repositorytest.New().SetListByKinds([]model.Repository{
 					model.NewGithubRepository(1, repositoryName).AddVersion(model.DefaultPattern, repositoryVersion)}, 1, nil).SetLatestVersions(nil, errors.New("failed")),
 			},
@@ -51,7 +51,7 @@ func TestGetNewStandardReleases(t *testing.T) {
 		},
 		{
 			"same version",
-			app{
+			App{
 				repositoryService: repositorytest.New().SetListByKinds([]model.Repository{
 					model.NewGithubRepository(1, repositoryName).AddVersion(model.DefaultPattern, repositoryVersion),
 				}, 1, nil).SetLatestVersions(map[string]semver.Version{
@@ -68,7 +68,7 @@ func TestGetNewStandardReleases(t *testing.T) {
 		},
 		{
 			"success",
-			app{
+			App{
 				repositoryService: repositorytest.New().SetListByKinds([]model.Repository{
 					model.NewGithubRepository(1, repositoryName).AddVersion(model.DefaultPattern, repositoryVersion),
 				}, 1, nil).SetLatestVersions(map[string]semver.Version{
@@ -124,7 +124,7 @@ func TestGetNewHelmReleases(t *testing.T) {
 
 	var cases = []struct {
 		intention string
-		instance  app
+		instance  App
 		args      args
 		want      []model.Release
 		wantCount uint64
@@ -132,7 +132,7 @@ func TestGetNewHelmReleases(t *testing.T) {
 	}{
 		{
 			"fetch error",
-			app{
+			App{
 				repositoryService: repositorytest.New().SetListByKinds(nil, 0, errors.New("db error")),
 				helmApp:           helmtest.New(),
 			},
@@ -145,7 +145,7 @@ func TestGetNewHelmReleases(t *testing.T) {
 		},
 		{
 			"no repository",
-			app{
+			App{
 				repositoryService: repositorytest.New().SetListByKinds(nil, 0, nil),
 				helmApp:           helmtest.New(),
 			},
@@ -158,7 +158,7 @@ func TestGetNewHelmReleases(t *testing.T) {
 		},
 		{
 			"helm error",
-			app{
+			App{
 				repositoryService: repositorytest.New().SetListByKinds([]model.Repository{
 					model.NewHelmRepository(1, "https://charts.vibioh.fr", "app"),
 					model.NewHelmRepository(1, "https://charts.vibioh.fr", "cron"),
@@ -176,7 +176,7 @@ func TestGetNewHelmReleases(t *testing.T) {
 		},
 		{
 			"helm",
-			app{
+			App{
 				repositoryService: repositorytest.New().SetListByKinds([]model.Repository{
 					postgresRepo,
 					appRepo,

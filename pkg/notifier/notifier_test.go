@@ -68,13 +68,13 @@ func TestGetNewRepositoryReleases(t *testing.T) {
 
 	var cases = []struct {
 		intention string
-		instance  app
+		instance  App
 		args      args
 		want      []model.Release
 	}{
 		{
 			"empty",
-			app{
+			App{
 				repositoryService: repositorytest.New().SetLatestVersions(nil, nil),
 			},
 			args{
@@ -84,7 +84,7 @@ func TestGetNewRepositoryReleases(t *testing.T) {
 		},
 		{
 			"no new",
-			app{
+			App{
 				repositoryService: repositorytest.New().SetLatestVersions(map[string]semver.Version{
 					model.DefaultPattern: safeParse(repositoryVersion),
 				}, nil),
@@ -96,7 +96,7 @@ func TestGetNewRepositoryReleases(t *testing.T) {
 		},
 		{
 			"invalid version",
-			app{
+			App{
 				repositoryService: repositorytest.New().SetLatestVersions(map[string]semver.Version{
 					model.DefaultPattern: safeParse(repositoryVersion),
 				}, nil),
@@ -108,7 +108,7 @@ func TestGetNewRepositoryReleases(t *testing.T) {
 		},
 		{
 			"not greater",
-			app{
+			App{
 				repositoryService: repositorytest.New().SetLatestVersions(map[string]semver.Version{
 					model.DefaultPattern: safeParse(repositoryVersion),
 				}, nil),
@@ -120,7 +120,7 @@ func TestGetNewRepositoryReleases(t *testing.T) {
 		},
 		{
 			"greater",
-			app{
+			App{
 				repositoryService: repositorytest.New().SetLatestVersions(map[string]semver.Version{
 					model.DefaultPattern: safeParse("1.1.0"),
 				}, nil),
@@ -151,14 +151,14 @@ func TestGetKetchupToNotify(t *testing.T) {
 
 	var cases = []struct {
 		intention string
-		instance  app
+		instance  App
 		args      args
 		want      map[model.User][]model.Release
 		wantErr   error
 	}{
 		{
 			"list error",
-			app{ketchupService: ketchuptest.New().SetListForRepositories(nil, errors.New("failed"))},
+			App{ketchupService: ketchuptest.New().SetListForRepositories(nil, errors.New("failed"))},
 			args{
 				ctx: context.Background(),
 			},
@@ -167,7 +167,7 @@ func TestGetKetchupToNotify(t *testing.T) {
 		},
 		{
 			"empty",
-			app{ketchupService: ketchuptest.New()},
+			App{ketchupService: ketchuptest.New()},
 			args{
 				ctx: context.Background(),
 			},
@@ -176,7 +176,7 @@ func TestGetKetchupToNotify(t *testing.T) {
 		},
 		{
 			"one release, n ketchups",
-			app{ketchupService: ketchuptest.New().SetListForRepositories([]model.Ketchup{
+			App{ketchupService: ketchuptest.New().SetListForRepositories([]model.Ketchup{
 				{
 					Pattern:    model.DefaultPattern,
 					Repository: model.NewGithubRepository(1, repositoryName),
@@ -303,13 +303,13 @@ func TestSendNotification(t *testing.T) {
 
 	var cases = []struct {
 		intention string
-		instance  app
+		instance  App
 		args      args
 		wantErr   error
 	}{
 		{
 			"empty",
-			app{},
+			App{},
 			args{
 				ctx:             context.Background(),
 				ketchupToNotify: nil,
@@ -318,7 +318,7 @@ func TestSendNotification(t *testing.T) {
 		},
 		{
 			"no mailer",
-			app{},
+			App{},
 			args{
 				ctx: context.Background(),
 				ketchupToNotify: map[model.User][]model.Release{
@@ -339,7 +339,7 @@ func TestSendNotification(t *testing.T) {
 		},
 		{
 			"mailer disabled",
-			app{},
+			App{},
 			args{
 				ctx: context.Background(),
 				ketchupToNotify: map[model.User][]model.Release{
@@ -360,7 +360,7 @@ func TestSendNotification(t *testing.T) {
 		},
 		{
 			"mailer error",
-			app{},
+			App{},
 			args{
 				ctx: context.TODO(),
 				ketchupToNotify: map[model.User][]model.Release{
@@ -381,7 +381,7 @@ func TestSendNotification(t *testing.T) {
 		},
 		{
 			"multiple releases",
-			app{},
+			App{},
 			args{
 				ctx: context.Background(),
 				ketchupToNotify: map[model.User][]model.Release{

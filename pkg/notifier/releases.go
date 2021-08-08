@@ -9,7 +9,7 @@ import (
 	"github.com/ViBiOh/ketchup/pkg/semver"
 )
 
-func (a app) getNewReleases(ctx context.Context) ([]model.Release, uint64, error) {
+func (a App) getNewReleases(ctx context.Context) ([]model.Release, uint64, error) {
 	releases, releasesCount, err := a.getNewStandardReleases(ctx)
 	if err != nil {
 		return nil, 0, err
@@ -23,7 +23,7 @@ func (a app) getNewReleases(ctx context.Context) ([]model.Release, uint64, error
 	return append(releases, helmReleases...), releasesCount + helmCount, nil
 }
 
-func (a app) getNewStandardReleases(ctx context.Context) ([]model.Release, uint64, error) {
+func (a App) getNewStandardReleases(ctx context.Context) ([]model.Release, uint64, error) {
 	var newReleases []model.Release
 	var count uint64
 	var last string
@@ -56,7 +56,7 @@ func (a app) getNewStandardReleases(ctx context.Context) ([]model.Release, uint6
 	return newReleases, count, nil
 }
 
-func (a app) getNewRepositoryReleases(repo model.Repository) []model.Release {
+func (a App) getNewRepositoryReleases(repo model.Repository) []model.Release {
 	versions, err := a.repositoryService.LatestVersions(repo)
 	if err != nil {
 		logger.Error("unable to get latest versions of %s `%s`: %s", repo.Kind, repo.Name, err)
@@ -72,7 +72,7 @@ func (a app) getNewRepositoryReleases(repo model.Repository) []model.Release {
 	return releases
 }
 
-func (a app) getNewHelmReleases(ctx context.Context) ([]model.Release, uint64, error) {
+func (a App) getNewHelmReleases(ctx context.Context) ([]model.Release, uint64, error) {
 	var newReleases []model.Release
 	var count uint64
 	var last string
@@ -118,7 +118,7 @@ func (a app) getNewHelmReleases(ctx context.Context) ([]model.Release, uint64, e
 	return newReleases, count, nil
 }
 
-func (a app) getFetchHelmSources(repos map[string]model.Repository) []model.Release {
+func (a App) getFetchHelmSources(repos map[string]model.Repository) []model.Release {
 	if len(repos) == 0 {
 		return nil
 	}

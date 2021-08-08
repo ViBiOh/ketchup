@@ -32,17 +32,7 @@ type Mailer interface {
 }
 
 // App of package
-type App interface {
-	Notify(context.Context) error
-}
-
-// Config of package
-type Config struct {
-	loginID *uint
-	pushURL *string
-}
-
-type app struct {
+type App struct {
 	repositoryService repository.App
 	ketchupService    ketchup.App
 	userService       user.App
@@ -55,6 +45,12 @@ type app struct {
 	loginID uint64
 }
 
+// Config of package
+type Config struct {
+	loginID *uint
+	pushURL *string
+}
+
 // Flags adds flags for configuring package
 func Flags(fs *flag.FlagSet, prefix string) Config {
 	return Config{
@@ -65,7 +61,7 @@ func Flags(fs *flag.FlagSet, prefix string) Config {
 
 // New creates new App from Config
 func New(config Config, repositoryService repository.App, ketchupService ketchup.App, userService user.App, mailerApp Mailer, helmApp helm.App) App {
-	return app{
+	return App{
 		loginID: uint64(*config.loginID),
 		pushURL: strings.TrimSpace(*config.pushURL),
 
@@ -77,7 +73,8 @@ func New(config Config, repositoryService repository.App, ketchupService ketchup
 	}
 }
 
-func (a app) Notify(ctx context.Context) error {
+// Notify users for new ketchup
+func (a App) Notify(ctx context.Context) error {
 	userCtx := authModel.StoreUser(ctx, authModel.NewUser(a.loginID, "scheduler"))
 
 	if err := a.repositoryService.Clean(userCtx); err != nil {
@@ -125,7 +122,7 @@ func (a app) Notify(ctx context.Context) error {
 	return nil
 }
 
-func (a app) updateRepositories(ctx context.Context, releases []model.Release) error {
+func (a App) updateRepositories(ctx context.Context, releases []model.Release) error {
 	if len(releases) == 0 {
 		return nil
 	}
@@ -151,7 +148,7 @@ func (a app) updateRepositories(ctx context.Context, releases []model.Release) e
 	return nil
 }
 
-func (a app) getKetchupToNotify(ctx context.Context, releases []model.Release) (map[model.User][]model.Release, error) {
+func (a App) getKetchupToNotify(ctx context.Context, releases []model.Release) (map[model.User][]model.Release, error) {
 	repositories := make([]model.Repository, len(releases))
 	for index, release := range releases {
 		repositories[index] = release.Repository
@@ -234,7 +231,7 @@ func addWeeklyKetchups(ketchups []model.Ketchup, usersToNotify map[model.User][]
 	}
 }
 
-func (a app) sendNotification(ctx context.Context, ketchupToNotify map[model.User][]model.Release) error {
+func (a App) sendNotification(ctx context.Context, ketchupToNotify map[model.User][]model.Release) error {
 	if len(ketchupToNotify) == 0 {
 		return nil
 	}
