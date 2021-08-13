@@ -75,7 +75,7 @@ func (a App) LatestVersions(repository string, patterns []string) (map[string]se
 		req := request.New().Get(url)
 
 		if len(auth) != 0 {
-			req.Header("Authorization", auth)
+			req = req.Header("Authorization", auth)
 		}
 
 		resp, err := req.Send(ctx, nil)
