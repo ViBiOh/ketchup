@@ -12,7 +12,6 @@ import (
 	"github.com/ViBiOh/httputils/v4/pkg/flags"
 	"github.com/ViBiOh/httputils/v4/pkg/httpjson"
 	"github.com/ViBiOh/httputils/v4/pkg/logger"
-	"github.com/ViBiOh/httputils/v4/pkg/redis"
 	"github.com/ViBiOh/httputils/v4/pkg/request"
 	"github.com/ViBiOh/ketchup/pkg/model"
 	"github.com/ViBiOh/ketchup/pkg/semver"
@@ -30,6 +29,11 @@ var (
 		},
 	}
 )
+
+type redis interface {
+	Ping() error
+	Exclusive(context.Context, string, time.Duration, func(context.Context) error) error
+}
 
 // Tag describes a GitHub Tag
 type Tag struct {
@@ -58,7 +62,7 @@ type Config struct {
 }
 
 type app struct {
-	redisApp redis.App
+	redisApp redis
 	token    string
 }
 
@@ -70,14 +74,14 @@ func Flags(fs *flag.FlagSet, prefix string) Config {
 }
 
 // New creates new App from Config
-func New(config Config, redisApp redis.App) App {
+func New(config Config, redisApp redis) App {
 	return app{
 		token:    strings.TrimSpace(*config.token),
 		redisApp: redisApp,
 	}
 }
 
-func (a app) newClient() *request.Request {
+func (a app) newClient() request.Request {
 	return request.New().Header("Authorization", fmt.Sprintf("token %s", a.token)).WithClient(httpClient)
 }
 
