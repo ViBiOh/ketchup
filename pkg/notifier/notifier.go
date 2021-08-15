@@ -242,14 +242,14 @@ func (a App) sendNotification(ctx context.Context, ketchupToNotify map[model.Use
 			"releases": releases,
 		}
 
-		mailRequest := mailerModel.NewMailRequest().Template("ketchup").From("ketchup@vibioh.fr").As("Ketchup").To(user.Email).Data(payload)
+		mr := mailerModel.NewMailRequest().Template("ketchup").From("ketchup@vibioh.fr").As("Ketchup").To(user.Email).Data(payload)
 		subject := fmt.Sprintf("Ketchup - %d new release", len(releases))
 		if len(releases) > 1 {
 			subject += "s"
 		}
-		mailRequest.WithSubject(subject)
+		mr = mr.WithSubject(subject)
 
-		if err := a.mailerApp.Send(ctx, *mailRequest); err != nil {
+		if err := a.mailerApp.Send(ctx, mr); err != nil {
 			return fmt.Errorf("unable to send email to %s: %s", user.Email, err)
 		}
 	}
