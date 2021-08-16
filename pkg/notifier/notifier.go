@@ -9,6 +9,7 @@ import (
 	"time"
 
 	authModel "github.com/ViBiOh/auth/v2/pkg/model"
+	"github.com/ViBiOh/httputils/v4/pkg/clock"
 	"github.com/ViBiOh/httputils/v4/pkg/flags"
 	"github.com/ViBiOh/httputils/v4/pkg/logger"
 	"github.com/ViBiOh/ketchup/pkg/model"
@@ -31,7 +32,7 @@ type App struct {
 	mailerApp         model.Mailer
 	helmApp           model.HelmProvider
 
-	clock *Clock
+	clock *clock.Clock
 
 	pushURL string
 	loginID uint64
