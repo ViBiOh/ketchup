@@ -83,7 +83,7 @@ func (a app) get(ctx context.Context, query string, args ...interface{}) (model.
 	scanner := func(row *sql.Row) error {
 		err := row.Scan(&item.ID, &rawRepositoryKind, &item.Name, &item.Part)
 		if errors.Is(err, sql.ErrNoRows) {
-			item = model.NoneRepository
+			item = model.Repository{}
 			return nil
 		}
 
@@ -97,7 +97,7 @@ func (a app) get(ctx context.Context, query string, args ...interface{}) (model.
 	}
 
 	if err := a.db.Get(ctx, scanner, query, args...); err != nil {
-		return model.NoneRepository, err
+		return model.Repository{}, err
 	}
 
 	if item.ID == 0 {

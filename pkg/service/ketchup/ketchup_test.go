@@ -225,7 +225,7 @@ func TestCreate(t *testing.T) {
 
 			switch tc.intention {
 			case "repository error", "check error", "create error":
-				mockRepositoryService.EXPECT().GetOrCreate(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(model.NoneRepository, nil)
+				mockRepositoryService.EXPECT().GetOrCreate(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(model.Repository{}, nil)
 			case "success":
 				mockRepositoryService.EXPECT().GetOrCreate(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(model.NewGithubRepository(1, ketchupRepository).AddVersion(model.DefaultPattern, "1.0.0"), nil)
 			}
@@ -381,7 +381,7 @@ func TestUpdate(t *testing.T) {
 
 			switch tc.intention {
 			case "pattern change error":
-				mockRepositoryService.EXPECT().GetOrCreate(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(model.NoneRepository, errors.New("failed"))
+				mockRepositoryService.EXPECT().GetOrCreate(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(model.Repository{}, errors.New("failed"))
 			case "pattern change success":
 				mockRepositoryService.EXPECT().GetOrCreate(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(model.NewGithubRepository(1, ketchupRepository).AddVersion("latest", "1.0.1"), nil)
 			}
@@ -505,7 +505,7 @@ func TestCheck(t *testing.T) {
 			app{ketchupStore: ketchuptest.New()},
 			args{
 				ctx: model.StoreUser(context.Background(), model.NewUser(1, "", authModel.NewUser(0, ""))),
-				old: model.NewKetchup(model.DefaultPattern, "1.0.0", model.Daily, model.NoneRepository),
+				old: model.NewKetchup(model.DefaultPattern, "1.0.0", model.Daily, model.Repository{}),
 				new: model.NoneKetchup,
 			},
 			nil,
@@ -535,7 +535,7 @@ func TestCheck(t *testing.T) {
 			app{ketchupStore: ketchuptest.New()},
 			args{
 				ctx: model.StoreUser(context.Background(), model.NewUser(1, "", authModel.NewUser(0, ""))),
-				old: model.NewKetchup(model.DefaultPattern, "1.0.0", model.Daily, model.NoneRepository),
+				old: model.NewKetchup(model.DefaultPattern, "1.0.0", model.Daily, model.Repository{}),
 				new: model.NewKetchup(model.DefaultPattern, "", model.Daily, model.NewGithubRepository(1, "")),
 			},
 			errors.New("version is required"),

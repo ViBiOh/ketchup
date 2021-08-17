@@ -78,7 +78,7 @@ func (a App) GetOrCreate(ctx context.Context, kind model.RepositoryKind, name, p
 
 	repo, err := a.repositoryStore.GetByName(ctx, kind, sanitizedName, part)
 	if err != nil {
-		return model.NoneRepository, httpModel.WrapInternal(err)
+		return model.Repository{}, httpModel.WrapInternal(err)
 	}
 
 	if repo.ID == 0 {
@@ -92,30 +92,30 @@ func (a App) GetOrCreate(ctx context.Context, kind model.RepositoryKind, name, p
 	repo.Versions[pattern] = ""
 	versions, err := a.LatestVersions(repo)
 	if err != nil {
-		return model.NoneRepository, httpModel.WrapInternal(fmt.Errorf("unable to get releases for `%s`: %w", repo.Name, err))
+		return model.Repository{}, httpModel.WrapInternal(fmt.Errorf("unable to get releases for `%s`: %w", repo.Name, err))
 	}
 
 	version, ok := versions[pattern]
 	if !ok || version == semver.NoneVersion {
-		return model.NoneRepository, httpModel.WrapNotFound(fmt.Errorf("no release with pattern `%s` found for repository `%s`", pattern, repo.Name))
+		return model.Repository{}, httpModel.WrapNotFound(fmt.Errorf("no release with pattern `%s` found for repository `%s`", pattern, repo.Name))
 	}
 
 	repo.Versions[pattern] = version.Name
 	if err := a.repositoryStore.UpdateVersions(ctx, repo); err != nil {
-		return model.NoneRepository, httpModel.WrapInternal(fmt.Errorf("unable to update repository versions `%s`: %w", repo.Name, err))
+		return model.Repository{}, httpModel.WrapInternal(fmt.Errorf("unable to update repository versions `%s`: %w", repo.Name, err))
 	}
 
 	return repo, nil
 }
 
 func (a App) create(ctx context.Context, item model.Repository) (model.Repository, error) {
-	if err := a.check(ctx, model.NoneRepository, item); err != nil {
-		return model.NoneRepository, httpModel.WrapInvalid(err)
+	if err := a.check(ctx, model.Repository{}, item); err != nil {
+		return model.Repository{}, httpModel.WrapInvalid(err)
 	}
 
 	versions, err := a.LatestVersions(item)
 	if err != nil {
-		return model.NoneRepository, httpModel.WrapNotFound(fmt.Errorf("unable to get releases for `%s`: %w", item.Name, err))
+		return model.Repository{}, httpModel.WrapNotFound(fmt.Errorf("unable to get releases for `%s`: %w", item.Name, err))
 	}
 
 	for pattern, version := range versions {

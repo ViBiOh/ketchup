@@ -167,14 +167,14 @@ func TestGetOrCreate(t *testing.T) {
 	}{
 		{
 			"get error",
-			New(repositorytest.New().SetGetByName(model.NoneRepository, errors.New("failed")), githubtest.New(), nil, nil, nil, nil),
+			New(repositorytest.New().SetGetByName(model.Repository{}, errors.New("failed")), githubtest.New(), nil, nil, nil, nil),
 			args{
 				ctx:            context.Background(),
 				name:           "error",
 				repositoryKind: model.Github,
 				pattern:        model.DefaultPattern,
 			},
-			model.NoneRepository,
+			model.Repository{},
 			httpModel.ErrInternalError,
 		},
 		{
@@ -198,7 +198,7 @@ func TestGetOrCreate(t *testing.T) {
 				repositoryKind: model.Github,
 				pattern:        model.DefaultPattern,
 			},
-			model.NoneRepository,
+			model.Repository{},
 			httpModel.ErrInternalError,
 		},
 		{
@@ -212,7 +212,7 @@ func TestGetOrCreate(t *testing.T) {
 				repositoryKind: model.Github,
 				pattern:        model.DefaultPattern,
 			},
-			model.NoneRepository,
+			model.Repository{},
 			httpModel.ErrNotFound,
 		},
 		{
@@ -238,7 +238,7 @@ func TestGetOrCreate(t *testing.T) {
 				repositoryKind: model.Helm,
 				pattern:        model.DefaultPattern,
 			},
-			model.NoneRepository,
+			model.Repository{},
 			httpModel.ErrInternalError,
 		},
 		{
@@ -313,7 +313,7 @@ func TestCreate(t *testing.T) {
 				ctx:  context.Background(),
 				item: model.NewGithubRepository(1, ""),
 			},
-			model.NoneRepository,
+			model.Repository{},
 			httpModel.ErrInvalid,
 		},
 		{
@@ -326,7 +326,7 @@ func TestCreate(t *testing.T) {
 				ctx:  context.Background(),
 				item: model.NewGithubRepository(1, "invalid"),
 			},
-			model.NoneRepository,
+			model.Repository{},
 			httpModel.ErrNotFound,
 		},
 		{
@@ -397,13 +397,13 @@ func TestUpdate(t *testing.T) {
 			New(repositorytest.New().SetDoAtomic(errAtomicStart), nil, nil, nil, nil, nil),
 			args{
 				ctx:  context.TODO(),
-				item: model.NoneRepository,
+				item: model.Repository{},
 			},
 			errAtomicStart,
 		},
 		{
 			"fetch error",
-			New(repositorytest.New().SetGet(model.NoneRepository, errors.New("failed")), nil, nil, nil, nil, nil),
+			New(repositorytest.New().SetGet(model.Repository{}, errors.New("failed")), nil, nil, nil, nil, nil),
 			args{
 				ctx:  context.Background(),
 				item: model.NewGithubRepository(0, ""),
@@ -559,7 +559,7 @@ func TestCheck(t *testing.T) {
 		},
 		{
 			"get error",
-			App{repositoryStore: repositorytest.New().SetGetByName(model.NoneRepository, errors.New("failed"))},
+			App{repositoryStore: repositorytest.New().SetGetByName(model.Repository{}, errors.New("failed"))},
 			args{
 				new: model.NewGithubRepository(1, "error"),
 			},

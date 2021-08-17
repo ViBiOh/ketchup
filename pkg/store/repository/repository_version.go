@@ -62,7 +62,7 @@ func findRepository(repositories []model.Repository, id uint64) model.Repository
 		}
 	}
 
-	return model.NoneRepository
+	return model.Repository{}
 }
 
 const listRepositoryVersionQuery = `

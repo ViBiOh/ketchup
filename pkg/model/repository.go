@@ -1,6 +1,8 @@
 package model
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
 	"strings"
 )
@@ -31,9 +33,6 @@ const (
 var (
 	// RepositoryKindValues string values
 	RepositoryKindValues = []string{"github", "helm", "docker", "npm", "pypi"}
-
-	// NoneRepository is an undefined repository
-	NoneRepository = Repository{}
 )
 
 // ParseRepositoryKind parse raw string into a RepositoryKind
@@ -49,6 +48,31 @@ func ParseRepositoryKind(value string) (RepositoryKind, error) {
 
 func (r RepositoryKind) String() string {
 	return RepositoryKindValues[r]
+}
+
+// MarshalJSON marshals the enum as a quoted json string
+func (r RepositoryKind) MarshalJSON() ([]byte, error) {
+	buffer := bytes.NewBufferString(`"`)
+	buffer.WriteString(r.String())
+	buffer.WriteString(`"`)
+	return buffer.Bytes(), nil
+}
+
+// UnmarshalJSON unmarshal JSOn
+func (r *RepositoryKind) UnmarshalJSON(b []byte) error {
+	var strValue string
+	err := json.Unmarshal(b, &strValue)
+	if err != nil {
+		return fmt.Errorf("unable to unmarshal event type: %s", err)
+	}
+
+	value, err := ParseRepositoryKind(strValue)
+	if err != nil {
+		return fmt.Errorf("unable to parse event type: %s", err)
+	}
+
+	*r = value
+	return nil
 }
 
 // Repository of app

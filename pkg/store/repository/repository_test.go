@@ -244,7 +244,7 @@ func TestGet(t *testing.T) {
 				id: 1,
 			},
 			"SELECT id, kind, name, part FROM ketchup.repository WHERE id =",
-			model.NoneRepository,
+			model.Repository{},
 			nil,
 		},
 	}
@@ -313,7 +313,7 @@ func TestGetByName(t *testing.T) {
 			args{
 				name: ketchupRepository,
 			},
-			model.NoneRepository,
+			model.Repository{},
 			nil,
 		},
 		{
@@ -321,7 +321,7 @@ func TestGetByName(t *testing.T) {
 			args{
 				name: ketchupRepository,
 			},
-			model.NoneRepository,
+			model.Repository{},
 			errors.New("invalid value `wrong` for repository kind"),
 		},
 	}
