@@ -35,7 +35,7 @@ func (a App) StoreInContext(ctx context.Context) context.Context {
 	}
 
 	item, err := a.userStore.GetByLoginID(ctx, id)
-	if err != nil || item == model.NoneUser {
+	if err != nil || item.IsZero() {
 		logger.Error("unable to get user with login %d: %s", id, err)
 		return ctx
 	}
@@ -45,12 +45,12 @@ func (a App) StoreInContext(ctx context.Context) context.Context {
 
 // Create user
 func (a App) Create(ctx context.Context, item model.User) (model.User, error) {
-	if err := a.check(ctx, model.NoneUser, item); err != nil {
-		return model.NoneUser, httpModel.WrapInvalid(err)
+	if err := a.check(ctx, model.User{}, item); err != nil {
+		return model.User{}, httpModel.WrapInvalid(err)
 	}
 
-	if err := a.authApp.Check(ctx, authModel.NoneUser, item.Login); err != nil {
-		return model.NoneUser, httpModel.WrapInvalid(err)
+	if err := a.authApp.Check(ctx, authModel.User{}, item.Login); err != nil {
+		return model.User{}, httpModel.WrapInvalid(err)
 	}
 
 	var output model.User
@@ -78,7 +78,7 @@ func (a App) Create(ctx context.Context, item model.User) (model.User, error) {
 }
 
 func (a App) check(ctx context.Context, _, new model.User) error {
-	if new == model.NoneUser {
+	if new.IsZero() {
 		return nil
 	}
 

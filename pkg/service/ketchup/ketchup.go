@@ -180,7 +180,7 @@ func (a app) Delete(ctx context.Context, item model.Ketchup) (err error) {
 func (a app) check(ctx context.Context, old, new model.Ketchup) error {
 	output := make([]error, 0)
 
-	if model.ReadUser(ctx) == model.NoneUser {
+	if model.ReadUser(ctx).IsZero() {
 		output = append(output, errors.New("you must be logged in for interacting"))
 	}
 

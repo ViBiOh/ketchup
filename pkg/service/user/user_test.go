@@ -37,7 +37,7 @@ func TestStoreInContext(t *testing.T) {
 			args{
 				ctx: context.Background(),
 			},
-			model.NoneUser,
+			model.User{},
 		},
 		{
 			"get error",
@@ -45,7 +45,7 @@ func TestStoreInContext(t *testing.T) {
 			args{
 				ctx: authModel.StoreUser(context.Background(), authModel.NewUser(1, "")),
 			},
-			model.NoneUser,
+			model.User{},
 		},
 		{
 			"not found login",
@@ -53,7 +53,7 @@ func TestStoreInContext(t *testing.T) {
 			args{
 				ctx: authModel.StoreUser(context.Background(), authModel.NewUser(1, "")),
 			},
-			model.NoneUser,
+			model.User{},
 		},
 		{
 			"valid",
@@ -75,11 +75,11 @@ func TestStoreInContext(t *testing.T) {
 
 			switch tc.intention {
 			case "get error":
-				mockUserStore.EXPECT().GetByLoginID(gomock.Any(), gomock.Any()).Return(model.NoneUser, errors.New("failed"))
+				mockUserStore.EXPECT().GetByLoginID(gomock.Any(), gomock.Any()).Return(model.User{}, errors.New("failed"))
 			case "not found login":
-				mockUserStore.EXPECT().GetByLoginID(gomock.Any(), gomock.Any()).Return(model.NoneUser, nil)
+				mockUserStore.EXPECT().GetByLoginID(gomock.Any(), gomock.Any()).Return(model.User{}, nil)
 			case "valid":
-				mockUserStore.EXPECT().GetByLoginID(gomock.Any(), gomock.Any()).Return(model.NewUser(1, testEmail, authModel.NoneUser), nil)
+				mockUserStore.EXPECT().GetByLoginID(gomock.Any(), gomock.Any()).Return(model.NewUser(1, testEmail, authModel.User{}), nil)
 			}
 
 			if got := tc.instance.StoreInContext(tc.args.ctx); !reflect.DeepEqual(model.ReadUser(got), tc.want) {
@@ -109,7 +109,7 @@ func TestCreate(t *testing.T) {
 				ctx:  context.Background(),
 				item: model.NewUser(1, "", authModel.NewUser(1, "")),
 			},
-			model.NoneUser,
+			model.User{},
 			httpModel.ErrInvalid,
 		},
 		{
@@ -119,7 +119,7 @@ func TestCreate(t *testing.T) {
 				ctx:  context.Background(),
 				item: model.NewUser(0, testEmail, authModel.NewUser(0, "")),
 			},
-			model.NoneUser,
+			model.User{},
 			httpModel.ErrInvalid,
 		},
 		{
@@ -129,7 +129,7 @@ func TestCreate(t *testing.T) {
 				ctx:  context.Background(),
 				item: model.NewUser(1, testEmail, authModel.NewUser(1, "")),
 			},
-			model.NoneUser,
+			model.User{},
 			errAtomicStart,
 		},
 		{
@@ -139,7 +139,7 @@ func TestCreate(t *testing.T) {
 				ctx:  context.Background(),
 				item: model.NewUser(1, testEmail, authModel.NewUser(1, "")),
 			},
-			model.NoneUser,
+			model.User{},
 			httpModel.ErrInternalError,
 		},
 		{
@@ -149,7 +149,7 @@ func TestCreate(t *testing.T) {
 				ctx:  context.Background(),
 				item: model.NewUser(2, testEmail, authModel.NewUser(2, "")),
 			},
-			model.NoneUser,
+			model.User{},
 			httpModel.ErrInternalError,
 		},
 		{
@@ -180,27 +180,26 @@ func TestCreate(t *testing.T) {
 
 			switch tc.intention {
 			case "invalid user":
-				mockUserStore.EXPECT().GetByEmail(gomock.Any(), gomock.Any()).Return(model.NoneUser, nil)
+				mockUserStore.EXPECT().GetByEmail(gomock.Any(), gomock.Any()).Return(model.User{}, nil)
 			case "invalid auth":
-				mockUserStore.EXPECT().GetByEmail(gomock.Any(), gomock.Any()).Return(model.NoneUser, nil)
 				authApp.EXPECT().Check(gomock.Any(), gomock.Any(), gomock.Any()).Return(errors.New("failed"))
 			case "start atomic error":
 				authApp.EXPECT().Check(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
-				mockUserStore.EXPECT().GetByEmail(gomock.Any(), gomock.Any()).Return(model.NoneUser, nil)
+				mockUserStore.EXPECT().GetByEmail(gomock.Any(), gomock.Any()).Return(model.User{}, nil)
 				mockUserStore.EXPECT().DoAtomic(gomock.Any(), gomock.Any()).Return(errAtomicStart)
 			case "login create error":
 				mockUserStore.EXPECT().DoAtomic(gomock.Any(), gomock.Any()).DoAndReturn(realDoAtomic)
-				mockUserStore.EXPECT().GetByEmail(gomock.Any(), gomock.Any()).Return(model.NoneUser, nil)
+				mockUserStore.EXPECT().GetByEmail(gomock.Any(), gomock.Any()).Return(model.User{}, nil)
 				authApp.EXPECT().Check(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
-				authApp.EXPECT().Create(gomock.Any(), gomock.Any()).Return(authModel.NoneUser, errors.New("failed"))
+				authApp.EXPECT().Create(gomock.Any(), gomock.Any()).Return(authModel.User{}, errors.New("failed"))
 			case "user create error":
 				mockUserStore.EXPECT().DoAtomic(gomock.Any(), gomock.Any()).DoAndReturn(realDoAtomic)
-				mockUserStore.EXPECT().GetByEmail(gomock.Any(), gomock.Any()).Return(model.NoneUser, nil)
+				mockUserStore.EXPECT().GetByEmail(gomock.Any(), gomock.Any()).Return(model.User{}, nil)
 				authApp.EXPECT().Check(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
-				authApp.EXPECT().Create(gomock.Any(), gomock.Any()).Return(authModel.NoneUser, errors.New("failed"))
+				authApp.EXPECT().Create(gomock.Any(), gomock.Any()).Return(authModel.User{}, errors.New("failed"))
 			case "success":
 				mockUserStore.EXPECT().DoAtomic(gomock.Any(), gomock.Any()).DoAndReturn(realDoAtomic)
-				mockUserStore.EXPECT().GetByEmail(gomock.Any(), gomock.Any()).Return(model.NoneUser, nil)
+				mockUserStore.EXPECT().GetByEmail(gomock.Any(), gomock.Any()).Return(model.User{}, nil)
 				mockUserStore.EXPECT().Create(gomock.Any(), gomock.Any()).Return(uint64(2), nil)
 				authApp.EXPECT().Check(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 				authApp.EXPECT().Create(gomock.Any(), gomock.Any()).Return(authModel.NewUser(2, "admin"), nil)
@@ -284,9 +283,9 @@ func TestCheck(t *testing.T) {
 
 			switch tc.intention {
 			case "no name":
-				mockUserStore.EXPECT().GetByEmail(gomock.Any(), gomock.Any()).Return(model.NoneUser, nil)
+				mockUserStore.EXPECT().GetByEmail(gomock.Any(), gomock.Any()).Return(model.User{}, nil)
 			case "get error":
-				mockUserStore.EXPECT().GetByEmail(gomock.Any(), gomock.Any()).Return(model.NoneUser, errors.New("failed"))
+				mockUserStore.EXPECT().GetByEmail(gomock.Any(), gomock.Any()).Return(model.User{}, errors.New("failed"))
 			case "already used":
 				mockUserStore.EXPECT().GetByEmail(gomock.Any(), gomock.Any()).Return(model.NewUser(1, testEmail, authModel.NewUser(1, "")), nil)
 			}
