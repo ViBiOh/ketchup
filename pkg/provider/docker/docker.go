@@ -42,8 +42,8 @@ type Config struct {
 // Flags adds flags for configuring package
 func Flags(fs *flag.FlagSet, prefix string, overrides ...flags.Override) Config {
 	return Config{
-		username: flags.New(prefix, "docker").Name("Username").Default(flags.Default("Username", "", overrides)).Label("Registry Username").ToString(fs),
-		password: flags.New(prefix, "docker").Name("Password").Default(flags.Default("Password", "", overrides)).Label("Registry Password").ToString(fs),
+		username: flags.New(prefix, "docker", "Username").Default("", overrides).Label("Registry Username").ToString(fs),
+		password: flags.New(prefix, "docker", "Password").Default("", overrides).Label("Registry Password").ToString(fs),
 	}
 }
 

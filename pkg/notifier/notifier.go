@@ -47,8 +47,8 @@ type Config struct {
 // Flags adds flags for configuring package
 func Flags(fs *flag.FlagSet, prefix string) Config {
 	return Config{
-		loginID: flags.New(prefix, "notifier").Name("LoginID").Default(1).Label("Scheduler user ID").ToUint(fs),
-		pushURL: flags.New(prefix, "notifier").Name("PushUrl").Default("").Label("Pushgateway URL").ToString(fs),
+		loginID: flags.New(prefix, "notifier", "LoginID").Default(1, nil).Label("Scheduler user ID").ToUint(fs),
+		pushURL: flags.New(prefix, "notifier", "PushUrl").Default("", nil).Label("Pushgateway URL").ToString(fs),
 	}
 }
 

@@ -1,9 +1,8 @@
 cloud.google.com/go v0.34.0/go.mod h1:aQUYkXzVsufM+DwF1aE+0xfcU+56JwCaLick0ClmMTw=
 github.com/DATA-DOG/go-sqlmock v1.5.0 h1:Shsta01QNfFxHCfpW6YH2STWB0MudeXXEWMr20OEh60=
 github.com/DATA-DOG/go-sqlmock v1.5.0/go.mod h1:f/Ixk793poVmq4qj/V1dPUg2JEAKC73Q5eFN3EC/SaM=
-github.com/ViBiOh/auth/v2 v2.11.3 h1:XQzr1pCcCziPr8lqO0ImSQl7SEWBDpayr6cA6cRCouY=
-github.com/ViBiOh/auth/v2 v2.11.3/go.mod h1:nudQP6eyFimsfGrf4iB+1x32LEV0YUrZqBejfUCeqpE=
-github.com/ViBiOh/httputils/v4 v4.20.1/go.mod h1:xaIqVmMbcnucWfNPXCP5dPffPZNSkwfhHJOK+xIzU00=
+github.com/ViBiOh/auth/v2 v2.11.4 h1:ko525WCEdqSfDDoYSsQXZR0QIcOJvtljGvsUcTUMZe8=
+github.com/ViBiOh/auth/v2 v2.11.4/go.mod h1:0AJ75661x6jiZoV8Wdiow9T/uuxu/iE8DsHmcH+8jGQ=
 github.com/ViBiOh/httputils/v4 v4.21.2 h1:Ac5+E5E2Q8r0PzuB6k01NG8eovt0Ulj5Vwk2pRGvOZE=
 github.com/ViBiOh/httputils/v4 v4.21.2/go.mod h1:EHlIJgVJJATWyXZXzd+J4+Jl0Yz6Q790WydE+Y/3FFo=
 github.com/ViBiOh/mailer v1.23.0 h1:HYwOPhzX+wJBd1nYTNAuiE9+Laf3DxAhS8bOGelLliY=

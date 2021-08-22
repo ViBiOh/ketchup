@@ -12,16 +12,16 @@ const (
 	ctxUserKey key = iota
 )
 
-var (
-	// NoneUser is an undefined user
-	NoneUser = User{}
-)
-
 // User of app
 type User struct {
 	Email string
 	Login authModel.User
 	ID    uint64
+}
+
+// IsZero check if instance is valued or not
+func (u User) IsZero() bool {
+	return u.ID == 0 && u.Login.ID == 0
 }
 
 // NewUser creates new User instance
@@ -42,12 +42,12 @@ func StoreUser(ctx context.Context, user User) context.Context {
 func ReadUser(ctx context.Context) User {
 	rawUser := ctx.Value(ctxUserKey)
 	if rawUser == nil {
-		return NoneUser
+		return User{}
 	}
 
 	if user, ok := rawUser.(User); ok {
 		return user
 	}
 
-	return NoneUser
+	return User{}
 }

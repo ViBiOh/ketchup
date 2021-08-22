@@ -20,7 +20,7 @@ func TestReadUser(t *testing.T) {
 			args{
 				ctx: context.Background(),
 			},
-			NoneUser,
+			User{},
 		},
 		{
 			"with User",
@@ -34,7 +34,7 @@ func TestReadUser(t *testing.T) {
 			args{
 				ctx: context.WithValue(context.Background(), ctxUserKey, args{}),
 			},
-			NoneUser,
+			User{},
 		},
 	}
 

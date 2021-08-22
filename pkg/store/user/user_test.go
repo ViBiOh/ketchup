@@ -55,7 +55,7 @@ func TestGetByEmail(t *testing.T) {
 			args{
 				email: testEmail,
 			},
-			model.NoneUser,
+			model.User{},
 			nil,
 		},
 	}
@@ -112,7 +112,7 @@ func TestGetByLoginID(t *testing.T) {
 			args{
 				loginID: 2,
 			},
-			model.NoneUser,
+			model.User{},
 			nil,
 		},
 	}
