@@ -105,7 +105,7 @@ func (a app) List(ctx context.Context, pageSize uint, last string) ([]model.Ketc
 		}
 		item.Repository.Kind = repositoryKind
 
-		list = append(list, item)
+		list = append(list, item.WithID())
 		return nil
 	}
 

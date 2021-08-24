@@ -44,6 +44,7 @@ func (r KetchupFrequency) String() string {
 
 // Ketchup of app
 type Ketchup struct {
+	ID         string
 	Semver     string
 	Pattern    string
 	Version    string
@@ -60,6 +61,13 @@ func NewKetchup(pattern, version string, frequency KetchupFrequency, repo Reposi
 		Frequency:  frequency,
 		Repository: repo,
 	}
+}
+
+// WithID generate ID of the ketchup
+func (k Ketchup) WithID() Ketchup {
+	k.ID = Sha1(k)[:8]
+
+	return k
 }
 
 // KetchupByRepositoryIDAndPattern sort ketchup by repository ID

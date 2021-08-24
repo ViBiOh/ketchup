@@ -70,6 +70,7 @@ func TestList(t *testing.T) {
 			},
 			[]model.Ketchup{
 				{
+					ID:         "4bdfbeb6",
 					Pattern:    model.DefaultPattern,
 					Version:    "0.9.0",
 					Frequency:  model.Daily,
@@ -77,6 +78,7 @@ func TestList(t *testing.T) {
 					User:       model.NewUser(3, testEmail, authModel.NewUser(0, "")),
 				},
 				{
+					ID:         "844123b7",
 					Pattern:    model.DefaultPattern,
 					Version:    repositoryVersion,
 					Frequency:  model.Daily,

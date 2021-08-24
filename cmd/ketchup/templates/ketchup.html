@@ -123,7 +123,7 @@
 {{ end }}
 
 {{ define "edit-modal" }}
-  <div id="edit-modal-{{ .Repository.ID }}" class="modal">
+  <div id="edit-modal-{{ .ID }}" class="modal">
     <div class="modal-content">
       <h2 class="header">Edit ketchup</h2>
 
@@ -140,17 +140,17 @@
         <input type="hidden" name="method" value="PUT">
 
         <p class="padding no-margin">
-          <label for="edit-pattern-{{ .Repository.ID }}" class="block">Pattern: <img class="icon icon-small" title="'latest': latest version, beta included.
+          <label for="edit-pattern-{{ .ID }}" class="block">Pattern: <img class="icon icon-small" title="'latest': latest version, beta included.
 'stable': latest version without beta.
 '^1': latest with fixed major version.
 '~1.1': latest with fixed major and minor version.
 '^1-0': include beta (works also for '~')." src="{{ url "/svg/question?fill=silver" }}" alt="Question icon"></label>
-          <input id="edit-pattern-{{ .Repository.ID }}" name="pattern" type="text" value="{{ .Pattern }}">
+          <input id="edit-pattern-{{ .ID }}" name="pattern" type="text" value="{{ .Pattern }}">
         </p>
 
         <p class="padding no-margin">
-          <label for="edit-version-{{ .Repository.ID }}" class="block">My version:</label>
-          <input id="edit-version-{{ .Repository.ID }}" name="version" type="text" value="{{ .Version }}">
+          <label for="edit-version-{{ .ID }}" class="block">My version:</label>
+          <input id="edit-version-{{ .ID }}" name="version" type="text" value="{{ .Version }}">
         </p>
 
         <p class="padding no-margin">
@@ -169,7 +169,7 @@
 {{ end }}
 
 {{ define "delete-modal" }}
-  <div id="delete-modal-{{ .Repository.ID }}" class="modal">
+  <div id="delete-modal-{{ .ID }}" class="modal">
     <div class="modal-content">
       <h2 class="header">Confirmation</h2>
 
@@ -199,8 +199,8 @@
 {{ define "ketchups" }}
   <style type="text/css">
     {{ range .Ketchups }}
-      #delete-modal-{{ .Repository.ID }}:target,
-      #edit-modal-{{ .Repository.ID }}:target,
+      #delete-modal-{{ .ID }}:target,
+      #edit-modal-{{ .ID }}:target,
     {{ end }}
     #create-modal:target {
       display: flex;
@@ -208,8 +208,8 @@
     }
 
     {{ range .Ketchups }}
-      #delete-modal-{{ .Repository.ID }}:target ~ .content,
-      #edit-modal-{{ .Repository.ID }}:target ~ .content,
+      #delete-modal-{{ .ID }}:target ~ .content,
+      #edit-modal-{{ .ID }}:target ~ .content,
     {{ end }}
     #create-modal:target ~ .content {
       display: flex;
@@ -368,10 +368,10 @@
             </form>
           {{ end }}
 
-          <a href="#edit-modal-{{ .Repository.ID }}" class="button button-icon" title="Edit">
+          <a href="#edit-modal-{{ .ID }}" class="button button-icon" title="Edit">
             <img class="icon" src="{{ url "/svg/edit?fill=silver" }}" alt="Edit icon">
           </a>
-          <a href="#delete-modal-{{ .Repository.ID }}" class="button button-icon" title="Delete">
+          <a href="#delete-modal-{{ .ID }}" class="button button-icon" title="Delete">
             <img class="icon" src="{{ url "/svg/times?fill=silver" }}" alt="Delete icon">
           </a>
         </div>
