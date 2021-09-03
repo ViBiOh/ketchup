@@ -104,7 +104,7 @@ func TestCompareURL(t *testing.T) {
 				version: "1.0.0",
 				pattern: DefaultPattern,
 			},
-			"https://github.com/vibioh/ketchup/compare/1.1.0...1.0.0",
+			"https://github.com/vibioh/ketchup/compare/1.0.0...1.1.0",
 		},
 	}
 
