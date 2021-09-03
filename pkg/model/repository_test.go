@@ -62,11 +62,11 @@ func TestURL(t *testing.T) {
 		},
 		{
 			"github",
-			NewGithubRepository(0, "vibioh/ketchup").AddVersion(DefaultPattern, "1.0.0"),
+			NewGithubRepository(0, "vibioh/ketchup").AddVersion(DefaultPattern, "v1.0.0"),
 			args{
 				pattern: DefaultPattern,
 			},
-			"https://github.com/vibioh/ketchup/releases/tag/1.0.0",
+			"https://github.com/vibioh/ketchup/releases/tag/v1.0.0",
 		},
 	}
 
@@ -99,12 +99,12 @@ func TestCompareURL(t *testing.T) {
 		},
 		{
 			"github",
-			NewGithubRepository(0, "vibioh/ketchup").AddVersion(DefaultPattern, "1.1.0"),
+			NewGithubRepository(0, "vibioh/ketchup").AddVersion(DefaultPattern, "v1.1.0"),
 			args{
-				version: "1.0.0",
+				version: "v1.0.0",
 				pattern: DefaultPattern,
 			},
-			"https://github.com/vibioh/ketchup/compare/1.0.0...1.1.0",
+			"https://github.com/vibioh/ketchup/compare/v1.0.0...v1.1.0",
 		},
 	}
 
