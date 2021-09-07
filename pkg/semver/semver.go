@@ -101,6 +101,10 @@ func Parse(version string) (Version, error) {
 	}
 	var err error
 
+	if len(matches[1]) >= 8 {
+		return NoneVersion, fmt.Errorf("major version looks like a date: %s", version)
+	}
+
 	semver.major, err = strconv.ParseUint(matches[1], 10, 64)
 	if err != nil {
 		return NoneVersion, fmt.Errorf("version major is not numeric")

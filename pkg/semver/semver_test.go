@@ -269,6 +269,14 @@ func TestParse(t *testing.T) {
 			Version{"v1.2.3-abcdef123456", 1, 2, 3, 0},
 			nil,
 		},
+		{
+			"fucking date",
+			args{
+				version: "v20160726",
+			},
+			Version{},
+			errors.New("major version looks like a date"),
+		},
 	}
 
 	for _, tc := range cases {
