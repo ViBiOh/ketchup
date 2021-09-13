@@ -55,3 +55,14 @@ type RepositoryService interface {
 	Clean(context.Context) error
 	LatestVersions(Repository) (map[string]semver.Version, error)
 }
+
+// KetchupService defines interaction with ketchup
+type KetchupService interface {
+	List(ctx context.Context, pageSize uint, last string) ([]Ketchup, uint64, error)
+	ListForRepositories(ctx context.Context, repositories []Repository, frequency KetchupFrequency) ([]Ketchup, error)
+	ListOutdatedByFrequency(ctx context.Context, frequency KetchupFrequency) ([]Ketchup, error)
+	Create(ctx context.Context, item Ketchup) (Ketchup, error)
+	Update(ctx context.Context, oldPattern string, item Ketchup) (Ketchup, error)
+	UpdateAll(ctx context.Context) error
+	Delete(ctx context.Context, item Ketchup) error
+}

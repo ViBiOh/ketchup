@@ -74,7 +74,7 @@ style:
 .PHONY: mocks
 mocks:
 	find . -name "mocks" -type d -exec rm -r "{}" \+
-	mockgen -destination pkg/mocks/model.go -mock_names Mailer=Mailer,AuthService=AuthService,UserService=UserService,UserStore=UserStore,HelmProvider=HelmProvider,RepositoryService=RepositoryService -package mocks github.com/ViBiOh/ketchup/pkg/model Mailer,AuthService,UserService,UserStore,HelmProvider,RepositoryService
+	mockgen -destination pkg/mocks/model.go -mock_names Mailer=Mailer,AuthService=AuthService,UserService=UserService,UserStore=UserStore,HelmProvider=HelmProvider,RepositoryService=RepositoryService,KetchupService=KetchupService -package mocks github.com/ViBiOh/ketchup/pkg/model Mailer,AuthService,UserService,UserStore,HelmProvider,RepositoryService,KetchupService
 
 ## test: Shortcut to launch all the test tasks (unit, functional and integration).
 .PHONY: test

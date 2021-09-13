@@ -100,7 +100,7 @@ func (a App) handleUpdate(w http.ResponseWriter, r *http.Request) {
 
 	item := model.NewKetchup(r.FormValue("pattern"), r.FormValue("version"), ketchupFrequency, model.NewGithubRepository(id, "")).WithID()
 
-	updated, err := a.ketchupService.Update(r.Context(), item)
+	updated, err := a.ketchupService.Update(r.Context(), r.FormValue("old-pattern"), item)
 	if err != nil {
 		a.rendererApp.Error(w, err)
 		return

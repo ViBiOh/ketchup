@@ -14,7 +14,6 @@ import (
 	"github.com/ViBiOh/httputils/v4/pkg/logger"
 	"github.com/ViBiOh/ketchup/pkg/model"
 	"github.com/ViBiOh/ketchup/pkg/semver"
-	"github.com/ViBiOh/ketchup/pkg/service/ketchup"
 	"github.com/ViBiOh/ketchup/pkg/service/user"
 	mailerModel "github.com/ViBiOh/mailer/pkg/model"
 	"github.com/prometheus/client_golang/prometheus/push"
@@ -27,7 +26,7 @@ var (
 // App of package
 type App struct {
 	repositoryService model.RepositoryService
-	ketchupService    ketchup.App
+	ketchupService    model.KetchupService
 	userService       user.App
 	mailerApp         model.Mailer
 	helmApp           model.HelmProvider
@@ -53,7 +52,7 @@ func Flags(fs *flag.FlagSet, prefix string) Config {
 }
 
 // New creates new App from Config
-func New(config Config, repositoryService model.RepositoryService, ketchupService ketchup.App, userService user.App, mailerApp model.Mailer, helmApp model.HelmProvider) App {
+func New(config Config, repositoryService model.RepositoryService, ketchupService model.KetchupService, userService user.App, mailerApp model.Mailer, helmApp model.HelmProvider) App {
 	return App{
 		loginID: uint64(*config.loginID),
 		pushURL: strings.TrimSpace(*config.pushURL),

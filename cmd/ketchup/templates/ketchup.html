@@ -138,6 +138,7 @@
 
       <form method="POST" action="/app/ketchups/{{ .Repository.ID }}">
         <input type="hidden" name="method" value="PUT">
+        <input type="hidden" name="old-pattern" value="{{ .Pattern }}">
 
         <p class="padding no-margin">
           <label for="edit-pattern-{{ .ID }}" class="block">Pattern: <img class="icon icon-small" title="'latest': latest version, beta included.

@@ -13,7 +13,6 @@ import (
 	"github.com/ViBiOh/ketchup/pkg/mocks"
 	"github.com/ViBiOh/ketchup/pkg/model"
 	"github.com/ViBiOh/ketchup/pkg/semver"
-	"github.com/ViBiOh/ketchup/pkg/service/ketchup/ketchuptest"
 	"github.com/golang/mock/gomock"
 )
 
@@ -167,7 +166,7 @@ func TestGetKetchupToNotify(t *testing.T) {
 	}{
 		{
 			"list error",
-			App{ketchupService: ketchuptest.New().SetListForRepositories(nil, errors.New("failed"))},
+			App{},
 			args{
 				ctx: context.Background(),
 			},
@@ -176,7 +175,7 @@ func TestGetKetchupToNotify(t *testing.T) {
 		},
 		{
 			"empty",
-			App{ketchupService: ketchuptest.New()},
+			App{},
 			args{
 				ctx: context.Background(),
 			},
@@ -185,44 +184,7 @@ func TestGetKetchupToNotify(t *testing.T) {
 		},
 		{
 			"one release, n ketchups",
-			App{ketchupService: ketchuptest.New().SetListForRepositories([]model.Ketchup{
-				{
-					Pattern:    model.DefaultPattern,
-					Repository: model.NewGithubRepository(1, repositoryName),
-					User:       model.NewUser(1, testEmail, authModel.NewUser(0, "")),
-					Version:    repositoryVersion,
-				},
-				{
-					Pattern:    model.DefaultPattern,
-					Repository: model.NewGithubRepository(1, repositoryName),
-					User:       model.NewUser(2, "guest@nowhere", authModel.NewUser(0, "")),
-					Version:    repositoryVersion,
-				},
-				{
-					Pattern:    model.DefaultPattern,
-					Repository: model.NewGithubRepository(2, "vibioh/dotfiles"),
-					User:       model.NewUser(1, testEmail, authModel.NewUser(0, "")),
-					Version:    repositoryVersion,
-				},
-				{
-					Pattern:    "^1.1-0",
-					Repository: model.NewGithubRepository(2, "vibioh/dotfiles"),
-					User:       model.NewUser(2, "guest@nowhere", authModel.NewUser(0, "")),
-					Version:    repositoryVersion,
-				},
-				{
-					Pattern:    model.DefaultPattern,
-					Repository: model.NewGithubRepository(3, "vibioh/zzz"),
-					User:       model.NewUser(1, testEmail, authModel.NewUser(0, "")),
-					Version:    repositoryVersion,
-				},
-				{
-					Pattern:    model.DefaultPattern,
-					Repository: model.NewGithubRepository(3, "vibioh/zzz"),
-					User:       model.NewUser(2, "guest@nowhere", authModel.NewUser(0, "")),
-					Version:    "1.1.0",
-				},
-			}, nil)},
+			App{},
 			args{
 				ctx: context.Background(),
 				releases: []model.Release{
@@ -283,6 +245,61 @@ func TestGetKetchupToNotify(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.intention, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			mockKetchupService := mocks.NewKetchupService(ctrl)
+
+			tc.instance.ketchupService = mockKetchupService
+
+			switch tc.intention {
+			case "list error":
+				mockKetchupService.EXPECT().ListForRepositories(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, errors.New("failed"))
+			case "empty":
+				mockKetchupService.EXPECT().ListForRepositories(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, nil)
+				mockKetchupService.EXPECT().ListOutdatedByFrequency(gomock.Any(), gomock.Any()).Return(nil, nil)
+			case "one release, n ketchups":
+				mockKetchupService.EXPECT().ListForRepositories(gomock.Any(), gomock.Any(), gomock.Any()).Return([]model.Ketchup{
+					{
+						Pattern:    model.DefaultPattern,
+						Repository: model.NewGithubRepository(1, repositoryName),
+						User:       model.NewUser(1, testEmail, authModel.NewUser(0, "")),
+						Version:    repositoryVersion,
+					},
+					{
+						Pattern:    model.DefaultPattern,
+						Repository: model.NewGithubRepository(1, repositoryName),
+						User:       model.NewUser(2, "guest@nowhere", authModel.NewUser(0, "")),
+						Version:    repositoryVersion,
+					},
+					{
+						Pattern:    model.DefaultPattern,
+						Repository: model.NewGithubRepository(2, "vibioh/dotfiles"),
+						User:       model.NewUser(1, testEmail, authModel.NewUser(0, "")),
+						Version:    repositoryVersion,
+					},
+					{
+						Pattern:    "^1.1-0",
+						Repository: model.NewGithubRepository(2, "vibioh/dotfiles"),
+						User:       model.NewUser(2, "guest@nowhere", authModel.NewUser(0, "")),
+						Version:    repositoryVersion,
+					},
+					{
+						Pattern:    model.DefaultPattern,
+						Repository: model.NewGithubRepository(3, "vibioh/zzz"),
+						User:       model.NewUser(1, testEmail, authModel.NewUser(0, "")),
+						Version:    repositoryVersion,
+					},
+					{
+						Pattern:    model.DefaultPattern,
+						Repository: model.NewGithubRepository(3, "vibioh/zzz"),
+						User:       model.NewUser(2, "guest@nowhere", authModel.NewUser(0, "")),
+						Version:    "1.1.0",
+					},
+				}, nil)
+				mockKetchupService.EXPECT().ListOutdatedByFrequency(gomock.Any(), gomock.Any()).Return(nil, nil)
+			}
+
 			got, gotErr := tc.instance.getKetchupToNotify(tc.args.ctx, tc.args.releases)
 
 			failed := false

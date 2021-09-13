@@ -14,30 +14,21 @@ import (
 )
 
 // App of package
-type App interface {
-	List(ctx context.Context, pageSize uint, last string) ([]model.Ketchup, uint64, error)
-	ListForRepositories(ctx context.Context, repositories []model.Repository, frequency model.KetchupFrequency) ([]model.Ketchup, error)
-	ListOutdatedByFrequency(ctx context.Context, frequency model.KetchupFrequency) ([]model.Ketchup, error)
-	Create(ctx context.Context, item model.Ketchup) (model.Ketchup, error)
-	Update(ctx context.Context, item model.Ketchup) (model.Ketchup, error)
-	UpdateAll(ctx context.Context) error
-	Delete(ctx context.Context, item model.Ketchup) error
-}
-
-type app struct {
+type App struct {
 	ketchupStore      ketchup.App
 	repositoryService model.RepositoryService
 }
 
 // New creates new App from Config
 func New(ketchupStore ketchup.App, repositoryService model.RepositoryService) App {
-	return app{
+	return App{
 		ketchupStore:      ketchupStore,
 		repositoryService: repositoryService,
 	}
 }
 
-func (a app) List(ctx context.Context, pageSize uint, last string) ([]model.Ketchup, uint64, error) {
+// List ketchups
+func (a App) List(ctx context.Context, pageSize uint, last string) ([]model.Ketchup, uint64, error) {
 	list, total, err := a.ketchupStore.List(ctx, pageSize, last)
 	if err != nil {
 		return nil, 0, httpModel.WrapInternal(fmt.Errorf("unable to list: %w", err))
@@ -49,7 +40,8 @@ func (a app) List(ctx context.Context, pageSize uint, last string) ([]model.Ketc
 	return enrichedList, total, nil
 }
 
-func (a app) ListForRepositories(ctx context.Context, repositories []model.Repository, frequency model.KetchupFrequency) ([]model.Ketchup, error) {
+// ListForRepositories of ketchups
+func (a App) ListForRepositories(ctx context.Context, repositories []model.Repository, frequency model.KetchupFrequency) ([]model.Ketchup, error) {
 	ids := make([]uint64, len(repositories))
 	for index, repo := range repositories {
 		ids[index] = repo.ID
@@ -63,7 +55,8 @@ func (a app) ListForRepositories(ctx context.Context, repositories []model.Repos
 	return enrichKetchupsWithSemver(list), nil
 }
 
-func (a app) ListOutdatedByFrequency(ctx context.Context, frequency model.KetchupFrequency) ([]model.Ketchup, error) {
+// ListOutdatedByFrequency ketchups outdated
+func (a App) ListOutdatedByFrequency(ctx context.Context, frequency model.KetchupFrequency) ([]model.Ketchup, error) {
 	list, err := a.ketchupStore.ListOutdatedByFrequency(ctx, frequency)
 	if err != nil {
 		return nil, httpModel.WrapInternal(fmt.Errorf("unable to list outdated by frequency: %w", err))
@@ -72,7 +65,8 @@ func (a app) ListOutdatedByFrequency(ctx context.Context, frequency model.Ketchu
 	return list, nil
 }
 
-func (a app) Create(ctx context.Context, item model.Ketchup) (model.Ketchup, error) {
+// Create ketchup
+func (a App) Create(ctx context.Context, item model.Ketchup) (model.Ketchup, error) {
 	var output model.Ketchup
 
 	err := a.ketchupStore.DoAtomic(ctx, func(ctx context.Context) error {
@@ -98,7 +92,8 @@ func (a app) Create(ctx context.Context, item model.Ketchup) (model.Ketchup, err
 	return output, err
 }
 
-func (a app) UpdateAll(ctx context.Context) error {
+// UpdateAll ketchups
+func (a App) UpdateAll(ctx context.Context) error {
 	err := a.ketchupStore.DoAtomic(ctx, func(ctx context.Context) error {
 		return a.ketchupStore.UpdateAll(ctx)
 	})
@@ -109,11 +104,12 @@ func (a app) UpdateAll(ctx context.Context) error {
 	return nil
 }
 
-func (a app) Update(ctx context.Context, item model.Ketchup) (model.Ketchup, error) {
+// Update ketchup
+func (a App) Update(ctx context.Context, oldPattern string, item model.Ketchup) (model.Ketchup, error) {
 	var output model.Ketchup
 
 	err := a.ketchupStore.DoAtomic(ctx, func(ctx context.Context) error {
-		old, err := a.ketchupStore.GetByRepository(ctx, item.Repository.ID, item.Pattern, true)
+		old, err := a.ketchupStore.GetByRepository(ctx, item.Repository.ID, oldPattern, true)
 		if err != nil {
 			return httpModel.WrapInternal(fmt.Errorf("unable to fetch: %w", err))
 		}
@@ -154,7 +150,8 @@ func (a app) Update(ctx context.Context, item model.Ketchup) (model.Ketchup, err
 	return output, err
 }
 
-func (a app) Delete(ctx context.Context, item model.Ketchup) (err error) {
+// Delete ketchup
+func (a App) Delete(ctx context.Context, item model.Ketchup) (err error) {
 	return a.ketchupStore.DoAtomic(ctx, func(ctx context.Context) error {
 		old, err := a.ketchupStore.GetByRepository(ctx, item.Repository.ID, item.Pattern, true)
 		if err != nil {
@@ -177,7 +174,7 @@ func (a app) Delete(ctx context.Context, item model.Ketchup) (err error) {
 	})
 }
 
-func (a app) check(ctx context.Context, old, new model.Ketchup) error {
+func (a App) check(ctx context.Context, old, new model.Ketchup) error {
 	output := make([]error, 0)
 
 	if model.ReadUser(ctx).IsZero() {
