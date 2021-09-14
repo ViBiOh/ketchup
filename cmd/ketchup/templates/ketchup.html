@@ -360,6 +360,7 @@
             <form method="POST" action="/app/ketchups/{{ .Repository.ID }}" class="inline">
               <input type="hidden" name="method" value="PUT">
               <input type="hidden" name="frequency" value="{{ .Frequency.String }}">
+              <input type="hidden" name="old-pattern" value="{{ .Pattern }}">
               <input type="hidden" name="pattern" value="{{ .Pattern }}">
               <input type="hidden" name="version" value="{{ index .Repository.Versions .Pattern }}">
 
