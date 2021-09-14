@@ -257,7 +257,6 @@ func TestGetKetchupToNotify(t *testing.T) {
 				mockKetchupService.EXPECT().ListForRepositories(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, errors.New("failed"))
 			case "empty":
 				mockKetchupService.EXPECT().ListForRepositories(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, nil)
-				mockKetchupService.EXPECT().ListOutdatedByFrequency(gomock.Any(), gomock.Any()).Return(nil, nil)
 			case "one release, n ketchups":
 				mockKetchupService.EXPECT().ListForRepositories(gomock.Any(), gomock.Any(), gomock.Any()).Return([]model.Ketchup{
 					{
@@ -297,7 +296,6 @@ func TestGetKetchupToNotify(t *testing.T) {
 						Version:    "1.1.0",
 					},
 				}, nil)
-				mockKetchupService.EXPECT().ListOutdatedByFrequency(gomock.Any(), gomock.Any()).Return(nil, nil)
 			}
 
 			got, gotErr := tc.instance.getKetchupToNotify(tc.args.ctx, tc.args.releases)
