@@ -19,7 +19,6 @@ var (
 
 	testEmail       = "nobody@localhost"
 	repositoryName  = "vibioh/ketchup"
-	viwsRepository  = "vibioh/viws"
 	chartRepository = "https://charts.vibioh.fr"
 
 	repositoryVersion = "1.0.0"

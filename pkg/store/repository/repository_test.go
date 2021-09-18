@@ -17,8 +17,6 @@ var (
 	ketchupRepository = "vibioh/ketchup"
 	viwsRepository    = "vibioh/viws"
 	chartRepository   = "https://charts.vibioh.fr"
-
-	expectQueryVersion = "SELECT repository_id, pattern, version FROM ketchup.repository_version WHERE repository_id = ANY"
 )
 
 func TestList(t *testing.T) {
