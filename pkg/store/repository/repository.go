@@ -2,51 +2,37 @@ package repository
 
 import (
 	"context"
-	"database/sql"
 	"errors"
 	"fmt"
 	"strconv"
 	"strings"
 
-	"github.com/ViBiOh/httputils/v4/pkg/db"
 	"github.com/ViBiOh/ketchup/pkg/model"
-	"github.com/lib/pq"
+	"github.com/jackc/pgx/v4"
 )
 
 // App of package
-type App interface {
-	DoAtomic(ctx context.Context, action func(context.Context) error) error
-	List(ctx context.Context, pageSize uint, last string) ([]model.Repository, uint64, error)
-	ListByKinds(ctx context.Context, pageSize uint, last string, kinds ...model.RepositoryKind) ([]model.Repository, uint64, error)
-	Suggest(ctx context.Context, ignoreIds []uint64, count uint64) ([]model.Repository, error)
-	Get(ctx context.Context, id uint64, forUpdate bool) (model.Repository, error)
-	GetByName(ctx context.Context, repositoryKind model.RepositoryKind, name, part string) (model.Repository, error)
-	Create(ctx context.Context, o model.Repository) (uint64, error)
-	UpdateVersions(ctx context.Context, o model.Repository) error
-	DeleteUnused(ctx context.Context) error
-	DeleteUnusedVersions(ctx context.Context) error
-}
-
-type app struct {
-	db db.App
+type App struct {
+	db model.Database
 }
 
 // New creates new App from Config
-func New(db db.App) App {
-	return app{
+func New(db model.Database) App {
+	return App{
 		db: db,
 	}
 }
 
-func (a app) DoAtomic(ctx context.Context, action func(context.Context) error) error {
+// DoAtomic does an atomic operation
+func (a App) DoAtomic(ctx context.Context, action func(context.Context) error) error {
 	return a.db.DoAtomic(ctx, action)
 }
 
-func (a app) list(ctx context.Context, query string, args ...interface{}) ([]model.Repository, uint64, error) {
+func (a App) list(ctx context.Context, query string, args ...interface{}) ([]model.Repository, uint64, error) {
 	var count uint64
 	list := make([]model.Repository, 0)
 
-	scanner := func(rows *sql.Rows) error {
+	scanner := func(rows pgx.Rows) error {
 		var rawRepositoryKind string
 		item := model.Repository{
 			Versions: make(map[string]string),
@@ -74,15 +60,15 @@ func (a app) list(ctx context.Context, query string, args ...interface{}) ([]mod
 	return list, count, a.enrichRepositoriesVersions(ctx, list)
 }
 
-func (a app) get(ctx context.Context, query string, args ...interface{}) (model.Repository, error) {
+func (a App) get(ctx context.Context, query string, args ...interface{}) (model.Repository, error) {
 	var rawRepositoryKind string
 	item := model.Repository{
 		Versions: make(map[string]string),
 	}
 
-	scanner := func(row *sql.Row) error {
+	scanner := func(row pgx.Row) error {
 		err := row.Scan(&item.ID, &rawRepositoryKind, &item.Name, &item.Part)
-		if errors.Is(err, sql.ErrNoRows) {
+		if errors.Is(err, pgx.ErrNoRows) {
 			item = model.Repository{}
 			return nil
 		}
@@ -120,7 +106,8 @@ WHERE
   TRUE
 `
 
-func (a app) List(ctx context.Context, pageSize uint, last string) ([]model.Repository, uint64, error) {
+// List repositories
+func (a App) List(ctx context.Context, pageSize uint, last string) ([]model.Repository, uint64, error) {
 	var query strings.Builder
 	query.WriteString(listQuery)
 	var queryArgs []interface{}
@@ -166,7 +153,8 @@ const listByKindRestartQuery = `
   )
 `
 
-func (a app) ListByKinds(ctx context.Context, pageSize uint, last string, kinds ...model.RepositoryKind) ([]model.Repository, uint64, error) {
+// ListByKinds repositories by kind
+func (a App) ListByKinds(ctx context.Context, pageSize uint, last string, kinds ...model.RepositoryKind) ([]model.Repository, uint64, error) {
 	var query strings.Builder
 	query.WriteString(listByKindsQuery)
 	var queryArgs []interface{}
@@ -176,7 +164,7 @@ func (a app) ListByKinds(ctx context.Context, pageSize uint, last string, kinds 
 		kindsValue[i] = kind.String()
 	}
 
-	queryArgs = append(queryArgs, pq.Array(kindsValue))
+	queryArgs = append(queryArgs, kindsValue)
 
 	if len(last) != 0 {
 		parts := strings.Split(last, "|")
@@ -223,8 +211,9 @@ ORDER BY
 LIMIT $1
 `
 
-func (a app) Suggest(ctx context.Context, ignoreIds []uint64, count uint64) ([]model.Repository, error) {
-	list, _, err := a.list(ctx, suggestQuery, count, pq.Array(ignoreIds))
+// Suggest repositories
+func (a App) Suggest(ctx context.Context, ignoreIds []uint64, count uint64) ([]model.Repository, error) {
+	list, _, err := a.list(ctx, suggestQuery, count, ignoreIds)
 	return list, err
 }
 
@@ -240,7 +229,8 @@ WHERE
   id = $1
 `
 
-func (a app) Get(ctx context.Context, id uint64, forUpdate bool) (model.Repository, error) {
+// Get repository by id
+func (a App) Get(ctx context.Context, id uint64, forUpdate bool) (model.Repository, error) {
 	query := getQuery
 	if forUpdate {
 		query += " FOR UPDATE"
@@ -263,7 +253,8 @@ WHERE
   AND part = $3
 `
 
-func (a app) GetByName(ctx context.Context, repositoryKind model.RepositoryKind, name, part string) (model.Repository, error) {
+// GetByName repository by name
+func (a App) GetByName(ctx context.Context, repositoryKind model.RepositoryKind, name, part string) (model.Repository, error) {
 	return a.get(ctx, getByNameQuery, repositoryKind.String(), strings.ToLower(name), strings.ToLower(part))
 }
 
@@ -285,7 +276,8 @@ INSERT INTO
 ) RETURNING id
 `
 
-func (a app) Create(ctx context.Context, o model.Repository) (uint64, error) {
+// Create a repository
+func (a App) Create(ctx context.Context, o model.Repository) (uint64, error) {
 	if err := a.db.Exec(ctx, insertLock); err != nil {
 		return 0, err
 	}
@@ -320,7 +312,8 @@ WHERE
   )
 `
 
-func (a app) DeleteUnused(ctx context.Context) error {
+// DeleteUnused repositories
+func (a App) DeleteUnused(ctx context.Context) error {
 	return a.db.Exec(ctx, deleteQuery)
 }
 
@@ -337,6 +330,7 @@ WHERE NOT EXISTS (
   )
 `
 
-func (a app) DeleteUnusedVersions(ctx context.Context) error {
+// DeleteUnusedVersions repositories versions
+func (a App) DeleteUnusedVersions(ctx context.Context) error {
 	return a.db.Exec(ctx, deleteVersionsQuery)
 }

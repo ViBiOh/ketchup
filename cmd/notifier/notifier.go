@@ -40,11 +40,7 @@ func main() {
 
 	ketchupDb, err := db.New(dbConfig)
 	logger.Fatal(err)
-	defer func() {
-		if err := ketchupDb.Close(); err != nil {
-			logger.Error("error while closing database connection: %s", err)
-		}
-	}()
+	defer ketchupDb.Close()
 
 	mailerApp, err := mailer.New(mailerConfig)
 	logger.Fatal(err)

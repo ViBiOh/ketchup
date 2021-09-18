@@ -4,10 +4,7 @@ import (
 	"context"
 
 	"github.com/ViBiOh/ketchup/pkg/model"
-	"github.com/ViBiOh/ketchup/pkg/store/ketchup"
 )
-
-var _ ketchup.App = &App{}
 
 // App mocks
 type App struct {

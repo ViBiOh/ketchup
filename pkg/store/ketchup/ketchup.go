@@ -2,42 +2,29 @@ package ketchup
 
 import (
 	"context"
-	"database/sql"
 	"errors"
 	"fmt"
 	"strconv"
 	"strings"
 
-	"github.com/ViBiOh/httputils/v4/pkg/db"
 	"github.com/ViBiOh/ketchup/pkg/model"
-	"github.com/lib/pq"
+	"github.com/jackc/pgx/v4"
 )
 
 // App of package
-type App interface {
-	DoAtomic(ctx context.Context, action func(context.Context) error) error
-	List(ctx context.Context, page uint, last string) ([]model.Ketchup, uint64, error)
-	ListByRepositoriesID(ctx context.Context, ids []uint64, frequency model.KetchupFrequency) ([]model.Ketchup, error)
-	ListOutdatedByFrequency(ctx context.Context, frequency model.KetchupFrequency) ([]model.Ketchup, error)
-	GetByRepository(ctx context.Context, id uint64, pattern string, forUpdate bool) (model.Ketchup, error)
-	Create(ctx context.Context, o model.Ketchup) (uint64, error)
-	Update(ctx context.Context, o model.Ketchup, oldPattern string) error
-	UpdateAll(ctx context.Context) error
-	Delete(ctx context.Context, o model.Ketchup) error
-}
-
-type app struct {
-	db db.App
+type App struct {
+	db model.Database
 }
 
 // New creates new App from Config
-func New(db db.App) App {
-	return app{
+func New(db model.Database) App {
+	return App{
 		db: db,
 	}
 }
 
-func (a app) DoAtomic(ctx context.Context, action func(context.Context) error) error {
+// DoAtomic does an atomic operation
+func (a App) DoAtomic(ctx context.Context, action func(context.Context) error) error {
 	return a.db.DoAtomic(ctx, action)
 }
 
@@ -74,13 +61,14 @@ const listQueryRestart = `
   )
 `
 
-func (a app) List(ctx context.Context, pageSize uint, last string) ([]model.Ketchup, uint64, error) {
+// List ketchups
+func (a App) List(ctx context.Context, pageSize uint, last string) ([]model.Ketchup, uint64, error) {
 	user := model.ReadUser(ctx)
 
 	var totalCount uint64
 	list := make([]model.Ketchup, 0)
 
-	scanner := func(rows *sql.Rows) error {
+	scanner := func(rows pgx.Rows) error {
 		item := model.NewKetchup("", "", model.Daily, model.NewRepository(0, 0, "", ""))
 		item.User = user
 		var rawRepositoryKind string
@@ -156,10 +144,11 @@ WHERE
   AND k.frequency = $2
 `
 
-func (a app) ListByRepositoriesID(ctx context.Context, ids []uint64, frequency model.KetchupFrequency) ([]model.Ketchup, error) {
+// ListByRepositoriesID lists ketchup by repositories id
+func (a App) ListByRepositoriesID(ctx context.Context, ids []uint64, frequency model.KetchupFrequency) ([]model.Ketchup, error) {
 	list := make([]model.Ketchup, 0)
 
-	scanner := func(rows *sql.Rows) error {
+	scanner := func(rows pgx.Rows) error {
 		var item model.Ketchup
 		item.Repository = model.NewRepository(0, 0, "", "")
 		var rawKetchupFrequency string
@@ -178,7 +167,7 @@ func (a app) ListByRepositoriesID(ctx context.Context, ids []uint64, frequency m
 		return nil
 	}
 
-	return list, a.db.List(ctx, scanner, listByRepositoriesIDQuery, pq.Array(ids), strings.ToLower(frequency.String()))
+	return list, a.db.List(ctx, scanner, listByRepositoriesIDQuery, ids, strings.ToLower(frequency.String()))
 }
 
 const listOutdateByFrequencyQuery = `
@@ -205,10 +194,11 @@ WHERE
   AND k.frequency = $1
 `
 
-func (a app) ListOutdatedByFrequency(ctx context.Context, frequency model.KetchupFrequency) ([]model.Ketchup, error) {
+// ListOutdatedByFrequency lists outdated ketchup by frequency id
+func (a App) ListOutdatedByFrequency(ctx context.Context, frequency model.KetchupFrequency) ([]model.Ketchup, error) {
 	list := make([]model.Ketchup, 0)
 
-	scanner := func(rows *sql.Rows) error {
+	scanner := func(rows pgx.Rows) error {
 		var item model.Ketchup
 		item.Repository = model.NewRepository(0, 0, "", "")
 		var rawKetchupFrequency, rawRepositoryKind string
@@ -256,7 +246,8 @@ WHERE
   AND k.repository_id = r.id
 `
 
-func (a app) GetByRepository(ctx context.Context, id uint64, pattern string, forUpdate bool) (model.Ketchup, error) {
+// GetByRepository retrieves ketchup for a repository and patern
+func (a App) GetByRepository(ctx context.Context, id uint64, pattern string, forUpdate bool) (model.Ketchup, error) {
 	query := getQuery
 	if forUpdate {
 		query += " FOR UPDATE"
@@ -268,11 +259,11 @@ func (a app) GetByRepository(ctx context.Context, id uint64, pattern string, for
 		Repository: model.NewGithubRepository(0, ""),
 	}
 
-	scanner := func(row *sql.Row) error {
+	scanner := func(row pgx.Row) error {
 		var rawRepositoryKind, rawKetchupFrequency string
 
 		err := row.Scan(&item.Pattern, &item.Version, &rawKetchupFrequency, &item.Repository.ID, &item.User.ID, &item.Repository.Name, &item.Repository.Part, &rawRepositoryKind)
-		if errors.Is(err, sql.ErrNoRows) {
+		if errors.Is(err, pgx.ErrNoRows) {
 			item = model.NoneKetchup
 			return nil
 		}
@@ -313,7 +304,8 @@ INSERT INTO
 ) RETURNING 1
 `
 
-func (a app) Create(ctx context.Context, o model.Ketchup) (uint64, error) {
+// Create a ketchup
+func (a App) Create(ctx context.Context, o model.Ketchup) (uint64, error) {
 	return a.db.Create(ctx, insertQuery, o.Pattern, o.Version, strings.ToLower(o.Frequency.String()), o.Repository.ID, model.ReadUser(ctx).ID)
 }
 
@@ -330,7 +322,8 @@ WHERE
   AND pattern = $3
 `
 
-func (a app) Update(ctx context.Context, o model.Ketchup, oldPattern string) error {
+// Update a ketchup
+func (a App) Update(ctx context.Context, o model.Ketchup, oldPattern string) error {
 	return a.db.Exec(ctx, updateQuery, o.Repository.ID, model.ReadUser(ctx).ID, oldPattern, o.Pattern, o.Version, strings.ToLower(o.Frequency.String()))
 }
 
@@ -350,7 +343,8 @@ WHERE
   AND k.user_id = $1
 `
 
-func (a app) UpdateAll(ctx context.Context) error {
+// UpdateAll ketchups
+func (a App) UpdateAll(ctx context.Context) error {
 	return a.db.Exec(ctx, updateAllQuery, model.ReadUser(ctx).ID)
 }
 
@@ -363,6 +357,7 @@ WHERE
   AND pattern = $3
 `
 
-func (a app) Delete(ctx context.Context, o model.Ketchup) error {
+// Delete a ketchup
+func (a App) Delete(ctx context.Context, o model.Ketchup) error {
 	return a.db.Exec(ctx, deleteQuery, o.Repository.ID, model.ReadUser(ctx).ID, o.Pattern)
 }

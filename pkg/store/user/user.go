@@ -2,36 +2,25 @@ package user
 
 import (
 	"context"
-	"database/sql"
-	"errors"
-	"strings"
 
-	"github.com/ViBiOh/httputils/v4/pkg/db"
 	"github.com/ViBiOh/ketchup/pkg/model"
+	"github.com/jackc/pgx/v4"
 )
 
-// App of package
-type App interface {
-	DoAtomic(ctx context.Context, action func(context.Context) error) error
-
-	GetByEmail(ctx context.Context, email string) (model.User, error)
-	GetByLoginID(ctx context.Context, loginID uint64) (model.User, error)
-	Create(ctx context.Context, o model.User) (uint64, error)
-	Count(ctx context.Context) (uint64, error)
-}
-
-type app struct {
-	db db.App
+// App of the package
+type App struct {
+	db model.Database
 }
 
 // New creates new App from Config
-func New(db db.App) App {
-	return app{
+func New(db model.Database) App {
+	return App{
 		db: db,
 	}
 }
 
-func (a app) DoAtomic(ctx context.Context, action func(context.Context) error) error {
+// DoAtomic does an atomic operation
+func (a App) DoAtomic(ctx context.Context, action func(context.Context) error) error {
 	return a.db.DoAtomic(ctx, action)
 }
 
@@ -46,11 +35,12 @@ WHERE
   email = $1
 `
 
-func (a app) GetByEmail(ctx context.Context, email string) (model.User, error) {
+// GetByEmail retrieve user by email
+func (a App) GetByEmail(ctx context.Context, email string) (model.User, error) {
 	var item model.User
-	scanner := func(row *sql.Row) error {
+	scanner := func(row pgx.Row) error {
 		err := row.Scan(&item.ID, &item.Email, &item.Login.ID)
-		if errors.Is(err, sql.ErrNoRows) {
+		if err == pgx.ErrNoRows {
 			item = model.User{}
 			return nil
 		}
@@ -72,11 +62,12 @@ WHERE
   login_id = $1
 `
 
-func (a app) GetByLoginID(ctx context.Context, loginID uint64) (model.User, error) {
+// GetByLoginID retrieves user by id
+func (a App) GetByLoginID(ctx context.Context, loginID uint64) (model.User, error) {
 	var item model.User
-	scanner := func(row *sql.Row) error {
+	scanner := func(row pgx.Row) error {
 		err := row.Scan(&item.ID, &item.Email, &item.Login.ID)
-		if errors.Is(err, sql.ErrNoRows) {
+		if err == pgx.ErrNoRows {
 			item = model.User{}
 			return nil
 		}
@@ -99,8 +90,9 @@ INSERT INTO
 ) RETURNING id
 `
 
-func (a app) Create(ctx context.Context, o model.User) (uint64, error) {
-	return a.db.Create(ctx, insertQuery, strings.ToLower(o.Email), o.Login.ID)
+// Create user
+func (a App) Create(ctx context.Context, o model.User) (uint64, error) {
+	return a.db.Create(ctx, insertQuery, o.Email, o.Login.ID)
 }
 
 const countQuery = `
@@ -110,10 +102,11 @@ FROM
   ketchup.user
 `
 
-func (a app) Count(ctx context.Context) (uint64, error) {
+// Count users
+func (a App) Count(ctx context.Context) (uint64, error) {
 	var count uint64
 
-	return count, a.db.Get(ctx, func(row *sql.Row) error {
+	return count, a.db.Get(ctx, func(row pgx.Row) error {
 		return row.Scan(&count)
 	}, countQuery)
 }

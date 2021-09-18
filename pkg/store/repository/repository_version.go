@@ -2,11 +2,10 @@ package repository
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 
 	"github.com/ViBiOh/ketchup/pkg/model"
-	"github.com/lib/pq"
+	"github.com/jackc/pgx/v4"
 )
 
 const listRepositoryVersionsForIDsQuery = `
@@ -23,7 +22,7 @@ ORDER BY
   pattern ASC
 `
 
-func (a app) enrichRepositoriesVersions(ctx context.Context, repositories []model.Repository) error {
+func (a App) enrichRepositoriesVersions(ctx context.Context, repositories []model.Repository) error {
 	if len(repositories) == 0 {
 		return nil
 	}
@@ -35,7 +34,7 @@ func (a app) enrichRepositoriesVersions(ctx context.Context, repositories []mode
 
 	var repository model.Repository
 
-	scanner := func(rows *sql.Rows) error {
+	scanner := func(rows pgx.Rows) error {
 		var repositoryID uint64
 		var pattern, version string
 
@@ -52,7 +51,7 @@ func (a app) enrichRepositoriesVersions(ctx context.Context, repositories []mode
 		return nil
 	}
 
-	return a.db.List(ctx, scanner, listRepositoryVersionsForIDsQuery, pq.Array(ids))
+	return a.db.List(ctx, scanner, listRepositoryVersionsForIDsQuery, ids)
 }
 
 func findRepository(repositories []model.Repository, id uint64) model.Repository {
@@ -64,16 +63,6 @@ func findRepository(repositories []model.Repository, id uint64) model.Repository
 
 	return model.Repository{}
 }
-
-const listRepositoryVersionQuery = `
-SELECT
-  pattern,
-  version
-FROM
-  ketchup.repository_version
-WHERE
-  repository_id = $1
-`
 
 const createRepositoryVersionQuery = `
 INSERT INTO
@@ -107,7 +96,8 @@ WHERE
   AND pattern = $2
 `
 
-func (a app) UpdateVersions(ctx context.Context, o model.Repository) error {
+// UpdateVersions of a repository
+func (a App) UpdateVersions(ctx context.Context, o model.Repository) error {
 	patterns, err := a.getRepositoryVersions(ctx, o)
 	if err != nil {
 		return fmt.Errorf("unable to fetch repository versions: %w", err)
@@ -144,10 +134,20 @@ func (a app) UpdateVersions(ctx context.Context, o model.Repository) error {
 	return nil
 }
 
-func (a app) getRepositoryVersions(ctx context.Context, o model.Repository) (map[string]string, error) {
+const listRepositoryVersionQuery = `
+SELECT
+  pattern,
+  version
+FROM
+  ketchup.repository_version
+WHERE
+  repository_id = $1
+`
+
+func (a App) getRepositoryVersions(ctx context.Context, o model.Repository) (map[string]string, error) {
 	patterns := make(map[string]string)
 
-	scanner := func(rows *sql.Rows) error {
+	scanner := func(rows pgx.Rows) error {
 		var pattern string
 		var version string
 

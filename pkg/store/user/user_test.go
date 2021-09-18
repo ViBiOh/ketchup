@@ -2,34 +2,20 @@ package user
 
 import (
 	"context"
-	"database/sql"
 	"errors"
 	"reflect"
 	"testing"
 
-	"github.com/DATA-DOG/go-sqlmock"
 	authModel "github.com/ViBiOh/auth/v2/pkg/model"
-	"github.com/ViBiOh/httputils/v4/pkg/db"
+	"github.com/ViBiOh/ketchup/pkg/mocks"
 	"github.com/ViBiOh/ketchup/pkg/model"
+	"github.com/golang/mock/gomock"
+	"github.com/jackc/pgx/v4"
 )
 
 var (
 	testEmail = "nobody@localhost"
 )
-
-func testWithMock(t *testing.T, action func(*sql.DB, sqlmock.Sqlmock)) {
-	mockDb, mock, err := sqlmock.New()
-	if err != nil {
-		t.Fatalf("unable to create mock database: %s", err)
-	}
-	defer mockDb.Close()
-
-	action(mockDb, mock)
-
-	if err := mock.ExpectationsWereMet(); err != nil {
-		t.Errorf("sqlmock unfilled expectations: %s", err)
-	}
-}
 
 func TestGetByEmail(t *testing.T) {
 	type args struct {
@@ -62,28 +48,51 @@ func TestGetByEmail(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.intention, func(t *testing.T) {
-			testWithMock(t, func(mockDb *sql.DB, mock sqlmock.Sqlmock) {
-				rows := sqlmock.NewRows([]string{"id", "email", "login_id"})
-				mock.ExpectQuery("SELECT id, email, login_id FROM ketchup.user").WithArgs(testEmail).WillReturnRows(rows)
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
 
-				if tc.intention != "no rows" {
-					rows.AddRow(1, testEmail, 1)
+			mockDatabase := mocks.NewDatabase(ctrl)
+
+			instance := App{db: mockDatabase}
+
+			switch tc.intention {
+			case "simple":
+				mockRow := mocks.NewRow(ctrl)
+				mockRow.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...interface{}) error {
+					*pointers[0].(*uint64) = 1
+					*pointers[1].(*string) = testEmail
+					*pointers[2].(*uint64) = 1
+
+					return nil
+				})
+				dummyFn := func(_ context.Context, scanner func(pgx.Row) error, _ string, _ ...interface{}) error {
+					return scanner(mockRow)
 				}
-
-				got, gotErr := New(db.NewFromSQL(mockDb)).GetByEmail(context.Background(), tc.args.email)
-
-				failed := false
-
-				if !errors.Is(gotErr, tc.wantErr) {
-					failed = true
-				} else if !reflect.DeepEqual(got, tc.want) {
-					failed = true
+				mockDatabase.EXPECT().Get(gomock.Any(), gomock.Any(), gomock.Any(), testEmail).DoAndReturn(dummyFn)
+			case "no rows":
+				mockRow := mocks.NewRow(ctrl)
+				mockRow.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...interface{}) error {
+					return pgx.ErrNoRows
+				})
+				dummyFn := func(_ context.Context, scanner func(pgx.Row) error, _ string, _ ...interface{}) error {
+					return scanner(mockRow)
 				}
+				mockDatabase.EXPECT().Get(gomock.Any(), gomock.Any(), gomock.Any(), testEmail).DoAndReturn(dummyFn)
+			}
 
-				if failed {
-					t.Errorf("GetByEmail() = (%+v, `%s`), want (%+v, `%s`)", got, gotErr, tc.want, tc.wantErr)
-				}
-			})
+			got, gotErr := instance.GetByEmail(context.Background(), tc.args.email)
+
+			failed := false
+
+			if !errors.Is(gotErr, tc.wantErr) {
+				failed = true
+			} else if !reflect.DeepEqual(got, tc.want) {
+				failed = true
+			}
+
+			if failed {
+				t.Errorf("GetByEmail() = (%+v, `%s`), want (%+v, `%s`)", got, gotErr, tc.want, tc.wantErr)
+			}
 		})
 	}
 }
@@ -119,28 +128,51 @@ func TestGetByLoginID(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.intention, func(t *testing.T) {
-			testWithMock(t, func(mockDb *sql.DB, mock sqlmock.Sqlmock) {
-				rows := sqlmock.NewRows([]string{"id", "email", "login_id"})
-				mock.ExpectQuery("SELECT id, email, login_id FROM ketchup.user").WithArgs(2).WillReturnRows(rows)
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
 
-				if tc.intention != "no rows" {
-					rows.AddRow(1, testEmail, 2)
+			mockDatabase := mocks.NewDatabase(ctrl)
+
+			instance := App{db: mockDatabase}
+
+			switch tc.intention {
+			case "simple":
+				mockRow := mocks.NewRow(ctrl)
+				mockRow.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...interface{}) error {
+					*pointers[0].(*uint64) = 1
+					*pointers[1].(*string) = testEmail
+					*pointers[2].(*uint64) = 2
+
+					return nil
+				})
+				dummyFn := func(_ context.Context, scanner func(pgx.Row) error, _ string, _ ...interface{}) error {
+					return scanner(mockRow)
 				}
-
-				got, gotErr := New(db.NewFromSQL(mockDb)).GetByLoginID(context.Background(), tc.args.loginID)
-
-				failed := false
-
-				if !errors.Is(gotErr, tc.wantErr) {
-					failed = true
-				} else if !reflect.DeepEqual(got, tc.want) {
-					failed = true
+				mockDatabase.EXPECT().Get(gomock.Any(), gomock.Any(), gomock.Any(), uint64(2)).DoAndReturn(dummyFn)
+			case "no rows":
+				mockRow := mocks.NewRow(ctrl)
+				mockRow.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...interface{}) error {
+					return pgx.ErrNoRows
+				})
+				dummyFn := func(_ context.Context, scanner func(pgx.Row) error, _ string, _ ...interface{}) error {
+					return scanner(mockRow)
 				}
+				mockDatabase.EXPECT().Get(gomock.Any(), gomock.Any(), gomock.Any(), uint64(2)).DoAndReturn(dummyFn)
+			}
 
-				if failed {
-					t.Errorf("GetByLoginID() = (%+v, `%s`), want (%+v, `%s`)", got, gotErr, tc.want, tc.wantErr)
-				}
-			})
+			got, gotErr := instance.GetByLoginID(context.Background(), tc.args.loginID)
+
+			failed := false
+
+			if !errors.Is(gotErr, tc.wantErr) {
+				failed = true
+			} else if !reflect.DeepEqual(got, tc.want) {
+				failed = true
+			}
+
+			if failed {
+				t.Errorf("GetByLoginID() = (%+v, `%s`), want (%+v, `%s`)", got, gotErr, tc.want, tc.wantErr)
+			}
 		})
 	}
 }
@@ -172,32 +204,31 @@ func TestCreate(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.intention, func(t *testing.T) {
-			testWithMock(t, func(mockDb *sql.DB, mock sqlmock.Sqlmock) {
-				ctx := context.Background()
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
 
-				mock.ExpectBegin()
-				if tx, err := mockDb.Begin(); err != nil {
-					t.Errorf("unable to create tx: %v", err)
-				} else {
-					ctx = db.StoreTx(ctx, tx)
-				}
+			mockDatabase := mocks.NewDatabase(ctrl)
 
-				mock.ExpectQuery("INSERT INTO ketchup.user").WithArgs(testEmail, 1).WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(1))
+			instance := App{db: mockDatabase}
 
-				got, gotErr := New(db.NewFromSQL(mockDb)).Create(ctx, tc.args.o)
+			switch tc.intention {
+			case "simple":
+				mockDatabase.EXPECT().Create(gomock.Any(), gomock.Any(), testEmail, uint64(1)).Return(uint64(1), nil)
+			}
 
-				failed := false
+			got, gotErr := instance.Create(context.Background(), tc.args.o)
 
-				if !errors.Is(gotErr, tc.wantErr) {
-					failed = true
-				} else if got != tc.want {
-					failed = true
-				}
+			failed := false
 
-				if failed {
-					t.Errorf("Create() = (%d, `%s`), want (%d, `%s`)", got, gotErr, tc.want, tc.wantErr)
-				}
-			})
+			if !errors.Is(gotErr, tc.wantErr) {
+				failed = true
+			} else if got != tc.want {
+				failed = true
+			}
+
+			if failed {
+				t.Errorf("Create() = (%d, `%s`), want (%d, `%s`)", got, gotErr, tc.want, tc.wantErr)
+			}
 		})
 	}
 }

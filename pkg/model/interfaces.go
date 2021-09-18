@@ -14,7 +14,7 @@ type Mailer interface {
 	Send(context.Context, mailerModel.MailRequest) error
 }
 
-// AuthService defines interaction with underlying User provider
+// AuthService defines interactions with underlying User provider
 type AuthService interface {
 	Create(context.Context, authModel.User) (authModel.User, error)
 	Check(context.Context, authModel.User, authModel.User) error
@@ -25,7 +25,7 @@ type UserService interface {
 	StoreInContext(context.Context) context.Context
 }
 
-// UserStore defines interaction with User storage
+// UserStore defines interactions with User storage
 type UserStore interface {
 	DoAtomic(context.Context, func(context.Context) error) error
 	GetByLoginID(context.Context, uint64) (User, error)
@@ -34,18 +34,18 @@ type UserStore interface {
 	Count(context.Context) (uint64, error)
 }
 
-// GenericProvider defines interaction with common providers
+// GenericProvider defines interactions with common providers
 type GenericProvider interface {
 	LatestVersions(string, []string) (map[string]semver.Version, error)
 }
 
-// HelmProvider defines interaction with helm
+// HelmProvider defines interactions with helm
 type HelmProvider interface {
 	FetchIndex(string, map[string][]string) (map[string]map[string]semver.Version, error)
 	LatestVersions(string, string, []string) (map[string]semver.Version, error)
 }
 
-// RepositoryService defines interaction with repository
+// RepositoryService defines interactions with repository
 type RepositoryService interface {
 	List(context.Context, uint, string) ([]Repository, uint64, error)
 	ListByKinds(context.Context, uint, string, ...RepositoryKind) ([]Repository, uint64, error)
@@ -56,7 +56,21 @@ type RepositoryService interface {
 	LatestVersions(Repository) (map[string]semver.Version, error)
 }
 
-// KetchupService defines interaction with ketchup
+// RepositoryStore defines interactions with repository storage
+type RepositoryStore interface {
+	DoAtomic(ctx context.Context, action func(context.Context) error) error
+	List(ctx context.Context, pageSize uint, last string) ([]Repository, uint64, error)
+	ListByKinds(ctx context.Context, pageSize uint, last string, kinds ...RepositoryKind) ([]Repository, uint64, error)
+	Suggest(ctx context.Context, ignoreIds []uint64, count uint64) ([]Repository, error)
+	Get(ctx context.Context, id uint64, forUpdate bool) (Repository, error)
+	GetByName(ctx context.Context, repositoryKind RepositoryKind, name, part string) (Repository, error)
+	Create(ctx context.Context, o Repository) (uint64, error)
+	UpdateVersions(ctx context.Context, o Repository) error
+	DeleteUnused(ctx context.Context) error
+	DeleteUnusedVersions(ctx context.Context) error
+}
+
+// KetchupService defines interactions with ketchup
 type KetchupService interface {
 	List(ctx context.Context, pageSize uint, last string) ([]Ketchup, uint64, error)
 	ListForRepositories(ctx context.Context, repositories []Repository, frequency KetchupFrequency) ([]Ketchup, error)
@@ -65,4 +79,17 @@ type KetchupService interface {
 	Update(ctx context.Context, oldPattern string, item Ketchup) (Ketchup, error)
 	UpdateAll(ctx context.Context) error
 	Delete(ctx context.Context, item Ketchup) error
+}
+
+// KetchupStore defines interactions with ketchup storage
+type KetchupStore interface {
+	DoAtomic(ctx context.Context, action func(context.Context) error) error
+	List(ctx context.Context, page uint, last string) ([]Ketchup, uint64, error)
+	ListByRepositoriesID(ctx context.Context, ids []uint64, frequency KetchupFrequency) ([]Ketchup, error)
+	ListOutdatedByFrequency(ctx context.Context, frequency KetchupFrequency) ([]Ketchup, error)
+	GetByRepository(ctx context.Context, id uint64, pattern string, forUpdate bool) (Ketchup, error)
+	Create(ctx context.Context, o Ketchup) (uint64, error)
+	Update(ctx context.Context, o Ketchup, oldPattern string) error
+	UpdateAll(ctx context.Context) error
+	Delete(ctx context.Context, o Ketchup) error
 }

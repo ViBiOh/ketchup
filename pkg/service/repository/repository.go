@@ -10,7 +10,6 @@ import (
 	httpModel "github.com/ViBiOh/httputils/v4/pkg/model"
 	"github.com/ViBiOh/ketchup/pkg/model"
 	"github.com/ViBiOh/ketchup/pkg/semver"
-	"github.com/ViBiOh/ketchup/pkg/store/repository"
 )
 
 var (
@@ -19,7 +18,7 @@ var (
 
 // App of package
 type App struct {
-	repositoryStore repository.App
+	repositoryStore model.RepositoryStore
 	githubApp       model.GenericProvider
 	helmApp         model.HelmProvider
 	dockerApp       model.GenericProvider
@@ -28,7 +27,7 @@ type App struct {
 }
 
 // New creates new App from Config
-func New(repositoryStore repository.App, githubApp model.GenericProvider, helmApp model.HelmProvider, dockerApp model.GenericProvider, npmApp model.GenericProvider, pypiApp model.GenericProvider) App {
+func New(repositoryStore model.RepositoryStore, githubApp model.GenericProvider, helmApp model.HelmProvider, dockerApp model.GenericProvider, npmApp model.GenericProvider, pypiApp model.GenericProvider) App {
 	return App{
 		repositoryStore: repositoryStore,
 		githubApp:       githubApp,

@@ -2,6 +2,7 @@ package model
 
 import (
 	"context"
+	"fmt"
 
 	authModel "github.com/ViBiOh/auth/v2/pkg/model"
 )
@@ -17,6 +18,11 @@ type User struct {
 	Email string
 	Login authModel.User
 	ID    uint64
+}
+
+// String implements stringer
+func (u User) String() string {
+	return fmt.Sprintf("id=%d email=`%s`", u.ID, u.Email)
 }
 
 // IsZero check if instance is valued or not

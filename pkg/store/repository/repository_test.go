@@ -2,17 +2,15 @@ package repository
 
 import (
 	"context"
-	"database/sql"
 	"errors"
 	"reflect"
 	"strings"
 	"testing"
-	"time"
 
-	"github.com/DATA-DOG/go-sqlmock"
-	"github.com/ViBiOh/httputils/v4/pkg/db"
+	"github.com/ViBiOh/ketchup/pkg/mocks"
 	"github.com/ViBiOh/ketchup/pkg/model"
-	"github.com/lib/pq"
+	"github.com/golang/mock/gomock"
+	"github.com/jackc/pgx/v4"
 )
 
 var (
@@ -22,20 +20,6 @@ var (
 
 	expectQueryVersion = "SELECT repository_id, pattern, version FROM ketchup.repository_version WHERE repository_id = ANY"
 )
-
-func testWithMock(t *testing.T, action func(*sql.DB, sqlmock.Sqlmock)) {
-	mockDb, mock, err := sqlmock.New()
-	if err != nil {
-		t.Fatalf("unable to create mock database: %s", err)
-	}
-	defer mockDb.Close()
-
-	action(mockDb, mock)
-
-	if err := mock.ExpectationsWereMet(); err != nil {
-		t.Errorf("sqlmock unfilled expectations: %s", err)
-	}
-}
 
 func TestList(t *testing.T) {
 	type args struct {
@@ -63,22 +47,13 @@ func TestList(t *testing.T) {
 			nil,
 		},
 		{
-			"timeout",
+			"error",
 			args{
 				pageSize: 20,
 			},
 			[]model.Repository{},
 			0,
-			sqlmock.ErrCancelled,
-		},
-		{
-			"invalid rows",
-			args{
-				pageSize: 20,
-			},
-			[]model.Repository{},
-			0,
-			errors.New("converting driver.Value type string (\"a\") to a uint64: invalid syntax"),
+			errors.New("timeout"),
 		},
 		{
 			"invalid kind",
@@ -93,53 +68,104 @@ func TestList(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.intention, func(t *testing.T) {
-			testWithMock(t, func(mockDb *sql.DB, mock sqlmock.Sqlmock) {
-				rows := sqlmock.NewRows([]string{"id", "kind", "name", "part", "full_count"})
-				expectedQuery := mock.ExpectQuery("SELECT id, kind, name, part, .+ AS full_count FROM ketchup.repository").WithArgs(20).WillReturnRows(rows)
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
 
-				switch tc.intention {
-				case "success":
-					mock.ExpectQuery(expectQueryVersion).WithArgs(
-						pq.Array([]uint64{1, 2}),
-					).WillReturnRows(
-						sqlmock.NewRows([]string{"repository_id", "pattern", "version"}).AddRow(1, model.DefaultPattern, "1.0.0").AddRow(2, model.DefaultPattern, "1.2.3"),
-					)
-					rows.AddRow(1, "github", ketchupRepository, "", 2).AddRow(2, "github", viwsRepository, "", 2)
+			mockDatabase := mocks.NewDatabase(ctrl)
 
-				case "timeout":
-					savedSQLTimeout := db.SQLTimeout
-					db.SQLTimeout = time.Second
-					defer func() {
-						db.SQLTimeout = savedSQLTimeout
-					}()
-					expectedQuery.WillDelayFor(db.SQLTimeout * 2)
+			instance := App{db: mockDatabase}
 
-				case "invalid rows":
-					rows.AddRow("a", "github", ketchupRepository, "", 2)
+			switch tc.intention {
+			case "success":
+				mockRows := mocks.NewRows(ctrl)
+				mockRows.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...interface{}) error {
+					*pointers[0].(*uint64) = 1
+					*pointers[1].(*string) = "github"
+					*pointers[2].(*string) = ketchupRepository
+					*pointers[3].(*string) = ""
+					*pointers[4].(*uint64) = 2
 
-				case "invalid kind":
-					rows.AddRow(1, "wrong", viwsRepository, "", 1)
+					return nil
+				})
+				mockRows.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...interface{}) error {
+					*pointers[0].(*uint64) = 2
+					*pointers[1].(*string) = "github"
+					*pointers[2].(*string) = viwsRepository
+					*pointers[3].(*string) = ""
+					*pointers[4].(*uint64) = 2
+
+					return nil
+				})
+				dummyFn := func(_ context.Context, scanner func(pgx.Rows) error, _ string, _ ...interface{}) error {
+					if err := scanner(mockRows); err != nil {
+						return err
+					}
+					return scanner(mockRows)
 				}
+				mockDatabase.EXPECT().List(gomock.Any(), gomock.Any(), gomock.Any(), uint(20)).DoAndReturn(dummyFn)
 
-				got, gotCount, gotErr := New(db.NewFromSQL(mockDb)).List(context.Background(), tc.args.pageSize, tc.args.last)
-				failed := false
+				enrichRows := mocks.NewRows(ctrl)
+				enrichRows.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...interface{}) error {
+					*pointers[0].(*uint64) = 1
+					*pointers[1].(*string) = model.DefaultPattern
+					*pointers[2].(*string) = "1.0.0"
 
-				if tc.wantErr == nil && gotErr != nil {
-					failed = true
-				} else if tc.wantErr != nil && gotErr == nil {
-					failed = true
-				} else if tc.wantErr != nil && !strings.Contains(gotErr.Error(), tc.wantErr.Error()) {
-					failed = true
-				} else if !reflect.DeepEqual(got, tc.want) {
-					failed = true
-				} else if gotCount != tc.wantCount {
-					failed = true
+					return nil
+				})
+				enrichRows.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...interface{}) error {
+					*pointers[0].(*uint64) = 2
+					*pointers[1].(*string) = model.DefaultPattern
+					*pointers[2].(*string) = "1.2.3"
+
+					return nil
+				})
+				enrichFn := func(_ context.Context, scanner func(pgx.Rows) error, _ string, _ ...interface{}) error {
+					if err := scanner(enrichRows); err != nil {
+						return err
+					}
+					return scanner(enrichRows)
 				}
+				mockDatabase.EXPECT().List(gomock.Any(), gomock.Any(), gomock.Any(), []uint64{1, 2}).DoAndReturn(enrichFn)
+			case "error":
+				mockDatabase.EXPECT().List(gomock.Any(), gomock.Any(), gomock.Any(), uint(20)).Return(errors.New("timeout"))
+			case "invalid kind":
+				mockRows := mocks.NewRows(ctrl)
+				mockRows.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...interface{}) error {
+					*pointers[0].(*uint64) = 1
+					*pointers[1].(*string) = "wrong"
+					*pointers[2].(*string) = ketchupRepository
+					*pointers[3].(*string) = ""
+					*pointers[4].(*uint64) = 2
 
-				if failed {
-					t.Errorf("List() = (%+v, %d, `%s`), want (%+v, %d, `%s`)", got, gotCount, gotErr, tc.want, tc.wantCount, tc.wantErr)
+					return nil
+				})
+				dummyFn := func(_ context.Context, scanner func(pgx.Rows) error, _ string, _ ...interface{}) error {
+					if err := scanner(mockRows); err != nil {
+						return err
+					}
+					return scanner(mockRows)
 				}
-			})
+				mockDatabase.EXPECT().List(gomock.Any(), gomock.Any(), gomock.Any(), uint(20)).DoAndReturn(dummyFn)
+			}
+
+			got, gotCount, gotErr := instance.List(context.Background(), tc.args.pageSize, tc.args.last)
+			failed := false
+
+			if tc.wantErr == nil && gotErr != nil {
+				failed = true
+			} else if tc.wantErr != nil && gotErr == nil {
+				failed = true
+			} else if tc.wantErr != nil && !strings.Contains(gotErr.Error(), tc.wantErr.Error()) {
+				failed = true
+			} else if !reflect.DeepEqual(got, tc.want) {
+				failed = true
+			} else if gotCount != tc.wantCount {
+				failed = true
+			}
+
+			if failed {
+				t.Errorf("List() = (%+v, %d, `%s`), want (%+v, %d, `%s`)", got, gotCount, gotErr, tc.want, tc.wantCount, tc.wantErr)
+			}
 		})
 	}
 }
@@ -172,36 +198,82 @@ func TestSuggest(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.intention, func(t *testing.T) {
-			testWithMock(t, func(mockDb *sql.DB, mock sqlmock.Sqlmock) {
-				rows := sqlmock.NewRows([]string{"id", "kind", "name", "part", "full_count"})
-				mock.ExpectQuery("SELECT id, kind, name, part, \\( SELECT COUNT\\(1\\) FROM ketchup.ketchup WHERE repository_id = id AND pattern = 'stable' \\) AS count FROM ketchup.repository").WithArgs(tc.args.count, pq.Array(tc.args.ignoreIds)).WillReturnRows(rows)
-				rows.AddRow(1, "github", ketchupRepository, "", 2).AddRow(2, "helm", chartRepository, "app", 2)
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
 
-				mock.ExpectQuery(
-					"SELECT repository_id, pattern, version FROM ketchup.repository_version WHERE repository_id = ANY",
-				).WithArgs(
-					pq.Array([]uint64{1, 2}),
-				).WillReturnRows(
-					sqlmock.NewRows([]string{"repository_id", "pattern", "version"}).AddRow(1, model.DefaultPattern, "1.0.0").AddRow(2, model.DefaultPattern, "1.2.3"),
-				)
+			mockDatabase := mocks.NewDatabase(ctrl)
 
-				got, gotErr := New(db.NewFromSQL(mockDb)).Suggest(context.Background(), tc.args.ignoreIds, tc.args.count)
-				failed := false
+			instance := App{db: mockDatabase}
 
-				if tc.wantErr == nil && gotErr != nil {
-					failed = true
-				} else if tc.wantErr != nil && gotErr == nil {
-					failed = true
-				} else if tc.wantErr != nil && !strings.Contains(gotErr.Error(), tc.wantErr.Error()) {
-					failed = true
-				} else if !reflect.DeepEqual(got, tc.want) {
-					failed = true
+			switch tc.intention {
+			case "simple":
+				mockRows := mocks.NewRows(ctrl)
+				mockRows.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...interface{}) error {
+					*pointers[0].(*uint64) = 1
+					*pointers[1].(*string) = "github"
+					*pointers[2].(*string) = ketchupRepository
+					*pointers[3].(*string) = ""
+					*pointers[4].(*uint64) = 2
+
+					return nil
+				})
+				mockRows.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...interface{}) error {
+					*pointers[0].(*uint64) = 2
+					*pointers[1].(*string) = "helm"
+					*pointers[2].(*string) = chartRepository
+					*pointers[3].(*string) = "app"
+					*pointers[4].(*uint64) = 2
+
+					return nil
+				})
+				dummyFn := func(_ context.Context, scanner func(pgx.Rows) error, _ string, _ ...interface{}) error {
+					if err := scanner(mockRows); err != nil {
+						return err
+					}
+					return scanner(mockRows)
 				}
+				mockDatabase.EXPECT().List(gomock.Any(), gomock.Any(), gomock.Any(), uint64(2), []uint64{8000}).DoAndReturn(dummyFn)
 
-				if failed {
-					t.Errorf("Suggest() = (%+v, `%s`), want (%+v, `%s`)", got, gotErr, tc.want, tc.wantErr)
+				enrichRows := mocks.NewRows(ctrl)
+				enrichRows.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...interface{}) error {
+					*pointers[0].(*uint64) = 1
+					*pointers[1].(*string) = model.DefaultPattern
+					*pointers[2].(*string) = "1.0.0"
+
+					return nil
+				})
+				enrichRows.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...interface{}) error {
+					*pointers[0].(*uint64) = 2
+					*pointers[1].(*string) = model.DefaultPattern
+					*pointers[2].(*string) = "1.2.3"
+
+					return nil
+				})
+				enrichFn := func(_ context.Context, scanner func(pgx.Rows) error, _ string, _ ...interface{}) error {
+					if err := scanner(enrichRows); err != nil {
+						return err
+					}
+					return scanner(enrichRows)
 				}
-			})
+				mockDatabase.EXPECT().List(gomock.Any(), gomock.Any(), gomock.Any(), []uint64{1, 2}).DoAndReturn(enrichFn)
+			}
+
+			got, gotErr := instance.Suggest(context.Background(), tc.args.ignoreIds, tc.args.count)
+			failed := false
+
+			if tc.wantErr == nil && gotErr != nil {
+				failed = true
+			} else if tc.wantErr != nil && gotErr == nil {
+				failed = true
+			} else if tc.wantErr != nil && !strings.Contains(gotErr.Error(), tc.wantErr.Error()) {
+				failed = true
+			} else if !reflect.DeepEqual(got, tc.want) {
+				failed = true
+			}
+
+			if failed {
+				t.Errorf("Suggest() = (%+v, `%s`), want (%+v, `%s`)", got, gotErr, tc.want, tc.wantErr)
+			}
 		})
 	}
 }
@@ -229,19 +301,10 @@ func TestGet(t *testing.T) {
 			nil,
 		},
 		{
-			"for update",
+			"no rows",
 			args{
 				id:        1,
 				forUpdate: true,
-			},
-			"SELECT id, kind, name, part FROM ketchup.repository WHERE id = .+ FOR UPDATE",
-			model.NewHelmRepository(1, chartRepository, "app").AddVersion(model.DefaultPattern, "1.0.0"),
-			nil,
-		},
-		{
-			"no rows",
-			args{
-				id: 1,
 			},
 			"SELECT id, kind, name, part FROM ketchup.repository WHERE id =",
 			model.Repository{},
@@ -251,118 +314,65 @@ func TestGet(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.intention, func(t *testing.T) {
-			testWithMock(t, func(mockDb *sql.DB, mock sqlmock.Sqlmock) {
-				rows := sqlmock.NewRows([]string{"id", "kind", "name", "part"})
-				mock.ExpectQuery(tc.expectSQL).WithArgs(1).WillReturnRows(rows)
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
 
-				switch tc.intention {
-				case "simple":
-					fallthrough
+			mockDatabase := mocks.NewDatabase(ctrl)
 
-				case "for update":
-					rows.AddRow(1, "helm", chartRepository, "app")
+			instance := App{db: mockDatabase}
 
-					mock.ExpectQuery(expectQueryVersion).WithArgs(
-						pq.Array([]uint64{1}),
-					).WillReturnRows(
-						sqlmock.NewRows([]string{"repository_id", "pattern", "version"}).AddRow(1, model.DefaultPattern, "1.0.0"),
-					)
+			switch tc.intention {
+			case "simple":
+				mockRow := mocks.NewRow(ctrl)
+				mockRow.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...interface{}) error {
+					*pointers[0].(*uint64) = 1
+					*pointers[1].(*string) = "helm"
+					*pointers[2].(*string) = chartRepository
+					*pointers[3].(*string) = "app"
+
+					return nil
+				})
+				dummyFn := func(_ context.Context, scanner func(pgx.Row) error, _ string, _ ...interface{}) error {
+					return scanner(mockRow)
 				}
+				mockDatabase.EXPECT().Get(gomock.Any(), gomock.Any(), gomock.Any(), uint64(1)).DoAndReturn(dummyFn)
 
-				got, gotErr := New(db.NewFromSQL(mockDb)).Get(context.Background(), tc.args.id, tc.args.forUpdate)
+				enrichRows := mocks.NewRows(ctrl)
+				enrichRows.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...interface{}) error {
+					*pointers[0].(*uint64) = 1
+					*pointers[1].(*string) = model.DefaultPattern
+					*pointers[2].(*string) = "1.0.0"
 
-				failed := false
-
-				if !errors.Is(gotErr, tc.wantErr) {
-					failed = true
-				} else if !reflect.DeepEqual(got, tc.want) {
-					failed = true
+					return nil
+				})
+				enrichFn := func(_ context.Context, scanner func(pgx.Rows) error, _ string, _ ...interface{}) error {
+					return scanner(enrichRows)
 				}
-
-				if failed {
-					t.Errorf("Get() = (%+v, `%s`), want (%+v, `%s`)", got, gotErr, tc.want, tc.wantErr)
+				mockDatabase.EXPECT().List(gomock.Any(), gomock.Any(), gomock.Any(), []uint64{1}).DoAndReturn(enrichFn)
+			case "no rows":
+				mockRow := mocks.NewRow(ctrl)
+				mockRow.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...interface{}) error {
+					return pgx.ErrNoRows
+				})
+				dummyFn := func(_ context.Context, scanner func(pgx.Row) error, _ string, _ ...interface{}) error {
+					return scanner(mockRow)
 				}
-			})
-		})
-	}
-}
+				mockDatabase.EXPECT().Get(gomock.Any(), gomock.Any(), gomock.Any(), uint64(1)).DoAndReturn(dummyFn)
+			}
 
-func TestGetByName(t *testing.T) {
-	type args struct {
-		repositoryKind model.RepositoryKind
-		name           string
-		part           string
-	}
+			got, gotErr := instance.Get(context.Background(), tc.args.id, tc.args.forUpdate)
 
-	var cases = []struct {
-		intention string
-		args      args
-		want      model.Repository
-		wantErr   error
-	}{
-		{
-			"simple",
-			args{
-				name: ketchupRepository,
-			},
-			model.NewGithubRepository(1, ketchupRepository).AddVersion(model.DefaultPattern, "1.0.0"),
-			nil,
-		},
-		{
-			"no rows",
-			args{
-				name: ketchupRepository,
-			},
-			model.Repository{},
-			nil,
-		},
-		{
-			"invalid kind",
-			args{
-				name: ketchupRepository,
-			},
-			model.Repository{},
-			errors.New("invalid value `wrong` for repository kind"),
-		},
-	}
+			failed := false
 
-	for _, tc := range cases {
-		t.Run(tc.intention, func(t *testing.T) {
-			testWithMock(t, func(mockDb *sql.DB, mock sqlmock.Sqlmock) {
-				rows := sqlmock.NewRows([]string{"id", "kind", "name", "part"})
-				mock.ExpectQuery("SELECT id, kind, name, part FROM ketchup.repository WHERE kind =").WithArgs("github", ketchupRepository, "").WillReturnRows(rows)
+			if !errors.Is(gotErr, tc.wantErr) {
+				failed = true
+			} else if !reflect.DeepEqual(got, tc.want) {
+				failed = true
+			}
 
-				switch tc.intention {
-				case "simple":
-					rows.AddRow(1, "github", ketchupRepository, "")
-					mock.ExpectQuery(expectQueryVersion).WithArgs(
-						pq.Array([]uint64{1}),
-					).WillReturnRows(
-						sqlmock.NewRows([]string{"repository_id", "pattern", "version"}).AddRow(1, model.DefaultPattern, "1.0.0"),
-					)
-
-				case "invalid kind":
-					rows.AddRow(1, "wrong", ketchupRepository, "")
-				}
-
-				got, gotErr := New(db.NewFromSQL(mockDb)).GetByName(context.Background(), tc.args.repositoryKind, tc.args.name, tc.args.part)
-
-				failed := false
-
-				if tc.wantErr == nil && gotErr != nil {
-					failed = true
-				} else if tc.wantErr != nil && gotErr == nil {
-					failed = true
-				} else if tc.wantErr != nil && !strings.Contains(gotErr.Error(), tc.wantErr.Error()) {
-					failed = true
-				} else if !reflect.DeepEqual(got, tc.want) {
-					failed = true
-				}
-
-				if failed {
-					t.Errorf("GetByName() = (%+v, `%s`), want (%+v, `%s`)", got, gotErr, tc.want, tc.wantErr)
-				}
-			})
+			if failed {
+				t.Errorf("Get() = (%+v, `%s`), want (%+v, `%s`)", got, gotErr, tc.want, tc.wantErr)
+			}
 		})
 	}
 }
@@ -408,7 +418,7 @@ func TestCreate(t *testing.T) {
 				o: model.NewGithubRepository(0, ketchupRepository).AddVersion(model.DefaultPattern, "1.0.0"),
 			},
 			0,
-			errors.New("failed"),
+			errors.New("timeout"),
 		},
 		{
 			"success",
@@ -422,66 +432,77 @@ func TestCreate(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.intention, func(t *testing.T) {
-			testWithMock(t, func(mockDb *sql.DB, mock sqlmock.Sqlmock) {
-				ctx := context.Background()
-				mock.ExpectBegin()
-				tx, err := mockDb.Begin()
-				if err != nil {
-					t.Errorf("unable to create tx: %s", err)
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			mockDatabase := mocks.NewDatabase(ctrl)
+
+			instance := App{db: mockDatabase}
+
+			switch tc.intention {
+			case "error lock":
+				mockDatabase.EXPECT().Exec(gomock.Any(), gomock.Any()).Return(errors.New("unable to obtain lock"))
+			case "error get":
+				mockDatabase.EXPECT().Exec(gomock.Any(), gomock.Any()).Return(nil)
+				mockDatabase.EXPECT().Get(gomock.Any(), gomock.Any(), gomock.Any(), "github", ketchupRepository, "").Return(errors.New("unable to read"))
+			case "found get":
+				mockDatabase.EXPECT().Exec(gomock.Any(), gomock.Any()).Return(nil)
+
+				mockRow := mocks.NewRow(ctrl)
+				mockRow.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...interface{}) error {
+					*pointers[0].(*uint64) = 1
+					*pointers[1].(*string) = "github"
+					*pointers[2].(*string) = ketchupRepository
+					*pointers[3].(*string) = ""
+
+					return nil
+				})
+				dummyFn := func(_ context.Context, scanner func(pgx.Row) error, _ string, _ ...interface{}) error {
+					return scanner(mockRow)
 				}
-				ctx = db.StoreTx(ctx, tx)
+				mockDatabase.EXPECT().Get(gomock.Any(), gomock.Any(), gomock.Any(), "github", ketchupRepository, "").DoAndReturn(dummyFn)
 
-				lockQuery := mock.ExpectExec("LOCK ketchup.repository IN SHARE ROW EXCLUSIVE MODE")
-				selectQueryString := "SELECT id, kind, name, part FROM ketchup.repository WHERE kind = .+ AND name = .+ AND part = .+"
+				enrichRows := mocks.NewRows(ctrl)
+				enrichRows.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...interface{}) error {
+					*pointers[0].(*uint64) = 1
+					*pointers[1].(*string) = model.DefaultPattern
+					*pointers[2].(*string) = "1.0.0"
 
-				switch tc.intention {
-				case "error lock":
-					lockQuery.WillReturnError(errors.New("unable to obtain lock"))
-
-				case "error get":
-					lockQuery.WillReturnResult(sqlmock.NewResult(0, 0))
-					mock.ExpectQuery(selectQueryString).WithArgs(tc.args.o.Kind.String(), ketchupRepository, "").WillReturnError(errors.New("unable to read"))
-
-				case "found get":
-					lockQuery.WillReturnResult(sqlmock.NewResult(0, 0))
-					mock.ExpectQuery(selectQueryString).WithArgs("github", ketchupRepository, "").WillReturnRows(sqlmock.NewRows([]string{"id", "kind", "name", "part"}).AddRow(1, "github", ketchupRepository, ""))
-					mock.ExpectQuery(expectQueryVersion).WithArgs(
-						pq.Array([]uint64{1}),
-					).WillReturnRows(
-						sqlmock.NewRows([]string{"repository_id", "pattern", "version"}).AddRow(1, model.DefaultPattern, "1.0.0"),
-					)
-
-				case "error create":
-					lockQuery.WillReturnResult(sqlmock.NewResult(0, 0))
-					mock.ExpectQuery(selectQueryString).WithArgs(tc.args.o.Kind.String(), ketchupRepository, "").WillReturnRows(sqlmock.NewRows([]string{"id", "kind", "name", "part"}))
-					mock.ExpectQuery("INSERT INTO ketchup.repository").WithArgs("github", ketchupRepository, "").WillReturnError(errors.New("failed"))
-
-				case "success":
-					lockQuery.WillReturnResult(sqlmock.NewResult(0, 0))
-					mock.ExpectQuery(selectQueryString).WithArgs(tc.args.o.Kind.String(), ketchupRepository, "").WillReturnRows(sqlmock.NewRows([]string{"id", "kind", "name", "part"}))
-					mock.ExpectQuery("INSERT INTO ketchup.repository").WithArgs("github", ketchupRepository, "").WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(1))
-					mock.ExpectQuery("SELECT pattern, version FROM ketchup.repository_version WHERE repository_id = .+").WithArgs(1).WillReturnRows(sqlmock.NewRows([]string{"pattern", "version"}))
-					mock.ExpectExec("INSERT INTO ketchup.repository_version").WithArgs(1, model.DefaultPattern, "1.0.0").WillReturnResult(sqlmock.NewResult(0, 1))
+					return nil
+				})
+				enrichFn := func(_ context.Context, scanner func(pgx.Rows) error, _ string, _ ...interface{}) error {
+					return scanner(enrichRows)
 				}
+				mockDatabase.EXPECT().List(gomock.Any(), gomock.Any(), gomock.Any(), []uint64{1}).DoAndReturn(enrichFn)
+			case "error create":
+				mockDatabase.EXPECT().Exec(gomock.Any(), gomock.Any()).Return(nil)
+				mockDatabase.EXPECT().Get(gomock.Any(), gomock.Any(), gomock.Any(), "github", ketchupRepository, "").Return(nil)
+				mockDatabase.EXPECT().Create(gomock.Any(), gomock.Any(), "github", ketchupRepository, "").Return(uint64(0), errors.New("timeout"))
+			case "success":
+				mockDatabase.EXPECT().Exec(gomock.Any(), gomock.Any()).Return(nil)
+				mockDatabase.EXPECT().Get(gomock.Any(), gomock.Any(), gomock.Any(), "github", ketchupRepository, "").Return(nil)
+				mockDatabase.EXPECT().Create(gomock.Any(), gomock.Any(), "github", ketchupRepository, "").Return(uint64(1), nil)
+				mockDatabase.EXPECT().List(gomock.Any(), gomock.Any(), gomock.Any(), uint64(1)).Return(nil)
+				mockDatabase.EXPECT().Exec(gomock.Any(), gomock.Any(), uint64(1), model.DefaultPattern, "1.0.0").Return(nil)
+			}
 
-				got, gotErr := New(db.NewFromSQL(mockDb)).Create(ctx, tc.args.o)
+			got, gotErr := instance.Create(context.Background(), tc.args.o)
 
-				failed := false
+			failed := false
 
-				if tc.wantErr == nil && gotErr != nil {
-					failed = true
-				} else if tc.wantErr != nil && gotErr == nil {
-					failed = true
-				} else if tc.wantErr != nil && !strings.Contains(gotErr.Error(), tc.wantErr.Error()) {
-					failed = true
-				} else if got != tc.want {
-					failed = true
-				}
+			if tc.wantErr == nil && gotErr != nil {
+				failed = true
+			} else if tc.wantErr != nil && gotErr == nil {
+				failed = true
+			} else if tc.wantErr != nil && !strings.Contains(gotErr.Error(), tc.wantErr.Error()) {
+				failed = true
+			} else if got != tc.want {
+				failed = true
+			}
 
-				if failed {
-					t.Errorf("Create() = (%d, `%s`), want (%d, `%s`)", got, gotErr, tc.want, tc.wantErr)
-				}
-			})
+			if failed {
+				t.Errorf("Create() = (%d, `%s`), want (%d, `%s`)", got, gotErr, tc.want, tc.wantErr)
+			}
 		})
 	}
 }
@@ -499,29 +520,29 @@ func TestDeleteUnused(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.intention, func(t *testing.T) {
-			testWithMock(t, func(mockDb *sql.DB, mock sqlmock.Sqlmock) {
-				ctx := context.Background()
-				mock.ExpectBegin()
-				tx, err := mockDb.Begin()
-				if err != nil {
-					t.Errorf("unable to create tx: %s", err)
-				}
-				ctx = db.StoreTx(ctx, tx)
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
 
-				mock.ExpectExec("DELETE FROM ketchup.repository WHERE id NOT IN").WillReturnResult(sqlmock.NewResult(0, 1))
+			mockDatabase := mocks.NewDatabase(ctrl)
 
-				gotErr := New(db.NewFromSQL(mockDb)).DeleteUnused(ctx)
+			instance := App{db: mockDatabase}
 
-				failed := false
+			switch tc.intention {
+			case "simple":
+				mockDatabase.EXPECT().Exec(gomock.Any(), gomock.Any()).Return(nil)
+			}
 
-				if !errors.Is(gotErr, tc.wantErr) {
-					failed = true
-				}
+			gotErr := instance.DeleteUnused(context.Background())
 
-				if failed {
-					t.Errorf("DeleteUnused() = `%s`, want `%s`", gotErr, tc.wantErr)
-				}
-			})
+			failed := false
+
+			if !errors.Is(gotErr, tc.wantErr) {
+				failed = true
+			}
+
+			if failed {
+				t.Errorf("DeleteUnused() = `%s`, want `%s`", gotErr, tc.wantErr)
+			}
 		})
 	}
 }
@@ -539,29 +560,29 @@ func TestDeleteUnusedVersions(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.intention, func(t *testing.T) {
-			testWithMock(t, func(mockDb *sql.DB, mock sqlmock.Sqlmock) {
-				ctx := context.Background()
-				mock.ExpectBegin()
-				tx, err := mockDb.Begin()
-				if err != nil {
-					t.Errorf("unable to create tx: %s", err)
-				}
-				ctx = db.StoreTx(ctx, tx)
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
 
-				mock.ExpectExec("DELETE FROM ketchup.repository_version r WHERE NOT EXISTS").WillReturnResult(sqlmock.NewResult(0, 1))
+			mockDatabase := mocks.NewDatabase(ctrl)
 
-				gotErr := New(db.NewFromSQL(mockDb)).DeleteUnusedVersions(ctx)
+			instance := App{db: mockDatabase}
 
-				failed := false
+			switch tc.intention {
+			case "simple":
+				mockDatabase.EXPECT().Exec(gomock.Any(), gomock.Any()).Return(nil)
+			}
 
-				if !errors.Is(gotErr, tc.wantErr) {
-					failed = true
-				}
+			gotErr := instance.DeleteUnusedVersions(context.Background())
 
-				if failed {
-					t.Errorf("DeleteUnusedVersions() = `%s`, want `%s`", gotErr, tc.wantErr)
-				}
-			})
+			failed := false
+
+			if !errors.Is(gotErr, tc.wantErr) {
+				failed = true
+			}
+
+			if failed {
+				t.Errorf("DeleteUnusedVersions() = `%s`, want `%s`", gotErr, tc.wantErr)
+			}
 		})
 	}
 }
