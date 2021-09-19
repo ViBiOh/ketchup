@@ -19,6 +19,11 @@ type Version struct {
 	suffix NonFinalVersion
 }
 
+// IsZero check that instance is valued
+func (v Version) IsZero() bool {
+	return len(v.Name) == 0
+}
+
 const (
 	alpha NonFinalVersion = iota + 1
 	beta
@@ -32,9 +37,6 @@ var (
 	semverMatcher = regexp.MustCompile(`(?i)^[a-zA-Z]*([0-9]+)(?:\.([0-9]+))?(?:\.([0-9]+))?(-[a-zA-Z0-9.]+)?(?:\+[a-zA-Z0-9.]+)?$`)
 
 	nonFinalVersions = []string{"alpha", "beta", "canary", "rc", "test"}
-
-	// NoneVersion is the empty semver
-	NoneVersion = Version{}
 )
 
 // Equals check if two versions are equivalent
@@ -92,7 +94,7 @@ func (v Version) Compare(other Version) string {
 func Parse(version string) (Version, error) {
 	matches := semverMatcher.FindStringSubmatch(version)
 	if len(matches) == 0 {
-		return NoneVersion, fmt.Errorf("unable to parse version: %s", version)
+		return Version{}, fmt.Errorf("unable to parse version: %s", version)
 	}
 
 	semver := Version{
@@ -102,25 +104,25 @@ func Parse(version string) (Version, error) {
 	var err error
 
 	if len(matches[1]) >= 8 {
-		return NoneVersion, fmt.Errorf("major version looks like a date: %s", version)
+		return Version{}, fmt.Errorf("major version looks like a date: %s", version)
 	}
 
 	semver.major, err = strconv.ParseUint(matches[1], 10, 64)
 	if err != nil {
-		return NoneVersion, fmt.Errorf("version major is not numeric")
+		return Version{}, fmt.Errorf("version major is not numeric")
 	}
 
 	if len(matches[2]) != 0 {
 		semver.minor, err = strconv.ParseUint(matches[2], 10, 64)
 		if err != nil {
-			return NoneVersion, fmt.Errorf("version minor is not numeric")
+			return Version{}, fmt.Errorf("version minor is not numeric")
 		}
 	}
 
 	if len(matches[3]) != 0 {
 		semver.patch, err = strconv.ParseUint(matches[3], 10, 64)
 		if err != nil {
-			return NoneVersion, fmt.Errorf("version patch is not numeric")
+			return Version{}, fmt.Errorf("version patch is not numeric")
 		}
 	}
 

@@ -178,7 +178,7 @@ func TestParse(t *testing.T) {
 			args{
 				version: "release.r60.1",
 			},
-			NoneVersion,
+			Version{},
 			errors.New("unable to parse version"),
 		},
 		{
@@ -186,7 +186,7 @@ func TestParse(t *testing.T) {
 			args{
 				version: "v2.2.1.0-0.3.rc3",
 			},
-			NoneVersion,
+			Version{},
 			errors.New("unable to parse version"),
 		},
 		{
@@ -194,7 +194,7 @@ func TestParse(t *testing.T) {
 			args{
 				version: "stable-2.10.1",
 			},
-			NoneVersion,
+			Version{},
 			errors.New("unable to parse version"),
 		},
 		{

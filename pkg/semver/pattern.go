@@ -12,11 +12,6 @@ const (
 	lowerThan
 )
 
-var (
-	// NonePattern is the empty pattern
-	NonePattern = Pattern{}
-)
-
 type constraint struct {
 	version    Version
 	comparator operation
@@ -67,7 +62,7 @@ func (p Pattern) Check(version Version) bool {
 // ParsePattern parse given constraint to extract pattern matcher
 func ParsePattern(pattern string) (Pattern, error) {
 	if len(pattern) < 2 {
-		return NonePattern, errors.New("pattern is invalid")
+		return Pattern{}, errors.New("pattern is invalid")
 	}
 
 	if pattern == "latest" {
@@ -80,7 +75,7 @@ func ParsePattern(pattern string) (Pattern, error) {
 
 	version, err := Parse(pattern[1:])
 	if err != nil {
-		return NonePattern, fmt.Errorf("unable to parse version in pattern: %s", err)
+		return Pattern{}, fmt.Errorf("unable to parse version in pattern: %s", err)
 	}
 
 	constraintVersionSuffix := ""

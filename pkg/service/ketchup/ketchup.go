@@ -76,7 +76,7 @@ func (a App) Create(ctx context.Context, item model.Ketchup) (model.Ketchup, err
 
 		item.Repository = repo
 
-		if err := a.check(ctx, model.NoneKetchup, item); err != nil {
+		if err := a.check(ctx, model.Ketchup{}, item); err != nil {
 			return httpModel.WrapInvalid(err)
 		}
 
@@ -161,7 +161,7 @@ func (a App) Delete(ctx context.Context, item model.Ketchup) (err error) {
 			return httpModel.WrapNotFound(errors.New("unable to found repository"))
 		}
 
-		if err = a.check(ctx, old, model.NoneKetchup); err != nil {
+		if err = a.check(ctx, old, model.Ketchup{}); err != nil {
 			return httpModel.WrapInvalid(err)
 		}
 

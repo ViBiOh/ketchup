@@ -55,7 +55,7 @@ init:
 	go install golang.org/x/tools/cmd/goimports@latest
 	go install github.com/golang/mock/mockgen@v1.6.0
 	$(MAKE) mocks
-	go mod tidy
+	go mod tidy -compat=1.17
 
 ## format: Format code. e.g Prettier (js), format (golang)
 .PHONY: format
@@ -74,7 +74,7 @@ style:
 .PHONY: mocks
 mocks:
 	find . -name "mocks" -type d -exec rm -r "{}" \+
-	mockgen -destination pkg/mocks/model.go -mock_names Mailer=Mailer,AuthService=AuthService,UserService=UserService,UserStore=UserStore,HelmProvider=HelmProvider,RepositoryService=RepositoryService,RepositoryStore=RepositoryStore,KetchupService=KetchupService,Database=Database -package mocks github.com/ViBiOh/ketchup/pkg/model Mailer,AuthService,UserService,UserStore,HelmProvider,RepositoryService,RepositoryStore,KetchupService,Database
+	mockgen -destination pkg/mocks/model.go -mock_names Mailer=Mailer,AuthService=AuthService,UserService=UserService,UserStore=UserStore,HelmProvider=HelmProvider,RepositoryService=RepositoryService,RepositoryStore=RepositoryStore,KetchupService=KetchupService,KetchupStore=KetchupStore,Database=Database -package mocks github.com/ViBiOh/ketchup/pkg/model Mailer,AuthService,UserService,UserStore,HelmProvider,RepositoryService,RepositoryStore,KetchupService,KetchupStore,Database
 	mockgen -destination pkg/mocks/pgx.go -mock_names Row=Row,Rows=Rows -package mocks github.com/jackc/pgx/v4 Row,Rows
 
 ## test: Shortcut to launch all the test tasks (unit, functional and integration).

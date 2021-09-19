@@ -264,7 +264,7 @@ func (a App) GetByRepository(ctx context.Context, id uint64, pattern string, for
 
 		err := row.Scan(&item.Pattern, &item.Version, &rawKetchupFrequency, &item.Repository.ID, &item.User.ID, &item.Repository.Name, &item.Repository.Part, &rawRepositoryKind)
 		if errors.Is(err, pgx.ErrNoRows) {
-			item = model.NoneKetchup
+			item = model.Ketchup{}
 			return nil
 		}
 

@@ -51,7 +51,7 @@ func TestCheckPatternsMatching(t *testing.T) {
 			"greater",
 			args{
 				versions: map[string]semver.Version{
-					"stable": semver.NoneVersion,
+					"stable": {},
 				},
 				compiledPatterns: map[string]semver.Pattern{
 					"stable": safeParsePattern("stable"),
@@ -66,9 +66,9 @@ func TestCheckPatternsMatching(t *testing.T) {
 			"mutiple match",
 			args{
 				versions: map[string]semver.Version{
-					"^2.0":   semver.NoneVersion,
-					"stable": semver.NoneVersion,
-					"~1.2":   semver.NoneVersion,
+					"^2.0":   {},
+					"stable": {},
+					"~1.2":   {},
 				},
 				compiledPatterns: map[string]semver.Pattern{
 					"stable": safeParsePattern("stable"),
@@ -78,7 +78,7 @@ func TestCheckPatternsMatching(t *testing.T) {
 				version: safeParse("1.2.3"),
 			},
 			map[string]semver.Version{
-				"^2.0":   semver.NoneVersion,
+				"^2.0":   {},
 				"stable": safeParse("1.2.3"),
 				"~1.2":   safeParse("1.2.3"),
 			},

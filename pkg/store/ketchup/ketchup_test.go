@@ -320,7 +320,7 @@ func TestGetByRepository(t *testing.T) {
 				pattern:   "stable",
 				forUpdate: true,
 			},
-			model.NoneKetchup,
+			model.Ketchup{},
 			nil,
 		},
 	}

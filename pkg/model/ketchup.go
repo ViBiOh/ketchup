@@ -22,9 +22,6 @@ const (
 var (
 	// KetchupFrequencyValues string values
 	KetchupFrequencyValues = []string{"None", "Daily", "Weekly"}
-
-	// NoneKetchup is an undefined ketchup
-	NoneKetchup = Ketchup{}
 )
 
 // ParseKetchupFrequency parse raw string into a KetchupFrequency
