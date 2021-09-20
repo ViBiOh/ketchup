@@ -8,8 +8,10 @@ import (
 	"reflect"
 	"strings"
 	"testing"
+	"time"
 
 	authModel "github.com/ViBiOh/auth/v2/pkg/model"
+	"github.com/ViBiOh/httputils/v4/pkg/clock"
 	"github.com/ViBiOh/ketchup/pkg/mocks"
 	"github.com/ViBiOh/ketchup/pkg/model"
 	"github.com/ViBiOh/ketchup/pkg/semver"
@@ -159,14 +161,12 @@ func TestGetKetchupToNotify(t *testing.T) {
 
 	var cases = []struct {
 		intention string
-		instance  App
 		args      args
 		want      map[model.User][]model.Release
 		wantErr   error
 	}{
 		{
 			"list error",
-			App{},
 			args{
 				ctx: context.Background(),
 			},
@@ -175,7 +175,6 @@ func TestGetKetchupToNotify(t *testing.T) {
 		},
 		{
 			"empty",
-			App{},
 			args{
 				ctx: context.Background(),
 			},
@@ -184,7 +183,6 @@ func TestGetKetchupToNotify(t *testing.T) {
 		},
 		{
 			"one release, n ketchups",
-			App{},
 			args{
 				ctx: context.Background(),
 				releases: []model.Release{
@@ -250,7 +248,10 @@ func TestGetKetchupToNotify(t *testing.T) {
 
 			mockKetchupService := mocks.NewKetchupService(ctrl)
 
-			tc.instance.ketchupService = mockKetchupService
+			instance := App{
+				ketchupService: mockKetchupService,
+				clock:          clock.New(time.Unix(1609459200, 0)),
+			}
 
 			switch tc.intention {
 			case "list error":
@@ -298,7 +299,7 @@ func TestGetKetchupToNotify(t *testing.T) {
 				}, nil)
 			}
 
-			got, gotErr := tc.instance.getKetchupToNotify(tc.args.ctx, tc.args.releases)
+			got, gotErr := instance.getKetchupToNotify(tc.args.ctx, tc.args.releases)
 
 			failed := false
 
