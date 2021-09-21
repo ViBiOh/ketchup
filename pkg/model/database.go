@@ -7,6 +7,7 @@ import (
 )
 
 // Database interface needed
+//go:generate mockgen -destination ../mocks/database.go -mock_names Database=Database -package mocks github.com/ViBiOh/ketchup/pkg/model Database
 type Database interface {
 	List(context.Context, func(pgx.Rows) error, string, ...interface{}) error
 	Get(context.Context, func(pgx.Row) error, string, ...interface{}) error
