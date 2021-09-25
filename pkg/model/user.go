@@ -15,9 +15,9 @@ const (
 
 // User of app
 type User struct {
-	Email string
-	Login authModel.User
-	ID    uint64
+	Email string         `json:"email"`
+	Login authModel.User `json:"login"`
+	ID    uint64         `json:"id"`
 }
 
 // String implements stringer

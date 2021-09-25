@@ -13,20 +13,18 @@ import (
 	"github.com/ViBiOh/httputils/v4/pkg/uuid"
 )
 
-// SecurityQuestion is a question for fighting against bot
-type SecurityQuestion struct {
+type securityQuestion struct {
 	Question string
 	Answer   string
 }
 
-// SecurityPayload is a question sent to the browser
-type SecurityPayload struct {
+type securityPayload struct {
 	UUID     string `json:"uuid"`
 	Question string `json:"question"`
 }
 
 var (
-	colors = map[int64]SecurityQuestion{
+	colors = map[int64]securityQuestion{
 		0:  {"❄️ and 🧻 are both?", "white"},
 		1:  {"☀️ and 🍋 are both?", "yellow"},
 		2:  {"🥦 and 🥝 are both?", "green"},
@@ -41,24 +39,24 @@ var (
 	}
 )
 
-func (a App) generateToken(ctx context.Context) (SecurityPayload, error) {
+func (a App) generateToken(ctx context.Context) (securityPayload, error) {
 	questionID, err := rand.Int(rand.Reader, big.NewInt(int64(len(colors))))
 	if err != nil {
-		return SecurityPayload{}, fmt.Errorf("unable to generate random int: %w", err)
+		return securityPayload{}, fmt.Errorf("unable to generate random int: %w", err)
 	}
 
 	token, err := uuid.New()
 	if err != nil {
-		return SecurityPayload{}, fmt.Errorf("unable to generate uuid: %s", err)
+		return securityPayload{}, fmt.Errorf("unable to generate uuid: %s", err)
 	}
 
 	id := questionID.Int64()
 
 	if err := a.redisApp.Store(ctx, tokenKey(token), fmt.Sprintf("%d", id), time.Minute*5); err != nil {
-		return SecurityPayload{}, fmt.Errorf("unable to store token: %s", err)
+		return securityPayload{}, fmt.Errorf("unable to store token: %s", err)
 	}
 
-	return SecurityPayload{
+	return securityPayload{
 		UUID:     token,
 		Question: colors[id].Question,
 	}, nil
