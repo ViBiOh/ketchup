@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/ViBiOh/httputils/v4/pkg/logger"
+	"github.com/ViBiOh/httputils/v4/pkg/uuid"
 )
 
 // SecurityQuestion is a question for fighting against bot
@@ -40,29 +41,20 @@ var (
 	}
 )
 
-func uuid() string {
-	raw := make([]byte, 16)
-	if _, err := rand.Read(raw); err != nil {
-		logger.Fatal(err)
-		return ""
-	}
-
-	raw[8] = raw[8]&^0xc0 | 0x80
-	raw[6] = raw[6]&^0xf0 | 0x40
-
-	return fmt.Sprintf("%x-%x-%x-%x-%x", raw[0:4], raw[4:6], raw[6:8], raw[8:10], raw[10:])
-}
-
 func (a App) generateToken(ctx context.Context) (SecurityPayload, error) {
 	questionID, err := rand.Int(rand.Reader, big.NewInt(int64(len(colors))))
 	if err != nil {
 		return SecurityPayload{}, fmt.Errorf("unable to generate random int: %w", err)
 	}
 
-	token := uuid()
+	token, err := uuid.New()
+	if err != nil {
+		return SecurityPayload{}, fmt.Errorf("unable to generate uuid: %s", err)
+	}
+
 	id := questionID.Int64()
 
-	if err := a.redisApp.Store(ctx, token, fmt.Sprintf("%d", id), time.Minute*5); err != nil {
+	if err := a.redisApp.Store(ctx, tokenKey(token), fmt.Sprintf("%d", id), time.Minute*5); err != nil {
 		return SecurityPayload{}, fmt.Errorf("unable to store token: %s", err)
 	}
 
@@ -73,7 +65,7 @@ func (a App) generateToken(ctx context.Context) (SecurityPayload, error) {
 }
 
 func (a App) validateToken(ctx context.Context, token, answer string) bool {
-	questionIDString, err := a.redisApp.Load(ctx, token)
+	questionIDString, err := a.redisApp.Load(ctx, tokenKey(token))
 	if err != nil {
 		logger.Warn("unable to retrieve captcha token: %s", err)
 		return false
@@ -94,7 +86,11 @@ func (a App) validateToken(ctx context.Context, token, answer string) bool {
 }
 
 func (a App) cleanToken(ctx context.Context, token string) {
-	if err := a.redisApp.Delete(ctx, token); err != nil {
+	if err := a.redisApp.Delete(ctx, tokenKey(token)); err != nil {
 		logger.WithField("token", token).Error("unable to delete token: %s", err)
 	}
+}
+
+func tokenKey(token string) string {
+	return "ketchup:token:" + token
 }

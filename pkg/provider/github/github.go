@@ -94,7 +94,7 @@ func (a app) Start(registerer prometheus.Registerer, done <-chan struct{}) {
 
 	cron.New().Now().Each(time.Minute).OnError(func(err error) {
 		logger.Error("unable to get rate limit metrics: %s", err)
-	}).Exclusive(a.redisApp, "github_rate_limit_metrics", 45*time.Second).Start(func(ctx context.Context) error {
+	}).Exclusive(a.redisApp, "ketchup:github_rate_limit_metrics", 45*time.Second).Start(func(ctx context.Context) error {
 		value, err := a.getRateLimit(ctx)
 		if err != nil {
 			return err
