@@ -42,7 +42,7 @@ func main() {
 	logger.Fatal(err)
 	defer ketchupDb.Close()
 
-	mailerApp, err := mailer.New(mailerConfig)
+	mailerApp, err := mailer.New(mailerConfig, nil)
 	logger.Fatal(err)
 	defer mailerApp.Close()
 

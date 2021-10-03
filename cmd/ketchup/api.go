@@ -93,7 +93,7 @@ func main() {
 	logger.Fatal(err)
 	defer ketchupDb.Close()
 
-	redisApp := redis.New(redisConfig)
+	redisApp := redis.New(redisConfig, prometheusApp.Registerer())
 
 	healthApp := health.New(healthConfig, ketchupDb.Ping, redisApp.Ping)
 
@@ -108,7 +108,7 @@ func main() {
 	repositoryServiceApp := repositoryService.New(repositoryStore.New(ketchupDb), githubApp, helmApp, dockerApp, npmApp, pypiApp)
 	ketchupServiceApp := ketchupService.New(ketchupStore.New(ketchupDb), repositoryServiceApp)
 
-	mailerApp, err := mailer.New(mailerConfig)
+	mailerApp, err := mailer.New(mailerConfig, prometheusApp.Registerer())
 	logger.Fatal(err)
 	defer mailerApp.Close()
 
