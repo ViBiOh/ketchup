@@ -118,11 +118,12 @@ func (a App) Update(ctx context.Context, oldPattern string, item model.Ketchup) 
 		}
 
 		current := model.Ketchup{
-			Pattern:    item.Pattern,
-			Version:    item.Version,
-			Frequency:  item.Frequency,
-			Repository: old.Repository,
-			User:       old.User,
+			Pattern:          item.Pattern,
+			Version:          item.Version,
+			Frequency:        item.Frequency,
+			UpdateWhenNotify: item.UpdateWhenNotify,
+			Repository:       old.Repository,
+			User:             old.User,
 		}
 
 		if err := a.check(ctx, old, current); err != nil {
@@ -147,6 +148,21 @@ func (a App) Update(ctx context.Context, oldPattern string, item model.Ketchup) 
 	})
 
 	return output, err
+}
+
+// UpdateVersion of a ketchup
+func (a App) UpdateVersion(ctx context.Context, userID, repositoryID uint64, pattern, version string) error {
+	if len(pattern) == 0 {
+		return errors.New("pattern is required")
+	}
+
+	if len(version) == 0 {
+		return errors.New("version is required")
+	}
+
+	return a.ketchupStore.DoAtomic(ctx, func(ctx context.Context) error {
+		return a.ketchupStore.UpdateVersion(ctx, userID, repositoryID, pattern, version)
+	})
 }
 
 // Delete ketchup

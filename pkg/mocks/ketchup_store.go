@@ -166,3 +166,17 @@ func (mr *KetchupStoreMockRecorder) UpdateAll(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateAll", reflect.TypeOf((*KetchupStore)(nil).UpdateAll), arg0)
 }
+
+// UpdateVersion mocks base method.
+func (m *KetchupStore) UpdateVersion(arg0 context.Context, arg1, arg2 uint64, arg3, arg4 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateVersion", arg0, arg1, arg2, arg3, arg4)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateVersion indicates an expected call of UpdateVersion.
+func (mr *KetchupStoreMockRecorder) UpdateVersion(arg0, arg1, arg2, arg3, arg4 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateVersion", reflect.TypeOf((*KetchupStore)(nil).UpdateVersion), arg0, arg1, arg2, arg3, arg4)
+}

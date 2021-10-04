@@ -43,7 +43,7 @@ func TestList(t *testing.T) {
 			},
 			[]model.Ketchup{
 				{
-					ID:         "4bdfbeb6",
+					ID:         "00fdf978",
 					Pattern:    model.DefaultPattern,
 					Version:    "0.9.0",
 					Frequency:  model.Daily,
@@ -51,7 +51,7 @@ func TestList(t *testing.T) {
 					User:       model.NewUser(3, testEmail, authModel.NewUser(0, "")),
 				},
 				{
-					ID:         "844123b7",
+					ID:         "f924ec39",
 					Pattern:    model.DefaultPattern,
 					Version:    repositoryVersion,
 					Frequency:  model.Daily,
@@ -94,29 +94,31 @@ func TestList(t *testing.T) {
 			switch tc.intention {
 			case "simple":
 				mockRows := mocks.NewRows(ctrl)
-				mockRows.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...interface{}) error {
+				mockRows.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...interface{}) error {
 					*pointers[0].(*string) = model.DefaultPattern
 					*pointers[1].(*string) = "0.9.0"
 					*pointers[2].(*string) = "daily"
-					*pointers[3].(*uint64) = 1
-					*pointers[4].(*string) = repositoryName
-					*pointers[5].(*string) = ""
-					*pointers[6].(*string) = "github"
-					*pointers[7].(*string) = repositoryVersion
-					*pointers[8].(*uint64) = 2
+					*pointers[3].(*bool) = false
+					*pointers[4].(*uint64) = 1
+					*pointers[5].(*string) = repositoryName
+					*pointers[6].(*string) = ""
+					*pointers[7].(*string) = "github"
+					*pointers[8].(*string) = repositoryVersion
+					*pointers[9].(*uint64) = 2
 
 					return nil
 				})
-				mockRows.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...interface{}) error {
+				mockRows.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...interface{}) error {
 					*pointers[0].(*string) = model.DefaultPattern
 					*pointers[1].(*string) = repositoryVersion
 					*pointers[2].(*string) = "daily"
-					*pointers[3].(*uint64) = 2
-					*pointers[4].(*string) = chartRepository
-					*pointers[5].(*string) = "app"
-					*pointers[6].(*string) = "helm"
-					*pointers[7].(*string) = repositoryVersion
-					*pointers[8].(*uint64) = 2
+					*pointers[3].(*bool) = false
+					*pointers[4].(*uint64) = 2
+					*pointers[5].(*string) = chartRepository
+					*pointers[6].(*string) = "app"
+					*pointers[7].(*string) = "helm"
+					*pointers[8].(*string) = repositoryVersion
+					*pointers[9].(*uint64) = 2
 
 					return nil
 				})
@@ -131,16 +133,17 @@ func TestList(t *testing.T) {
 				mockDatabase.EXPECT().List(gomock.Any(), gomock.Any(), gomock.Any(), uint64(3), uint(20)).Return(errors.New("failed"))
 			case "invalid kind":
 				mockRows := mocks.NewRows(ctrl)
-				mockRows.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...interface{}) error {
+				mockRows.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...interface{}) error {
 					*pointers[0].(*string) = model.DefaultPattern
 					*pointers[1].(*string) = "0.9.0"
 					*pointers[2].(*string) = "daily"
-					*pointers[3].(*uint64) = 1
-					*pointers[4].(*string) = repositoryName
-					*pointers[5].(*string) = ""
-					*pointers[6].(*string) = "wrong"
-					*pointers[7].(*string) = repositoryVersion
-					*pointers[8].(*uint64) = 1
+					*pointers[3].(*bool) = false
+					*pointers[4].(*uint64) = 1
+					*pointers[5].(*string) = repositoryName
+					*pointers[6].(*string) = ""
+					*pointers[7].(*string) = "wrong"
+					*pointers[8].(*string) = repositoryVersion
+					*pointers[9].(*uint64) = 1
 
 					return nil
 				})
@@ -234,23 +237,25 @@ func TestListByRepositoriesID(t *testing.T) {
 			switch tc.intention {
 			case "simple":
 				mockRows := mocks.NewRows(ctrl)
-				mockRows.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...interface{}) error {
+				mockRows.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...interface{}) error {
 					*pointers[0].(*string) = model.DefaultPattern
 					*pointers[1].(*string) = "0.9.0"
 					*pointers[2].(*string) = "daily"
-					*pointers[3].(*uint64) = 1
+					*pointers[3].(*bool) = false
 					*pointers[4].(*uint64) = 1
-					*pointers[5].(*string) = testEmail
+					*pointers[5].(*uint64) = 1
+					*pointers[6].(*string) = testEmail
 
 					return nil
 				})
-				mockRows.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...interface{}) error {
+				mockRows.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...interface{}) error {
 					*pointers[0].(*string) = model.DefaultPattern
 					*pointers[1].(*string) = repositoryVersion
 					*pointers[2].(*string) = "daily"
-					*pointers[3].(*uint64) = 2
+					*pointers[3].(*bool) = false
 					*pointers[4].(*uint64) = 2
-					*pointers[5].(*string) = "guest@domain"
+					*pointers[5].(*uint64) = 2
+					*pointers[6].(*string) = "guest@domain"
 
 					return nil
 				})
@@ -337,15 +342,16 @@ func TestGetByRepository(t *testing.T) {
 			switch tc.intention {
 			case "simple":
 				mockRow := mocks.NewRow(ctrl)
-				mockRow.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...interface{}) error {
+				mockRow.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...interface{}) error {
 					*pointers[0].(*string) = model.DefaultPattern
 					*pointers[1].(*string) = "0.9.0"
 					*pointers[2].(*string) = "daily"
-					*pointers[3].(*uint64) = 1
-					*pointers[4].(*uint64) = 3
-					*pointers[5].(*string) = repositoryName
-					*pointers[6].(*string) = ""
-					*pointers[7].(*string) = "github"
+					*pointers[3].(*bool) = false
+					*pointers[4].(*uint64) = 1
+					*pointers[5].(*uint64) = 3
+					*pointers[6].(*string) = repositoryName
+					*pointers[7].(*string) = ""
+					*pointers[8].(*string) = "github"
 
 					return nil
 				})
@@ -355,7 +361,7 @@ func TestGetByRepository(t *testing.T) {
 				mockDatabase.EXPECT().Get(gomock.Any(), gomock.Any(), gomock.Any(), tc.args.id, uint64(3), tc.args.pattern).DoAndReturn(dummyFn)
 			case "no rows":
 				mockRow := mocks.NewRow(ctrl)
-				mockRow.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...interface{}) error {
+				mockRow.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...interface{}) error {
 					return pgx.ErrNoRows
 				})
 				dummyFn := func(_ context.Context, scanner func(pgx.Row) error, _ string, _ ...interface{}) error {
@@ -420,7 +426,7 @@ func TestCreate(t *testing.T) {
 
 			switch tc.intention {
 			case "simple":
-				mockDatabase.EXPECT().Create(gomock.Any(), gomock.Any(), model.DefaultPattern, "0.9.0", "daily", uint64(1), uint64(3)).Return(uint64(1), nil)
+				mockDatabase.EXPECT().Create(gomock.Any(), gomock.Any(), model.DefaultPattern, "0.9.0", "daily", gomock.Any(), uint64(1), uint64(3)).Return(uint64(1), nil)
 			}
 
 			got, gotErr := instance.Create(testCtx, tc.args.o)
@@ -477,7 +483,7 @@ func TestUpdate(t *testing.T) {
 
 			switch tc.intention {
 			case "simple":
-				mockDatabase.EXPECT().Exec(gomock.Any(), gomock.Any(), uint64(1), uint64(3), model.DefaultPattern, model.DefaultPattern, "0.9.0", "daily").Return(nil)
+				mockDatabase.EXPECT().Exec(gomock.Any(), gomock.Any(), uint64(1), uint64(3), model.DefaultPattern, model.DefaultPattern, "0.9.0", "daily", gomock.Any()).Return(nil)
 			}
 
 			gotErr := instance.Update(testCtx, tc.args.o, tc.args.oldPattern)

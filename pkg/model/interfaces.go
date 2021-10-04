@@ -87,6 +87,7 @@ type KetchupService interface {
 	Create(ctx context.Context, item Ketchup) (Ketchup, error)
 	Update(ctx context.Context, oldPattern string, item Ketchup) (Ketchup, error)
 	UpdateAll(ctx context.Context) error
+	UpdateVersion(ctx context.Context, userID, repositoryID uint64, pattern, version string) error
 	Delete(ctx context.Context, item Ketchup) error
 }
 
@@ -101,5 +102,6 @@ type KetchupStore interface {
 	Create(ctx context.Context, o Ketchup) (uint64, error)
 	Update(ctx context.Context, o Ketchup, oldPattern string) error
 	UpdateAll(ctx context.Context) error
+	UpdateVersion(ctx context.Context, userID, repositoryID uint64, pattern, version string) error
 	Delete(ctx context.Context, o Ketchup) error
 }

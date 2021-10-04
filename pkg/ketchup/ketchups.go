@@ -51,6 +51,8 @@ func (a App) handleCreate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	updateWhenNotify := r.FormValue("update-when-notify") == "true"
+
 	var repository model.Repository
 	name := r.FormValue("name")
 
@@ -63,7 +65,7 @@ func (a App) handleCreate(w http.ResponseWriter, r *http.Request) {
 		repository = model.NewRepository(0, repositoryKind, name, "")
 	}
 
-	item := model.NewKetchup(r.FormValue("pattern"), r.FormValue("version"), ketchupFrequency, repository).WithID()
+	item := model.NewKetchup(r.FormValue("pattern"), r.FormValue("version"), ketchupFrequency, updateWhenNotify, repository).WithID()
 
 	created, err := a.ketchupService.Create(r.Context(), item)
 	if err != nil {
@@ -98,7 +100,9 @@ func (a App) handleUpdate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	item := model.NewKetchup(r.FormValue("pattern"), r.FormValue("version"), ketchupFrequency, model.NewGithubRepository(id, "")).WithID()
+	updateWhenNotify := r.FormValue("update-when-notify") == "true"
+
+	item := model.NewKetchup(r.FormValue("pattern"), r.FormValue("version"), ketchupFrequency, updateWhenNotify, model.NewGithubRepository(id, "")).WithID()
 
 	updated, err := a.ketchupService.Update(r.Context(), r.FormValue("old-pattern"), item)
 	if err != nil {
@@ -116,7 +120,7 @@ func (a App) handleDelete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	item := model.NewKetchup(r.FormValue("pattern"), "", model.Daily, model.NewGithubRepository(id, "")).WithID()
+	item := model.NewKetchup(r.FormValue("pattern"), "", model.Daily, false, model.NewGithubRepository(id, "")).WithID()
 
 	if err := a.ketchupService.Delete(r.Context(), item); err != nil {
 		a.rendererApp.Error(w, err)

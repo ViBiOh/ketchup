@@ -76,6 +76,11 @@
           </select>
         </p>
 
+        <p class="padding no-margin">
+          <input type="checkbox" id="create-update-when-notify" name="update-when-notify" value="true">
+          <label for="create-update-when-notify" class="margin-left">Update when notify <img class="icon icon-small" title="When the mail notification is sent, the Ketchup is automatically updated" src="{{ url "/svg/question?fill=silver" }}" alt="Question icon"></label>
+        </p>
+
         {{ template "form_buttons" "Create" }}
       </form>
     </div>
@@ -161,6 +166,11 @@
             <option value="Daily" {{ if eq .Frequency.String "Daily" }}selected{{ end }}>Daily</option>
             <option value="None" {{ if eq .Frequency.String "None" }}selected{{ end }}>None</option>
           </select>
+        </p>
+
+        <p class="padding no-margin">
+          <input type="checkbox" id="update-update-when-notify-{{ .ID }}" name="update-when-notify" value="true" {{ if .UpdateWhenNotify }}checked{{ end }}>
+          <label for="update-update-when-notify-{{ .ID }}" class="margin-left">Update when notify <img class="icon icon-small" title="When the mail notification is sent, the Ketchup is automatically updated" src="{{ url "/svg/question?fill=silver" }}" alt="Question icon"></label>
         </p>
 
         {{ template "form_buttons" "Edit" }}
@@ -347,9 +357,14 @@
 
           <pre class="no-margin">{{ .Pattern }}</pre>
 
-          <img class="icon" src="{{ url "/svg/" }}{{ frequencyImage .Frequency }}?fill=silver" alt="Frequency icon" title="Frequency {{ .Frequency.String }}">
-        </div>
+          <span class="margin-top">
+            <img class="icon" src="{{ url "/svg/" }}{{ frequencyImage .Frequency }}?fill=silver" alt="Frequency icon" title="Frequency {{ .Frequency.String }}">
 
+            {{ if .UpdateWhenNotify }}
+              <img class="icon" src="{{ url "/svg/inbox" }}?fill=silver" alt="Inbox icon" title="Automatic update when notification is sent">
+            {{ end }}
+          </span>
+        </div>
 
         <div>
           {{ if ne .Version (index .Repository.Versions .Pattern) }}
@@ -360,6 +375,7 @@
             <form method="POST" action="/app/ketchups/{{ .Repository.ID }}" class="inline">
               <input type="hidden" name="method" value="PUT">
               <input type="hidden" name="frequency" value="{{ .Frequency.String }}">
+              <input type="hidden" name="update-when-notify" value="{{ .UpdateWhenNotify }}">
               <input type="hidden" name="old-pattern" value="{{ .Pattern }}">
               <input type="hidden" name="pattern" value="{{ .Pattern }}">
               <input type="hidden" name="version" value="{{ index .Repository.Versions .Pattern }}">
@@ -411,6 +427,7 @@
             <input type="hidden" name="name" value="{{ .Name }}">
             <input type="hidden" name="part" value="{{ .Part }}">
             <input type="hidden" name="frequency" value="Daily">
+            <input type="hidden" name="update-when-notify" value="false">
             <input type="hidden" name="pattern" value="stable">
             <input type="hidden" name="version" value="{{ .Versions.stable }}">
 

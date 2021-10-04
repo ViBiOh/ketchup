@@ -41,22 +41,24 @@ func (r KetchupFrequency) String() string {
 
 // Ketchup of app
 type Ketchup struct {
-	ID         string
-	Semver     string
-	Pattern    string
-	Version    string
-	User       User
-	Repository Repository
-	Frequency  KetchupFrequency
+	ID               string
+	Semver           string
+	Pattern          string
+	Version          string
+	User             User
+	Repository       Repository
+	Frequency        KetchupFrequency
+	UpdateWhenNotify bool
 }
 
 // NewKetchup creates new instance
-func NewKetchup(pattern, version string, frequency KetchupFrequency, repo Repository) Ketchup {
+func NewKetchup(pattern, version string, frequency KetchupFrequency, updateWhenNotify bool, repo Repository) Ketchup {
 	return Ketchup{
-		Pattern:    pattern,
-		Version:    version,
-		Frequency:  frequency,
-		Repository: repo,
+		Pattern:          pattern,
+		Version:          version,
+		Frequency:        frequency,
+		UpdateWhenNotify: updateWhenNotify,
+		Repository:       repo,
 	}
 }
 

@@ -73,6 +73,7 @@ CREATE TABLE ketchup.ketchup (
   pattern TEXT NOT NULL DEFAULT 'stable',
   version TEXT NOT NULL,
   frequency ketchup.ketchup_frequency NOT NULL DEFAULT 'daily',
+  update_when_notify BOOL NOT NULL DEFAULT FALSE,
   creation_date TIMESTAMP WITH TIME ZONE DEFAULT now()
 );
 

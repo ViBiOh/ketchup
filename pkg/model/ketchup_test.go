@@ -84,15 +84,15 @@ func TestKetchupByRepositoryID(t *testing.T) {
 			"simple",
 			args{
 				array: []Ketchup{
-					NewKetchup(DefaultPattern, "", Daily, NewGithubRepository(10, "")),
-					NewKetchup(DefaultPattern, "", Daily, NewGithubRepository(1, "")),
-					NewKetchup("latest", "", Daily, NewGithubRepository(1, "")),
+					NewKetchup(DefaultPattern, "", Daily, false, NewGithubRepository(10, "")),
+					NewKetchup(DefaultPattern, "", Daily, false, NewGithubRepository(1, "")),
+					NewKetchup("latest", "", Daily, false, NewGithubRepository(1, "")),
 				},
 			},
 			[]Ketchup{
-				NewKetchup("latest", "", Daily, NewGithubRepository(1, "")),
-				NewKetchup(DefaultPattern, "", Daily, NewGithubRepository(1, "")),
-				NewKetchup(DefaultPattern, "", Daily, NewGithubRepository(10, "")),
+				NewKetchup("latest", "", Daily, false, NewGithubRepository(1, "")),
+				NewKetchup(DefaultPattern, "", Daily, false, NewGithubRepository(1, "")),
+				NewKetchup(DefaultPattern, "", Daily, false, NewGithubRepository(10, "")),
 			},
 		},
 	}
@@ -121,17 +121,17 @@ func TestKetchupByPriority(t *testing.T) {
 			"alphabetic",
 			args{
 				array: []Ketchup{
-					NewKetchup("", "", Daily, NewGithubRepository(0, "abc")),
-					NewKetchup("", "", Daily, NewGithubRepository(0, "ghi")),
-					NewKetchup("", "", Daily, NewGithubRepository(0, "jkl")),
-					NewKetchup("", "", Daily, NewGithubRepository(0, "def")),
+					NewKetchup("", "", Daily, false, NewGithubRepository(0, "abc")),
+					NewKetchup("", "", Daily, false, NewGithubRepository(0, "ghi")),
+					NewKetchup("", "", Daily, false, NewGithubRepository(0, "jkl")),
+					NewKetchup("", "", Daily, false, NewGithubRepository(0, "def")),
 				},
 			},
 			[]Ketchup{
-				NewKetchup("", "", Daily, NewGithubRepository(0, "abc")),
-				NewKetchup("", "", Daily, NewGithubRepository(0, "def")),
-				NewKetchup("", "", Daily, NewGithubRepository(0, "ghi")),
-				NewKetchup("", "", Daily, NewGithubRepository(0, "jkl")),
+				NewKetchup("", "", Daily, false, NewGithubRepository(0, "abc")),
+				NewKetchup("", "", Daily, false, NewGithubRepository(0, "def")),
+				NewKetchup("", "", Daily, false, NewGithubRepository(0, "ghi")),
+				NewKetchup("", "", Daily, false, NewGithubRepository(0, "jkl")),
 			},
 		},
 		{

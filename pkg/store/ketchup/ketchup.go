@@ -33,6 +33,7 @@ SELECT
   k.pattern,
   k.version,
   k.frequency,
+  k.update_when_notify,
   k.repository_id,
   r.name,
   r.part,
@@ -69,13 +70,13 @@ func (a App) List(ctx context.Context, pageSize uint, last string) ([]model.Ketc
 	list := make([]model.Ketchup, 0)
 
 	scanner := func(rows pgx.Rows) error {
-		item := model.NewKetchup("", "", model.Daily, model.NewRepository(0, 0, "", ""))
+		item := model.NewKetchup("", "", model.Daily, false, model.NewRepository(0, 0, "", ""))
 		item.User = user
 		var rawRepositoryKind string
 		var rawKetchupFrequency string
 		var repositoryVersion string
 
-		if err := rows.Scan(&item.Pattern, &item.Version, &rawKetchupFrequency, &item.Repository.ID, &item.Repository.Name, &item.Repository.Part, &rawRepositoryKind, &repositoryVersion, &totalCount); err != nil {
+		if err := rows.Scan(&item.Pattern, &item.Version, &rawKetchupFrequency, &item.UpdateWhenNotify, &item.Repository.ID, &item.Repository.Name, &item.Repository.Part, &rawRepositoryKind, &repositoryVersion, &totalCount); err != nil {
 			return err
 		}
 
@@ -132,6 +133,7 @@ SELECT
   k.pattern,
   k.version,
   k.frequency,
+  k.update_when_notify,
   k.repository_id,
   k.user_id,
   u.email
@@ -153,7 +155,7 @@ func (a App) ListByRepositoriesID(ctx context.Context, ids []uint64, frequency m
 		item.Repository = model.NewRepository(0, 0, "", "")
 		var rawKetchupFrequency string
 
-		if err := rows.Scan(&item.Pattern, &item.Version, &rawKetchupFrequency, &item.Repository.ID, &item.User.ID, &item.User.Email); err != nil {
+		if err := rows.Scan(&item.Pattern, &item.Version, &rawKetchupFrequency, &item.UpdateWhenNotify, &item.Repository.ID, &item.User.ID, &item.User.Email); err != nil {
 			return err
 		}
 
@@ -175,6 +177,7 @@ SELECT
   rv.pattern,
   rv.version,
   k.frequency,
+  k.update_when_notify,
   r.id,
   r.name,
   r.part,
@@ -203,7 +206,7 @@ func (a App) ListOutdatedByFrequency(ctx context.Context, frequency model.Ketchu
 		item.Repository = model.NewRepository(0, 0, "", "")
 		var rawKetchupFrequency, rawRepositoryKind string
 
-		if err := rows.Scan(&item.Pattern, &item.Version, &rawKetchupFrequency, &item.Repository.ID, &item.Repository.Name, &item.Repository.Part, &rawRepositoryKind, &item.User.ID, &item.User.Email); err != nil {
+		if err := rows.Scan(&item.Pattern, &item.Version, &rawKetchupFrequency, &item.UpdateWhenNotify, &item.Repository.ID, &item.Repository.Name, &item.Repository.Part, &rawRepositoryKind, &item.User.ID, &item.User.Email); err != nil {
 			return err
 		}
 
@@ -231,6 +234,7 @@ SELECT
   k.pattern,
   k.version,
   k.frequency,
+  k.update_when_notify,
   k.repository_id,
   k.user_id,
   r.name,
@@ -262,7 +266,7 @@ func (a App) GetByRepository(ctx context.Context, id uint64, pattern string, for
 	scanner := func(row pgx.Row) error {
 		var rawRepositoryKind, rawKetchupFrequency string
 
-		err := row.Scan(&item.Pattern, &item.Version, &rawKetchupFrequency, &item.Repository.ID, &item.User.ID, &item.Repository.Name, &item.Repository.Part, &rawRepositoryKind)
+		err := row.Scan(&item.Pattern, &item.Version, &rawKetchupFrequency, &item.UpdateWhenNotify, &item.Repository.ID, &item.User.ID, &item.Repository.Name, &item.Repository.Part, &rawRepositoryKind)
 		if errors.Is(err, pgx.ErrNoRows) {
 			item = model.Ketchup{}
 			return nil
@@ -293,6 +297,7 @@ INSERT INTO
   pattern,
   version,
   frequency,
+  update_when_notify,
   repository_id,
   user_id
 ) VALUES (
@@ -300,13 +305,14 @@ INSERT INTO
   $2,
   $3,
   $4,
-  $5
+  $5,
+  $6
 ) RETURNING 1
 `
 
 // Create a ketchup
 func (a App) Create(ctx context.Context, o model.Ketchup) (uint64, error) {
-	return a.db.Create(ctx, insertQuery, o.Pattern, o.Version, strings.ToLower(o.Frequency.String()), o.Repository.ID, model.ReadUser(ctx).ID)
+	return a.db.Create(ctx, insertQuery, o.Pattern, o.Version, strings.ToLower(o.Frequency.String()), o.UpdateWhenNotify, o.Repository.ID, model.ReadUser(ctx).ID)
 }
 
 const updateQuery = `
@@ -315,7 +321,8 @@ UPDATE
 SET
   pattern = $4,
   version = $5,
-  frequency = $6
+  frequency = $6,
+  update_when_notify = $7
 WHERE
   repository_id = $1
   AND user_id = $2
@@ -324,7 +331,7 @@ WHERE
 
 // Update a ketchup
 func (a App) Update(ctx context.Context, o model.Ketchup, oldPattern string) error {
-	return a.db.Exec(ctx, updateQuery, o.Repository.ID, model.ReadUser(ctx).ID, oldPattern, o.Pattern, o.Version, strings.ToLower(o.Frequency.String()))
+	return a.db.Exec(ctx, updateQuery, o.Repository.ID, model.ReadUser(ctx).ID, oldPattern, o.Pattern, o.Version, strings.ToLower(o.Frequency.String()), o.UpdateWhenNotify)
 }
 
 const updateAllQuery = `
@@ -346,6 +353,22 @@ WHERE
 // UpdateAll ketchups
 func (a App) UpdateAll(ctx context.Context) error {
 	return a.db.Exec(ctx, updateAllQuery, model.ReadUser(ctx).ID)
+}
+
+const updateVersionQuery = `
+UPDATE
+  ketchup.ketchup
+SET
+  version = $4
+WHERE
+  repository_id = $1
+  AND user_id = $2
+  AND pattern = $3
+`
+
+// UpdateVersion of a ketchup
+func (a App) UpdateVersion(ctx context.Context, userID, repositoryID uint64, pattern, version string) error {
+	return a.db.Exec(ctx, updateVersionQuery, repositoryID, userID, pattern, version)
 }
 
 const deleteQuery = `
