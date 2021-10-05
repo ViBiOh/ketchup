@@ -161,7 +161,7 @@ func (a App) getKetchupToNotify(ctx context.Context, releases []model.Release) (
 		}
 
 		logger.Info("%d weekly ketchups to notify", len(weeklyKetchups))
-		addWeeklyKetchups(weeklyKetchups, userToNotify)
+		a.addWeeklyKetchups(weeklyKetchups, userToNotify)
 	}
 
 	logger.Info("%d users to notify", len(userToNotify))
@@ -211,7 +211,7 @@ func (a App) syncReleasesByUser(releases []model.Release, ketchups []model.Ketch
 	return usersToNotify
 }
 
-func addWeeklyKetchups(ketchups []model.Ketchup, usersToNotify map[model.User][]model.Release) {
+func (a App) addWeeklyKetchups(ketchups []model.Ketchup, usersToNotify map[model.User][]model.Release) {
 	for _, ketchup := range ketchups {
 		ketchupVersion, err := semver.Parse(ketchup.Version)
 		if err != nil {
@@ -225,6 +225,12 @@ func addWeeklyKetchups(ketchups []model.Ketchup, usersToNotify map[model.User][]
 			usersToNotify[ketchup.User] = append(usersToNotify[ketchup.User], release)
 		} else {
 			usersToNotify[ketchup.User] = []model.Release{release}
+		}
+
+		if ketchup.UpdateWhenNotify {
+			if err := a.ketchupService.UpdateVersion(context.Background(), ketchup.Repository.ID, ketchup.User.ID, ketchup.Pattern, release.Version.Name); err != nil {
+				logger.Error("unable to update ketchup user=%d repository=%d: %s", ketchup.User.ID, ketchup.Repository.ID, err)
+			}
 		}
 	}
 }
