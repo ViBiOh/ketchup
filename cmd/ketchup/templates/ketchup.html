@@ -345,7 +345,7 @@
 
           <p class="no-margin padding">
             <span>
-              <a class="{{ if ne .Version (index .Repository.Versions .Pattern) }}danger{{ else }}success{{ end }}" href="{{ .Repository.URL .Pattern }}">{{ .Version }}</a>
+              <a class="{{ if ne .Version (index .Repository.Versions .Pattern) }}danger{{ else }}success{{ end }}" href="{{ .Repository.VersionURL .Version }}">{{ .Version }}</a>
             </span>
 
             {{ if ne .Version (index .Repository.Versions .Pattern) }}
