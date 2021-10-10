@@ -7,6 +7,10 @@ import (
 	"strings"
 )
 
+const (
+	maxVersionNumber = 1 << 16
+)
+
 // NonFinalVersion is a detail for temporary version
 type NonFinalVersion int
 
@@ -104,12 +108,16 @@ func Parse(version string) (Version, error) {
 	var err error
 
 	if len(matches[1]) >= 8 {
-		return Version{}, fmt.Errorf("major version looks like a date: %s", version)
+		return Version{}, fmt.Errorf("version major looks like a date: %s", version)
 	}
 
 	semver.major, err = strconv.ParseUint(matches[1], 10, 64)
 	if err != nil {
 		return Version{}, fmt.Errorf("version major is not numeric")
+	}
+
+	if semver.major > maxVersionNumber {
+		return Version{}, fmt.Errorf("version major seems a bit high")
 	}
 
 	if len(matches[2]) != 0 {

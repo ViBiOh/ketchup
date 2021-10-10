@@ -275,7 +275,15 @@ func TestParse(t *testing.T) {
 				version: "v20160726",
 			},
 			Version{},
-			errors.New("major version looks like a date"),
+			errors.New("version major looks like a date"),
+		},
+		{
+			"fucking node",
+			args{
+				version: "213123",
+			},
+			Version{},
+			errors.New("version major seems a bit high"),
 		},
 	}
 
