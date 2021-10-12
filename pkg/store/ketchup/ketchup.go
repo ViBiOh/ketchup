@@ -172,7 +172,7 @@ func (a App) ListByRepositoriesID(ctx context.Context, ids []uint64, frequency m
 	return list, a.db.List(ctx, scanner, listByRepositoriesIDQuery, ids, strings.ToLower(frequency.String()))
 }
 
-const listOutdateByFrequencyQuery = `
+const listOutdatedByFrequencyQuery = `
 SELECT
   rv.pattern,
   rv.version,
@@ -226,7 +226,7 @@ func (a App) ListOutdatedByFrequency(ctx context.Context, frequency model.Ketchu
 		return nil
 	}
 
-	return list, a.db.List(ctx, scanner, listOutdateByFrequencyQuery, strings.ToLower(frequency.String()))
+	return list, a.db.List(ctx, scanner, listOutdatedByFrequencyQuery, strings.ToLower(frequency.String()))
 }
 
 const getQuery = `

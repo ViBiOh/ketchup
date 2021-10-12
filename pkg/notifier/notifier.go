@@ -199,14 +199,7 @@ func (a App) syncReleasesByUser(releases []model.Release, ketchups []model.Ketch
 					usersToNotify[current.User] = []model.Release{release}
 				}
 
-				if current.UpdateWhenNotify {
-					log := logger.WithField("repository", current.Repository.ID).WithField("user", current.User.ID).WithField("pattern", current.Pattern)
-
-					log.Info("Auto-updating ketchup to %s", release.Version.Name)
-					if err := a.ketchupService.UpdateVersion(context.Background(), current.Repository.ID, current.User.ID, current.Pattern, release.Version.Name); err != nil {
-						log.Error("unable to update ketchup version: %s", err)
-					}
-				}
+				a.handleKetchupNotification(current, release.Version.Name)
 			}
 		}
 	}
@@ -230,11 +223,20 @@ func (a App) addWeeklyKetchups(ketchups []model.Ketchup, usersToNotify map[model
 			usersToNotify[ketchup.User] = []model.Release{release}
 		}
 
-		if ketchup.UpdateWhenNotify {
-			if err := a.ketchupService.UpdateVersion(context.Background(), ketchup.Repository.ID, ketchup.User.ID, ketchup.Pattern, release.Version.Name); err != nil {
-				logger.Error("unable to update ketchup user=%d repository=%d: %s", ketchup.User.ID, ketchup.Repository.ID, err)
-			}
-		}
+		a.handleKetchupNotification(ketchup, release.Version.Name)
+	}
+}
+
+func (a App) handleKetchupNotification(ketchup model.Ketchup, version string) {
+	if !ketchup.UpdateWhenNotify {
+		return
+	}
+
+	log := logger.WithField("repository", ketchup.Repository.ID).WithField("user", ketchup.User.ID).WithField("pattern", ketchup.Pattern)
+
+	log.Info("Auto-updating ketchup to %s", version)
+	if err := a.ketchupService.UpdateVersion(context.Background(), ketchup.Repository.ID, ketchup.User.ID, ketchup.Pattern, version); err != nil {
+		logger.Error("unable to update ketchup user=%d repository=%d: %s", ketchup.User.ID, ketchup.Repository.ID, err)
 	}
 }
 
