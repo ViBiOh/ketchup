@@ -183,7 +183,7 @@ func (a App) syncReleasesByUser(releases []model.Release, ketchups []model.Ketch
 			current := ketchups[index]
 
 			if release.Repository.ID < current.Repository.ID || (release.Repository.ID == current.Repository.ID && release.Pattern < current.Pattern) {
-				break // release is out of sync, we need to go foward release
+				break // release is out of sync, we need to go forward release
 			}
 
 			index++
@@ -200,8 +200,11 @@ func (a App) syncReleasesByUser(releases []model.Release, ketchups []model.Ketch
 				}
 
 				if current.UpdateWhenNotify {
+					log := logger.WithField("repository", current.Repository.ID).WithField("user", current.User.ID).WithField("pattern", current.Pattern)
+
+					log.Info("Auto-updating ketchup to %s", release.Version.Name)
 					if err := a.ketchupService.UpdateVersion(context.Background(), current.Repository.ID, current.User.ID, current.Pattern, release.Version.Name); err != nil {
-						logger.Error("unable to update ketchup user=%d repository=%d: %s", current.User.ID, current.Repository.ID, err)
+						log.Error("unable to update ketchup version: %s", err)
 					}
 				}
 			}
