@@ -235,7 +235,7 @@ func (a App) handleKetchupNotification(ketchup model.Ketchup, version string) {
 	log := logger.WithField("repository", ketchup.Repository.ID).WithField("user", ketchup.User.ID).WithField("pattern", ketchup.Pattern)
 
 	log.Info("Auto-updating ketchup to %s", version)
-	if err := a.ketchupService.UpdateVersion(context.Background(), ketchup.Repository.ID, ketchup.User.ID, ketchup.Pattern, version); err != nil {
+	if err := a.ketchupService.UpdateVersion(context.Background(), ketchup.User.ID, ketchup.Repository.ID, ketchup.Pattern, version); err != nil {
 		logger.Error("unable to update ketchup user=%d repository=%d: %s", ketchup.User.ID, ketchup.Repository.ID, err)
 	}
 }
