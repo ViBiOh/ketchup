@@ -77,7 +77,7 @@ Usage of ketchup:
   -corsOrigin string
         [cors] Access-Control-Allow-Origin {KETCHUP_CORS_ORIGIN} (default "*")
   -csp string
-        [owasp] Content-Security-Policy {KETCHUP_CSP} (default "default-src 'self'; base-uri 'self'; script-src 'self' 'nonce-ketchup-js-main' 'nonce-ketchup-js-create'; style-src 'self' 'nonce-ketchup-css-main' 'nonce-ketchup-css-ketchups' 'nonce-ketchup-css-suggests' 'nonce-ketchup-css-signup'")
+        [owasp] Content-Security-Policy {KETCHUP_CSP} (default "default-src 'self'; base-uri 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'")
   -dbHost string
         [db] Host {KETCHUP_DB_HOST}
   -dbMaxConn uint
