@@ -77,7 +77,7 @@ Usage of ketchup:
   -corsOrigin string
         [cors] Access-Control-Allow-Origin {KETCHUP_CORS_ORIGIN} (default "*")
   -csp string
-        [owasp] Content-Security-Policy {KETCHUP_CSP} (default "default-src 'self'; base-uri 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'")
+        [owasp] Content-Security-Policy {KETCHUP_CSP} (default "default-src 'self'; base-uri 'self'; script-src 'self' 'nonce-ketchup-js-main' 'nonce-ketchup-js-create'; style-src 'self' 'nonce-ketchup-css-main' 'nonce-ketchup-css-ketchups' 'nonce-ketchup-css-suggests'")
   -dbHost string
         [db] Host {KETCHUP_DB_HOST}
   -dbMaxConn uint
@@ -164,6 +164,8 @@ Usage of ketchup:
         [server] Read Timeout {KETCHUP_READ_TIMEOUT} (default "5s")
   -redisAddress string
         [redis] Redis Address {KETCHUP_REDIS_ADDRESS} (default "localhost:6379")
+  -redisAlias string
+        [redis] Connection alias, for metric {KETCHUP_REDIS_ALIAS}
   -redisDatabase int
         [redis] Redis Database {KETCHUP_REDIS_DATABASE}
   -redisPassword string
