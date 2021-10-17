@@ -97,10 +97,10 @@ func TestUpdateVersions(t *testing.T) {
 				mockDatabase.EXPECT().List(gomock.Any(), gomock.Any(), gomock.Any(), uint64(0)).Return(nil)
 			case "create error":
 				mockDatabase.EXPECT().List(gomock.Any(), gomock.Any(), gomock.Any(), uint64(0)).Return(nil)
-				mockDatabase.EXPECT().Exec(gomock.Any(), gomock.Any(), uint64(0), model.DefaultPattern, "1.0.0").Return(errFailed)
+				mockDatabase.EXPECT().One(gomock.Any(), gomock.Any(), uint64(0), model.DefaultPattern, "1.0.0").Return(errFailed)
 			case "create":
 				mockDatabase.EXPECT().List(gomock.Any(), gomock.Any(), gomock.Any(), uint64(0)).Return(nil)
-				mockDatabase.EXPECT().Exec(gomock.Any(), gomock.Any(), uint64(0), model.DefaultPattern, "1.0.0").Return(nil)
+				mockDatabase.EXPECT().One(gomock.Any(), gomock.Any(), uint64(0), model.DefaultPattern, "1.0.0").Return(nil)
 			case "no update":
 				mockRows := mocks.NewRows(ctrl)
 				mockRows.EXPECT().Scan(gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...interface{}) error {
@@ -125,7 +125,7 @@ func TestUpdateVersions(t *testing.T) {
 					return scanner(mockRows)
 				}
 				mockDatabase.EXPECT().List(gomock.Any(), gomock.Any(), gomock.Any(), uint64(0)).DoAndReturn(dummyFn)
-				mockDatabase.EXPECT().Exec(gomock.Any(), gomock.Any(), uint64(0), model.DefaultPattern, "1.0.0").Return(errFailed)
+				mockDatabase.EXPECT().One(gomock.Any(), gomock.Any(), uint64(0), model.DefaultPattern, "1.0.0").Return(errFailed)
 			case "update":
 				mockRows := mocks.NewRows(ctrl)
 				mockRows.EXPECT().Scan(gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...interface{}) error {
@@ -138,7 +138,7 @@ func TestUpdateVersions(t *testing.T) {
 					return scanner(mockRows)
 				}
 				mockDatabase.EXPECT().List(gomock.Any(), gomock.Any(), gomock.Any(), uint64(0)).DoAndReturn(dummyFn)
-				mockDatabase.EXPECT().Exec(gomock.Any(), gomock.Any(), uint64(0), model.DefaultPattern, "1.0.0").Return(nil)
+				mockDatabase.EXPECT().One(gomock.Any(), gomock.Any(), uint64(0), model.DefaultPattern, "1.0.0").Return(nil)
 			case "delete error":
 				mockRows := mocks.NewRows(ctrl)
 				mockRows.EXPECT().Scan(gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...interface{}) error {
@@ -151,7 +151,7 @@ func TestUpdateVersions(t *testing.T) {
 					return scanner(mockRows)
 				}
 				mockDatabase.EXPECT().List(gomock.Any(), gomock.Any(), gomock.Any(), uint64(0)).DoAndReturn(dummyFn)
-				mockDatabase.EXPECT().Exec(gomock.Any(), gomock.Any(), uint64(0), model.DefaultPattern).Return(errFailed)
+				mockDatabase.EXPECT().One(gomock.Any(), gomock.Any(), uint64(0), model.DefaultPattern).Return(errFailed)
 			case "delete":
 				mockRows := mocks.NewRows(ctrl)
 				mockRows.EXPECT().Scan(gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...interface{}) error {
@@ -164,7 +164,7 @@ func TestUpdateVersions(t *testing.T) {
 					return scanner(mockRows)
 				}
 				mockDatabase.EXPECT().List(gomock.Any(), gomock.Any(), gomock.Any(), uint64(0)).DoAndReturn(dummyFn)
-				mockDatabase.EXPECT().Exec(gomock.Any(), gomock.Any(), uint64(0), model.DefaultPattern).Return(nil)
+				mockDatabase.EXPECT().One(gomock.Any(), gomock.Any(), uint64(0), model.DefaultPattern).Return(nil)
 			}
 
 			gotErr := instance.UpdateVersions(context.Background(), tc.args.o)

@@ -106,7 +106,7 @@ func (a App) UpdateVersions(ctx context.Context, o model.Repository) error {
 	for pattern, version := range patterns {
 		repositoryVersion, ok := o.Versions[pattern]
 		if !ok {
-			if err := a.db.Exec(ctx, deleteRepositoryVersionQuery, o.ID, pattern); err != nil {
+			if err := a.db.One(ctx, deleteRepositoryVersionQuery, o.ID, pattern); err != nil {
 				return fmt.Errorf("unable to delete repository version: %w", err)
 			}
 			continue
@@ -116,7 +116,7 @@ func (a App) UpdateVersions(ctx context.Context, o model.Repository) error {
 			continue
 		}
 
-		if err := a.db.Exec(ctx, updateRepositoryVersionQuery, o.ID, pattern, repositoryVersion); err != nil {
+		if err := a.db.One(ctx, updateRepositoryVersionQuery, o.ID, pattern, repositoryVersion); err != nil {
 			return fmt.Errorf("unable to update repository version: %w", err)
 		}
 	}
@@ -126,7 +126,7 @@ func (a App) UpdateVersions(ctx context.Context, o model.Repository) error {
 			continue
 		}
 
-		if err := a.db.Exec(ctx, createRepositoryVersionQuery, o.ID, pattern, version); err != nil {
+		if err := a.db.One(ctx, createRepositoryVersionQuery, o.ID, pattern, version); err != nil {
 			return fmt.Errorf("unable to create repository version: %w", err)
 		}
 	}

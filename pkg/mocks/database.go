@@ -125,3 +125,22 @@ func (mr *DatabaseMockRecorder) List(arg0, arg1, arg2 interface{}, arg3 ...inter
 	varargs := append([]interface{}{arg0, arg1, arg2}, arg3...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*Database)(nil).List), varargs...)
 }
+
+// One mocks base method.
+func (m *Database) One(arg0 context.Context, arg1 string, arg2 ...interface{}) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{arg0, arg1}
+	for _, a := range arg2 {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "One", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// One indicates an expected call of One.
+func (mr *DatabaseMockRecorder) One(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{arg0, arg1}, arg2...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "One", reflect.TypeOf((*Database)(nil).One), varargs...)
+}

@@ -5,7 +5,7 @@ go 1.17
 require (
 	github.com/ViBiOh/auth/v2 v2.11.15
 	github.com/ViBiOh/httputils/v4 v4.27.0
-	github.com/ViBiOh/mailer v1.26.2
+	github.com/ViBiOh/mailer v1.26.4
 	github.com/golang/mock v1.6.0
 	github.com/jackc/pgconn v1.10.0
 	github.com/jackc/pgproto3/v2 v2.1.1
