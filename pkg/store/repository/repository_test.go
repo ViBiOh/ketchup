@@ -481,7 +481,7 @@ func TestCreate(t *testing.T) {
 				mockDatabase.EXPECT().Get(gomock.Any(), gomock.Any(), gomock.Any(), "github", ketchupRepository, "").Return(nil)
 				mockDatabase.EXPECT().Create(gomock.Any(), gomock.Any(), "github", ketchupRepository, "").Return(uint64(1), nil)
 				mockDatabase.EXPECT().List(gomock.Any(), gomock.Any(), gomock.Any(), uint64(1)).Return(nil)
-				mockDatabase.EXPECT().Exec(gomock.Any(), gomock.Any(), uint64(1), model.DefaultPattern, "1.0.0").Return(nil)
+				mockDatabase.EXPECT().One(gomock.Any(), gomock.Any(), uint64(1), model.DefaultPattern, "1.0.0").Return(nil)
 			}
 
 			got, gotErr := instance.Create(context.Background(), tc.args.o)

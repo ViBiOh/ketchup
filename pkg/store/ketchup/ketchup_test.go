@@ -483,7 +483,7 @@ func TestUpdate(t *testing.T) {
 
 			switch tc.intention {
 			case "simple":
-				mockDatabase.EXPECT().Exec(gomock.Any(), gomock.Any(), uint64(1), uint64(3), model.DefaultPattern, model.DefaultPattern, "0.9.0", "daily", gomock.Any()).Return(nil)
+				mockDatabase.EXPECT().One(gomock.Any(), gomock.Any(), uint64(1), uint64(3), model.DefaultPattern, model.DefaultPattern, "0.9.0", "daily", gomock.Any()).Return(nil)
 			}
 
 			gotErr := instance.Update(testCtx, tc.args.o, tc.args.oldPattern)
@@ -534,7 +534,7 @@ func TestDelete(t *testing.T) {
 
 			switch tc.intention {
 			case "simple":
-				mockDatabase.EXPECT().Exec(gomock.Any(), gomock.Any(), uint64(1), uint64(3), model.DefaultPattern).Return(nil)
+				mockDatabase.EXPECT().One(gomock.Any(), gomock.Any(), uint64(1), uint64(3), model.DefaultPattern).Return(nil)
 			}
 
 			gotErr := instance.Delete(testCtx, tc.args.o)

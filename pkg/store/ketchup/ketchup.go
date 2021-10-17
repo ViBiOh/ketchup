@@ -331,7 +331,7 @@ WHERE
 
 // Update a ketchup
 func (a App) Update(ctx context.Context, o model.Ketchup, oldPattern string) error {
-	return a.db.Exec(ctx, updateQuery, o.Repository.ID, model.ReadUser(ctx).ID, oldPattern, o.Pattern, o.Version, strings.ToLower(o.Frequency.String()), o.UpdateWhenNotify)
+	return a.db.One(ctx, updateQuery, o.Repository.ID, model.ReadUser(ctx).ID, oldPattern, o.Pattern, o.Version, strings.ToLower(o.Frequency.String()), o.UpdateWhenNotify)
 }
 
 const updateAllQuery = `
@@ -368,7 +368,7 @@ WHERE
 
 // UpdateVersion of a ketchup
 func (a App) UpdateVersion(ctx context.Context, userID, repositoryID uint64, pattern, version string) error {
-	return a.db.Exec(ctx, updateVersionQuery, repositoryID, userID, pattern, version)
+	return a.db.One(ctx, updateVersionQuery, repositoryID, userID, pattern, version)
 }
 
 const deleteQuery = `
@@ -382,5 +382,5 @@ WHERE
 
 // Delete a ketchup
 func (a App) Delete(ctx context.Context, o model.Ketchup) error {
-	return a.db.Exec(ctx, deleteQuery, o.Repository.ID, model.ReadUser(ctx).ID, o.Pattern)
+	return a.db.One(ctx, deleteQuery, o.Repository.ID, model.ReadUser(ctx).ID, o.Pattern)
 }

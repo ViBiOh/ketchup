@@ -86,7 +86,7 @@
     </div>
   </div>
 
-  <script type="text/javascript">
+  <script type="text/javascript" nonce="{{ .nonce }}">
     const repositoryInput = document.getElementById('create-name');
     const nameInput = document.getElementById('create-part-wrapper');
 
@@ -208,7 +208,7 @@
 {{ end }}
 
 {{ define "ketchups" }}
-  <style type="text/css">
+  <style type="text/css" nonce="{{ .nonce }}">
     {{ range .Ketchups }}
       #delete-modal-{{ .ID }}:target,
       #edit-modal-{{ .ID }}:target,
@@ -312,7 +312,7 @@
     }
   </style>
 
-  {{ template "create-modal" }}
+  {{ template "create-modal" . }}
 
   {{ $ketchupType := "" }}
 
