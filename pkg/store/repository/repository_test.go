@@ -45,11 +45,31 @@ func TestList(t *testing.T) {
 			nil,
 		},
 		{
+			"invalid last",
+			args{
+				pageSize: 20,
+				last:     "abc",
+			},
+			nil,
+			0,
+			errors.New("invalid last key"),
+		},
+		{
+			"last",
+			args{
+				pageSize: 20,
+				last:     "2",
+			},
+			nil,
+			0,
+			nil,
+		},
+		{
 			"error",
 			args{
 				pageSize: 20,
 			},
-			[]model.Repository{},
+			nil,
 			0,
 			errors.New("timeout"),
 		},
@@ -58,7 +78,7 @@ func TestList(t *testing.T) {
 			args{
 				pageSize: 20,
 			},
-			[]model.Repository{},
+			nil,
 			0,
 			errors.New("invalid value `wrong` for repository kind"),
 		},
@@ -124,8 +144,13 @@ func TestList(t *testing.T) {
 					return scanner(enrichRows)
 				}
 				mockDatabase.EXPECT().List(gomock.Any(), gomock.Any(), gomock.Any(), []uint64{1, 2}).DoAndReturn(enrichFn)
+
+			case "last":
+				mockDatabase.EXPECT().List(gomock.Any(), gomock.Any(), gomock.Any(), uint64(2), uint(20)).Return(nil)
+
 			case "error":
 				mockDatabase.EXPECT().List(gomock.Any(), gomock.Any(), gomock.Any(), uint(20)).Return(errors.New("timeout"))
+
 			case "invalid kind":
 				mockRows := mocks.NewRows(ctrl)
 				mockRows.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...interface{}) error {

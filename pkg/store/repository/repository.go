@@ -30,7 +30,7 @@ func (a App) DoAtomic(ctx context.Context, action func(context.Context) error) e
 
 func (a App) list(ctx context.Context, query string, args ...interface{}) ([]model.Repository, uint64, error) {
 	var count uint64
-	list := make([]model.Repository, 0)
+	var list []model.Repository
 
 	scanner := func(rows pgx.Rows) error {
 		var rawRepositoryKind string

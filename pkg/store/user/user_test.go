@@ -232,3 +232,56 @@ func TestCreate(t *testing.T) {
 		})
 	}
 }
+
+func TestCount(t *testing.T) {
+	var cases = []struct {
+		intention string
+		want      uint64
+		wantErr   error
+	}{
+		{
+			"simple",
+			1,
+			nil,
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.intention, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			mockDatabase := mocks.NewDatabase(ctrl)
+
+			instance := App{db: mockDatabase}
+
+			switch tc.intention {
+			case "simple":
+				mockRow := mocks.NewRow(ctrl)
+				mockRow.EXPECT().Scan(gomock.Any()).DoAndReturn(func(pointers ...interface{}) error {
+					*pointers[0].(*uint64) = 1
+
+					return nil
+				})
+				dummyFn := func(_ context.Context, scanner func(pgx.Row) error, _ string, _ ...interface{}) error {
+					return scanner(mockRow)
+				}
+				mockDatabase.EXPECT().Get(gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(dummyFn)
+			}
+
+			got, gotErr := instance.Count(context.Background())
+
+			failed := false
+
+			if !errors.Is(gotErr, tc.wantErr) {
+				failed = true
+			} else if got != tc.want {
+				failed = true
+			}
+
+			if failed {
+				t.Errorf("Count() = (%d, `%s`), want (%d, `%s`)", got, gotErr, tc.want, tc.wantErr)
+			}
+		})
+	}
+}
