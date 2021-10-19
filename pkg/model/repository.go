@@ -98,7 +98,7 @@ func NewRepository(id uint64, kind RepositoryKind, name, part string) Repository
 // NewEmptyRepository create an empty Repository
 func NewEmptyRepository() Repository {
 	return Repository{
-		Versions: make(map[string]string, 0),
+		Versions: make(map[string]string),
 	}
 }
 
