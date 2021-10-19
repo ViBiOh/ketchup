@@ -74,6 +74,15 @@ func TestList(t *testing.T) {
 			errors.New("timeout"),
 		},
 		{
+			"scan error",
+			args{
+				pageSize: 20,
+			},
+			nil,
+			0,
+			errors.New("unable to read int"),
+		},
+		{
 			"invalid kind",
 			args{
 				pageSize: 20,
@@ -151,6 +160,19 @@ func TestList(t *testing.T) {
 			case "error":
 				mockDatabase.EXPECT().List(gomock.Any(), gomock.Any(), gomock.Any(), uint(20)).Return(errors.New("timeout"))
 
+			case "scan error":
+				mockRows := mocks.NewRows(ctrl)
+				mockRows.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...interface{}) error {
+					return errors.New("unable to read int")
+				})
+				dummyFn := func(_ context.Context, scanner func(pgx.Rows) error, _ string, _ ...interface{}) error {
+					if err := scanner(mockRows); err != nil {
+						return err
+					}
+					return scanner(mockRows)
+				}
+				mockDatabase.EXPECT().List(gomock.Any(), gomock.Any(), gomock.Any(), uint(20)).DoAndReturn(dummyFn)
+
 			case "invalid kind":
 				mockRows := mocks.NewRows(ctrl)
 				mockRows.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...interface{}) error {
@@ -187,7 +209,7 @@ func TestList(t *testing.T) {
 			}
 
 			if failed {
-				t.Errorf("List() = (%+v, %d, `%s`), want (%+v, %d, `%s`)", got, gotCount, gotErr, tc.want, tc.wantCount, tc.wantErr)
+				t.Errorf("List() = (%#v, %d, `%s`), want (%#v, %d, `%s`)", got, gotCount, gotErr, tc.want, tc.wantCount, tc.wantErr)
 			}
 		})
 	}
@@ -295,7 +317,7 @@ func TestSuggest(t *testing.T) {
 			}
 
 			if failed {
-				t.Errorf("Suggest() = (%+v, `%s`), want (%+v, `%s`)", got, gotErr, tc.want, tc.wantErr)
+				t.Errorf("Suggest() = (%#v, `%s`), want (%#v, `%s`)", got, gotErr, tc.want, tc.wantErr)
 			}
 		})
 	}
@@ -330,8 +352,18 @@ func TestGet(t *testing.T) {
 				forUpdate: true,
 			},
 			"SELECT id, kind, name, part FROM ketchup.repository WHERE id =",
-			model.Repository{},
+			model.NewEmptyRepository(),
 			nil,
+		},
+		{
+			"scan error",
+			args{
+				id:        1,
+				forUpdate: true,
+			},
+			"SELECT id, kind, name, part FROM ketchup.repository WHERE id =",
+			model.NewEmptyRepository(),
+			errors.New("unable to read int"),
 		},
 	}
 
@@ -381,20 +413,33 @@ func TestGet(t *testing.T) {
 					return scanner(mockRow)
 				}
 				mockDatabase.EXPECT().Get(gomock.Any(), gomock.Any(), gomock.Any(), uint64(1)).DoAndReturn(dummyFn)
+			case "scan error":
+				mockRow := mocks.NewRow(ctrl)
+				mockRow.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...interface{}) error {
+					return errors.New("unable to read int")
+				})
+				dummyFn := func(_ context.Context, scanner func(pgx.Row) error, _ string, _ ...interface{}) error {
+					return scanner(mockRow)
+				}
+				mockDatabase.EXPECT().Get(gomock.Any(), gomock.Any(), gomock.Any(), uint64(1)).DoAndReturn(dummyFn)
 			}
 
 			got, gotErr := instance.Get(context.Background(), tc.args.id, tc.args.forUpdate)
 
 			failed := false
 
-			if !errors.Is(gotErr, tc.wantErr) {
+			if tc.wantErr == nil && gotErr != nil {
+				failed = true
+			} else if tc.wantErr != nil && gotErr == nil {
+				failed = true
+			} else if tc.wantErr != nil && !strings.Contains(gotErr.Error(), tc.wantErr.Error()) {
 				failed = true
 			} else if !reflect.DeepEqual(got, tc.want) {
 				failed = true
 			}
 
 			if failed {
-				t.Errorf("Get() = (%+v, `%s`), want (%+v, `%s`)", got, gotErr, tc.want, tc.wantErr)
+				t.Errorf("Get() = (%#v, `%s`), want (%#v, `%s`)", got, gotErr, tc.want, tc.wantErr)
 			}
 		})
 	}

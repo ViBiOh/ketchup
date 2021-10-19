@@ -95,6 +95,13 @@ func NewRepository(id uint64, kind RepositoryKind, name, part string) Repository
 	}
 }
 
+// NewEmptyRepository create an empty Repository
+func NewEmptyRepository() Repository {
+	return Repository{
+		Versions: make(map[string]string, 0),
+	}
+}
+
 // NewGithubRepository create new Repository with initialized values
 func NewGithubRepository(id uint64, name string) Repository {
 	return NewRepository(id, Github, name, "")
@@ -110,6 +117,11 @@ func (r Repository) AddVersion(pattern, version string) Repository {
 	r.Versions[pattern] = version
 
 	return r
+}
+
+// IsZero return false if instance is not initialized
+func (r Repository) IsZero() bool {
+	return r.ID == 0
 }
 
 // URL format the URL of given repository with current version

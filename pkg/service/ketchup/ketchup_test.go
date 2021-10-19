@@ -244,13 +244,13 @@ func TestCreate(t *testing.T) {
 					return do(ctx)
 				}
 				mockKetchupStore.EXPECT().DoAtomic(gomock.Any(), gomock.Any()).DoAndReturn(dummyFn)
-				mockRepositoryService.EXPECT().GetOrCreate(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(model.Repository{}, nil)
+				mockRepositoryService.EXPECT().GetOrCreate(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(model.NewEmptyRepository(), nil)
 			case "create error":
 				dummyFn := func(ctx context.Context, do func(ctx context.Context) error) error {
 					return do(ctx)
 				}
 				mockKetchupStore.EXPECT().DoAtomic(gomock.Any(), gomock.Any()).DoAndReturn(dummyFn)
-				mockRepositoryService.EXPECT().GetOrCreate(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(model.Repository{}, nil)
+				mockRepositoryService.EXPECT().GetOrCreate(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(model.NewEmptyRepository(), nil)
 				mockKetchupStore.EXPECT().Create(gomock.Any(), gomock.Any()).Return(uint64(0), errors.New("failed"))
 			case "success":
 				dummyFn := func(ctx context.Context, do func(ctx context.Context) error) error {
@@ -406,7 +406,7 @@ func TestUpdate(t *testing.T) {
 				}
 				mockKetchupStore.EXPECT().DoAtomic(gomock.Any(), gomock.Any()).DoAndReturn(dummyFn)
 				mockKetchupStore.EXPECT().GetByRepository(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(model.NewKetchup(model.DefaultPattern, "0.9.0", model.Daily, false, model.NewGithubRepository(1, ketchupRepository)), nil)
-				mockRepositoryService.EXPECT().GetOrCreate(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(model.Repository{}, errors.New("failed"))
+				mockRepositoryService.EXPECT().GetOrCreate(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(model.NewEmptyRepository(), errors.New("failed"))
 			case "pattern change success":
 				dummyFn := func(ctx context.Context, do func(ctx context.Context) error) error {
 					return do(ctx)
@@ -593,7 +593,7 @@ func TestCheck(t *testing.T) {
 			"delete",
 			args{
 				ctx: model.StoreUser(context.Background(), model.NewUser(1, "", authModel.NewUser(0, ""))),
-				old: model.NewKetchup(model.DefaultPattern, "1.0.0", model.Daily, false, model.Repository{}),
+				old: model.NewKetchup(model.DefaultPattern, "1.0.0", model.Daily, false, model.NewEmptyRepository()),
 				new: model.Ketchup{},
 			},
 			nil,
@@ -620,7 +620,7 @@ func TestCheck(t *testing.T) {
 			"no version",
 			args{
 				ctx: model.StoreUser(context.Background(), model.NewUser(1, "", authModel.NewUser(0, ""))),
-				old: model.NewKetchup(model.DefaultPattern, "1.0.0", model.Daily, false, model.Repository{}),
+				old: model.NewKetchup(model.DefaultPattern, "1.0.0", model.Daily, false, model.NewEmptyRepository()),
 				new: model.NewKetchup(model.DefaultPattern, "", model.Daily, false, model.NewGithubRepository(1, "")),
 			},
 			errors.New("version is required"),

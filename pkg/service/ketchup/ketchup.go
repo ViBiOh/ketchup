@@ -113,7 +113,7 @@ func (a App) Update(ctx context.Context, oldPattern string, item model.Ketchup) 
 			return httpModel.WrapInternal(fmt.Errorf("unable to fetch: %w", err))
 		}
 
-		if old.Repository.ID == 0 {
+		if old.Repository.IsZero() {
 			return httpModel.WrapNotFound(errors.New("unable to found repository"))
 		}
 
@@ -173,7 +173,7 @@ func (a App) Delete(ctx context.Context, item model.Ketchup) (err error) {
 			return httpModel.WrapInternal(fmt.Errorf("unable to fetch current: %w", err))
 		}
 
-		if old.Repository.ID == 0 {
+		if old.Repository.IsZero() {
 			return httpModel.WrapNotFound(errors.New("unable to found repository"))
 		}
 
@@ -196,7 +196,7 @@ func (a App) check(ctx context.Context, old, new model.Ketchup) error {
 		output = append(output, errors.New("you must be logged in for interacting"))
 	}
 
-	if new.Repository.ID == 0 && new.User.ID == 0 {
+	if new.Repository.IsZero() && new.User.IsZero() {
 		return httpModel.ConcatError(output)
 	}
 
@@ -210,11 +210,11 @@ func (a App) check(ctx context.Context, old, new model.Ketchup) error {
 		output = append(output, errors.New("version is required"))
 	}
 
-	if old.Repository.ID == 0 && new.Repository.ID != 0 {
+	if old.Repository.IsZero() && !new.Repository.IsZero() {
 		o, err := a.ketchupStore.GetByRepository(ctx, new.Repository.ID, new.Pattern, false)
 		if err != nil {
 			output = append(output, errors.New("unable to check if ketchup already exists"))
-		} else if o.Repository.ID != 0 {
+		} else if !o.Repository.IsZero() {
 			output = append(output, fmt.Errorf("ketchup for `%s` with pattern `%s` already exists", new.Repository.Name, new.Pattern))
 		}
 	}

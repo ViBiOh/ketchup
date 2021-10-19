@@ -61,7 +61,7 @@ func findRepository(repositories []model.Repository, id uint64) model.Repository
 		}
 	}
 
-	return model.Repository{}
+	return model.NewEmptyRepository()
 }
 
 const createRepositoryVersionQuery = `

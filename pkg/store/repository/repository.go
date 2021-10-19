@@ -34,9 +34,7 @@ func (a App) list(ctx context.Context, query string, args ...interface{}) ([]mod
 
 	scanner := func(rows pgx.Rows) error {
 		var rawRepositoryKind string
-		item := model.Repository{
-			Versions: make(map[string]string),
-		}
+		item := model.NewEmptyRepository()
 
 		if err := rows.Scan(&item.ID, &rawRepositoryKind, &item.Name, &item.Part, &count); err != nil {
 			return err
@@ -62,18 +60,15 @@ func (a App) list(ctx context.Context, query string, args ...interface{}) ([]mod
 
 func (a App) get(ctx context.Context, query string, args ...interface{}) (model.Repository, error) {
 	var rawRepositoryKind string
-	item := model.Repository{
-		Versions: make(map[string]string),
-	}
+	item := model.NewEmptyRepository()
 
 	scanner := func(row pgx.Row) error {
 		err := row.Scan(&item.ID, &rawRepositoryKind, &item.Name, &item.Part)
-		if errors.Is(err, pgx.ErrNoRows) {
-			item = model.Repository{}
-			return nil
-		}
-
 		if err != nil {
+			if errors.Is(err, pgx.ErrNoRows) {
+				return nil
+			}
+
 			return err
 		}
 
@@ -83,10 +78,10 @@ func (a App) get(ctx context.Context, query string, args ...interface{}) (model.
 	}
 
 	if err := a.db.Get(ctx, scanner, query, args...); err != nil {
-		return model.Repository{}, err
+		return item, err
 	}
 
-	if item.ID == 0 {
+	if item.IsZero() {
 		return item, nil
 	}
 

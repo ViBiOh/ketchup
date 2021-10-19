@@ -28,7 +28,7 @@ func TestUpdateVersions(t *testing.T) {
 		{
 			"no version",
 			args{
-				o: model.Repository{},
+				o: model.NewEmptyRepository(),
 			},
 			nil,
 		},
