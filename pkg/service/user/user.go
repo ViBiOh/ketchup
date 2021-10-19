@@ -82,7 +82,7 @@ func (a App) check(ctx context.Context, _, new model.User) error {
 		return nil
 	}
 
-	output := make([]error, 0)
+	var output []error
 
 	if len(strings.TrimSpace(new.Email)) == 0 {
 		output = append(output, errors.New("email is required"))

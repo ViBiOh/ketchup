@@ -63,7 +63,7 @@ func (a App) getNewRepositoryReleases(repo model.Repository) []model.Release {
 		return nil
 	}
 
-	releases := make([]model.Release, 0)
+	var releases []model.Release
 
 	for pattern, version := range versions {
 		releases = appendVersion(releases, version, repo, pattern, repo.Versions[pattern])
@@ -147,7 +147,7 @@ func (a App) getFetchHelmSources(repos map[string]model.Repository) []model.Rele
 		return nil
 	}
 
-	releases := make([]model.Release, 0)
+	var releases []model.Release
 
 	for chartName, patterns := range values {
 		repo := repos[chartName]

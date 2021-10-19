@@ -78,7 +78,7 @@ func TestGetNewRepositoryReleases(t *testing.T) {
 			args{
 				repo: model.NewGithubRepository(0, ""),
 			},
-			make([]model.Release, 0),
+			nil,
 		},
 		{
 			"no new",
@@ -86,7 +86,7 @@ func TestGetNewRepositoryReleases(t *testing.T) {
 			args{
 				repo: model.NewGithubRepository(1, repositoryName).AddVersion(model.DefaultPattern, repositoryVersion),
 			},
-			make([]model.Release, 0),
+			nil,
 		},
 		{
 			"invalid version",
@@ -94,7 +94,7 @@ func TestGetNewRepositoryReleases(t *testing.T) {
 			args{
 				repo: model.NewGithubRepository(1, repositoryName).AddVersion(model.DefaultPattern, "abcde"),
 			},
-			make([]model.Release, 0),
+			nil,
 		},
 		{
 			"not greater",
@@ -102,7 +102,7 @@ func TestGetNewRepositoryReleases(t *testing.T) {
 			args{
 				repo: model.NewGithubRepository(1, repositoryName).AddVersion(model.DefaultPattern, "1.1.0"),
 			},
-			make([]model.Release, 0),
+			nil,
 		},
 		{
 			"greater",

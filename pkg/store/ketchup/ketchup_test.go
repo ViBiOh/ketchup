@@ -67,7 +67,7 @@ func TestList(t *testing.T) {
 			args{
 				pageSize: 20,
 			},
-			[]model.Ketchup{},
+			nil,
 			0,
 			errors.New("failed"),
 		},
@@ -76,7 +76,7 @@ func TestList(t *testing.T) {
 			args{
 				pageSize: 20,
 			},
-			[]model.Ketchup{},
+			nil,
 			1,
 			errors.New("invalid value `wrong` for repository kind"),
 		},
@@ -220,7 +220,7 @@ func TestListByRepositoriesID(t *testing.T) {
 				ids:       []uint64{1, 2},
 				frequency: model.Daily,
 			},
-			make([]model.Ketchup, 0),
+			nil,
 			errors.New("failed"),
 		},
 	}

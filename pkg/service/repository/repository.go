@@ -181,7 +181,7 @@ func (a App) check(ctx context.Context, old, new model.Repository) error {
 		return nil
 	}
 
-	output := make([]error, 0)
+	var output []error
 
 	if len(strings.TrimSpace(new.Name)) == 0 {
 		output = append(output, errors.New("name is required"))

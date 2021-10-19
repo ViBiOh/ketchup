@@ -67,7 +67,7 @@ func (a App) List(ctx context.Context, pageSize uint, last string) ([]model.Ketc
 	user := model.ReadUser(ctx)
 
 	var totalCount uint64
-	list := make([]model.Ketchup, 0)
+	var list []model.Ketchup
 
 	scanner := func(rows pgx.Rows) error {
 		item := model.NewKetchup("", "", model.Daily, false, model.NewRepository(0, 0, "", ""))
@@ -148,7 +148,7 @@ WHERE
 
 // ListByRepositoriesID lists ketchup by repositories id
 func (a App) ListByRepositoriesID(ctx context.Context, ids []uint64, frequency model.KetchupFrequency) ([]model.Ketchup, error) {
-	list := make([]model.Ketchup, 0)
+	var list []model.Ketchup
 
 	scanner := func(rows pgx.Rows) error {
 		var item model.Ketchup
@@ -199,7 +199,7 @@ WHERE
 
 // ListOutdatedByFrequency lists outdated ketchup by frequency id
 func (a App) ListOutdatedByFrequency(ctx context.Context, frequency model.KetchupFrequency) ([]model.Ketchup, error) {
-	list := make([]model.Ketchup, 0)
+	var list []model.Ketchup
 
 	scanner := func(rows pgx.Rows) error {
 		var item model.Ketchup
