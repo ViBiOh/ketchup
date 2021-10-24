@@ -14,12 +14,12 @@ import (
 func (a App) ketchups() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodPost {
-			a.rendererApp.Error(w, httpModel.WrapMethodNotAllowed(fmt.Errorf("invalid method %s", r.Method)))
+			a.rendererApp.Error(w, r, httpModel.WrapMethodNotAllowed(fmt.Errorf("invalid method %s", r.Method)))
 			return
 		}
 
 		if err := r.ParseForm(); err != nil {
-			a.rendererApp.Error(w, httpModel.WrapInvalid(err))
+			a.rendererApp.Error(w, r, httpModel.WrapInvalid(err))
 			return
 		}
 
@@ -33,7 +33,7 @@ func (a App) ketchups() http.Handler {
 		case http.MethodDelete:
 			a.handleDelete(w, r)
 		default:
-			a.rendererApp.Error(w, httpModel.WrapInvalid(fmt.Errorf("invalid method %s", method)))
+			a.rendererApp.Error(w, r, httpModel.WrapInvalid(fmt.Errorf("invalid method %s", method)))
 		}
 	})
 }
@@ -41,13 +41,13 @@ func (a App) ketchups() http.Handler {
 func (a App) handleCreate(w http.ResponseWriter, r *http.Request) {
 	repositoryKind, err := model.ParseRepositoryKind(r.FormValue("kind"))
 	if err != nil {
-		a.rendererApp.Error(w, httpModel.WrapInvalid(err))
+		a.rendererApp.Error(w, r, httpModel.WrapInvalid(err))
 		return
 	}
 
 	ketchupFrequency, err := model.ParseKetchupFrequency(r.FormValue("frequency"))
 	if err != nil {
-		a.rendererApp.Error(w, httpModel.WrapInvalid(err))
+		a.rendererApp.Error(w, r, httpModel.WrapInvalid(err))
 		return
 	}
 
@@ -69,7 +69,7 @@ func (a App) handleCreate(w http.ResponseWriter, r *http.Request) {
 
 	created, err := a.ketchupService.Create(r.Context(), item)
 	if err != nil {
-		a.rendererApp.Error(w, err)
+		a.rendererApp.Error(w, r, err)
 		return
 	}
 
@@ -80,7 +80,7 @@ func (a App) handleUpdate(w http.ResponseWriter, r *http.Request) {
 	rawID := strings.Trim(r.URL.Path, "/")
 	if rawID == "all" {
 		if err := a.ketchupService.UpdateAll(r.Context()); err != nil {
-			a.rendererApp.Error(w, err)
+			a.rendererApp.Error(w, r, err)
 		} else {
 			a.rendererApp.Redirect(w, r, fmt.Sprintf("%s/", appPath), renderer.NewSuccessMessage("All ketchups are up-to-date!"))
 		}
@@ -90,13 +90,13 @@ func (a App) handleUpdate(w http.ResponseWriter, r *http.Request) {
 
 	id, err := strconv.ParseUint(strings.Trim(r.URL.Path, "/"), 10, 64)
 	if err != nil {
-		a.rendererApp.Error(w, httpModel.WrapInvalid(err))
+		a.rendererApp.Error(w, r, httpModel.WrapInvalid(err))
 		return
 	}
 
 	ketchupFrequency, err := model.ParseKetchupFrequency(r.FormValue("frequency"))
 	if err != nil {
-		a.rendererApp.Error(w, httpModel.WrapInvalid(err))
+		a.rendererApp.Error(w, r, httpModel.WrapInvalid(err))
 		return
 	}
 
@@ -106,7 +106,7 @@ func (a App) handleUpdate(w http.ResponseWriter, r *http.Request) {
 
 	updated, err := a.ketchupService.Update(r.Context(), r.FormValue("old-pattern"), item)
 	if err != nil {
-		a.rendererApp.Error(w, err)
+		a.rendererApp.Error(w, r, err)
 		return
 	}
 
@@ -116,14 +116,14 @@ func (a App) handleUpdate(w http.ResponseWriter, r *http.Request) {
 func (a App) handleDelete(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.ParseUint(strings.Trim(r.URL.Path, "/"), 10, 64)
 	if err != nil {
-		a.rendererApp.Error(w, httpModel.WrapInvalid(err))
+		a.rendererApp.Error(w, r, httpModel.WrapInvalid(err))
 		return
 	}
 
 	item := model.NewKetchup(r.FormValue("pattern"), "", model.Daily, false, model.NewGithubRepository(id, "")).WithID()
 
 	if err := a.ketchupService.Delete(r.Context(), item); err != nil {
-		a.rendererApp.Error(w, err)
+		a.rendererApp.Error(w, r, err)
 		return
 	}
 
