@@ -3,8 +3,8 @@ module github.com/ViBiOh/ketchup
 go 1.17
 
 require (
-	github.com/ViBiOh/auth/v2 v2.11.15
-	github.com/ViBiOh/httputils/v4 v4.27.0
+	github.com/ViBiOh/auth/v2 v2.11.16
+	github.com/ViBiOh/httputils/v4 v4.27.1
 	github.com/ViBiOh/mailer v1.26.4
 	github.com/golang/mock v1.6.0
 	github.com/jackc/pgconn v1.10.0
@@ -28,7 +28,7 @@ require (
 	github.com/jackc/puddle v1.1.3 // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.1 // indirect
 	github.com/prometheus/client_model v0.2.0 // indirect
-	github.com/prometheus/common v0.31.1 // indirect
+	github.com/prometheus/common v0.32.1 // indirect
 	github.com/prometheus/procfs v0.6.0 // indirect
 	github.com/streadway/amqp v1.0.0 // indirect
 	github.com/tdewolff/minify/v2 v2.9.22 // indirect
