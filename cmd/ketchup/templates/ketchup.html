@@ -345,12 +345,12 @@
 
           <p class="no-margin padding">
             <span>
-              <a class="{{ if ne .Version (index .Repository.Versions .Pattern) }}danger{{ else }}success{{ end }}" href="{{ .Repository.VersionURL .Version }}">{{ .Version }}</a>
+              <a class="{{ if ne .Version (index .Repository.Versions .Pattern) }}danger{{ else }}success{{ end }}" href="{{ .Repository.VersionURL .Version }}" rel="noopener" target="_blank">{{ .Version }}</a>
             </span>
 
             {{ if ne .Version (index .Repository.Versions .Pattern) }}
               <span>
-                &nbsp;->&nbsp;<a class="success" href="{{ .Repository.URL .Pattern }}">{{ index .Repository.Versions .Pattern }}</a>
+                &nbsp;->&nbsp;<a class="success" href="{{ .Repository.URL .Pattern }}" rel="noopener" target="_blank">{{ index .Repository.Versions .Pattern }}</a>
               </span>
             {{ end }}
           </p>
