@@ -189,7 +189,7 @@ FROM
 INNER JOIN
   ketchup.repository r ON r.id = k.repository_id
 INNER JOIN
-  ketchup.repository_version AS rv ON rv.repository_id = r.id
+  ketchup.repository_version AS rv ON rv.repository_id = k.repository_id AND rv.pattern = k.pattern
 INNER JOIN
   ketchup.user AS u ON u.id = k.user_id
 WHERE
