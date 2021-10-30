@@ -1,7 +1,7 @@
 apiVersion: helm.toolkit.fluxcd.io/v2beta1
 kind: HelmRelease
 metadata:
-  name: ketchup-remindeer
+  name: ketchup-reminder
   namespace: default
 spec:
   interval: 120m
@@ -23,7 +23,7 @@ spec:
   rollback:
     cleanupOnFail: true
   values:
-    nameOverride: ketchup-remindeer
+    nameOverride: ketchup-reminder
     schedule: "0 16 * * 5" # manager is in UTC
     image:
       name: vibioh/ketchup
