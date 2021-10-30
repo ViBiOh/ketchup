@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"flag"
+	"fmt"
 	"os"
 
 	"github.com/ViBiOh/httputils/v4/pkg/db"
@@ -33,6 +34,8 @@ func main() {
 	dockerConfig := docker.Flags(fs, "docker")
 	notifierConfig := notifier.Flags(fs, "notifier")
 
+	notificationType := fs.String("notification", "daily", "Notification type. \"daily\" or \"reminder\"")
+
 	logger.Fatal(fs.Parse(os.Args[1:]))
 
 	logger.Global(logger.New(loggerConfig))
@@ -57,8 +60,17 @@ func main() {
 
 	logger.Info("Starting notifier...")
 
-	if err := notifierApp.Notify(context.Background()); err != nil {
-		logger.Fatal(err)
+	switch *notificationType {
+	case "daily":
+		if err := notifierApp.Notify(context.Background()); err != nil {
+			logger.Fatal(err)
+		}
+	case "reminder":
+		if err := notifierApp.Remind(context.Background()); err != nil {
+			logger.Fatal(err)
+		}
+	default:
+		logger.Fatal(fmt.Errorf("unknown notification type `%s`", *notificationType))
 	}
 
 	logger.Info("Notifier ended!")

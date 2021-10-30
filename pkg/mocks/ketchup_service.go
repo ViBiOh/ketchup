@@ -96,18 +96,23 @@ func (mr *KetchupServiceMockRecorder) ListForRepositories(arg0, arg1, arg2 inter
 }
 
 // ListOutdatedByFrequency mocks base method.
-func (m *KetchupService) ListOutdatedByFrequency(arg0 context.Context, arg1 model.KetchupFrequency) ([]model.Ketchup, error) {
+func (m *KetchupService) ListOutdatedByFrequency(arg0 context.Context, arg1 model.KetchupFrequency, arg2 ...model.User) ([]model.Ketchup, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ListOutdatedByFrequency", arg0, arg1)
+	varargs := []interface{}{arg0, arg1}
+	for _, a := range arg2 {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "ListOutdatedByFrequency", varargs...)
 	ret0, _ := ret[0].([]model.Ketchup)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ListOutdatedByFrequency indicates an expected call of ListOutdatedByFrequency.
-func (mr *KetchupServiceMockRecorder) ListOutdatedByFrequency(arg0, arg1 interface{}) *gomock.Call {
+func (mr *KetchupServiceMockRecorder) ListOutdatedByFrequency(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListOutdatedByFrequency", reflect.TypeOf((*KetchupService)(nil).ListOutdatedByFrequency), arg0, arg1)
+	varargs := append([]interface{}{arg0, arg1}, arg2...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListOutdatedByFrequency", reflect.TypeOf((*KetchupService)(nil).ListOutdatedByFrequency), varargs...)
 }
 
 // Update mocks base method.

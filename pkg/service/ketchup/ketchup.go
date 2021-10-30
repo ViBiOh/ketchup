@@ -55,8 +55,13 @@ func (a App) ListForRepositories(ctx context.Context, repositories []model.Repos
 }
 
 // ListOutdatedByFrequency ketchups outdated
-func (a App) ListOutdatedByFrequency(ctx context.Context, frequency model.KetchupFrequency) ([]model.Ketchup, error) {
-	list, err := a.ketchupStore.ListOutdatedByFrequency(ctx, frequency)
+func (a App) ListOutdatedByFrequency(ctx context.Context, frequency model.KetchupFrequency, users ...model.User) ([]model.Ketchup, error) {
+	usersIds := make([]uint64, len(users))
+	for i, user := range users {
+		usersIds[i] = user.ID
+	}
+
+	list, err := a.ketchupStore.ListOutdatedByFrequency(ctx, frequency, usersIds...)
 	if err != nil {
 		return nil, httpModel.WrapInternal(fmt.Errorf("unable to list outdated by frequency: %w", err))
 	}

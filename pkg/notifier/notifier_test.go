@@ -453,7 +453,7 @@ func TestSendNotification(t *testing.T) {
 				mailerApp.EXPECT().Enabled().Return(false)
 			}
 
-			gotErr := tc.instance.sendNotification(tc.args.ctx, tc.args.ketchupToNotify)
+			gotErr := tc.instance.sendNotification(tc.args.ctx, "ketchup", tc.args.ketchupToNotify)
 
 			failed := false
 

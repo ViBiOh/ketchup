@@ -88,8 +88,8 @@ func (a App) Notify(ctx context.Context) error {
 		return fmt.Errorf("unable to get ketchup to notify: %w", err)
 	}
 
-	if err := a.sendNotification(userCtx, ketchupsToNotify); err != nil {
-		return err
+	if err := a.sendNotification(userCtx, "ketchup", ketchupsToNotify); err != nil {
+		return fmt.Errorf("unable to send notification: %s", err)
 	}
 
 	if len(a.pushURL) != 0 {
@@ -161,7 +161,7 @@ func (a App) getKetchupToNotify(ctx context.Context, releases []model.Release) (
 		}
 
 		logger.Info("%d weekly ketchups to notify", len(weeklyKetchups))
-		a.addWeeklyKetchups(weeklyKetchups, userToNotify)
+		a.groupKetchupsToUsers(weeklyKetchups, userToNotify)
 	}
 
 	logger.Info("%d users to notify", len(userToNotify))
@@ -207,7 +207,7 @@ func (a App) syncReleasesByUser(releases []model.Release, ketchups []model.Ketch
 	return usersToNotify
 }
 
-func (a App) addWeeklyKetchups(ketchups []model.Ketchup, usersToNotify map[model.User][]model.Release) {
+func (a App) groupKetchupsToUsers(ketchups []model.Ketchup, usersToNotify map[model.User][]model.Release) {
 	for _, ketchup := range ketchups {
 		ketchupVersion, err := semver.Parse(ketchup.Version)
 		if err != nil {
@@ -240,7 +240,7 @@ func (a App) handleKetchupNotification(ketchup model.Ketchup, version string) {
 	}
 }
 
-func (a App) sendNotification(ctx context.Context, ketchupToNotify map[model.User][]model.Release) error {
+func (a App) sendNotification(ctx context.Context, template string, ketchupToNotify map[model.User][]model.Release) error {
 	if len(ketchupToNotify) == 0 {
 		return nil
 	}
@@ -259,7 +259,7 @@ func (a App) sendNotification(ctx context.Context, ketchupToNotify map[model.Use
 			"releases": releases,
 		}
 
-		mr := mailerModel.NewMailRequest().Template("ketchup").From("ketchup@vibioh.fr").As("Ketchup").To(user.Email).Data(payload)
+		mr := mailerModel.NewMailRequest().Template(template).From("ketchup@vibioh.fr").As("Ketchup").To(user.Email).Data(payload)
 		subject := fmt.Sprintf("Ketchup - %d new release", len(releases))
 		if len(releases) > 1 {
 			subject += "s"
@@ -269,6 +269,34 @@ func (a App) sendNotification(ctx context.Context, ketchupToNotify map[model.Use
 		if err := a.mailerApp.Send(ctx, mr); err != nil {
 			return fmt.Errorf("unable to send email to %s: %s", user.Email, err)
 		}
+	}
+
+	return nil
+}
+
+// Remind users for new ketchup
+func (a App) Remind(ctx context.Context) error {
+	userCtx := authModel.StoreUser(ctx, authModel.NewUser(a.loginID, "scheduler"))
+
+	usersToRemind, err := a.userService.ListReminderUsers(userCtx)
+	if err != nil {
+		return fmt.Errorf("unable to get reminder users: %s", err)
+	}
+
+	remindKetchups, err := a.ketchupService.ListOutdatedByFrequency(userCtx, model.Daily, usersToRemind...)
+	if err != nil {
+		return fmt.Errorf("unable to get daily ketchups to remind: %s", err)
+	}
+
+	if len(remindKetchups) == 0 {
+		return nil
+	}
+
+	usersToNotify := make(map[model.User][]model.Release)
+	a.groupKetchupsToUsers(remindKetchups, usersToNotify)
+
+	if err := a.sendNotification(userCtx, "ketchup_remind", usersToNotify); err != nil {
+		return fmt.Errorf("unable to send remind notification: %s", err)
 	}
 
 	return nil

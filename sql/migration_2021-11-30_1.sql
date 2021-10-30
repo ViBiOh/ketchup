@@ -1,0 +1,2 @@
+ALTER TABLE ketchup.user
+  ADD COLUMN reminder BOOL NOT NULL DEFAULT FALSE;

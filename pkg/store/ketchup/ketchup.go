@@ -198,7 +198,7 @@ WHERE
 `
 
 // ListOutdatedByFrequency lists outdated ketchup by frequency id
-func (a App) ListOutdatedByFrequency(ctx context.Context, frequency model.KetchupFrequency) ([]model.Ketchup, error) {
+func (a App) ListOutdatedByFrequency(ctx context.Context, frequency model.KetchupFrequency, userIds ...uint64) ([]model.Ketchup, error) {
 	var list []model.Ketchup
 
 	scanner := func(rows pgx.Rows) error {
@@ -226,7 +226,15 @@ func (a App) ListOutdatedByFrequency(ctx context.Context, frequency model.Ketchu
 		return nil
 	}
 
-	return list, a.db.List(ctx, scanner, listOutdatedByFrequencyQuery, strings.ToLower(frequency.String()))
+	query := listOutdatedByFrequencyQuery
+	params := []interface{}{strings.ToLower(frequency.String())}
+
+	if len(userIds) > 0 {
+		query += " AND k.user_id IN ($2)"
+		params = append(params, userIds)
+	}
+
+	return list, a.db.List(ctx, scanner, query, params...)
 }
 
 const getQuery = `

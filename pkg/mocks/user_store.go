@@ -108,3 +108,18 @@ func (mr *UserStoreMockRecorder) GetByLoginID(arg0, arg1 interface{}) *gomock.Ca
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByLoginID", reflect.TypeOf((*UserStore)(nil).GetByLoginID), arg0, arg1)
 }
+
+// ListReminderUsers mocks base method.
+func (m *UserStore) ListReminderUsers(arg0 context.Context) ([]model.User, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListReminderUsers", arg0)
+	ret0, _ := ret[0].([]model.User)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListReminderUsers indicates an expected call of ListReminderUsers.
+func (mr *UserStoreMockRecorder) ListReminderUsers(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListReminderUsers", reflect.TypeOf((*UserStore)(nil).ListReminderUsers), arg0)
+}

@@ -43,6 +43,11 @@ func (a App) StoreInContext(ctx context.Context) context.Context {
 	return model.StoreUser(ctx, item)
 }
 
+// ListReminderUsers list users that need a reminder
+func (a App) ListReminderUsers(ctx context.Context) ([]model.User, error) {
+	return a.userStore.ListReminderUsers(ctx)
+}
+
 // Create user
 func (a App) Create(ctx context.Context, item model.User) (model.User, error) {
 	if err := a.check(ctx, model.User{}, item); err != nil {
