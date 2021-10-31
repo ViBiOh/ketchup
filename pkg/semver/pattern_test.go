@@ -15,7 +15,7 @@ func TestCheck(t *testing.T) {
 		version Version
 	}
 
-	var cases = []struct {
+	cases := []struct {
 		intention string
 		instance  Pattern
 		args      args

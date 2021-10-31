@@ -23,21 +23,19 @@ type securityPayload struct {
 	Question string `json:"question"`
 }
 
-var (
-	colors = map[int64]securityQuestion{
-		0:  {"❄️ and 🧻 are both?", "white"},
-		1:  {"☀️ and 🍋 are both?", "yellow"},
-		2:  {"🥦 and 🥝 are both?", "green"},
-		3:  {"👖 and 💧 are both?", "blue"},
-		4:  {"🍅 and 🩸 are both?", "red"},
-		5:  {"🍆 and ☂️ are both?", "purple"},
-		6:  {"🦓 and 🕳 are both?", "black"},
-		7:  {"🍊 and 🥕 are both?", "orange"},
-		8:  {"🟥 mixed with 🟦 give?", "purple"},
-		9:  {"🟨 mixed with 🟥 give?", "orange"},
-		10: {"🟦 mixed with 🟨 give?", "green"},
-	}
-)
+var colors = map[int64]securityQuestion{
+	0:  {"❄️ and 🧻 are both?", "white"},
+	1:  {"☀️ and 🍋 are both?", "yellow"},
+	2:  {"🥦 and 🥝 are both?", "green"},
+	3:  {"👖 and 💧 are both?", "blue"},
+	4:  {"🍅 and 🩸 are both?", "red"},
+	5:  {"🍆 and ☂️ are both?", "purple"},
+	6:  {"🦓 and 🕳 are both?", "black"},
+	7:  {"🍊 and 🥕 are both?", "orange"},
+	8:  {"🟥 mixed with 🟦 give?", "purple"},
+	9:  {"🟨 mixed with 🟥 give?", "orange"},
+	10: {"🟦 mixed with 🟨 give?", "green"},
+}
 
 func (a App) generateToken(ctx context.Context) (securityPayload, error) {
 	questionID, err := rand.Int(rand.Reader, big.NewInt(int64(len(colors))))

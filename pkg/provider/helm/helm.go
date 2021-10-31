@@ -25,8 +25,7 @@ type chart struct {
 }
 
 // App of package
-type App struct {
-}
+type App struct{}
 
 // New creates new App from Config
 func New() App {

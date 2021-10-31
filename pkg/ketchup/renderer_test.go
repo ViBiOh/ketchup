@@ -8,7 +8,7 @@ func TestMin(t *testing.T) {
 		b uint64
 	}
 
-	var cases = []struct {
+	cases := []struct {
 		intention string
 		args      args
 		want      uint64

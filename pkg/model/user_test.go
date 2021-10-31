@@ -10,7 +10,7 @@ func TestReadUser(t *testing.T) {
 		ctx context.Context
 	}
 
-	var cases = []struct {
+	cases := []struct {
 		intention string
 		args      args
 		want      User

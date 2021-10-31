@@ -11,16 +11,14 @@ import (
 	"github.com/jackc/pgx/v4"
 )
 
-var (
-	errFailed = errors.New("timeout")
-)
+var errFailed = errors.New("timeout")
 
 func TestUpdateVersions(t *testing.T) {
 	type args struct {
 		o model.Repository
 	}
 
-	var cases = []struct {
+	cases := []struct {
 		intention string
 		args      args
 		wantErr   error

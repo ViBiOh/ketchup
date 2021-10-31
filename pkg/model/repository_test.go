@@ -7,7 +7,7 @@ import (
 )
 
 func TestString(t *testing.T) {
-	var cases = []struct {
+	cases := []struct {
 		intention string
 		instance  RepositoryKind
 		want      string
@@ -38,7 +38,7 @@ func TestURL(t *testing.T) {
 		pattern string
 	}
 
-	var cases = []struct {
+	cases := []struct {
 		intention string
 		instance  Repository
 		args      args
@@ -85,7 +85,7 @@ func TestCompareURL(t *testing.T) {
 		pattern string
 	}
 
-	var cases = []struct {
+	cases := []struct {
 		intention string
 		instance  Repository
 		args      args
@@ -122,7 +122,7 @@ func TestParseRepositoryKind(t *testing.T) {
 		value string
 	}
 
-	var cases = []struct {
+	cases := []struct {
 		intention string
 		args      args
 		want      RepositoryKind

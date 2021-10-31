@@ -19,8 +19,7 @@ type packageResp struct {
 }
 
 // App of package
-type App struct {
-}
+type App struct{}
 
 // New creates new App
 func New() App {

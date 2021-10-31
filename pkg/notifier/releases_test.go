@@ -19,7 +19,7 @@ func TestGetNewStandardReleases(t *testing.T) {
 		ctx context.Context
 	}
 
-	var cases = []struct {
+	cases := []struct {
 		intention string
 		instance  App
 		args      args
@@ -82,7 +82,8 @@ func TestGetNewStandardReleases(t *testing.T) {
 				mockRepositoryService.EXPECT().ListByKinds(gomock.Any(), gomock.Any(), gomock.Any(), model.Github, model.Docker, model.NPM, model.Pypi).Return(nil, uint64(0), errors.New("failed"))
 			case "github error":
 				mockRepositoryService.EXPECT().ListByKinds(gomock.Any(), gomock.Any(), gomock.Any(), model.Github, model.Docker, model.NPM, model.Pypi).Return([]model.Repository{
-					model.NewGithubRepository(1, repositoryName).AddVersion(model.DefaultPattern, repositoryVersion)}, uint64(1), nil)
+					model.NewGithubRepository(1, repositoryName).AddVersion(model.DefaultPattern, repositoryVersion),
+				}, uint64(1), nil)
 				mockRepositoryService.EXPECT().LatestVersions(gomock.Any()).Return(nil, errors.New("failed"))
 			case "same version":
 				mockRepositoryService.EXPECT().ListByKinds(gomock.Any(), gomock.Any(), gomock.Any(), model.Github, model.Docker, model.NPM, model.Pypi).Return([]model.Repository{
@@ -135,7 +136,7 @@ func TestGetNewHelmReleases(t *testing.T) {
 		content string
 	}
 
-	var cases = []struct {
+	cases := []struct {
 		intention string
 		instance  App
 		args      args

@@ -13,16 +13,14 @@ import (
 	"github.com/jackc/pgx/v4"
 )
 
-var (
-	testEmail = "nobody@localhost"
-)
+var testEmail = "nobody@localhost"
 
 func TestGetByEmail(t *testing.T) {
 	type args struct {
 		email string
 	}
 
-	var cases = []struct {
+	cases := []struct {
 		intention string
 		args      args
 		want      model.User
@@ -102,7 +100,7 @@ func TestGetByLoginID(t *testing.T) {
 		loginID uint64
 	}
 
-	var cases = []struct {
+	cases := []struct {
 		intention string
 		args      args
 		want      model.User
@@ -182,7 +180,7 @@ func TestCreate(t *testing.T) {
 		o model.User
 	}
 
-	var cases = []struct {
+	cases := []struct {
 		intention string
 		args      args
 		want      uint64
@@ -234,7 +232,7 @@ func TestCreate(t *testing.T) {
 }
 
 func TestCount(t *testing.T) {
-	var cases = []struct {
+	cases := []struct {
 		intention string
 		want      uint64
 		wantErr   error

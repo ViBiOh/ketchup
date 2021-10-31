@@ -20,10 +20,8 @@ const (
 	Weekly
 )
 
-var (
-	// KetchupFrequencyValues string values
-	KetchupFrequencyValues = []string{"None", "Daily", "Weekly"}
-)
+// KetchupFrequencyValues string values
+var KetchupFrequencyValues = []string{"None", "Daily", "Weekly"}
 
 // ParseKetchupFrequency parse raw string into a KetchupFrequency
 func ParseKetchupFrequency(value string) (KetchupFrequency, error) {

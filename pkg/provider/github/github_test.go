@@ -7,7 +7,7 @@ import (
 )
 
 func TestFlags(t *testing.T) {
-	var cases = []struct {
+	cases := []struct {
 		intention string
 		want      string
 	}{

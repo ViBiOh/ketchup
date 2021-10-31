@@ -12,9 +12,7 @@ import (
 	"github.com/ViBiOh/ketchup/pkg/semver"
 )
 
-var (
-	nameMatcher = regexp.MustCompile(`(?i)(?:github\.com/)?([^/\n]+/[^/\n]+)`)
-)
+var nameMatcher = regexp.MustCompile(`(?i)(?:github\.com/)?([^/\n]+/[^/\n]+)`)
 
 // App of package
 type App struct {

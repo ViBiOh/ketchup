@@ -29,7 +29,7 @@ func TestList(t *testing.T) {
 		pageSize uint
 	}
 
-	var cases = []struct {
+	cases := []struct {
 		intention string
 		args      args
 		want      []model.Ketchup
@@ -184,7 +184,7 @@ func TestListByRepositoriesID(t *testing.T) {
 		frequency model.KetchupFrequency
 	}
 
-	var cases = []struct {
+	cases := []struct {
 		intention string
 		args      args
 		want      []model.Ketchup
@@ -297,7 +297,7 @@ func TestGetByRepository(t *testing.T) {
 		forUpdate bool
 	}
 
-	var cases = []struct {
+	cases := []struct {
 		intention string
 		args      args
 		want      model.Ketchup
@@ -394,7 +394,7 @@ func TestCreate(t *testing.T) {
 		o model.Ketchup
 	}
 
-	var cases = []struct {
+	cases := []struct {
 		intention string
 		args      args
 		want      uint64
@@ -452,7 +452,7 @@ func TestUpdate(t *testing.T) {
 		oldPattern string
 	}
 
-	var cases = []struct {
+	cases := []struct {
 		intention string
 		args      args
 		wantErr   error
@@ -506,7 +506,7 @@ func TestDelete(t *testing.T) {
 		o model.Ketchup
 	}
 
-	var cases = []struct {
+	cases := []struct {
 		intention string
 		args      args
 		wantErr   error

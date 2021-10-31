@@ -27,7 +27,7 @@ func TestList(t *testing.T) {
 		last     string
 	}
 
-	var cases = []struct {
+	cases := []struct {
 		intention string
 		args      args
 		want      []model.Ketchup
@@ -98,7 +98,7 @@ func TestListForRepositories(t *testing.T) {
 		repositories []model.Repository
 	}
 
-	var cases = []struct {
+	cases := []struct {
 		intention string
 		args      args
 		want      []model.Ketchup
@@ -170,7 +170,7 @@ func TestCreate(t *testing.T) {
 		item model.Ketchup
 	}
 
-	var cases = []struct {
+	cases := []struct {
 		intention string
 		args      args
 		want      model.Ketchup
@@ -286,7 +286,7 @@ func TestUpdate(t *testing.T) {
 		item       model.Ketchup
 	}
 
-	var cases = []struct {
+	cases := []struct {
 		intention string
 		args      args
 		want      model.Ketchup
@@ -466,7 +466,7 @@ func TestDelete(t *testing.T) {
 		item model.Ketchup
 	}
 
-	var cases = []struct {
+	cases := []struct {
 		intention string
 		args      args
 		wantErr   error
@@ -577,7 +577,7 @@ func TestCheck(t *testing.T) {
 		new model.Ketchup
 	}
 
-	var cases = []struct {
+	cases := []struct {
 		intention string
 		args      args
 		wantErr   error

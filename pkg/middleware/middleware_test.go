@@ -14,7 +14,7 @@ import (
 )
 
 func TestMiddleware(t *testing.T) {
-	var cases = []struct {
+	cases := []struct {
 		intention  string
 		next       http.Handler
 		request    *http.Request

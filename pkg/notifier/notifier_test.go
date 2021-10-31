@@ -33,7 +33,7 @@ func safeParse(version string) semver.Version {
 }
 
 func TestFlags(t *testing.T) {
-	var cases = []struct {
+	cases := []struct {
 		intention string
 		want      string
 	}{
@@ -66,7 +66,7 @@ func TestGetNewRepositoryReleases(t *testing.T) {
 		repo model.Repository
 	}
 
-	var cases = []struct {
+	cases := []struct {
 		intention string
 		instance  App
 		args      args
@@ -159,7 +159,7 @@ func TestGetKetchupToNotify(t *testing.T) {
 		releases []model.Release
 	}
 
-	var cases = []struct {
+	cases := []struct {
 		intention string
 		args      args
 		want      map[model.User][]model.Release
@@ -326,7 +326,7 @@ func TestSendNotification(t *testing.T) {
 		ketchupToNotify map[model.User][]model.Release
 	}
 
-	var cases = []struct {
+	cases := []struct {
 		intention string
 		instance  App
 		args      args

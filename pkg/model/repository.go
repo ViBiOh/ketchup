@@ -30,10 +30,8 @@ const (
 	Pypi
 )
 
-var (
-	// RepositoryKindValues string values
-	RepositoryKindValues = []string{"github", "helm", "docker", "npm", "pypi"}
-)
+// RepositoryKindValues string values
+var RepositoryKindValues = []string{"github", "helm", "docker", "npm", "pypi"}
 
 // ParseRepositoryKind parse raw string into a RepositoryKind
 func ParseRepositoryKind(value string) (RepositoryKind, error) {

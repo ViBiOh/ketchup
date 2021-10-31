@@ -18,7 +18,7 @@ func TestGetNextURL(t *testing.T) {
 	lowerCaseHeader.Add("link", `rel="prev"; /v2/prev`)
 	lowerCaseHeader.Add("link", `rel="next"; /v2/next`)
 
-	var cases = []struct {
+	cases := []struct {
 		intention string
 		args      args
 		want      string

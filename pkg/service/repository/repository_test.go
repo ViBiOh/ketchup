@@ -37,7 +37,7 @@ func TestList(t *testing.T) {
 		last     string
 	}
 
-	var cases = []struct {
+	cases := []struct {
 		intention string
 		args      args
 		want      []model.Repository
@@ -110,7 +110,7 @@ func TestSuggest(t *testing.T) {
 		count     uint64
 	}
 
-	var cases = []struct {
+	cases := []struct {
 		intention string
 		args      args
 		want      []model.Repository
@@ -182,7 +182,7 @@ func TestGetOrCreate(t *testing.T) {
 		pattern        string
 	}
 
-	var cases = []struct {
+	cases := []struct {
 		intention string
 		args      args
 		want      model.Repository
@@ -341,7 +341,7 @@ func TestCreate(t *testing.T) {
 		item model.Repository
 	}
 
-	var cases = []struct {
+	cases := []struct {
 		intention string
 		args      args
 		want      model.Repository
@@ -448,7 +448,7 @@ func TestUpdate(t *testing.T) {
 		item model.Repository
 	}
 
-	var cases = []struct {
+	cases := []struct {
 		intention string
 		args      args
 		wantErr   error
@@ -560,7 +560,7 @@ func TestClean(t *testing.T) {
 		ctx context.Context
 	}
 
-	var cases = []struct {
+	cases := []struct {
 		intention string
 		args      args
 		wantErr   error
@@ -644,7 +644,7 @@ func TestCheck(t *testing.T) {
 		new model.Repository
 	}
 
-	var cases = []struct {
+	cases := []struct {
 		intention string
 		args      args
 		wantErr   error
@@ -743,7 +743,7 @@ func TestSanitizeName(t *testing.T) {
 		name string
 	}
 
-	var cases = []struct {
+	cases := []struct {
 		intention string
 		args      args
 		want      string

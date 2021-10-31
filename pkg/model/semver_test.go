@@ -31,7 +31,7 @@ func TestCheckPatternsMatching(t *testing.T) {
 		version          semver.Version
 	}
 
-	var cases = []struct {
+	cases := []struct {
 		intention string
 		args      args
 		want      map[string]semver.Version

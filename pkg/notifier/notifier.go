@@ -19,9 +19,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus/push"
 )
 
-var (
-	pageSize = uint(20)
-)
+var pageSize = uint(20)
 
 // App of package
 type App struct {

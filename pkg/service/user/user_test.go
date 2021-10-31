@@ -25,7 +25,7 @@ func TestStoreInContext(t *testing.T) {
 		ctx context.Context
 	}
 
-	var cases = []struct {
+	cases := []struct {
 		intention string
 		instance  App
 		args      args
@@ -95,7 +95,7 @@ func TestCreate(t *testing.T) {
 		item model.User
 	}
 
-	var cases = []struct {
+	cases := []struct {
 		intention string
 		instance  App
 		args      args
@@ -229,7 +229,7 @@ func TestCheck(t *testing.T) {
 		new model.User
 	}
 
-	var cases = []struct {
+	cases := []struct {
 		intention string
 		instance  App
 		args      args

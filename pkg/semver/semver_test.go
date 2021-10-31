@@ -11,7 +11,7 @@ func TestIsGreater(t *testing.T) {
 		other Version
 	}
 
-	var cases = []struct {
+	cases := []struct {
 		intention string
 		instance  Version
 		args      args
@@ -105,7 +105,7 @@ func TestCompare(t *testing.T) {
 		other Version
 	}
 
-	var cases = []struct {
+	cases := []struct {
 		intention string
 		instance  Version
 		args      args
@@ -167,7 +167,7 @@ func TestParse(t *testing.T) {
 		version string
 	}
 
-	var cases = []struct {
+	cases := []struct {
 		intention string
 		args      args
 		want      Version

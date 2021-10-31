@@ -15,7 +15,7 @@ func TestParseKetchupFrequency(t *testing.T) {
 		value string
 	}
 
-	var cases = []struct {
+	cases := []struct {
 		intention string
 		args      args
 		want      KetchupFrequency
@@ -75,7 +75,7 @@ func TestKetchupByRepositoryID(t *testing.T) {
 		array []Ketchup
 	}
 
-	var cases = []struct {
+	cases := []struct {
 		intention string
 		args      args
 		want      []Ketchup
@@ -112,7 +112,7 @@ func TestKetchupByPriority(t *testing.T) {
 		array []Ketchup
 	}
 
-	var cases = []struct {
+	cases := []struct {
 		intention string
 		args      args
 		want      []Ketchup
@@ -193,7 +193,7 @@ func TestReleaseByRepositoryID(t *testing.T) {
 		array []Release
 	}
 
-	var cases = []struct {
+	cases := []struct {
 		intention string
 		args      args
 		want      []Release
@@ -230,7 +230,7 @@ func TestReleaseByKindAndName(t *testing.T) {
 		array []Release
 	}
 
-	var cases = []struct {
+	cases := []struct {
 		intention string
 		args      args
 		want      []Release

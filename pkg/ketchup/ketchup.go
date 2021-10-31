@@ -18,21 +18,19 @@ const (
 	appPath      = "/app"
 )
 
-var (
-	// FuncMap for template rendering
-	FuncMap = template.FuncMap{
-		"frequencyImage": func(frequency model.KetchupFrequency) string {
-			switch frequency {
-			case model.None:
-				return "bell-slash"
-			case model.Weekly:
-				return "calendar"
-			default:
-				return "clock"
-			}
-		},
-	}
-)
+// FuncMap for template rendering
+var FuncMap = template.FuncMap{
+	"frequencyImage": func(frequency model.KetchupFrequency) string {
+		switch frequency {
+		case model.None:
+			return "bell-slash"
+		case model.Weekly:
+			return "calendar"
+		default:
+			return "clock"
+		}
+	},
+}
 
 // App of package
 type App struct {

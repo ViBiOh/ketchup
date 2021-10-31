@@ -25,7 +25,7 @@ func TestList(t *testing.T) {
 		last     string
 	}
 
-	var cases = []struct {
+	cases := []struct {
 		intention string
 		args      args
 		want      []model.Repository
@@ -221,7 +221,7 @@ func TestSuggest(t *testing.T) {
 		count     uint64
 	}
 
-	var cases = []struct {
+	cases := []struct {
 		intention string
 		args      args
 		want      []model.Repository
@@ -329,7 +329,7 @@ func TestGet(t *testing.T) {
 		forUpdate bool
 	}
 
-	var cases = []struct {
+	cases := []struct {
 		intention string
 		args      args
 		expectSQL string
@@ -450,7 +450,7 @@ func TestCreate(t *testing.T) {
 		o model.Repository
 	}
 
-	var cases = []struct {
+	cases := []struct {
 		intention string
 		args      args
 		want      uint64
@@ -576,7 +576,7 @@ func TestCreate(t *testing.T) {
 }
 
 func TestDeleteUnused(t *testing.T) {
-	var cases = []struct {
+	cases := []struct {
 		intention string
 		wantErr   error
 	}{
@@ -616,7 +616,7 @@ func TestDeleteUnused(t *testing.T) {
 }
 
 func TestDeleteUnusedVersions(t *testing.T) {
-	var cases = []struct {
+	cases := []struct {
 		intention string
 		wantErr   error
 	}{
