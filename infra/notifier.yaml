@@ -24,7 +24,7 @@ spec:
     cleanupOnFail: true
   values:
     nameOverride: ketchup-notifier
-    schedule: "0 6 * * *" # manager is in UTC
+    schedule: "0 7 * * *" # manager is in UTC
     image:
       name: vibioh/ketchup
       tag: "202110312009" # {"$imagepolicy": "default:flux-ketchup-web:tag"}
