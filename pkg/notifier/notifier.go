@@ -191,13 +191,14 @@ func (a App) syncReleasesByUser(releases []model.Release, ketchups []model.Ketch
 			}
 
 			if current.Version != release.Version.Name {
+				release = a.handleKetchupNotification(current, release)
+
 				if usersToNotify[current.User] != nil {
 					usersToNotify[current.User] = append(usersToNotify[current.User], release)
 				} else {
 					usersToNotify[current.User] = []model.Release{release}
 				}
 
-				a.handleKetchupNotification(current, release.Version.Name)
 			}
 		}
 	}
@@ -213,7 +214,7 @@ func (a App) groupKetchupsToUsers(ketchups []model.Ketchup, usersToNotify map[mo
 			continue
 		}
 
-		release := model.NewRelease(ketchup.Repository, ketchup.Pattern, ketchupVersion)
+		release := a.handleKetchupNotification(ketchup, model.NewRelease(ketchup.Repository, ketchup.Pattern, ketchupVersion))
 
 		if usersToNotify[ketchup.User] != nil {
 			usersToNotify[ketchup.User] = append(usersToNotify[ketchup.User], release)
@@ -221,21 +222,23 @@ func (a App) groupKetchupsToUsers(ketchups []model.Ketchup, usersToNotify map[mo
 			usersToNotify[ketchup.User] = []model.Release{release}
 		}
 
-		a.handleKetchupNotification(ketchup, release.Version.Name)
 	}
 }
 
-func (a App) handleKetchupNotification(ketchup model.Ketchup, version string) {
+func (a App) handleKetchupNotification(ketchup model.Ketchup, release model.Release) model.Release {
 	if !ketchup.UpdateWhenNotify {
-		return
+		return release
 	}
 
 	log := logger.WithField("repository", ketchup.Repository.ID).WithField("user", ketchup.User.ID).WithField("pattern", ketchup.Pattern)
 
-	log.Info("Auto-updating ketchup to %s", version)
-	if err := a.ketchupService.UpdateVersion(context.Background(), ketchup.User.ID, ketchup.Repository.ID, ketchup.Pattern, version); err != nil {
+	log.Info("Auto-updating ketchup to %s", release.Version.Name)
+	if err := a.ketchupService.UpdateVersion(context.Background(), ketchup.User.ID, ketchup.Repository.ID, ketchup.Pattern, release.Version.Name); err != nil {
 		logger.Error("unable to update ketchup user=%d repository=%d: %s", ketchup.User.ID, ketchup.Repository.ID, err)
+		return release.SetUpdated(1)
 	}
+
+	return release.SetUpdated(2)
 }
 
 func (a App) sendNotification(ctx context.Context, template string, ketchupToNotify map[model.User][]model.Release) error {

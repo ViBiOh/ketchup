@@ -117,6 +117,7 @@ type Release struct {
 	URL        string         `json:"url"`
 	Repository Repository     `json:"repository"`
 	Version    semver.Version `json:"version"`
+	Updated    uint           `json:"updated"`
 }
 
 // NewRelease creates a new version from its objects
@@ -127,6 +128,13 @@ func NewRelease(repository Repository, pattern string, version semver.Version) R
 		Version:    version,
 		URL:        repository.VersionURL(version.Name),
 	}
+}
+
+// SetUpdated marks released as auto updated
+func (r Release) SetUpdated(status uint) Release {
+	r.Updated = status
+
+	return r
 }
 
 // ReleaseByRepositoryIDAndPattern sort release by repository ID

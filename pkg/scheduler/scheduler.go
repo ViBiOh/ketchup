@@ -27,11 +27,10 @@ type Config struct {
 }
 
 type app struct {
-	notifierApp notifier.App
+	timezone    string
+	hour        string
 	redisApp    redis.App
-
-	timezone string
-	hour     string
+	notifierApp notifier.App
 }
 
 // Flags adds flags for configuring package
