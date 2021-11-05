@@ -30,7 +30,7 @@ func New(ketchupStore model.KetchupStore, repositoryService model.RepositoryServ
 func (a App) List(ctx context.Context, pageSize uint, last string) ([]model.Ketchup, uint64, error) {
 	list, total, err := a.ketchupStore.List(ctx, pageSize, last)
 	if err != nil {
-		return nil, 0, httpModel.WrapInternal(fmt.Errorf("unable to list: %w", err))
+		return nil, 0, httpModel.WrapInternal(fmt.Errorf("unable to list: %s", err))
 	}
 
 	enrichedList := enrichKetchupsWithSemver(list)
@@ -48,7 +48,7 @@ func (a App) ListForRepositories(ctx context.Context, repositories []model.Repos
 
 	list, err := a.ketchupStore.ListByRepositoriesID(ctx, ids, frequency)
 	if err != nil {
-		return nil, httpModel.WrapInternal(fmt.Errorf("unable to list by ids: %w", err))
+		return nil, httpModel.WrapInternal(fmt.Errorf("unable to list by ids: %s", err))
 	}
 
 	return enrichKetchupsWithSemver(list), nil
@@ -63,7 +63,7 @@ func (a App) ListOutdatedByFrequency(ctx context.Context, frequency model.Ketchu
 
 	list, err := a.ketchupStore.ListOutdatedByFrequency(ctx, frequency, usersIds...)
 	if err != nil {
-		return nil, httpModel.WrapInternal(fmt.Errorf("unable to list outdated by frequency: %w", err))
+		return nil, httpModel.WrapInternal(fmt.Errorf("unable to list outdated by frequency: %s", err))
 	}
 
 	return list, nil
@@ -86,7 +86,7 @@ func (a App) Create(ctx context.Context, item model.Ketchup) (model.Ketchup, err
 		}
 
 		if _, err := a.ketchupStore.Create(ctx, item); err != nil {
-			return httpModel.WrapInternal(fmt.Errorf("unable to create: %w", err))
+			return httpModel.WrapInternal(fmt.Errorf("unable to create: %s", err))
 		}
 
 		output = item
@@ -115,7 +115,7 @@ func (a App) Update(ctx context.Context, oldPattern string, item model.Ketchup) 
 	err := a.ketchupStore.DoAtomic(ctx, func(ctx context.Context) error {
 		old, err := a.ketchupStore.GetByRepository(ctx, item.Repository.ID, oldPattern, true)
 		if err != nil {
-			return httpModel.WrapInternal(fmt.Errorf("unable to fetch: %w", err))
+			return httpModel.WrapInternal(fmt.Errorf("unable to fetch: %s", err))
 		}
 
 		if old.Repository.IsZero() {
@@ -138,14 +138,14 @@ func (a App) Update(ctx context.Context, oldPattern string, item model.Ketchup) 
 		if old.Pattern != item.Pattern {
 			repo, err := a.repositoryService.GetOrCreate(ctx, old.Repository.Kind, old.Repository.Name, old.Repository.Part, item.Pattern)
 			if err != nil {
-				return httpModel.WrapInternal(fmt.Errorf("unable to get repository version: %w", err))
+				return httpModel.WrapInternal(fmt.Errorf("unable to get repository version: %s", err))
 			}
 
 			current.Repository = repo
 		}
 
 		if err := a.ketchupStore.Update(ctx, current, old.Pattern); err != nil {
-			return httpModel.WrapInternal(fmt.Errorf("unable to update: %w", err))
+			return httpModel.WrapInternal(fmt.Errorf("unable to update: %s", err))
 		}
 
 		output = current
@@ -175,7 +175,7 @@ func (a App) Delete(ctx context.Context, item model.Ketchup) (err error) {
 	return a.ketchupStore.DoAtomic(ctx, func(ctx context.Context) error {
 		old, err := a.ketchupStore.GetByRepository(ctx, item.Repository.ID, item.Pattern, true)
 		if err != nil {
-			return httpModel.WrapInternal(fmt.Errorf("unable to fetch current: %w", err))
+			return httpModel.WrapInternal(fmt.Errorf("unable to fetch current: %s", err))
 		}
 
 		if old.Repository.IsZero() {
@@ -187,7 +187,7 @@ func (a App) Delete(ctx context.Context, item model.Ketchup) (err error) {
 		}
 
 		if err = a.ketchupStore.Delete(ctx, old); err != nil {
-			return httpModel.WrapInternal(fmt.Errorf("unable to delete: %w", err))
+			return httpModel.WrapInternal(fmt.Errorf("unable to delete: %s", err))
 		}
 
 		return nil

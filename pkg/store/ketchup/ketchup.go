@@ -230,7 +230,7 @@ func (a App) ListOutdatedByFrequency(ctx context.Context, frequency model.Ketchu
 	params := []interface{}{strings.ToLower(frequency.String())}
 
 	if len(userIds) > 0 {
-		query += " AND k.user_id IN ($2)"
+		query += " AND k.user_id = ANY ($2)"
 		params = append(params, userIds)
 	}
 
