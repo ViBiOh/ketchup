@@ -4,6 +4,7 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	"net"
 	"net/http"
 	"strings"
 	"time"
@@ -22,7 +23,27 @@ var (
 	apiURL = "https://api.github.com"
 
 	httpClient = &http.Client{
+		Transport: &http.Transport{
+			Proxy:             http.ProxyFromEnvironment,
+			ForceAttemptHTTP2: true,
+
+			DialContext: (&net.Dialer{
+				Timeout:   5 * time.Second,
+				KeepAlive: 15 * time.Second,
+			}).DialContext,
+
+			TLSHandshakeTimeout:   5 * time.Second,
+			ExpectContinueTimeout: 1 * time.Second,
+			ResponseHeaderTimeout: 5 * time.Second,
+
+			MaxConnsPerHost:     100,
+			MaxIdleConns:        100,
+			MaxIdleConnsPerHost: 100,
+			IdleConnTimeout:     60 * time.Second,
+		},
+
 		Timeout: 30 * time.Second,
+
 		CheckRedirect: func(r *http.Request, via []*http.Request) error {
 			logger.Info("Redirect from %s to %s", via[len(via)-1].URL.Path, r.URL.Path)
 			return nil
@@ -94,7 +115,7 @@ func (a app) Start(registerer prometheus.Registerer, done <-chan struct{}) {
 
 	cron.New().Now().Each(time.Minute).OnError(func(err error) {
 		logger.Error("unable to get rate limit metrics: %s", err)
-	}).Exclusive(a.redisApp, "ketchup:github_rate_limit_metrics", 45*time.Second).Start(func(ctx context.Context) error {
+	}).Exclusive(a.redisApp, "ketchup:github_rate_limit_metrics", 15*time.Second).Start(func(ctx context.Context) error {
 		value, err := a.getRateLimit(ctx)
 		if err != nil {
 			return err
