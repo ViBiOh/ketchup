@@ -6,6 +6,8 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/ViBiOh/httputils/v4/pkg/cache"
+	"github.com/ViBiOh/httputils/v4/pkg/logger"
 	httpModel "github.com/ViBiOh/httputils/v4/pkg/model"
 	"github.com/ViBiOh/httputils/v4/pkg/renderer"
 	"github.com/ViBiOh/ketchup/pkg/model"
@@ -65,12 +67,17 @@ func (a App) handleCreate(w http.ResponseWriter, r *http.Request) {
 		repository = model.NewRepository(0, repositoryKind, name, "")
 	}
 
+	ctx := r.Context()
 	item := model.NewKetchup(r.FormValue("pattern"), r.FormValue("version"), ketchupFrequency, updateWhenNotify, repository).WithID()
 
 	created, err := a.ketchupService.Create(r.Context(), item)
 	if err != nil {
 		a.rendererApp.Error(w, r, err)
 		return
+	}
+
+	if err := cache.OnModify(ctx, a.redisApp, suggestCacheKey(model.ReadUser(ctx)), nil); err != nil {
+		logger.Error("unable to evict suggests cache: %s", err)
 	}
 
 	a.rendererApp.Redirect(w, r, fmt.Sprintf("%s/", appPath), renderer.NewSuccessMessage(fmt.Sprintf("%s created with success!", created.Repository.Name)))
@@ -120,11 +127,16 @@ func (a App) handleDelete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	ctx := r.Context()
 	item := model.NewKetchup(r.FormValue("pattern"), "", model.Daily, false, model.NewGithubRepository(id, "")).WithID()
 
-	if err := a.ketchupService.Delete(r.Context(), item); err != nil {
+	if err := a.ketchupService.Delete(ctx, item); err != nil {
 		a.rendererApp.Error(w, r, err)
 		return
+	}
+
+	if err := cache.OnModify(ctx, a.redisApp, suggestCacheKey(model.ReadUser(ctx)), nil); err != nil {
+		logger.Error("unable to evict suggests cache: %s", err)
 	}
 
 	a.rendererApp.Redirect(w, r, fmt.Sprintf("%s/", appPath), renderer.NewSuccessMessage("Deleted with success!"))

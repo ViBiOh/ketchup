@@ -1,10 +1,14 @@
 package ketchup
 
 import (
+	"context"
 	"net/http"
+	"time"
 
+	"github.com/ViBiOh/httputils/v4/pkg/cache"
 	"github.com/ViBiOh/httputils/v4/pkg/logger"
 	"github.com/ViBiOh/httputils/v4/pkg/query"
+	"github.com/ViBiOh/ketchup/pkg/model"
 )
 
 const (
@@ -18,14 +22,9 @@ func (a App) PublicTemplateFunc(_ http.ResponseWriter, r *http.Request) (string,
 		return "", http.StatusInternalServerError, nil, err
 	}
 
-	suggests, err := a.repositoryService.Suggest(r.Context(), []uint64{0}, 3)
-	if err != nil {
-		logger.Warn("unable to get publics suggestions: %s", err)
-	}
-
 	return "public", http.StatusOK, map[string]interface{}{
 		"Security": securityPayload,
-		"Suggests": suggests,
+		"Suggests": a.suggests(r.Context(), nil, 3),
 		"Root":     "/",
 	}, nil
 }
@@ -62,13 +61,34 @@ func (a App) AppTemplateFunc(_ http.ResponseWriter, r *http.Request) (string, in
 			ketchupIds[index] = ketchup.Repository.ID
 		}
 
-		suggests, err := a.repositoryService.Suggest(r.Context(), ketchupIds, min(suggestThresold-ketchupsCount, suggestThresold))
-		if err != nil {
-			logger.Warn("unable to get suggest repositories: %s", err)
-		} else {
-			content["Suggests"] = suggests
-		}
+		content["Suggests"] = a.suggests(r.Context(), ketchupIds, min(suggestThresold-ketchupsCount, suggestThresold))
 	}
 
 	return "ketchup", http.StatusOK, content, nil
+}
+
+func (a App) suggests(ctx context.Context, ignoreIds []uint64, count uint64) []model.Repository {
+	user := model.ReadUser(ctx)
+	if user.IsZero() {
+		ignoreIds = []uint64{0}
+	}
+
+	var suggests []model.Repository
+	items, err := cache.Retrieve(ctx, a.redisApp, suggestCacheKey(user), &suggests, func() (interface{}, error) {
+		return a.repositoryService.Suggest(ctx, ignoreIds, count)
+	}, time.Hour*24)
+	if err != nil {
+		logger.Warn("unable to get suggests: %s", err)
+		return nil
+	}
+
+	if repos, ok := items.([]model.Repository); ok {
+		return repos
+	}
+
+	if repos, ok := items.(*[]model.Repository); ok {
+		return *repos
+	}
+
+	return nil
 }
