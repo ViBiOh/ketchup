@@ -4,7 +4,6 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	"net"
 	"net/http"
 	"strings"
 	"time"
@@ -22,33 +21,10 @@ import (
 var (
 	apiURL = "https://api.github.com"
 
-	httpClient = &http.Client{
-		Transport: &http.Transport{
-			Proxy:             http.ProxyFromEnvironment,
-			ForceAttemptHTTP2: true,
-
-			DialContext: (&net.Dialer{
-				Timeout:   5 * time.Second,
-				KeepAlive: 15 * time.Second,
-			}).DialContext,
-
-			TLSHandshakeTimeout:   5 * time.Second,
-			ExpectContinueTimeout: 1 * time.Second,
-			ResponseHeaderTimeout: 5 * time.Second,
-
-			MaxConnsPerHost:     100,
-			MaxIdleConns:        100,
-			MaxIdleConnsPerHost: 100,
-			IdleConnTimeout:     60 * time.Second,
-		},
-
-		Timeout: 30 * time.Second,
-
-		CheckRedirect: func(r *http.Request, via []*http.Request) error {
-			logger.Info("Redirect from %s to %s", via[len(via)-1].URL.Path, r.URL.Path)
-			return nil
-		},
-	}
+	httpClient = request.CreateClient(30*time.Second, func(r *http.Request, via []*http.Request) error {
+		logger.Info("Redirect from %s to %s", via[len(via)-1].URL.Path, r.URL.Path)
+		return nil
+	})
 )
 
 type redis interface {
