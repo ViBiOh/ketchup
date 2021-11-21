@@ -8,7 +8,7 @@ require (
 	github.com/ViBiOh/mailer v1.26.8
 	github.com/golang/mock v1.6.0
 	github.com/jackc/pgconn v1.10.1
-	github.com/jackc/pgproto3/v2 v2.1.1
+	github.com/jackc/pgproto3/v2 v2.2.0
 	github.com/jackc/pgx/v4 v4.13.0
 	github.com/prometheus/client_golang v1.11.0
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
