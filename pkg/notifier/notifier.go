@@ -29,7 +29,7 @@ type App struct {
 	mailerApp         model.Mailer
 	helmApp           model.HelmProvider
 
-	clock *clock.Clock
+	clock clock.Clock
 
 	pushURL string
 	loginID uint64

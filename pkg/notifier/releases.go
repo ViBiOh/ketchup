@@ -3,20 +3,30 @@ package notifier
 import (
 	"context"
 	"fmt"
+	"sync"
 
+	"github.com/ViBiOh/httputils/v4/pkg/concurrent"
 	"github.com/ViBiOh/httputils/v4/pkg/logger"
 	"github.com/ViBiOh/ketchup/pkg/model"
 	"github.com/ViBiOh/ketchup/pkg/semver"
 )
 
 func (a App) getNewReleases(ctx context.Context) ([]model.Release, uint64, error) {
-	releases, releasesCount, err := a.getNewStandardReleases(ctx)
-	if err != nil {
-		return nil, 0, err
-	}
+	wg := concurrent.NewFailFast(2)
 
-	helmReleases, helmCount, err := a.getNewHelmReleases(ctx)
-	if err != nil {
+	var releases, helmReleases []model.Release
+	var releasesCount, helmCount uint64
+
+	wg.Go(func() (err error) {
+		releases, releasesCount, err = a.getNewStandardReleases(ctx)
+		return
+	})
+	wg.Go(func() (err error) {
+		helmReleases, helmCount, err = a.getNewHelmReleases(ctx)
+		return
+	})
+
+	if err := wg.Wait(); err != nil {
 		return nil, 0, err
 	}
 
@@ -27,6 +37,26 @@ func (a App) getNewStandardReleases(ctx context.Context) ([]model.Release, uint6
 	var newReleases []model.Release
 	var count uint64
 	var last string
+
+	workerCount := uint64(4)
+	done := make(chan struct{})
+	wg := concurrent.NewLimited(workerCount)
+
+	workerOutput := make(chan []model.Release, workerCount)
+	closeWorker := func() {
+		close(workerOutput)
+	}
+
+	var end sync.Once
+	defer end.Do(closeWorker)
+
+	go func() {
+		defer close(done)
+
+		for newRelease := range workerOutput {
+			newReleases = append(newReleases, newRelease...)
+		}
+	}()
 
 	for {
 		repositories, _, err := a.repositoryService.ListByKinds(ctx, pageSize, last, model.Github, model.Docker, model.NPM, model.Pypi)
@@ -41,7 +71,12 @@ func (a App) getNewStandardReleases(ctx context.Context) ([]model.Release, uint6
 
 		for _, repo := range repositories {
 			count++
-			newReleases = append(newReleases, a.getNewRepositoryReleases(repo)...)
+
+			func(repo model.Repository) {
+				wg.Go(func() {
+					workerOutput <- a.getNewRepositoryReleases(repo)
+				})
+			}(repo)
 		}
 
 		if repoCount < int(pageSize) {
@@ -51,6 +86,10 @@ func (a App) getNewStandardReleases(ctx context.Context) ([]model.Release, uint6
 		lastRepo := repositories[len(repositories)-1]
 		last = fmt.Sprintf("%s|%s", lastRepo.Name, lastRepo.Part)
 	}
+
+	wg.Wait()
+	end.Do(closeWorker)
+	<-done
 
 	logger.Info("%d standard repositories checked, %d new releases", count, len(newReleases))
 	return newReleases, count, nil
