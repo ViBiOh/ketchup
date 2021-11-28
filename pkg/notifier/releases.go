@@ -12,10 +12,11 @@ import (
 )
 
 func (a App) getNewReleases(ctx context.Context) ([]model.Release, uint64, error) {
-	wg := concurrent.NewFailFast(2)
-
 	var releases, helmReleases []model.Release
 	var releasesCount, helmCount uint64
+
+	wg := concurrent.NewFailFast(2)
+	ctx = wg.WithContext(ctx)
 
 	wg.Go(func() (err error) {
 		releases, releasesCount, err = a.getNewStandardReleases(ctx)
