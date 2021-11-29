@@ -234,7 +234,7 @@ func (a App) handleKetchupNotification(ketchup model.Ketchup, release model.Rele
 
 	log.Info("Auto-updating ketchup to %s", release.Version.Name)
 	if err := a.ketchupService.UpdateVersion(context.Background(), ketchup.User.ID, ketchup.Repository.ID, ketchup.Pattern, release.Version.Name); err != nil {
-		logger.Error("unable to update ketchup user=%d repository=%d: %s", ketchup.User.ID, ketchup.Repository.ID, err)
+		logger.WithField("user", ketchup.User).WithField("repository", ketchup.Repository).Error("unable to update ketchup: %s", err)
 		return release.SetUpdated(1)
 	}
 

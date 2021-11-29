@@ -22,7 +22,15 @@ type User struct {
 
 // String implements stringer
 func (u User) String() string {
-	return fmt.Sprintf("id=%d email=`%s`", u.ID, u.Email)
+	output := fmt.Sprintf("id=%d", u.ID)
+
+	if len(u.Login.Login) != 0 {
+		output += fmt.Sprintf("login=`%s`", u.Login.Login)
+	} else if len(u.Email) != 0 {
+		output += fmt.Sprintf("email=`%s`", u.Email)
+	}
+
+	return output
 }
 
 // IsZero check if instance is valued or not
