@@ -3,7 +3,7 @@ module github.com/ViBiOh/ketchup
 go 1.17
 
 require (
-	github.com/ViBiOh/auth/v2 v2.11.23
+	github.com/ViBiOh/auth/v2 v2.11.25
 	github.com/ViBiOh/httputils/v4 v4.31.1
 	github.com/ViBiOh/mailer v1.27.1
 	github.com/golang/mock v1.6.0
@@ -25,7 +25,7 @@ require (
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20200714003250-2b9c44734f2b // indirect
 	github.com/jackc/pgtype v1.9.1 // indirect
-	github.com/jackc/puddle v1.2.0 // indirect
+	github.com/jackc/puddle v1.2.1 // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.1 // indirect
 	github.com/prometheus/client_model v0.2.0 // indirect
 	github.com/prometheus/common v0.32.1 // indirect
@@ -33,7 +33,7 @@ require (
 	github.com/streadway/amqp v1.0.0 // indirect
 	github.com/tdewolff/minify/v2 v2.9.22 // indirect
 	github.com/tdewolff/parse/v2 v2.5.22 // indirect
-	golang.org/x/crypto v0.0.0-20211117183948-ae814b36b871 // indirect
+	golang.org/x/crypto v0.0.0-20211202192323-5770296d904e // indirect
 	golang.org/x/sys v0.0.0-20211204120058-94396e421777 // indirect
 	golang.org/x/text v0.3.7 // indirect
 	google.golang.org/protobuf v1.27.1 // indirect
