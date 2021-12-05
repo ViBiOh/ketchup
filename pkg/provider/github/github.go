@@ -29,7 +29,7 @@ var (
 
 type redis interface {
 	Ping() error
-	Exclusive(context.Context, string, time.Duration, func(context.Context) error) error
+	Exclusive(context.Context, string, time.Duration, func(context.Context) error) (bool, error)
 }
 
 // Tag describes a GitHub Tag
