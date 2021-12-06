@@ -283,14 +283,18 @@
       }
     };
 
-    const link = document.getElementById("go-back");
-    if (link) {
-      link.setAttribute("href", document.referrer);
-      link.addEventListener("click", () => {
-        history.back();
-        return false;
-      });
-    }
+    document.addEventListener('readystatechange', async (event) => {
+      if (event.target.readyState === 'complete') {
+        const link = document.getElementById("go-back");
+        if (link) {
+          link.setAttribute("href", document.referrer);
+          link.addEventListener("click", () => {
+            history.back();
+            return false;
+          });
+        }
+      }
+    });
   </script>
 {{ end }}
 
