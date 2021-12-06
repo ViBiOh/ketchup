@@ -288,7 +288,8 @@
         const link = document.getElementById("go-back");
         if (link) {
           link.setAttribute("href", document.referrer);
-          link.addEventListener("click", () => {
+          link.addEventListener("click", (e) => {
+            e.preventDefault();
             history.back();
             return false;
           });
