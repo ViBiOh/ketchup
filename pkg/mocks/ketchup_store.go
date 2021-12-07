@@ -144,6 +144,21 @@ func (mr *KetchupStoreMockRecorder) ListOutdatedByFrequency(arg0, arg1 interface
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListOutdatedByFrequency", reflect.TypeOf((*KetchupStore)(nil).ListOutdatedByFrequency), varargs...)
 }
 
+// ListSilentForRepositories mocks base method.
+func (m *KetchupStore) ListSilentForRepositories(arg0 context.Context, arg1 []uint64) ([]model.Ketchup, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListSilentForRepositories", arg0, arg1)
+	ret0, _ := ret[0].([]model.Ketchup)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListSilentForRepositories indicates an expected call of ListSilentForRepositories.
+func (mr *KetchupStoreMockRecorder) ListSilentForRepositories(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListSilentForRepositories", reflect.TypeOf((*KetchupStore)(nil).ListSilentForRepositories), arg0, arg1)
+}
+
 // Update mocks base method.
 func (m *KetchupStore) Update(arg0 context.Context, arg1 model.Ketchup, arg2 string) error {
 	m.ctrl.T.Helper()

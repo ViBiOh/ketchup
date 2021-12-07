@@ -257,8 +257,10 @@ func TestGetKetchupToNotify(t *testing.T) {
 			case "list error":
 				mockKetchupService.EXPECT().ListForRepositories(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, errors.New("failed"))
 			case "empty":
+				mockKetchupService.EXPECT().ListSilentForRepositories(gomock.Any(), gomock.Any()).Return(nil, nil)
 				mockKetchupService.EXPECT().ListForRepositories(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, nil)
 			case "one release, n ketchups":
+				mockKetchupService.EXPECT().ListSilentForRepositories(gomock.Any(), gomock.Any()).Return(nil, nil)
 				mockKetchupService.EXPECT().ListForRepositories(gomock.Any(), gomock.Any(), gomock.Any()).Return([]model.Ketchup{
 					{
 						Pattern:    model.DefaultPattern,

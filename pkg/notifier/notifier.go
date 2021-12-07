@@ -162,6 +162,10 @@ func (a App) getKetchupToNotify(ctx context.Context, releases []model.Release) (
 		a.groupKetchupsToUsers(weeklyKetchups, userToNotify)
 	}
 
+	if err = a.updateSilentKetchup(ctx, repositories); err != nil {
+		logger.Error("unable to update silent ketchups: %s", err)
+	}
+
 	logger.Info("%d users to notify", len(userToNotify))
 
 	return userToNotify, nil
@@ -204,6 +208,32 @@ func (a App) syncReleasesByUser(releases []model.Release, ketchups []model.Ketch
 	}
 
 	return usersToNotify
+}
+
+func (a App) updateSilentKetchup(ctx context.Context, repositories []model.Repository) error {
+	ketchups, err := a.ketchupService.ListSilentForRepositories(ctx, repositories)
+	if err != nil {
+		return fmt.Errorf("unable to fetch silent ketchups: %s", err)
+	}
+
+	for _, ketchup := range ketchups {
+		log := logger.WithField("repository", ketchup.Repository.ID).WithField("user", ketchup.User.ID).WithField("pattern", ketchup.Pattern)
+
+		var releaseVersion string
+		if version, ok := ketchup.Repository.Versions[ketchup.Pattern]; !ok {
+			logger.Warn("version for pattern `%s` not found for ketchup %s", ketchup.Pattern, ketchup.ID)
+			continue
+		} else {
+			releaseVersion = version
+		}
+
+		log.Info("Auto-updating ketchup to %s", releaseVersion)
+		if err := a.ketchupService.UpdateVersion(context.Background(), ketchup.User.ID, ketchup.Repository.ID, ketchup.Pattern, releaseVersion); err != nil {
+			return fmt.Errorf("unable to update ketchup version for ketchup %s: %s", ketchup.ID, err)
+		}
+	}
+
+	return nil
 }
 
 func (a App) groupKetchupsToUsers(ketchups []model.Ketchup, usersToNotify map[model.User][]model.Release) {

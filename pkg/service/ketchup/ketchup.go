@@ -54,6 +54,21 @@ func (a App) ListForRepositories(ctx context.Context, repositories []model.Repos
 	return enrichKetchupsWithSemver(list), nil
 }
 
+// ListSilentForRepositories lists no notify but auto-update ketchups
+func (a App) ListSilentForRepositories(ctx context.Context, repositories []model.Repository) ([]model.Ketchup, error) {
+	ids := make([]uint64, len(repositories))
+	for index, repo := range repositories {
+		ids[index] = repo.ID
+	}
+
+	list, err := a.ketchupStore.ListSilentForRepositories(ctx, ids)
+	if err != nil {
+		return nil, httpModel.WrapInternal(fmt.Errorf("unable to list silent by ids: %s", err))
+	}
+
+	return enrichKetchupsWithSemver(list), nil
+}
+
 // ListOutdatedByFrequency ketchups outdated
 func (a App) ListOutdatedByFrequency(ctx context.Context, frequency model.KetchupFrequency, users ...model.User) ([]model.Ketchup, error) {
 	usersIds := make([]uint64, len(users))

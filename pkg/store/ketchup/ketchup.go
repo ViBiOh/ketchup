@@ -237,6 +237,50 @@ func (a App) ListOutdatedByFrequency(ctx context.Context, frequency model.Ketchu
 	return list, a.db.List(ctx, scanner, query, params...)
 }
 
+const listSilentForRepositoriesQuery = `
+SELECT
+  k.pattern,
+  k.version,
+  k.frequency,
+  k.update_when_notify,
+  k.repository_id,
+  k.user_id,
+  u.email
+FROM
+  ketchup.ketchup k,
+  ketchup.user u
+WHERE
+  repository_id = ANY ($1)
+  AND k.frequency = $2
+  AND k.update_when_notify IS TRUE
+`
+
+// ListSilentForRepositories retrieves ketchup with no notification and auto-update
+func (a App) ListSilentForRepositories(ctx context.Context, ids []uint64) ([]model.Ketchup, error) {
+	var list []model.Ketchup
+
+	scanner := func(rows pgx.Rows) error {
+		var item model.Ketchup
+		item.Repository = model.NewRepository(0, 0, "", "")
+		var rawKetchupFrequency string
+
+		if err := rows.Scan(&item.Pattern, &item.Version, &rawKetchupFrequency, &item.UpdateWhenNotify, &item.Repository.ID, &item.User.ID, &item.User.Email); err != nil {
+			return err
+		}
+
+		ketchupFrequency, err := model.ParseKetchupFrequency(rawKetchupFrequency)
+		if err != nil {
+			return err
+		}
+		item.Frequency = ketchupFrequency
+
+		list = append(list, item)
+		return nil
+	}
+
+	return list, a.db.List(ctx, scanner, listByRepositoriesIDQuery, ids, model.None)
+}
+
 const getQuery = `
 SELECT
   k.pattern,
