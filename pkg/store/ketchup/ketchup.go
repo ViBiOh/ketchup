@@ -278,7 +278,7 @@ func (a App) ListSilentForRepositories(ctx context.Context, ids []uint64) ([]mod
 		return nil
 	}
 
-	return list, a.db.List(ctx, scanner, listByRepositoriesIDQuery, ids, model.None)
+	return list, a.db.List(ctx, scanner, listSilentForRepositoriesQuery, ids, model.None)
 }
 
 const getQuery = `
