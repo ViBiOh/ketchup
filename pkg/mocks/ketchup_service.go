@@ -81,18 +81,23 @@ func (mr *KetchupServiceMockRecorder) List(arg0, arg1, arg2 interface{}) *gomock
 }
 
 // ListForRepositories mocks base method.
-func (m *KetchupService) ListForRepositories(arg0 context.Context, arg1 []model.Repository, arg2 model.KetchupFrequency) ([]model.Ketchup, error) {
+func (m *KetchupService) ListForRepositories(arg0 context.Context, arg1 []model.Repository, arg2 ...model.KetchupFrequency) ([]model.Ketchup, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ListForRepositories", arg0, arg1, arg2)
+	varargs := []interface{}{arg0, arg1}
+	for _, a := range arg2 {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "ListForRepositories", varargs...)
 	ret0, _ := ret[0].([]model.Ketchup)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ListForRepositories indicates an expected call of ListForRepositories.
-func (mr *KetchupServiceMockRecorder) ListForRepositories(arg0, arg1, arg2 interface{}) *gomock.Call {
+func (mr *KetchupServiceMockRecorder) ListForRepositories(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListForRepositories", reflect.TypeOf((*KetchupService)(nil).ListForRepositories), arg0, arg1, arg2)
+	varargs := append([]interface{}{arg0, arg1}, arg2...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListForRepositories", reflect.TypeOf((*KetchupService)(nil).ListForRepositories), varargs...)
 }
 
 // ListOutdatedByFrequency mocks base method.
@@ -113,21 +118,6 @@ func (mr *KetchupServiceMockRecorder) ListOutdatedByFrequency(arg0, arg1 interfa
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{arg0, arg1}, arg2...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListOutdatedByFrequency", reflect.TypeOf((*KetchupService)(nil).ListOutdatedByFrequency), varargs...)
-}
-
-// ListSilentForRepositories mocks base method.
-func (m *KetchupService) ListSilentForRepositories(arg0 context.Context, arg1 []model.Repository) ([]model.Ketchup, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ListSilentForRepositories", arg0, arg1)
-	ret0, _ := ret[0].([]model.Ketchup)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// ListSilentForRepositories indicates an expected call of ListSilentForRepositories.
-func (mr *KetchupServiceMockRecorder) ListSilentForRepositories(arg0, arg1 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListSilentForRepositories", reflect.TypeOf((*KetchupService)(nil).ListSilentForRepositories), arg0, arg1)
 }
 
 // Update mocks base method.

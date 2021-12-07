@@ -143,11 +143,11 @@ FROM
 WHERE
   repository_id = ANY ($1)
   AND k.user_id = u.id
-  AND k.frequency = $2
+  AND k.frequency = ANY ($2)
 `
 
-// ListByRepositoriesID lists ketchup by repositories id
-func (a App) ListByRepositoriesID(ctx context.Context, ids []uint64, frequency model.KetchupFrequency) ([]model.Ketchup, error) {
+// ListByRepositoriesIDAndFrequencies lists ketchup by repositories id and given frequencies
+func (a App) ListByRepositoriesIDAndFrequencies(ctx context.Context, ids []uint64, frequencies ...model.KetchupFrequency) ([]model.Ketchup, error) {
 	var list []model.Ketchup
 
 	scanner := func(rows pgx.Rows) error {
@@ -169,7 +169,12 @@ func (a App) ListByRepositoriesID(ctx context.Context, ids []uint64, frequency m
 		return nil
 	}
 
-	return list, a.db.List(ctx, scanner, listByRepositoriesIDQuery, ids, strings.ToLower(frequency.String()))
+	frequenciesStr := make([]string, len(frequencies))
+	for i, frequency := range frequencies {
+		frequenciesStr[i] = strings.ToLower(frequency.String())
+	}
+
+	return list, a.db.List(ctx, scanner, listByRepositoriesIDQuery, ids, frequenciesStr)
 }
 
 const listOutdatedByFrequencyQuery = `

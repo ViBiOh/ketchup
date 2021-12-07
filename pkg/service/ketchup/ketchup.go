@@ -40,30 +40,15 @@ func (a App) List(ctx context.Context, pageSize uint, last string) ([]model.Ketc
 }
 
 // ListForRepositories of ketchups
-func (a App) ListForRepositories(ctx context.Context, repositories []model.Repository, frequency model.KetchupFrequency) ([]model.Ketchup, error) {
+func (a App) ListForRepositories(ctx context.Context, repositories []model.Repository, frequencies ...model.KetchupFrequency) ([]model.Ketchup, error) {
 	ids := make([]uint64, len(repositories))
 	for index, repo := range repositories {
 		ids[index] = repo.ID
 	}
 
-	list, err := a.ketchupStore.ListByRepositoriesID(ctx, ids, frequency)
+	list, err := a.ketchupStore.ListByRepositoriesIDAndFrequencies(ctx, ids, frequencies...)
 	if err != nil {
 		return nil, httpModel.WrapInternal(fmt.Errorf("unable to list by ids: %s", err))
-	}
-
-	return enrichKetchupsWithSemver(list), nil
-}
-
-// ListSilentForRepositories lists no notify but auto-update ketchups
-func (a App) ListSilentForRepositories(ctx context.Context, repositories []model.Repository) ([]model.Ketchup, error) {
-	ids := make([]uint64, len(repositories))
-	for index, repo := range repositories {
-		ids[index] = repo.ID
-	}
-
-	list, err := a.ketchupStore.ListSilentForRepositories(ctx, ids)
-	if err != nil {
-		return nil, httpModel.WrapInternal(fmt.Errorf("unable to list silent by ids: %s", err))
 	}
 
 	return enrichKetchupsWithSemver(list), nil

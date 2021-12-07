@@ -39,7 +39,7 @@ func TestFlags(t *testing.T) {
 	}{
 		{
 			"simple",
-			"Usage of simple:\n  -loginID uint\n    \t[notifier] Scheduler user ID {SIMPLE_LOGIN_ID} (default 1)\n  -pushUrl string\n    \t[notifier] Pushgateway URL {SIMPLE_PUSH_URL}\n",
+			"Usage of simple:\n  -pushUrl string\n    \t[notifier] Pushgateway URL {SIMPLE_PUSH_URL}\n",
 		},
 	}
 
@@ -257,46 +257,50 @@ func TestGetKetchupToNotify(t *testing.T) {
 			case "list error":
 				mockKetchupService.EXPECT().ListForRepositories(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, errors.New("failed"))
 			case "empty":
-				mockKetchupService.EXPECT().ListSilentForRepositories(gomock.Any(), gomock.Any()).Return(nil, nil)
 				mockKetchupService.EXPECT().ListForRepositories(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, nil)
 			case "one release, n ketchups":
-				mockKetchupService.EXPECT().ListSilentForRepositories(gomock.Any(), gomock.Any()).Return(nil, nil)
 				mockKetchupService.EXPECT().ListForRepositories(gomock.Any(), gomock.Any(), gomock.Any()).Return([]model.Ketchup{
 					{
 						Pattern:    model.DefaultPattern,
 						Repository: model.NewGithubRepository(1, repositoryName),
 						User:       model.NewUser(1, testEmail, authModel.NewUser(0, "")),
 						Version:    repositoryVersion,
+						Frequency:  model.Daily,
 					},
 					{
 						Pattern:    model.DefaultPattern,
 						Repository: model.NewGithubRepository(1, repositoryName),
 						User:       model.NewUser(2, "guest@nowhere", authModel.NewUser(0, "")),
 						Version:    repositoryVersion,
+						Frequency:  model.Daily,
 					},
 					{
 						Pattern:    model.DefaultPattern,
 						Repository: model.NewGithubRepository(2, "vibioh/dotfiles"),
 						User:       model.NewUser(1, testEmail, authModel.NewUser(0, "")),
 						Version:    repositoryVersion,
+						Frequency:  model.Daily,
 					},
 					{
 						Pattern:    "^1.1-0",
 						Repository: model.NewGithubRepository(2, "vibioh/dotfiles"),
 						User:       model.NewUser(2, "guest@nowhere", authModel.NewUser(0, "")),
 						Version:    repositoryVersion,
+						Frequency:  model.Daily,
 					},
 					{
 						Pattern:    model.DefaultPattern,
 						Repository: model.NewGithubRepository(3, "vibioh/zzz"),
 						User:       model.NewUser(1, testEmail, authModel.NewUser(0, "")),
 						Version:    repositoryVersion,
+						Frequency:  model.Daily,
 					},
 					{
 						Pattern:    model.DefaultPattern,
 						Repository: model.NewGithubRepository(3, "vibioh/zzz"),
 						User:       model.NewUser(2, "guest@nowhere", authModel.NewUser(0, "")),
 						Version:    "1.1.0",
+						Frequency:  model.Daily,
 					},
 				}, nil)
 			}

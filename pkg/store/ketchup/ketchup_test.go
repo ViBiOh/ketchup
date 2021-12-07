@@ -178,7 +178,7 @@ func TestList(t *testing.T) {
 	}
 }
 
-func TestListByRepositoriesID(t *testing.T) {
+func TestListByRepositoriesIDAndFrequencies(t *testing.T) {
 	type args struct {
 		ids       []uint64
 		frequency model.KetchupFrequency
@@ -265,12 +265,12 @@ func TestListByRepositoriesID(t *testing.T) {
 					}
 					return scanner(mockRows)
 				}
-				mockDatabase.EXPECT().List(gomock.Any(), gomock.Any(), gomock.Any(), tc.args.ids, "daily").DoAndReturn(dummyFn)
+				mockDatabase.EXPECT().List(gomock.Any(), gomock.Any(), gomock.Any(), tc.args.ids, []string{"daily"}).DoAndReturn(dummyFn)
 			case "error":
-				mockDatabase.EXPECT().List(gomock.Any(), gomock.Any(), gomock.Any(), tc.args.ids, "daily").Return(errors.New("failed"))
+				mockDatabase.EXPECT().List(gomock.Any(), gomock.Any(), gomock.Any(), tc.args.ids, []string{"daily"}).Return(errors.New("failed"))
 			}
 
-			got, gotErr := instance.ListByRepositoriesID(testCtx, tc.args.ids, tc.args.frequency)
+			got, gotErr := instance.ListByRepositoriesIDAndFrequencies(testCtx, tc.args.ids, tc.args.frequency)
 			failed := false
 
 			if tc.wantErr == nil && gotErr != nil {
@@ -284,7 +284,7 @@ func TestListByRepositoriesID(t *testing.T) {
 			}
 
 			if failed {
-				t.Errorf("ListByRepositoriesID() = (%+v, `%s`), want (%+v, `%s`)", got, gotErr, tc.want, tc.wantErr)
+				t.Errorf("ListByRepositoriesIDAndFrequencies() = (%+v, `%s`), want (%+v, `%s`)", got, gotErr, tc.want, tc.wantErr)
 			}
 		})
 	}

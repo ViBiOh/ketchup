@@ -139,12 +139,12 @@ func TestListForRepositories(t *testing.T) {
 
 			switch tc.intention {
 			case "simple":
-				mockKetchupStore.EXPECT().ListByRepositoriesID(gomock.Any(), gomock.Any(), gomock.Any()).Return([]model.Ketchup{
+				mockKetchupStore.EXPECT().ListByRepositoriesIDAndFrequencies(gomock.Any(), gomock.Any(), gomock.Any()).Return([]model.Ketchup{
 					model.NewKetchup(model.DefaultPattern, "1.0.0", model.Daily, false, model.NewGithubRepository(1, ketchupRepository).AddVersion(model.DefaultPattern, "1.0.2")),
 					model.NewKetchup(model.DefaultPattern, "1.2.3", model.Daily, false, model.NewGithubRepository(2, viwsRepository).AddVersion(model.DefaultPattern, "1.2.3")),
 				}, nil)
 			case "error":
-				mockKetchupStore.EXPECT().ListByRepositoriesID(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, errors.New("failed"))
+				mockKetchupStore.EXPECT().ListByRepositoriesIDAndFrequencies(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, errors.New("failed"))
 			}
 
 			got, gotErr := instance.ListForRepositories(context.Background(), tc.args.repositories, model.Daily)

@@ -83,9 +83,8 @@ type RepositoryStore interface {
 //go:generate mockgen -destination ../mocks/ketchup_service.go -mock_names KetchupService=KetchupService -package mocks github.com/ViBiOh/ketchup/pkg/model KetchupService
 type KetchupService interface {
 	List(ctx context.Context, pageSize uint, last string) ([]Ketchup, uint64, error)
-	ListForRepositories(ctx context.Context, repositories []Repository, frequency KetchupFrequency) ([]Ketchup, error)
+	ListForRepositories(ctx context.Context, repositories []Repository, frequencies ...KetchupFrequency) ([]Ketchup, error)
 	ListOutdatedByFrequency(ctx context.Context, frequency KetchupFrequency, users ...User) ([]Ketchup, error)
-	ListSilentForRepositories(ctx context.Context, repositories []Repository) ([]Ketchup, error)
 	Create(ctx context.Context, item Ketchup) (Ketchup, error)
 	Update(ctx context.Context, oldPattern string, item Ketchup) (Ketchup, error)
 	UpdateAll(ctx context.Context) error
@@ -98,9 +97,8 @@ type KetchupService interface {
 type KetchupStore interface {
 	DoAtomic(ctx context.Context, action func(context.Context) error) error
 	List(ctx context.Context, page uint, last string) ([]Ketchup, uint64, error)
-	ListByRepositoriesID(ctx context.Context, ids []uint64, frequency KetchupFrequency) ([]Ketchup, error)
+	ListByRepositoriesIDAndFrequencies(ctx context.Context, ids []uint64, frequencies ...KetchupFrequency) ([]Ketchup, error)
 	ListOutdatedByFrequency(ctx context.Context, frequency KetchupFrequency, usersIds ...uint64) ([]Ketchup, error)
-	ListSilentForRepositories(ctx context.Context, ids []uint64) ([]Ketchup, error)
 	GetByRepository(ctx context.Context, id uint64, pattern string, forUpdate bool) (Ketchup, error)
 	Create(ctx context.Context, o Ketchup) (uint64, error)
 	Update(ctx context.Context, o Ketchup, oldPattern string) error
