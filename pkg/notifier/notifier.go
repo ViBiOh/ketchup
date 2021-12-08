@@ -35,7 +35,6 @@ type App struct {
 
 // Config of package
 type Config struct {
-	loginID *uint
 	pushURL *string
 }
 

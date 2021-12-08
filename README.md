@@ -128,8 +128,6 @@ Usage of ketchup:
         [mailer] URL (https?:// or amqps?://) {KETCHUP_MAILER_URL}
   -minify
         Minify HTML {KETCHUP_MINIFY} (default true)
-  -notifierLoginID uint
-        [notifier] Scheduler user ID {KETCHUP_NOTIFIER_LOGIN_ID} (default 1)
   -notifierPushUrl string
         [notifier] Pushgateway URL {KETCHUP_NOTIFIER_PUSH_URL}
   -okStatus int
