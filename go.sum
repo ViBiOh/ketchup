@@ -36,8 +36,9 @@ github.com/BurntSushi/xgb v0.0.0-20160522181843-27f122750802/go.mod h1:IVnqGOEym
 github.com/Masterminds/semver/v3 v3.1.1/go.mod h1:VPu/7SZ7ePZ3QOrcuXROw5FAcLl4a0cBrbBpGY/8hQs=
 github.com/ViBiOh/auth/v2 v2.11.28 h1:Vf3jk/JC/z4kh2+azIcKomnJN54pT/wCminigIaaCug=
 github.com/ViBiOh/auth/v2 v2.11.28/go.mod h1:PkPEAaV0GEI3bUmT0Zp6zaLOlbFBkFsATAQah7sjmYs=
-github.com/ViBiOh/httputils/v4 v4.32.0 h1:MDMngVRmhuvzs22XW183iVJH+O5EjaZKra50NLRKX48=
 github.com/ViBiOh/httputils/v4 v4.32.0/go.mod h1:Zt9tegJMu5PbjR8oc3aTsLk62lVvMTuN9VaBS6GOqIY=
+github.com/ViBiOh/httputils/v4 v4.33.0 h1:cINYVYa6GJr4Jq/+XJ95N21oNHS64sWbCoQqtmcafu8=
+github.com/ViBiOh/httputils/v4 v4.33.0/go.mod h1:Zt9tegJMu5PbjR8oc3aTsLk62lVvMTuN9VaBS6GOqIY=
 github.com/ViBiOh/mailer v1.27.4 h1:82/9zLcgjZMmkNuP4ACjlysOmjyxvFbFHo9PnxPBnnU=
 github.com/ViBiOh/mailer v1.27.4/go.mod h1:+3XN1uFRWYDfZrHTrpeC1xe+ovjENYv7Rf93ZDEAMbU=
 github.com/alecthomas/template v0.0.0-20160405071501-a0175ee3bccc/go.mod h1:LOuyumcjzFXgccqObfd/Ljyb9UuFJ6TxHnclSeseNhc=
