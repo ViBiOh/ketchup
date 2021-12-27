@@ -34,7 +34,7 @@ func New() App {
 
 // FetchIndex of given URL for given charts patterns
 func (a App) FetchIndex(url string, chartsPatterns map[string][]string) (map[string]map[string]semver.Version, error) {
-	resp, err := request.New().Get(fmt.Sprintf("%s/%s", url, indexName)).Send(context.Background(), nil)
+	resp, err := request.Get(fmt.Sprintf("%s/%s", url, indexName)).Send(context.Background(), nil)
 	if err != nil {
 		return nil, fmt.Errorf("unable to request repository: %w", err)
 	}

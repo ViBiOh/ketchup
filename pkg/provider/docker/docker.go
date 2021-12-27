@@ -72,7 +72,7 @@ func (a App) LatestVersions(repository string, patterns []string) (map[string]se
 	url := fmt.Sprintf("%s/v2/%s/tags/list", registry, repository)
 
 	for len(url) != 0 {
-		req := request.New().Get(url)
+		req := request.Get(url)
 
 		if len(auth) != 0 {
 			req = req.Header("Authorization", auth)
@@ -126,7 +126,7 @@ func (a App) login(ctx context.Context, repository string) (string, error) {
 	values.Add("username", a.username)
 	values.Add("password", a.password)
 
-	resp, err := request.New().Post(authURL).Form(ctx, values)
+	resp, err := request.Post(authURL).Form(ctx, values)
 	if err != nil {
 		return "", fmt.Errorf("unable to authenticate to `%s`: %s", authURL, err)
 	}

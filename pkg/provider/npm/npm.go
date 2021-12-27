@@ -39,7 +39,7 @@ func (a App) LatestVersions(name string, patterns []string) (map[string]semver.V
 		return nil, fmt.Errorf("unable to prepare pattern matching: %s", err)
 	}
 
-	resp, err := request.New().Get(fmt.Sprintf("%s/%s", registryURL, name)).Header("Accept", "application/vnd.npm.install-v1+json").Send(ctx, nil)
+	resp, err := request.Get(fmt.Sprintf("%s/%s", registryURL, name)).Header("Accept", "application/vnd.npm.install-v1+json").Send(ctx, nil)
 	if err != nil {
 		return nil, fmt.Errorf("unable to fetch registry: %s", err)
 	}
