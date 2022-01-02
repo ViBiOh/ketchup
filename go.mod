@@ -3,8 +3,8 @@ module github.com/ViBiOh/ketchup
 go 1.17
 
 require (
-	github.com/ViBiOh/auth/v2 v2.11.29
-	github.com/ViBiOh/httputils/v4 v4.34.0
+	github.com/ViBiOh/auth/v2 v2.11.31
+	github.com/ViBiOh/httputils/v4 v4.34.1
 	github.com/ViBiOh/mailer v1.27.6
 	github.com/golang/mock v1.6.0
 	github.com/jackc/pgconn v1.10.1
@@ -33,8 +33,8 @@ require (
 	github.com/streadway/amqp v1.0.0 // indirect
 	github.com/tdewolff/minify/v2 v2.9.26 // indirect
 	github.com/tdewolff/parse/v2 v2.5.26 // indirect
-	golang.org/x/crypto v0.0.0-20211202192323-5770296d904e // indirect
-	golang.org/x/sys v0.0.0-20211204120058-94396e421777 // indirect
+	golang.org/x/crypto v0.0.0-20211215153901-e495a2d5b3d3 // indirect
+	golang.org/x/sys v0.0.0-20211216021012-1d35b9e2eb4e // indirect
 	golang.org/x/text v0.3.7 // indirect
 	google.golang.org/protobuf v1.27.1 // indirect
 )

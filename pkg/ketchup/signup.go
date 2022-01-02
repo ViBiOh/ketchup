@@ -16,18 +16,18 @@ import (
 func (a App) Signup() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodPost {
-			a.rendererApp.Error(w, r, httpModel.WrapMethodNotAllowed(fmt.Errorf("invalid method %s", r.Method)))
+			a.rendererApp.Error(w, r, nil, httpModel.WrapMethodNotAllowed(fmt.Errorf("invalid method %s", r.Method)))
 			return
 		}
 
 		if err := r.ParseForm(); err != nil {
-			a.rendererApp.Error(w, r, httpModel.WrapInvalid(err))
+			a.rendererApp.Error(w, r, nil, httpModel.WrapInvalid(err))
 			return
 		}
 
 		token := r.FormValue("token")
 		if !a.validateToken(r.Context(), token, r.FormValue("answer")) {
-			a.rendererApp.Error(w, r, httpModel.WrapInvalid(errors.New("unable to validate security question")))
+			a.rendererApp.Error(w, r, nil, httpModel.WrapInvalid(errors.New("unable to validate security question")))
 			return
 		}
 
@@ -37,7 +37,7 @@ func (a App) Signup() http.Handler {
 		})
 
 		if _, err := a.userService.Create(r.Context(), user); err != nil {
-			a.rendererApp.Error(w, r, err)
+			a.rendererApp.Error(w, r, nil, err)
 			return
 		}
 
