@@ -142,8 +142,9 @@ func (a App) getKetchupToNotify(ctx context.Context, releases []model.Release) (
 		return nil, fmt.Errorf("unable to get ketchups for repositories: %w", err)
 	}
 
+	logger.Info("%d daily ketchups updates", len(ketchups))
+
 	userToNotify := a.syncReleasesByUser(releases, ketchups)
-	logger.Info("%d daily ketchups to notify", len(ketchups))
 
 	if a.clock.Now().Weekday() == time.Monday {
 		weeklyKetchups, err := a.ketchupService.ListOutdatedByFrequency(ctx, model.Weekly)
@@ -151,7 +152,7 @@ func (a App) getKetchupToNotify(ctx context.Context, releases []model.Release) (
 			return nil, fmt.Errorf("unable to get weekly ketchups: %w", err)
 		}
 
-		logger.Info("%d weekly ketchups to notify", len(weeklyKetchups))
+		logger.Info("%d weekly ketchups updates", len(weeklyKetchups))
 		a.appendKetchupsToUser(userToNotify, weeklyKetchups)
 	}
 
