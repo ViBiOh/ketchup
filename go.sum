@@ -34,9 +34,8 @@ dmitri.shuralyov.com/gpu/mtl v0.0.0-20190408044501-666a987793e9/go.mod h1:H6x//7
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
 github.com/BurntSushi/xgb v0.0.0-20160522181843-27f122750802/go.mod h1:IVnqGOEym/WlBOVXweHU+Q+/VP0lqqI8lqeDx9IjBqo=
 github.com/Masterminds/semver/v3 v3.1.1/go.mod h1:VPu/7SZ7ePZ3QOrcuXROw5FAcLl4a0cBrbBpGY/8hQs=
-github.com/ViBiOh/auth/v2 v2.11.31 h1:Furwx8R3GqJ46p5NhksyDx4zuoz4/EfubI5HUc1fjLQ=
-github.com/ViBiOh/auth/v2 v2.11.31/go.mod h1:lkw0TdFE8eW6g8Sw5WvxLisDGn+Sw4x98PzGqP6/NrU=
-github.com/ViBiOh/httputils/v4 v4.34.1/go.mod h1:gOwVWXRSUrAfWAoMEl54v9yuOpMNgGm5tyKRDoMxVeQ=
+github.com/ViBiOh/auth/v2 v2.11.32 h1:/9bb6hSC4Rk5Qh+ekwB2D88UODXE0TvElW1fNeAjsBM=
+github.com/ViBiOh/auth/v2 v2.11.32/go.mod h1:W7Nil91AI5Oh0k9FWP0FDxjxBSKKkyC2fN+EeKSc5pQ=
 github.com/ViBiOh/httputils/v4 v4.34.2 h1:a605MdUMQZWEt9vnRG4LtdXHkXm07qehdjQO2TnUMLk=
 github.com/ViBiOh/httputils/v4 v4.34.2/go.mod h1:9HIGNXrwGWmCbA0hE3jmSnfvzQelMVoqpCQn5KBimjw=
 github.com/ViBiOh/mailer v1.27.7 h1:9DW+T8SPGart0rNfqT5J6tv12dk86EudrtJxQO8YCd4=
@@ -307,7 +306,6 @@ github.com/stretchr/testify v1.4.0/go.mod h1:j7eGeouHqKxXV5pUuKE4zz7dFj8WfuZ+81P
 github.com/stretchr/testify v1.5.1/go.mod h1:5W2xD1RspED5o8YsWQXVCued0rvSQ+mT+I5cxcmMvtA=
 github.com/stretchr/testify v1.7.0 h1:nwc3DEeHmmLAfoZucVR881uASk0Mfjw8xYJ99tb5CcY=
 github.com/stretchr/testify v1.7.0/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/h/Wwjteg=
-github.com/tdewolff/minify/v2 v2.9.26/go.mod h1:L/bwPtsU/Xx30MxCndlClCMMiLbqROgkR4vZT+QIGXA=
 github.com/tdewolff/minify/v2 v2.9.27 h1:/HXIZwTZzh8pwxoc6cg5lqvujqOLLaIL6O4ojHh5jIw=
 github.com/tdewolff/minify/v2 v2.9.27/go.mod h1:L/bwPtsU/Xx30MxCndlClCMMiLbqROgkR4vZT+QIGXA=
 github.com/tdewolff/parse/v2 v2.5.26 h1:a/q3lwDCi4GIQ+sSbs4UOHuObhqp8GHAhfqop/zDyQQ=
