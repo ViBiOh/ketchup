@@ -27,7 +27,7 @@ spec:
     schedule: "0 7 * * *" # manager is in UTC
     image:
       name: vibioh/ketchup
-      tag: "202201160943" # {"$imagepolicy": "default:flux-ketchup-web:tag"}
+      tag: "202201161745" # {"$imagepolicy": "default:flux-ketchup-web:tag"}
     config:
       KETCHUP_DB_HOST: ketchup-db
       KETCHUP_DB_NAME: ketchup
