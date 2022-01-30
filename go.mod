@@ -11,7 +11,7 @@ require (
 	github.com/jackc/pgconn v1.10.1
 	github.com/jackc/pgproto3/v2 v2.2.0
 	github.com/jackc/pgx/v4 v4.14.1
-	github.com/prometheus/client_golang v1.12.0
+	github.com/prometheus/client_golang v1.12.1
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
 )
 
