@@ -48,13 +48,3 @@ spec:
     canary:
       enabled: true
       url: https://ketchup.vibioh.fr
-    affinity:
-      podAffinity:
-        requiredDuringSchedulingIgnoredDuringExecution:
-          - labelSelector:
-              matchExpressions:
-                - key: app.kubernetes.io/instance
-                  operator: In
-                  values:
-                    - ketchup-db
-            topologyKey: "kubernetes.io/hostname"
