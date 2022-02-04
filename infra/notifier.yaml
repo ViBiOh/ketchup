@@ -27,7 +27,7 @@ spec:
     schedule: "0 7 * * *" # manager is in UTC
     image:
       name: vibioh/ketchup
-      tag: "202202032320" # {"$imagepolicy": "default:flux-ketchup-web:tag"}
+      tag: "202202040721" # {"$imagepolicy": "default:flux-ketchup-web:tag"}
     config:
       KETCHUP_DB_HOST: ketchup-db
       KETCHUP_DB_NAME: ketchup
@@ -42,9 +42,9 @@ spec:
       KETCHUP_MAILER_URL: AgBAxNXKDZq8i83NjeIX2sHggsSAMSzb5jTdYWBZIdZgwEAKi0lNI9jeQLZfYWOEbNHeOerncFaRdW02P8RI3f58nHch6KAXd/TXsHRYpmoYqxQ1JJ7ImQqvXD6hCucvKlzY/eEXTDehKNOLhkQYbka37Hbac8ja+55YEDBs+ODR6KuRnh7S+6y7kV1Vsv83Vnn005NdzImI68jDSzZgvE7A3qwf/rxxhUQAm9x+TMGUJ6a5Vp4griOAlytxgzWIWMIpnXjqaC92SjnL484/gojD2PJPH1E+MWarjoQnDEERRL061XpTd5A/uCsW/+4ZoOwd4Fjri76b/p/awlhOW0Ktgc+TpuC3GZT7wOylN//3/rBMXVj05+JBSaaRdRKYE7rFZuFtVcwX1tVS1SUiyVjkx1JE/CGzErsfW/KSMpt+iIVNylc3xwm3MiUG/ZnjNsiY0BYox1LYd9q3PflueimUWGQk+2Hx+805e8v7NHLrB2EisfEd+NU7z/eYacrQM2rL1HFv8fSpGtoKJ3XeoBCzhtGqW99lpS3S6AoDb59EjzD/EPF8JArTK/CkUmL1cGkxs8miKBWaGYnFzmdijlGwz1jSqn6pj5ZELqa004WRyeXWvSLpL8BmcZg8aPoR0En+tiZQYfAUBqsGD1YHbpkCxUnCnryQT9WoRJW65Y3COSDuIOfd0VS4bnHSTEk5a826XgrAGZI/JFWu6vGZrZO7x3iLPM0OI+gwmdHGOqN2h5mn2ekIKi4b4VaE1hjdtWxqgyA=
       KETCHUP_DOCKER_PASSWORD: AgCp01cM0/hxrBk9iba3wVWvffiAR/TuaCxorxn+ZJBKh1K/4jWqWXkF+Hoz5sBUKwtojxr8ZpiyaOjFHS26aAg9rCCLMx9aYiSLk3Y44WBDVfZG0bST32NFS6kxei4K/3I/BoM1+SZ3p/Erp65shZ3lstA+SqOlO+EP2lccaydxzJbCT78jAEtJY40EUO8TKeq5xWuKR/yf1eESLynr1yG80VTO22AdB9/oSxRgqMDFLH1nCunDzOrGYt9TQ1XdCjYZ9iViPxZ4f8xSuFOaPvJpIlEU3TUTRvERRwnVqPBQd62aBpTVO5XGHJcBXpQprHZh9O5LmPkR7piwLBAHADwD891La5n/MnkiGW5IjfpgFtmJjOtT94ssK2qTl7HYaZdNy5U3kTIzJtB5Amsh3JrxpHvjPmNhYsHGkVotITMqSjNaj+/9yP+Pfbq7piz8gD5C3ZK/vgYCLdoAV4cx+zh+X2bb1OOcAmTSo6NhmIJ2jmCWEhCG7dnw2Ohn+aDvRKyaQsP8kx1KHuU50guUOS1xGMapvqiKYDtZeHQ/sIktZVXQB4TtMmjDI3kaQoOjk7NgO445yCR+Egizuz27ZlAgN7Reo/nUlS4k06yMdY+TKfzSIe/1ii1nO9sb3XLG2mu9TnODSQea1VXR3/7xt1W9xeTtRcCF0KxBfY2yHKckHqsO1RwCNUslNCWimtVkSOILv2OWqN+2PQOtFttJlflCeCcAUJyt/jQ2FL8v3VogfCWc2y8=
     containers:
-      - name: job
-        command:
-          - /notifier
+    - name: job
+      command:
+      - /notifier
     resources:
       limits:
         memory: 128Mi
