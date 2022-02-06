@@ -25,7 +25,7 @@ spec:
     nameOverride: ketchup
     image:
       name: vibioh/ketchup
-      tag: "202202040722" # {"$imagepolicy": "default:flux-ketchup-web:tag"}
+      tag: "202202060802" # {"$imagepolicy": "default:flux-ketchup-web:tag"}
     config:
       KETCHUP_LOGGER_JSON: "true"
       KETCHUP_DB_HOST: ketchup-db
@@ -44,7 +44,7 @@ spec:
       enabled: true
       compress: true
       hosts:
-        - ketchup.vibioh.fr
+      - ketchup.vibioh.fr
     canary:
       enabled: true
       url: https://ketchup.vibioh.fr
