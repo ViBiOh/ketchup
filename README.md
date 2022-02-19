@@ -161,13 +161,15 @@ Usage of ketchup:
   -readTimeout string
         [server] Read Timeout {KETCHUP_READ_TIMEOUT} (default "5s")
   -redisAddress string
-        [redis] Redis Address {KETCHUP_REDIS_ADDRESS} (default "localhost:6379")
+        [redis] Redis Address (blank to disable) {KETCHUP_REDIS_ADDRESS} (default "localhost:6379")
   -redisAlias string
         [redis] Connection alias, for metric {KETCHUP_REDIS_ALIAS}
   -redisDatabase int
         [redis] Redis Database {KETCHUP_REDIS_DATABASE}
   -redisPassword string
         [redis] Redis Password, if any {KETCHUP_REDIS_PASSWORD}
+  -redisUsername string
+        [redis] Redis Username, if any {KETCHUP_REDIS_USERNAME}
   -schedulerEnabled
         [scheduler] Enable cron job {KETCHUP_SCHEDULER_ENABLED} (default true)
   -schedulerHour string
@@ -178,6 +180,10 @@ Usage of ketchup:
         [server] Shutdown Timeout {KETCHUP_SHUTDOWN_TIMEOUT} (default "10s")
   -title string
         Application title {KETCHUP_TITLE} (default "Ketchup")
+  -tracerRate string
+        [tracer] Jaeger sample rate, 'always', 'never' or a float value {KETCHUP_TRACER_RATE} (default "always")
+  -tracerURL string
+        [tracer] Jaeger endpoint URL (e.g. http://jaeger:14268/api/traces) {KETCHUP_TRACER_URL}
   -url string
         [alcotest] URL to check {KETCHUP_URL}
   -userAgent string
