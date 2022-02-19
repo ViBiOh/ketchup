@@ -8,6 +8,8 @@ import (
 
 	"github.com/ViBiOh/httputils/v4/pkg/db"
 	"github.com/ViBiOh/httputils/v4/pkg/logger"
+	"github.com/ViBiOh/httputils/v4/pkg/request"
+	"github.com/ViBiOh/httputils/v4/pkg/tracer"
 	"github.com/ViBiOh/ketchup/pkg/notifier"
 	"github.com/ViBiOh/ketchup/pkg/provider/docker"
 	"github.com/ViBiOh/ketchup/pkg/provider/github"
@@ -21,12 +23,14 @@ import (
 	repositoryStore "github.com/ViBiOh/ketchup/pkg/store/repository"
 	userStore "github.com/ViBiOh/ketchup/pkg/store/user"
 	mailer "github.com/ViBiOh/mailer/pkg/client"
+	"go.opentelemetry.io/otel/trace"
 )
 
 func main() {
 	fs := flag.NewFlagSet("ketchup", flag.ExitOnError)
 
 	loggerConfig := logger.Flags(fs, "logger")
+	tracerConfig := tracer.Flags(fs, "tracer")
 
 	dbConfig := db.Flags(fs, "db")
 	mailerConfig := mailer.Flags(fs, "mailer")
@@ -41,9 +45,14 @@ func main() {
 	logger.Global(logger.New(loggerConfig))
 	defer logger.Close()
 
-	ketchupDb, err := db.New(dbConfig)
+	ketchupDb, err := db.New(dbConfig, tracer.App{})
 	logger.Fatal(err)
 	defer ketchupDb.Close()
+
+	tracerApp, err := tracer.New(tracerConfig)
+	logger.Fatal(err)
+	defer tracerApp.Close()
+	request.AddTracerToDefaultClient(tracerApp.GetProvider())
 
 	mailerApp, err := mailer.New(mailerConfig, nil)
 	logger.Fatal(err)
@@ -60,13 +69,20 @@ func main() {
 
 	logger.Info("Starting notifier...")
 
+	ctx := context.Background()
+	if tracer := tracerApp.GetTracer("notifier"); tracer != nil {
+		var span trace.Span
+		ctx, span = tracer.Start(ctx, "notifier")
+		defer span.End()
+	}
+
 	switch *notificationType {
 	case "daily":
-		if err := notifierApp.Notify(context.Background()); err != nil {
+		if err := notifierApp.Notify(ctx); err != nil {
 			logger.Fatal(err)
 		}
 	case "reminder":
-		if err := notifierApp.Remind(context.Background()); err != nil {
+		if err := notifierApp.Remind(ctx); err != nil {
 			logger.Fatal(err)
 		}
 	default:

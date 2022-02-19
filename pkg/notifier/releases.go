@@ -75,7 +75,7 @@ func (a App) getNewStandardReleases(ctx context.Context) ([]model.Release, uint6
 
 			func(repo model.Repository) {
 				wg.Go(func() {
-					workerOutput <- a.getNewRepositoryReleases(repo)
+					workerOutput <- a.getNewRepositoryReleases(ctx, repo)
 				})
 			}(repo)
 		}
@@ -96,8 +96,8 @@ func (a App) getNewStandardReleases(ctx context.Context) ([]model.Release, uint6
 	return newReleases, count, nil
 }
 
-func (a App) getNewRepositoryReleases(repo model.Repository) []model.Release {
-	versions, err := a.repositoryService.LatestVersions(repo)
+func (a App) getNewRepositoryReleases(ctx context.Context, repo model.Repository) []model.Release {
+	versions, err := a.repositoryService.LatestVersions(ctx, repo)
 	if err != nil {
 		logger.Error("unable to get latest versions of %s `%s`: %s", repo.Kind, repo.Name, err)
 		return nil
@@ -135,7 +135,7 @@ func (a App) getNewHelmReleases(ctx context.Context) ([]model.Release, uint64, e
 			count++
 
 			if repo.Name != repoName {
-				newReleases = append(newReleases, a.getFetchHelmSources(repoWithNames)...)
+				newReleases = append(newReleases, a.getFetchHelmSources(ctx, repoWithNames)...)
 
 				repoName = repo.Name
 				repoWithNames = make(map[string]model.Repository)
@@ -144,7 +144,7 @@ func (a App) getNewHelmReleases(ctx context.Context) ([]model.Release, uint64, e
 			repoWithNames[repo.Part] = repo
 		}
 
-		newReleases = append(newReleases, a.getFetchHelmSources(repoWithNames)...)
+		newReleases = append(newReleases, a.getFetchHelmSources(ctx, repoWithNames)...)
 
 		if repoCount < int(pageSize) {
 			break
@@ -158,7 +158,7 @@ func (a App) getNewHelmReleases(ctx context.Context) ([]model.Release, uint64, e
 	return newReleases, count, nil
 }
 
-func (a App) getFetchHelmSources(repos map[string]model.Repository) []model.Release {
+func (a App) getFetchHelmSources(ctx context.Context, repos map[string]model.Repository) []model.Release {
 	if len(repos) == 0 {
 		return nil
 	}
@@ -181,7 +181,7 @@ func (a App) getFetchHelmSources(repos map[string]model.Repository) []model.Rele
 		charts[repo.Part] = patterns
 	}
 
-	values, err := a.helmApp.FetchIndex(url, charts)
+	values, err := a.helmApp.FetchIndex(ctx, url, charts)
 	if err != nil {
 		logger.WithField("url", url).Error("unable to fetch helm index: %s", err)
 		return nil

@@ -42,14 +42,14 @@ type UserStore interface {
 // GenericProvider defines interactions with common providers
 //go:generate mockgen -destination ../mocks/generic_provider.go -mock_names GenericProvider=GenericProvider -package mocks github.com/ViBiOh/ketchup/pkg/model GenericProvider
 type GenericProvider interface {
-	LatestVersions(string, []string) (map[string]semver.Version, error)
+	LatestVersions(context.Context, string, []string) (map[string]semver.Version, error)
 }
 
 // HelmProvider defines interactions with helm
 //go:generate mockgen -destination ../mocks/helm_provider.go -mock_names HelmProvider=HelmProvider -package mocks github.com/ViBiOh/ketchup/pkg/model HelmProvider
 type HelmProvider interface {
-	FetchIndex(string, map[string][]string) (map[string]map[string]semver.Version, error)
-	LatestVersions(string, string, []string) (map[string]semver.Version, error)
+	FetchIndex(context.Context, string, map[string][]string) (map[string]map[string]semver.Version, error)
+	LatestVersions(context.Context, string, string, []string) (map[string]semver.Version, error)
 }
 
 // RepositoryService defines interactions with repository
@@ -61,7 +61,7 @@ type RepositoryService interface {
 	GetOrCreate(context.Context, RepositoryKind, string, string, string) (Repository, error)
 	Update(context.Context, Repository) error
 	Clean(context.Context) error
-	LatestVersions(Repository) (map[string]semver.Version, error)
+	LatestVersions(context.Context, Repository) (map[string]semver.Version, error)
 }
 
 // RepositoryStore defines interactions with repository storage

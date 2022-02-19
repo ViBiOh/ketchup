@@ -287,22 +287,22 @@ func TestGetOrCreate(t *testing.T) {
 				mockRepositoryStore.EXPECT().GetByName(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(model.NewGithubRepository(1, ketchupRepository).AddVersion(model.DefaultPattern, "1.0.0"), nil)
 			case "exists no pattern error":
 				mockRepositoryStore.EXPECT().GetByName(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(model.NewGithubRepository(1, ketchupRepository), nil)
-				mockGithub.EXPECT().LatestVersions(gomock.Any(), gomock.Any()).Return(nil, errors.New("failed"))
+				mockGithub.EXPECT().LatestVersions(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, errors.New("failed"))
 			case "exists pattern not found":
 				mockRepositoryStore.EXPECT().GetByName(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(model.NewGithubRepository(1, ketchupRepository), nil)
-				mockGithub.EXPECT().LatestVersions(gomock.Any(), gomock.Any()).Return(map[string]semver.Version{
+				mockGithub.EXPECT().LatestVersions(gomock.Any(), gomock.Any(), gomock.Any()).Return(map[string]semver.Version{
 					"latest": safeParse("1.0.0"),
 				}, nil)
 			case "exists but no pattern":
 				mockRepositoryStore.EXPECT().GetByName(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(model.NewGithubRepository(1, ketchupRepository), nil)
 				mockRepositoryStore.EXPECT().UpdateVersions(gomock.Any(), gomock.Any()).Return(nil)
-				mockGithub.EXPECT().LatestVersions(gomock.Any(), gomock.Any()).Return(map[string]semver.Version{
+				mockGithub.EXPECT().LatestVersions(gomock.Any(), gomock.Any(), gomock.Any()).Return(map[string]semver.Version{
 					model.DefaultPattern: safeParse("1.0.0"),
 				}, nil)
 			case "update error":
 				mockRepositoryStore.EXPECT().GetByName(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(model.NewGithubRepository(1, ketchupRepository), nil)
 				mockRepositoryStore.EXPECT().UpdateVersions(gomock.Any(), gomock.Any()).Return(errors.New("failed"))
-				mockGithub.EXPECT().LatestVersions(gomock.Any(), gomock.Any()).Return(map[string]semver.Version{
+				mockGithub.EXPECT().LatestVersions(gomock.Any(), gomock.Any(), gomock.Any()).Return(map[string]semver.Version{
 					model.DefaultPattern: safeParse("1.0.0"),
 				}, nil)
 			case "create":
@@ -313,7 +313,7 @@ func TestGetOrCreate(t *testing.T) {
 					return do(ctx)
 				}
 				mockRepositoryStore.EXPECT().DoAtomic(gomock.Any(), gomock.Any()).DoAndReturn(dummyFn)
-				mockGithub.EXPECT().LatestVersions(gomock.Any(), gomock.Any()).Return(map[string]semver.Version{
+				mockGithub.EXPECT().LatestVersions(gomock.Any(), gomock.Any(), gomock.Any()).Return(map[string]semver.Version{
 					model.DefaultPattern: safeParse("1.0.0"),
 				}, nil)
 			}
@@ -410,7 +410,7 @@ func TestCreate(t *testing.T) {
 				}
 				mockRepositoryStore.EXPECT().DoAtomic(gomock.Any(), gomock.Any()).DoAndReturn(dummyFn)
 				mockRepositoryStore.EXPECT().Create(gomock.Any(), gomock.Any()).Return(uint64(0), errors.New("failed"))
-				mockGithub.EXPECT().LatestVersions(gomock.Any(), gomock.Any()).Return(map[string]semver.Version{
+				mockGithub.EXPECT().LatestVersions(gomock.Any(), gomock.Any(), gomock.Any()).Return(map[string]semver.Version{
 					model.DefaultPattern: safeParse("1.0.0"),
 				}, nil)
 			case "success":
@@ -420,7 +420,7 @@ func TestCreate(t *testing.T) {
 				}
 				mockRepositoryStore.EXPECT().DoAtomic(gomock.Any(), gomock.Any()).DoAndReturn(dummyFn)
 				mockRepositoryStore.EXPECT().Create(gomock.Any(), gomock.Any()).Return(uint64(1), nil)
-				mockGithub.EXPECT().LatestVersions(gomock.Any(), gomock.Any()).Return(map[string]semver.Version{
+				mockGithub.EXPECT().LatestVersions(gomock.Any(), gomock.Any(), gomock.Any()).Return(map[string]semver.Version{
 					model.DefaultPattern: safeParse("1.0.0"),
 				}, nil)
 			}

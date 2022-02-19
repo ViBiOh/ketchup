@@ -144,7 +144,7 @@ func (a App) getKetchupToNotify(ctx context.Context, releases []model.Release) (
 
 	logger.Info("%d daily ketchups updates", len(ketchups))
 
-	userToNotify := a.syncReleasesByUser(releases, ketchups)
+	userToNotify := a.syncReleasesByUser(ctx, releases, ketchups)
 
 	if a.clock.Now().Weekday() == time.Monday {
 		weeklyKetchups, err := a.ketchupService.ListOutdatedByFrequency(ctx, model.Weekly)
@@ -153,7 +153,7 @@ func (a App) getKetchupToNotify(ctx context.Context, releases []model.Release) (
 		}
 
 		logger.Info("%d weekly ketchups updates", len(weeklyKetchups))
-		a.appendKetchupsToUser(userToNotify, weeklyKetchups)
+		a.appendKetchupsToUser(ctx, userToNotify, weeklyKetchups)
 	}
 
 	logger.Info("%d users to notify", len(userToNotify))
@@ -161,7 +161,7 @@ func (a App) getKetchupToNotify(ctx context.Context, releases []model.Release) (
 	return userToNotify, nil
 }
 
-func (a App) syncReleasesByUser(releases []model.Release, ketchups []model.Ketchup) map[model.User][]model.Release {
+func (a App) syncReleasesByUser(ctx context.Context, releases []model.Release, ketchups []model.Ketchup) map[model.User][]model.Release {
 	usersToNotify := make(map[model.User][]model.Release)
 
 	sort.Sort(model.ReleaseByRepositoryIDAndPattern(releases))
@@ -185,7 +185,7 @@ func (a App) syncReleasesByUser(releases []model.Release, ketchups []model.Ketch
 			}
 
 			if current.Version != release.Version.Name {
-				a.handleKetchupNotification(usersToNotify, current, release)
+				a.handleKetchupNotification(ctx, usersToNotify, current, release)
 			}
 		}
 	}
@@ -193,7 +193,7 @@ func (a App) syncReleasesByUser(releases []model.Release, ketchups []model.Ketch
 	return usersToNotify
 }
 
-func (a App) appendKetchupsToUser(usersToNotify map[model.User][]model.Release, ketchups []model.Ketchup) {
+func (a App) appendKetchupsToUser(ctx context.Context, usersToNotify map[model.User][]model.Release, ketchups []model.Ketchup) {
 	for _, ketchup := range ketchups {
 		ketchupVersion, err := semver.Parse(ketchup.Version)
 		if err != nil {
@@ -201,12 +201,12 @@ func (a App) appendKetchupsToUser(usersToNotify map[model.User][]model.Release, 
 			continue
 		}
 
-		a.handleKetchupNotification(usersToNotify, ketchup, model.NewRelease(ketchup.Repository, ketchup.Pattern, ketchupVersion))
+		a.handleKetchupNotification(ctx, usersToNotify, ketchup, model.NewRelease(ketchup.Repository, ketchup.Pattern, ketchupVersion))
 	}
 }
 
-func (a App) handleKetchupNotification(usersToNotify map[model.User][]model.Release, ketchup model.Ketchup, release model.Release) {
-	release = a.handleUpdateWhenNotify(ketchup, release)
+func (a App) handleKetchupNotification(ctx context.Context, usersToNotify map[model.User][]model.Release, ketchup model.Ketchup, release model.Release) {
+	release = a.handleUpdateWhenNotify(ctx, ketchup, release)
 
 	if ketchup.Frequency == model.None {
 		return
@@ -219,7 +219,7 @@ func (a App) handleKetchupNotification(usersToNotify map[model.User][]model.Rele
 	}
 }
 
-func (a App) handleUpdateWhenNotify(ketchup model.Ketchup, release model.Release) model.Release {
+func (a App) handleUpdateWhenNotify(ctx context.Context, ketchup model.Ketchup, release model.Release) model.Release {
 	if !ketchup.UpdateWhenNotify {
 		return release
 	}
@@ -227,7 +227,7 @@ func (a App) handleUpdateWhenNotify(ketchup model.Ketchup, release model.Release
 	log := logger.WithField("repository", ketchup.Repository.ID).WithField("user", ketchup.User.ID).WithField("pattern", ketchup.Pattern)
 
 	log.Info("Auto-updating ketchup to %s", release.Version.Name)
-	if err := a.ketchupService.UpdateVersion(context.Background(), ketchup.User.ID, ketchup.Repository.ID, ketchup.Pattern, release.Version.Name); err != nil {
+	if err := a.ketchupService.UpdateVersion(ctx, ketchup.User.ID, ketchup.Repository.ID, ketchup.Pattern, release.Version.Name); err != nil {
 		log.Error("unable to update ketchup: %s", err)
 		return release.SetUpdated(1)
 	}
@@ -286,7 +286,7 @@ func (a App) Remind(ctx context.Context) error {
 	}
 
 	usersToNotify := make(map[model.User][]model.Release)
-	a.appendKetchupsToUser(usersToNotify, remindKetchups)
+	a.appendKetchupsToUser(ctx, usersToNotify, remindKetchups)
 
 	if err := a.sendNotification(ctx, "ketchup_remind", usersToNotify); err != nil {
 		return fmt.Errorf("unable to send remind notification: %s", err)

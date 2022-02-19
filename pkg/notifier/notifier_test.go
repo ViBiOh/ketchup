@@ -127,26 +127,26 @@ func TestGetNewRepositoryReleases(t *testing.T) {
 
 			switch tc.intention {
 			case "empty":
-				mockRepositoryService.EXPECT().LatestVersions(gomock.Any()).Return(nil, nil)
+				mockRepositoryService.EXPECT().LatestVersions(gomock.Any(), gomock.Any()).Return(nil, nil)
 			case "no new":
-				mockRepositoryService.EXPECT().LatestVersions(gomock.Any()).Return(map[string]semver.Version{
+				mockRepositoryService.EXPECT().LatestVersions(gomock.Any(), gomock.Any()).Return(map[string]semver.Version{
 					model.DefaultPattern: safeParse(repositoryVersion),
 				}, nil)
 			case "invalid version":
-				mockRepositoryService.EXPECT().LatestVersions(gomock.Any()).Return(map[string]semver.Version{
+				mockRepositoryService.EXPECT().LatestVersions(gomock.Any(), gomock.Any()).Return(map[string]semver.Version{
 					model.DefaultPattern: safeParse(repositoryVersion),
 				}, nil)
 			case "not greater":
-				mockRepositoryService.EXPECT().LatestVersions(gomock.Any()).Return(map[string]semver.Version{
+				mockRepositoryService.EXPECT().LatestVersions(gomock.Any(), gomock.Any()).Return(map[string]semver.Version{
 					model.DefaultPattern: safeParse(repositoryVersion),
 				}, nil)
 			case "greater":
-				mockRepositoryService.EXPECT().LatestVersions(gomock.Any()).Return(map[string]semver.Version{
+				mockRepositoryService.EXPECT().LatestVersions(gomock.Any(), gomock.Any()).Return(map[string]semver.Version{
 					model.DefaultPattern: safeParse("1.1.0"),
 				}, nil)
 			}
 
-			if got := tc.instance.getNewRepositoryReleases(tc.args.repo); !reflect.DeepEqual(got, tc.want) {
+			if got := tc.instance.getNewRepositoryReleases(context.Background(), tc.args.repo); !reflect.DeepEqual(got, tc.want) {
 				t.Errorf("getNewRepositoryReleases() = %+v, want %+v", got, tc.want)
 			}
 		})

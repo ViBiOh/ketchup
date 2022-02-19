@@ -27,9 +27,7 @@ func New() App {
 }
 
 // LatestVersions retrieves latest version for package name on given patterns
-func (a App) LatestVersions(name string, patterns []string) (map[string]semver.Version, error) {
-	ctx := context.Background()
-
+func (a App) LatestVersions(ctx context.Context, name string, patterns []string) (map[string]semver.Version, error) {
 	versions, compiledPatterns, err := model.PreparePatternMatching(patterns)
 	if err != nil {
 		return nil, fmt.Errorf("unable to prepare pattern matching: %s", err)

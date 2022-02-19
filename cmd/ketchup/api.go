@@ -26,7 +26,9 @@ import (
 	"github.com/ViBiOh/httputils/v4/pkg/recoverer"
 	"github.com/ViBiOh/httputils/v4/pkg/redis"
 	"github.com/ViBiOh/httputils/v4/pkg/renderer"
+	"github.com/ViBiOh/httputils/v4/pkg/request"
 	"github.com/ViBiOh/httputils/v4/pkg/server"
+	"github.com/ViBiOh/httputils/v4/pkg/tracer"
 	"github.com/ViBiOh/ketchup/pkg/ketchup"
 	"github.com/ViBiOh/ketchup/pkg/middleware"
 	"github.com/ViBiOh/ketchup/pkg/notifier"
@@ -53,11 +55,11 @@ const (
 //go:embed templates static
 var content embed.FS
 
-func initAuth(db db.App) (authService.App, authMiddleware.App) {
+func initAuth(db db.App, tracerApp tracer.App) (authService.App, authMiddleware.App) {
 	authProvider := authStore.New(db)
 	identProvider := authIdent.New(authProvider, "ketchup")
 
-	return authService.New(authProvider, authProvider), authMiddleware.New(authProvider, identProvider)
+	return authService.New(authProvider, authProvider), authMiddleware.New(authProvider, tracerApp, identProvider)
 }
 
 func main() {
@@ -69,6 +71,7 @@ func main() {
 
 	alcotestConfig := alcotest.Flags(fs, "")
 	loggerConfig := logger.Flags(fs, "logger")
+	tracerConfig := tracer.Flags(fs, "tracer")
 	prometheusConfig := prometheus.Flags(fs, "prometheus", flags.NewOverride("Gzip", false))
 	owaspConfig := owasp.Flags(fs, "", flags.NewOverride("Csp", "default-src 'self'; base-uri 'self'; script-src 'self' 'httputils-nonce'; style-src 'self' 'httputils-nonce'"))
 	corsConfig := cors.Flags(fs, "cors")
@@ -88,6 +91,11 @@ func main() {
 	logger.Global(logger.New(loggerConfig))
 	defer logger.Close()
 
+	tracerApp, err := tracer.New(tracerConfig)
+	logger.Fatal(err)
+	defer tracerApp.Close()
+	request.AddTracerToDefaultClient(tracerApp.GetProvider())
+
 	go func() {
 		fmt.Println(http.ListenAndServe("localhost:9999", http.DefaultServeMux))
 	}()
@@ -96,7 +104,7 @@ func main() {
 	promServer := server.New(promServerConfig)
 	prometheusApp := prometheus.New(prometheusConfig)
 
-	ketchupDb, err := db.New(dbConfig)
+	ketchupDb, err := db.New(dbConfig, tracerApp)
 	logger.Fatal(err)
 	defer ketchupDb.Close()
 
@@ -104,7 +112,7 @@ func main() {
 
 	healthApp := health.New(healthConfig, ketchupDb.Ping, redisApp.Ping)
 
-	authServiceApp, authMiddlewareApp := initAuth(ketchupDb)
+	authServiceApp, authMiddlewareApp := initAuth(ketchupDb, tracerApp)
 
 	userServiceApp := userService.New(userStore.New(ketchupDb), &authServiceApp)
 	githubApp := github.New(githubConfig, redisApp)
@@ -119,7 +127,7 @@ func main() {
 	logger.Fatal(err)
 	defer mailerApp.Close()
 
-	publicRendererApp, err := renderer.New(rendererConfig, content, ketchup.FuncMap)
+	publicRendererApp, err := renderer.New(rendererConfig, content, ketchup.FuncMap, tracerApp)
 	logger.Fatal(err)
 
 	notifierApp := notifier.New(notifierConfig, repositoryServiceApp, ketchupServiceApp, userServiceApp, mailerApp, helmApp)
@@ -150,7 +158,7 @@ func main() {
 	}
 
 	go promServer.Start("prometheus", healthApp.End(), prometheusApp.Handler())
-	go appServer.Start("http", healthApp.End(), httputils.Handler(appHandler, healthApp, recoverer.Middleware, prometheusApp.Middleware, owasp.New(owaspConfig).Middleware, cors.New(corsConfig).Middleware))
+	go appServer.Start("http", healthApp.End(), httputils.Handler(appHandler, healthApp, recoverer.Middleware, prometheusApp.Middleware, tracerApp.Middleware, owasp.New(owaspConfig).Middleware, cors.New(corsConfig).Middleware))
 
 	healthApp.WaitForTermination(appServer.Done())
 	server.GracefulWait(appServer.Done(), promServer.Done())

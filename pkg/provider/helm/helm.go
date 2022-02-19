@@ -33,8 +33,8 @@ func New() App {
 }
 
 // FetchIndex of given URL for given charts patterns
-func (a App) FetchIndex(url string, chartsPatterns map[string][]string) (map[string]map[string]semver.Version, error) {
-	resp, err := request.Get(fmt.Sprintf("%s/%s", url, indexName)).Send(context.Background(), nil)
+func (a App) FetchIndex(ctx context.Context, url string, chartsPatterns map[string][]string) (map[string]map[string]semver.Version, error) {
+	resp, err := request.Get(fmt.Sprintf("%s/%s", url, indexName)).Send(ctx, nil)
 	if err != nil {
 		return nil, fmt.Errorf("unable to request repository: %w", err)
 	}
@@ -78,8 +78,8 @@ func (a App) FetchIndex(url string, chartsPatterns map[string][]string) (map[str
 }
 
 // LatestVersions for repo and name, on given patterns
-func (a App) LatestVersions(name, part string, patterns []string) (map[string]semver.Version, error) {
-	index, err := a.FetchIndex(name, map[string][]string{part: patterns})
+func (a App) LatestVersions(ctx context.Context, name, part string, patterns []string) (map[string]semver.Version, error) {
+	index, err := a.FetchIndex(ctx, name, map[string][]string{part: patterns})
 	if err != nil {
 		return nil, err
 	}

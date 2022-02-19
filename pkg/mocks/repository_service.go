@@ -66,18 +66,18 @@ func (mr *RepositoryServiceMockRecorder) GetOrCreate(arg0, arg1, arg2, arg3, arg
 }
 
 // LatestVersions mocks base method.
-func (m *RepositoryService) LatestVersions(arg0 model.Repository) (map[string]semver.Version, error) {
+func (m *RepositoryService) LatestVersions(arg0 context.Context, arg1 model.Repository) (map[string]semver.Version, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "LatestVersions", arg0)
+	ret := m.ctrl.Call(m, "LatestVersions", arg0, arg1)
 	ret0, _ := ret[0].(map[string]semver.Version)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // LatestVersions indicates an expected call of LatestVersions.
-func (mr *RepositoryServiceMockRecorder) LatestVersions(arg0 interface{}) *gomock.Call {
+func (mr *RepositoryServiceMockRecorder) LatestVersions(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LatestVersions", reflect.TypeOf((*RepositoryService)(nil).LatestVersions), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LatestVersions", reflect.TypeOf((*RepositoryService)(nil).LatestVersions), arg0, arg1)
 }
 
 // List mocks base method.

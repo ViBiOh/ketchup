@@ -87,7 +87,7 @@ func (a App) GetOrCreate(ctx context.Context, kind model.RepositoryKind, name, p
 	}
 
 	repo.Versions[pattern] = ""
-	versions, err := a.LatestVersions(repo)
+	versions, err := a.LatestVersions(ctx, repo)
 	if err != nil {
 		return model.NewEmptyRepository(), httpModel.WrapInternal(fmt.Errorf("unable to get releases for `%s`: %w", repo.Name, err))
 	}
@@ -110,7 +110,7 @@ func (a App) create(ctx context.Context, item model.Repository) (model.Repositor
 		return model.NewEmptyRepository(), httpModel.WrapInvalid(err)
 	}
 
-	versions, err := a.LatestVersions(item)
+	versions, err := a.LatestVersions(ctx, item)
 	if err != nil {
 		return model.NewEmptyRepository(), httpModel.WrapNotFound(fmt.Errorf("unable to get releases for `%s`: %w", item.Name, err))
 	}
@@ -204,7 +204,7 @@ func (a App) check(ctx context.Context, old, new model.Repository) error {
 }
 
 // LatestVersions of a repository
-func (a App) LatestVersions(repo model.Repository) (map[string]semver.Version, error) {
+func (a App) LatestVersions(ctx context.Context, repo model.Repository) (map[string]semver.Version, error) {
 	if len(repo.Versions) == 0 {
 		return nil, errors.New("no pattern for fetching latest versions")
 	}
@@ -218,15 +218,15 @@ func (a App) LatestVersions(repo model.Repository) (map[string]semver.Version, e
 
 	switch repo.Kind {
 	case model.Github:
-		return a.githubApp.LatestVersions(repo.Name, patterns)
+		return a.githubApp.LatestVersions(ctx, repo.Name, patterns)
 	case model.Helm:
-		return a.helmApp.LatestVersions(repo.Name, repo.Part, patterns)
+		return a.helmApp.LatestVersions(ctx, repo.Name, repo.Part, patterns)
 	case model.Docker:
-		return a.dockerApp.LatestVersions(repo.Name, patterns)
+		return a.dockerApp.LatestVersions(ctx, repo.Name, patterns)
 	case model.NPM:
-		return a.npmApp.LatestVersions(repo.Name, patterns)
+		return a.npmApp.LatestVersions(ctx, repo.Name, patterns)
 	case model.Pypi:
-		return a.pypiApp.LatestVersions(repo.Name, patterns)
+		return a.pypiApp.LatestVersions(ctx, repo.Name, patterns)
 	default:
 		return nil, fmt.Errorf("unknown repository kind %d", repo.Kind)
 	}

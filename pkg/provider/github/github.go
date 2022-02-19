@@ -50,7 +50,7 @@ type RateLimitResponse struct {
 // App of package
 type App interface {
 	Start(prometheus.Registerer, <-chan struct{})
-	LatestVersions(string, []string) (map[string]semver.Version, error)
+	LatestVersions(context.Context, string, []string) (map[string]semver.Version, error)
 }
 
 // Config of package
@@ -102,7 +102,7 @@ func (a app) Start(registerer prometheus.Registerer, done <-chan struct{}) {
 	}, done)
 }
 
-func (a app) LatestVersions(repository string, patterns []string) (map[string]semver.Version, error) {
+func (a app) LatestVersions(ctx context.Context, repository string, patterns []string) (map[string]semver.Version, error) {
 	versions, compiledPatterns, err := model.PreparePatternMatching(patterns)
 	if err != nil {
 		return nil, fmt.Errorf("unable to prepare pattern matching: %s", err)
@@ -111,7 +111,7 @@ func (a app) LatestVersions(repository string, patterns []string) (map[string]se
 	page := 1
 	req := a.newClient()
 	for {
-		resp, err := req.Get(fmt.Sprintf("%s/repos/%s/tags?per_page=100&page=%d", apiURL, repository, page)).Send(context.Background(), nil)
+		resp, err := req.Get(fmt.Sprintf("%s/repos/%s/tags?per_page=100&page=%d", apiURL, repository, page)).Send(ctx, nil)
 		if err != nil {
 			return nil, fmt.Errorf("unable to list page %d of tags: %s", page, err)
 		}

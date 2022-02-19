@@ -35,6 +35,8 @@ spec:
       KETCHUP_SCHEDULER_ENABLED: "false"
       KETCHUP_REDIS_ADDRESS: redis:80
       KETCHUP_DOCKER_USERNAME: vibioh
+      KETCHUP_TRACER_URL: http://jaeger.monitoring:14268/api/traces
+      OTEL_SERVICE_NAME: ketchup
     secrets:
       KETCHUP_DB_PASS: AgAyziZsl2XTmsNQSZV8dmOpNmOfzQMFVvM39T4OEcBnU/ocR9cznincVPFU1r+DmwRm3eHXxJU8/8EHtzRbk5IiGeH2ajZT/EL3IH/2OEJco7NR6hg8Hb8MClPA33IflcCA5mpMeW2wVJRfVcxQyVXT3ZWDB/vaNsYFIOBHtWJ3VnTj4RzGqnxWezixs1cXaXuh83waS0znzDCC05BCSHB/xMOYwU8aNHZfW24CP/vNkbsRsKnEuoXdlUNKAbKr//2X7emCVRhN1j5VVcLQEGKz4+HIEEFy5RRXySG5wBtmNaRS3m4H2m22cvQRLpszy2+IjujKvKEsKhXdqsWQZmoFx+PoX+V+VVMnlroIwWDcQfPJ7ETN4EFMoOysryniuIf7y/ji+k2W98XvCzmEB0bK6s3SPk896+MFG0MaOK+HUmCw5t1LNDFI2ngE5Edfp9gJ9efHE01ddNeQyQ70WoAA0XCjalxooiySFFtDLz/dIs75VuNFLMxmHNO8b66RMoVI9MguwP0ROStl+qQ5fCRT+uffBDwcgldKvCRg6NNg3hLMaVFP6lksZLVE9judPoWrVF/pYN8OFB7IPzF2ozSkiebFykebLBYAceEOJAwO6HUY0y7bF4TixPddINJDPXpcZyj2Ec4TyDWZA1UB+f1GStRxHJT9fvpRQO4+bui2N639BFCYJ32J/mFc6si9pGmKODTn36hF7eFBJr9owb6V/KKcYjF511c3/RBCEo471FyhfSp8OwRPKuD+bSy6IntnW3U03JbXjee1Z4o=
       KETCHUP_REDIS_PASSWORD: AgBB9rWshPmIBYCvEnTh3PWam0w7D5rppRsMdtclEFErVOGguBN9ek866uMhUmuddnIDuaxEocTwzbUqIhHhcATClCAcz9IZ/t6oV4QKlRTyhEgAdG+4aXQ8RY3VbW4Yct18Flv5YdS7sEhxYdhEGZ0vC0MYptnIfGWxQ0w7+5Oiaw4zOSgRwID5nBVNPomX0zWC4Qna26uqUEra3Y+Ormg1V7sFTYyjkwEN+7KzadPyZrj6QHdGYjm9Lt98DiBWzZ0oBvafeEE/le7v9rRON2euHQzEaIN/NmIuFBOS/qt6anL/FmpxvBNoQ+jm5aiHEpWmcVZBfos+6aR9CNIlRrEN9jMNi+cOgpenZ2b8lspNqY1dv08DXv3vDhNZlAvFfCnvzzd/lB88aHImFbyuXVa0t7BlNEbczsuaX6aoBOBwsQRavhyPwfGeBl9ZKrI/sk9iDIqhPkjLEnj32eqDivJ/HScT1e6WPyV8afqy7AjIX0ggNupHuTUeVzNOTuscrJHRCz9TpbP8gdITP0uP+oYJVe4R61IDjGwaSUbI4Q2JRd2dJBZiQAPEKTF20hCSSt1FaroJYGm6ZoIBVq0nb4qAiWHhEbuT0Z0RUatrb60kUPrIot4k/VQo6ExN1zCKEbmJXxLZ6RX7JDMC1bAk8lEz+o1Y1+AHXwDCLGrzDADCwDD/dz1T3DkCwo7nyGgLO7v0nRrYXlRlbnKyYJiJ/jnjhKYgaap/ZAbr5XRws4Xs8GOkmhj3em2piYNnTu9rq1Fj84Vu4YJS+H5ovn89w80=
@@ -44,19 +46,19 @@ spec:
       enabled: true
       compress: true
       hosts:
-      - ketchup.vibioh.fr
+        - ketchup.vibioh.fr
     canary:
       enabled: true
       url: https://ketchup.vibioh.fr
     affinity:
       podAffinity:
         preferredDuringSchedulingIgnoredDuringExecution:
-        - weight: 100
-          podAffinityTerm:
-            labelSelector:
-              matchExpressions:
-              - key: app.kubernetes.io/instance
-                operator: In
-                values:
-                - ketchup-db
-            topologyKey: "kubernetes.io/hostname"
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                  - key: app.kubernetes.io/instance
+                    operator: In
+                    values:
+                      - ketchup-db
+              topologyKey: "kubernetes.io/hostname"

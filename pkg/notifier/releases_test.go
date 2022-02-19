@@ -84,12 +84,12 @@ func TestGetNewStandardReleases(t *testing.T) {
 				mockRepositoryService.EXPECT().ListByKinds(gomock.Any(), gomock.Any(), gomock.Any(), model.Github, model.Docker, model.NPM, model.Pypi).Return([]model.Repository{
 					model.NewGithubRepository(1, repositoryName).AddVersion(model.DefaultPattern, repositoryVersion),
 				}, uint64(1), nil)
-				mockRepositoryService.EXPECT().LatestVersions(gomock.Any()).Return(nil, errors.New("failed"))
+				mockRepositoryService.EXPECT().LatestVersions(gomock.Any(), gomock.Any()).Return(nil, errors.New("failed"))
 			case "same version":
 				mockRepositoryService.EXPECT().ListByKinds(gomock.Any(), gomock.Any(), gomock.Any(), model.Github, model.Docker, model.NPM, model.Pypi).Return([]model.Repository{
 					model.NewGithubRepository(1, repositoryName).AddVersion(model.DefaultPattern, repositoryVersion),
 				}, uint64(1), nil)
-				mockRepositoryService.EXPECT().LatestVersions(gomock.Any()).Return(map[string]semver.Version{
+				mockRepositoryService.EXPECT().LatestVersions(gomock.Any(), gomock.Any()).Return(map[string]semver.Version{
 					model.DefaultPattern: {
 						Name: "1.1.0",
 					},
@@ -98,7 +98,7 @@ func TestGetNewStandardReleases(t *testing.T) {
 				mockRepositoryService.EXPECT().ListByKinds(gomock.Any(), gomock.Any(), gomock.Any(), model.Github, model.Docker, model.NPM, model.Pypi).Return([]model.Repository{
 					model.NewGithubRepository(1, repositoryName).AddVersion(model.DefaultPattern, repositoryVersion),
 				}, uint64(1), nil)
-				mockRepositoryService.EXPECT().LatestVersions(gomock.Any()).Return(map[string]semver.Version{
+				mockRepositoryService.EXPECT().LatestVersions(gomock.Any(), gomock.Any()).Return(map[string]semver.Version{
 					model.DefaultPattern: safeParse("1.1.0"),
 					"1.0":                safeParse("1.0"),
 				}, nil)
@@ -213,7 +213,7 @@ func TestGetNewHelmReleases(t *testing.T) {
 					model.NewHelmRepository(1, "https://charts.vibioh.fr", "flux"),
 					model.NewHelmRepository(1, "https://charts.helm.sh/stable", "postgreql"),
 				}, uint64(4), nil)
-				mockHelmProvider.EXPECT().FetchIndex(gomock.Any(), gomock.Any()).Times(2).Return(nil, errors.New("helm error"))
+				mockHelmProvider.EXPECT().FetchIndex(gomock.Any(), gomock.Any(), gomock.Any()).Times(2).Return(nil, errors.New("helm error"))
 			case "helm":
 				mockRepositoryService.EXPECT().ListByKinds(gomock.Any(), gomock.Any(), gomock.Any(), model.Helm).Return([]model.Repository{
 					postgresRepo,
@@ -221,7 +221,7 @@ func TestGetNewHelmReleases(t *testing.T) {
 					cronRepo,
 					fluxRepo,
 				}, uint64(0), nil)
-				mockHelmProvider.EXPECT().FetchIndex(gomock.Any(), gomock.Any()).Times(2).Return(map[string]map[string]semver.Version{
+				mockHelmProvider.EXPECT().FetchIndex(gomock.Any(), gomock.Any(), gomock.Any()).Times(2).Return(map[string]map[string]semver.Version{
 					"app": {
 						model.DefaultPattern: safeParse("1.1.0"),
 					},

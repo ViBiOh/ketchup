@@ -56,9 +56,7 @@ func New(config Config) App {
 }
 
 // LatestVersions retrieve latest version of repository for given patterns
-func (a App) LatestVersions(repository string, patterns []string) (map[string]semver.Version, error) {
-	ctx := context.Background()
-
+func (a App) LatestVersions(ctx context.Context, repository string, patterns []string) (map[string]semver.Version, error) {
 	versions, compiledPatterns, err := model.PreparePatternMatching(patterns)
 	if err != nil {
 		return nil, fmt.Errorf("unable to prepare pattern matching: %s", err)

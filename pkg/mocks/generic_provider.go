@@ -5,6 +5,7 @@
 package mocks
 
 import (
+	context "context"
 	reflect "reflect"
 
 	semver "github.com/ViBiOh/ketchup/pkg/semver"
@@ -35,16 +36,16 @@ func (m *GenericProvider) EXPECT() *GenericProviderMockRecorder {
 }
 
 // LatestVersions mocks base method.
-func (m *GenericProvider) LatestVersions(arg0 string, arg1 []string) (map[string]semver.Version, error) {
+func (m *GenericProvider) LatestVersions(arg0 context.Context, arg1 string, arg2 []string) (map[string]semver.Version, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "LatestVersions", arg0, arg1)
+	ret := m.ctrl.Call(m, "LatestVersions", arg0, arg1, arg2)
 	ret0, _ := ret[0].(map[string]semver.Version)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // LatestVersions indicates an expected call of LatestVersions.
-func (mr *GenericProviderMockRecorder) LatestVersions(arg0, arg1 interface{}) *gomock.Call {
+func (mr *GenericProviderMockRecorder) LatestVersions(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LatestVersions", reflect.TypeOf((*GenericProvider)(nil).LatestVersions), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LatestVersions", reflect.TypeOf((*GenericProvider)(nil).LatestVersions), arg0, arg1, arg2)
 }
