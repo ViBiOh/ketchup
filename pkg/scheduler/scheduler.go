@@ -11,7 +11,9 @@ import (
 	"github.com/ViBiOh/httputils/v4/pkg/cron"
 	"github.com/ViBiOh/httputils/v4/pkg/logger"
 	"github.com/ViBiOh/httputils/v4/pkg/redis"
+	"github.com/ViBiOh/httputils/v4/pkg/tracer"
 	"github.com/ViBiOh/ketchup/pkg/notifier"
+	"go.opentelemetry.io/otel/trace"
 )
 
 // App of package
@@ -27,6 +29,7 @@ type Config struct {
 }
 
 type app struct {
+	tracer      trace.Tracer
 	timezone    string
 	hour        string
 	redisApp    redis.App
@@ -43,7 +46,7 @@ func Flags(fs *flag.FlagSet, prefix string) Config {
 }
 
 // New creates new App from Config
-func New(config Config, notifierApp notifier.App, redisApp redis.App) App {
+func New(config Config, notifierApp notifier.App, redisApp redis.App, tracerApp tracer.App) App {
 	if !*config.enabled {
 		return nil
 	}
@@ -53,11 +56,12 @@ func New(config Config, notifierApp notifier.App, redisApp redis.App) App {
 		hour:        strings.TrimSpace(*config.hour),
 		notifierApp: notifierApp,
 		redisApp:    redisApp,
+		tracer:      tracerApp.GetTracer("scheduler"),
 	}
 }
 
 func (a app) Start(done <-chan struct{}) {
-	cron.New().At(a.hour).In(a.timezone).Days().OnError(func(err error) {
+	cron.New().At(a.hour).In(a.timezone).Days().WithTracer(a.tracer).OnError(func(err error) {
 		logger.Error("error while running ketchup notify: %s", err)
 	}).OnSignal(syscall.SIGUSR1).Exclusive(a.redisApp, "ketchup:notify", 10*time.Minute).Start(func(ctx context.Context) error {
 		logger.Info("Starting ketchup notifier")

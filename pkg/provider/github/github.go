@@ -17,6 +17,7 @@ import (
 	"github.com/ViBiOh/ketchup/pkg/model"
 	"github.com/ViBiOh/ketchup/pkg/semver"
 	"github.com/prometheus/client_golang/prometheus"
+	"go.opentelemetry.io/otel/trace"
 )
 
 var (
@@ -60,6 +61,7 @@ type Config struct {
 }
 
 type app struct {
+	tracer   trace.Tracer
 	redisApp redis
 	token    string
 }
@@ -78,6 +80,7 @@ func New(config Config, redisApp redis, tracerApp tracer.App) App {
 	return app{
 		token:    strings.TrimSpace(*config.token),
 		redisApp: redisApp,
+		tracer:   tracerApp.GetTracer("github"),
 	}
 }
 
@@ -92,7 +95,7 @@ func (a app) Start(registerer prometheus.Registerer, done <-chan struct{}) {
 	})
 	registerer.MustRegister(metrics)
 
-	cron.New().Now().Each(time.Minute).OnError(func(err error) {
+	cron.New().Now().Each(time.Minute).WithTracer(a.tracer).OnError(func(err error) {
 		logger.Error("unable to get rate limit metrics: %s", err)
 	}).Exclusive(a.redisApp, "ketchup:github_rate_limit_metrics", 15*time.Second).Start(func(ctx context.Context) error {
 		value, err := a.getRateLimit(ctx)

@@ -131,7 +131,7 @@ func main() {
 	logger.Fatal(err)
 
 	notifierApp := notifier.New(notifierConfig, repositoryServiceApp, ketchupServiceApp, userServiceApp, mailerApp, helmApp)
-	schedulerApp := scheduler.New(schedulerConfig, notifierApp, redisApp)
+	schedulerApp := scheduler.New(schedulerConfig, notifierApp, redisApp, tracerApp)
 	ketchupApp := ketchup.New(publicRendererApp, ketchupServiceApp, userServiceApp, repositoryServiceApp, redisApp)
 
 	publicHandler := publicRendererApp.Handler(ketchupApp.PublicTemplateFunc)
