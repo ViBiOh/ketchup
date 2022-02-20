@@ -13,6 +13,7 @@ import (
 	"github.com/ViBiOh/httputils/v4/pkg/httpjson"
 	"github.com/ViBiOh/httputils/v4/pkg/logger"
 	"github.com/ViBiOh/httputils/v4/pkg/request"
+	"github.com/ViBiOh/httputils/v4/pkg/tracer"
 	"github.com/ViBiOh/ketchup/pkg/model"
 	"github.com/ViBiOh/ketchup/pkg/semver"
 	"github.com/prometheus/client_golang/prometheus"
@@ -71,7 +72,9 @@ func Flags(fs *flag.FlagSet, prefix string) Config {
 }
 
 // New creates new App from Config
-func New(config Config, redisApp redis) App {
+func New(config Config, redisApp redis, tracerApp tracer.App) App {
+	httpClient = tracer.AddTracerToClient(httpClient, tracerApp.GetProvider())
+
 	return app{
 		token:    strings.TrimSpace(*config.token),
 		redisApp: redisApp,

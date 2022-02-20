@@ -8,7 +8,7 @@ spec:
   chart:
     spec:
       chart: app
-      version: "0.0.80"
+      version: "0.0.81"
       sourceRef:
         kind: HelmRepository
         name: vibioh
@@ -46,19 +46,21 @@ spec:
       enabled: true
       compress: true
       hosts:
-      - ketchup.vibioh.fr
+        - ketchup.vibioh.fr
     canary:
       enabled: true
       url: https://ketchup.vibioh.fr
     affinity:
       podAffinity:
         preferredDuringSchedulingIgnoredDuringExecution:
-        - weight: 100
-          podAffinityTerm:
-            labelSelector:
-              matchExpressions:
-              - key: app.kubernetes.io/instance
-                operator: In
-                values:
-                - ketchup-db
-            topologyKey: "kubernetes.io/hostname"
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                  - key: app.kubernetes.io/instance
+                    operator: In
+                    values:
+                      - ketchup-db
+              topologyKey: "kubernetes.io/hostname"
+    pprof:
+      enabled: true

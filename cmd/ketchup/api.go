@@ -108,14 +108,14 @@ func main() {
 	logger.Fatal(err)
 	defer ketchupDb.Close()
 
-	redisApp := redis.New(redisConfig, prometheusApp.Registerer())
+	redisApp := redis.New(redisConfig, prometheusApp.Registerer(), tracerApp)
 
 	healthApp := health.New(healthConfig, ketchupDb.Ping, redisApp.Ping)
 
 	authServiceApp, authMiddlewareApp := initAuth(ketchupDb, tracerApp)
 
 	userServiceApp := userService.New(userStore.New(ketchupDb), &authServiceApp)
-	githubApp := github.New(githubConfig, redisApp)
+	githubApp := github.New(githubConfig, redisApp, tracerApp)
 	dockerApp := docker.New(dockerConfig)
 	helmApp := helm.New()
 	npmApp := npm.New()

@@ -61,7 +61,7 @@ func main() {
 	helmApp := helm.New()
 	npmApp := npm.New()
 	pypiApp := pypi.New()
-	repositoryServiceApp := repositoryService.New(repositoryStore.New(ketchupDb), github.New(githubConfig, nil), helmApp, docker.New(dockerConfig), npmApp, pypiApp)
+	repositoryServiceApp := repositoryService.New(repositoryStore.New(ketchupDb), github.New(githubConfig, nil, tracerApp), helmApp, docker.New(dockerConfig), npmApp, pypiApp)
 	ketchupServiceApp := ketchupService.New(ketchupStore.New(ketchupDb), repositoryServiceApp)
 	userServiceApp := userService.New(userStore.New(ketchupDb), nil)
 
