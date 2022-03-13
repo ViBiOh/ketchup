@@ -3,9 +3,9 @@ module github.com/ViBiOh/ketchup
 go 1.17
 
 require (
-	github.com/ViBiOh/auth/v2 v2.11.42
+	github.com/ViBiOh/auth/v2 v2.11.43
 	github.com/ViBiOh/flags v0.0.1
-	github.com/ViBiOh/httputils/v4 v4.37.1
+	github.com/ViBiOh/httputils/v4 v4.37.2
 	github.com/ViBiOh/mailer v1.27.17
 	github.com/golang/mock v1.6.0
 	github.com/jackc/pgconn v1.11.0
@@ -44,8 +44,8 @@ require (
 	go.opentelemetry.io/otel/internal/metric v0.27.0 // indirect
 	go.opentelemetry.io/otel/metric v0.27.0 // indirect
 	go.opentelemetry.io/otel/sdk v1.4.1 // indirect
-	golang.org/x/crypto v0.0.0-20220214200702-86341886e292 // indirect
-	golang.org/x/sys v0.0.0-20220114195835-da31bd327af9 // indirect
+	golang.org/x/crypto v0.0.0-20220307211146-efcb8507fb70 // indirect
+	golang.org/x/sys v0.0.0-20220310020820-b874c991c1a5 // indirect
 	golang.org/x/text v0.3.7 // indirect
 	google.golang.org/protobuf v1.27.1 // indirect
 )
