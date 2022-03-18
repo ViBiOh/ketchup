@@ -250,7 +250,7 @@ func (a App) sendNotification(ctx context.Context, template string, ketchupToNot
 
 		sort.Sort(model.ReleaseByKindAndName(releases))
 
-		payload := map[string]interface{}{
+		payload := map[string]any{
 			"releases": releases,
 		}
 

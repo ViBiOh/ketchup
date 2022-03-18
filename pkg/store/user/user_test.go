@@ -56,23 +56,23 @@ func TestGetByEmail(t *testing.T) {
 			switch tc.intention {
 			case "simple":
 				mockRow := mocks.NewRow(ctrl)
-				mockRow.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...interface{}) error {
+				mockRow.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...any) error {
 					*pointers[0].(*uint64) = 1
 					*pointers[1].(*string) = testEmail
 					*pointers[2].(*uint64) = 1
 
 					return nil
 				})
-				dummyFn := func(_ context.Context, scanner func(pgx.Row) error, _ string, _ ...interface{}) error {
+				dummyFn := func(_ context.Context, scanner func(pgx.Row) error, _ string, _ ...any) error {
 					return scanner(mockRow)
 				}
 				mockDatabase.EXPECT().Get(gomock.Any(), gomock.Any(), gomock.Any(), testEmail).DoAndReturn(dummyFn)
 			case "no rows":
 				mockRow := mocks.NewRow(ctrl)
-				mockRow.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...interface{}) error {
+				mockRow.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...any) error {
 					return pgx.ErrNoRows
 				})
-				dummyFn := func(_ context.Context, scanner func(pgx.Row) error, _ string, _ ...interface{}) error {
+				dummyFn := func(_ context.Context, scanner func(pgx.Row) error, _ string, _ ...any) error {
 					return scanner(mockRow)
 				}
 				mockDatabase.EXPECT().Get(gomock.Any(), gomock.Any(), gomock.Any(), testEmail).DoAndReturn(dummyFn)
@@ -136,23 +136,23 @@ func TestGetByLoginID(t *testing.T) {
 			switch tc.intention {
 			case "simple":
 				mockRow := mocks.NewRow(ctrl)
-				mockRow.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...interface{}) error {
+				mockRow.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...any) error {
 					*pointers[0].(*uint64) = 1
 					*pointers[1].(*string) = testEmail
 					*pointers[2].(*uint64) = 2
 
 					return nil
 				})
-				dummyFn := func(_ context.Context, scanner func(pgx.Row) error, _ string, _ ...interface{}) error {
+				dummyFn := func(_ context.Context, scanner func(pgx.Row) error, _ string, _ ...any) error {
 					return scanner(mockRow)
 				}
 				mockDatabase.EXPECT().Get(gomock.Any(), gomock.Any(), gomock.Any(), uint64(2)).DoAndReturn(dummyFn)
 			case "no rows":
 				mockRow := mocks.NewRow(ctrl)
-				mockRow.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...interface{}) error {
+				mockRow.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...any) error {
 					return pgx.ErrNoRows
 				})
-				dummyFn := func(_ context.Context, scanner func(pgx.Row) error, _ string, _ ...interface{}) error {
+				dummyFn := func(_ context.Context, scanner func(pgx.Row) error, _ string, _ ...any) error {
 					return scanner(mockRow)
 				}
 				mockDatabase.EXPECT().Get(gomock.Any(), gomock.Any(), gomock.Any(), uint64(2)).DoAndReturn(dummyFn)
@@ -256,12 +256,12 @@ func TestCount(t *testing.T) {
 			switch tc.intention {
 			case "simple":
 				mockRow := mocks.NewRow(ctrl)
-				mockRow.EXPECT().Scan(gomock.Any()).DoAndReturn(func(pointers ...interface{}) error {
+				mockRow.EXPECT().Scan(gomock.Any()).DoAndReturn(func(pointers ...any) error {
 					*pointers[0].(*uint64) = 1
 
 					return nil
 				})
-				dummyFn := func(_ context.Context, scanner func(pgx.Row) error, _ string, _ ...interface{}) error {
+				dummyFn := func(_ context.Context, scanner func(pgx.Row) error, _ string, _ ...any) error {
 					return scanner(mockRow)
 				}
 				mockDatabase.EXPECT().Get(gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(dummyFn)

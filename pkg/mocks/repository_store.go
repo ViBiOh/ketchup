@@ -45,7 +45,7 @@ func (m *RepositoryStore) Create(arg0 context.Context, arg1 model.Repository) (u
 }
 
 // Create indicates an expected call of Create.
-func (mr *RepositoryStoreMockRecorder) Create(arg0, arg1 interface{}) *gomock.Call {
+func (mr *RepositoryStoreMockRecorder) Create(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*RepositoryStore)(nil).Create), arg0, arg1)
 }
@@ -59,7 +59,7 @@ func (m *RepositoryStore) DeleteUnused(arg0 context.Context) error {
 }
 
 // DeleteUnused indicates an expected call of DeleteUnused.
-func (mr *RepositoryStoreMockRecorder) DeleteUnused(arg0 interface{}) *gomock.Call {
+func (mr *RepositoryStoreMockRecorder) DeleteUnused(arg0 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteUnused", reflect.TypeOf((*RepositoryStore)(nil).DeleteUnused), arg0)
 }
@@ -73,7 +73,7 @@ func (m *RepositoryStore) DeleteUnusedVersions(arg0 context.Context) error {
 }
 
 // DeleteUnusedVersions indicates an expected call of DeleteUnusedVersions.
-func (mr *RepositoryStoreMockRecorder) DeleteUnusedVersions(arg0 interface{}) *gomock.Call {
+func (mr *RepositoryStoreMockRecorder) DeleteUnusedVersions(arg0 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteUnusedVersions", reflect.TypeOf((*RepositoryStore)(nil).DeleteUnusedVersions), arg0)
 }
@@ -87,7 +87,7 @@ func (m *RepositoryStore) DoAtomic(arg0 context.Context, arg1 func(context.Conte
 }
 
 // DoAtomic indicates an expected call of DoAtomic.
-func (mr *RepositoryStoreMockRecorder) DoAtomic(arg0, arg1 interface{}) *gomock.Call {
+func (mr *RepositoryStoreMockRecorder) DoAtomic(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DoAtomic", reflect.TypeOf((*RepositoryStore)(nil).DoAtomic), arg0, arg1)
 }
@@ -102,7 +102,7 @@ func (m *RepositoryStore) Get(arg0 context.Context, arg1 uint64, arg2 bool) (mod
 }
 
 // Get indicates an expected call of Get.
-func (mr *RepositoryStoreMockRecorder) Get(arg0, arg1, arg2 interface{}) *gomock.Call {
+func (mr *RepositoryStoreMockRecorder) Get(arg0, arg1, arg2 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*RepositoryStore)(nil).Get), arg0, arg1, arg2)
 }
@@ -117,7 +117,7 @@ func (m *RepositoryStore) GetByName(arg0 context.Context, arg1 model.RepositoryK
 }
 
 // GetByName indicates an expected call of GetByName.
-func (mr *RepositoryStoreMockRecorder) GetByName(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
+func (mr *RepositoryStoreMockRecorder) GetByName(arg0, arg1, arg2, arg3 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByName", reflect.TypeOf((*RepositoryStore)(nil).GetByName), arg0, arg1, arg2, arg3)
 }
@@ -133,7 +133,7 @@ func (m *RepositoryStore) List(arg0 context.Context, arg1 uint, arg2 string) ([]
 }
 
 // List indicates an expected call of List.
-func (mr *RepositoryStoreMockRecorder) List(arg0, arg1, arg2 interface{}) *gomock.Call {
+func (mr *RepositoryStoreMockRecorder) List(arg0, arg1, arg2 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*RepositoryStore)(nil).List), arg0, arg1, arg2)
 }
@@ -141,7 +141,7 @@ func (mr *RepositoryStoreMockRecorder) List(arg0, arg1, arg2 interface{}) *gomoc
 // ListByKinds mocks base method.
 func (m *RepositoryStore) ListByKinds(arg0 context.Context, arg1 uint, arg2 string, arg3 ...model.RepositoryKind) ([]model.Repository, uint64, error) {
 	m.ctrl.T.Helper()
-	varargs := []interface{}{arg0, arg1, arg2}
+	varargs := []any{arg0, arg1, arg2}
 	for _, a := range arg3 {
 		varargs = append(varargs, a)
 	}
@@ -153,9 +153,9 @@ func (m *RepositoryStore) ListByKinds(arg0 context.Context, arg1 uint, arg2 stri
 }
 
 // ListByKinds indicates an expected call of ListByKinds.
-func (mr *RepositoryStoreMockRecorder) ListByKinds(arg0, arg1, arg2 interface{}, arg3 ...interface{}) *gomock.Call {
+func (mr *RepositoryStoreMockRecorder) ListByKinds(arg0, arg1, arg2 any, arg3 ...any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	varargs := append([]interface{}{arg0, arg1, arg2}, arg3...)
+	varargs := append([]any{arg0, arg1, arg2}, arg3...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListByKinds", reflect.TypeOf((*RepositoryStore)(nil).ListByKinds), varargs...)
 }
 
@@ -169,7 +169,7 @@ func (m *RepositoryStore) Suggest(arg0 context.Context, arg1 []uint64, arg2 uint
 }
 
 // Suggest indicates an expected call of Suggest.
-func (mr *RepositoryStoreMockRecorder) Suggest(arg0, arg1, arg2 interface{}) *gomock.Call {
+func (mr *RepositoryStoreMockRecorder) Suggest(arg0, arg1, arg2 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Suggest", reflect.TypeOf((*RepositoryStore)(nil).Suggest), arg0, arg1, arg2)
 }
@@ -183,7 +183,7 @@ func (m *RepositoryStore) UpdateVersions(arg0 context.Context, arg1 model.Reposi
 }
 
 // UpdateVersions indicates an expected call of UpdateVersions.
-func (mr *RepositoryStoreMockRecorder) UpdateVersions(arg0, arg1 interface{}) *gomock.Call {
+func (mr *RepositoryStoreMockRecorder) UpdateVersions(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateVersions", reflect.TypeOf((*RepositoryStore)(nil).UpdateVersions), arg0, arg1)
 }

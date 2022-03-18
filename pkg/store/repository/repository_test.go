@@ -105,7 +105,7 @@ func TestList(t *testing.T) {
 			switch tc.intention {
 			case "success":
 				mockRows := mocks.NewRows(ctrl)
-				mockRows.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...interface{}) error {
+				mockRows.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...any) error {
 					*pointers[0].(*uint64) = 1
 					*pointers[1].(*string) = "github"
 					*pointers[2].(*string) = ketchupRepository
@@ -114,7 +114,7 @@ func TestList(t *testing.T) {
 
 					return nil
 				})
-				mockRows.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...interface{}) error {
+				mockRows.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...any) error {
 					*pointers[0].(*uint64) = 2
 					*pointers[1].(*string) = "github"
 					*pointers[2].(*string) = viwsRepository
@@ -123,7 +123,7 @@ func TestList(t *testing.T) {
 
 					return nil
 				})
-				dummyFn := func(_ context.Context, scanner func(pgx.Rows) error, _ string, _ ...interface{}) error {
+				dummyFn := func(_ context.Context, scanner func(pgx.Rows) error, _ string, _ ...any) error {
 					if err := scanner(mockRows); err != nil {
 						return err
 					}
@@ -132,21 +132,21 @@ func TestList(t *testing.T) {
 				mockDatabase.EXPECT().List(gomock.Any(), gomock.Any(), gomock.Any(), uint(20)).DoAndReturn(dummyFn)
 
 				enrichRows := mocks.NewRows(ctrl)
-				enrichRows.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...interface{}) error {
+				enrichRows.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...any) error {
 					*pointers[0].(*uint64) = 1
 					*pointers[1].(*string) = model.DefaultPattern
 					*pointers[2].(*string) = "1.0.0"
 
 					return nil
 				})
-				enrichRows.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...interface{}) error {
+				enrichRows.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...any) error {
 					*pointers[0].(*uint64) = 2
 					*pointers[1].(*string) = model.DefaultPattern
 					*pointers[2].(*string) = "1.2.3"
 
 					return nil
 				})
-				enrichFn := func(_ context.Context, scanner func(pgx.Rows) error, _ string, _ ...interface{}) error {
+				enrichFn := func(_ context.Context, scanner func(pgx.Rows) error, _ string, _ ...any) error {
 					if err := scanner(enrichRows); err != nil {
 						return err
 					}
@@ -162,10 +162,10 @@ func TestList(t *testing.T) {
 
 			case "scan error":
 				mockRows := mocks.NewRows(ctrl)
-				mockRows.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...interface{}) error {
+				mockRows.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...any) error {
 					return errors.New("unable to read int")
 				})
-				dummyFn := func(_ context.Context, scanner func(pgx.Rows) error, _ string, _ ...interface{}) error {
+				dummyFn := func(_ context.Context, scanner func(pgx.Rows) error, _ string, _ ...any) error {
 					if err := scanner(mockRows); err != nil {
 						return err
 					}
@@ -175,7 +175,7 @@ func TestList(t *testing.T) {
 
 			case "invalid kind":
 				mockRows := mocks.NewRows(ctrl)
-				mockRows.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...interface{}) error {
+				mockRows.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...any) error {
 					*pointers[0].(*uint64) = 1
 					*pointers[1].(*string) = "wrong"
 					*pointers[2].(*string) = ketchupRepository
@@ -184,7 +184,7 @@ func TestList(t *testing.T) {
 
 					return nil
 				})
-				dummyFn := func(_ context.Context, scanner func(pgx.Rows) error, _ string, _ ...interface{}) error {
+				dummyFn := func(_ context.Context, scanner func(pgx.Rows) error, _ string, _ ...any) error {
 					if err := scanner(mockRows); err != nil {
 						return err
 					}
@@ -253,7 +253,7 @@ func TestSuggest(t *testing.T) {
 			switch tc.intention {
 			case "simple":
 				mockRows := mocks.NewRows(ctrl)
-				mockRows.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...interface{}) error {
+				mockRows.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...any) error {
 					*pointers[0].(*uint64) = 1
 					*pointers[1].(*string) = "github"
 					*pointers[2].(*string) = ketchupRepository
@@ -262,7 +262,7 @@ func TestSuggest(t *testing.T) {
 
 					return nil
 				})
-				mockRows.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...interface{}) error {
+				mockRows.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...any) error {
 					*pointers[0].(*uint64) = 2
 					*pointers[1].(*string) = "helm"
 					*pointers[2].(*string) = chartRepository
@@ -271,7 +271,7 @@ func TestSuggest(t *testing.T) {
 
 					return nil
 				})
-				dummyFn := func(_ context.Context, scanner func(pgx.Rows) error, _ string, _ ...interface{}) error {
+				dummyFn := func(_ context.Context, scanner func(pgx.Rows) error, _ string, _ ...any) error {
 					if err := scanner(mockRows); err != nil {
 						return err
 					}
@@ -280,21 +280,21 @@ func TestSuggest(t *testing.T) {
 				mockDatabase.EXPECT().List(gomock.Any(), gomock.Any(), gomock.Any(), uint64(2), []uint64{8000}).DoAndReturn(dummyFn)
 
 				enrichRows := mocks.NewRows(ctrl)
-				enrichRows.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...interface{}) error {
+				enrichRows.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...any) error {
 					*pointers[0].(*uint64) = 1
 					*pointers[1].(*string) = model.DefaultPattern
 					*pointers[2].(*string) = "1.0.0"
 
 					return nil
 				})
-				enrichRows.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...interface{}) error {
+				enrichRows.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...any) error {
 					*pointers[0].(*uint64) = 2
 					*pointers[1].(*string) = model.DefaultPattern
 					*pointers[2].(*string) = "1.2.3"
 
 					return nil
 				})
-				enrichFn := func(_ context.Context, scanner func(pgx.Rows) error, _ string, _ ...interface{}) error {
+				enrichFn := func(_ context.Context, scanner func(pgx.Rows) error, _ string, _ ...any) error {
 					if err := scanner(enrichRows); err != nil {
 						return err
 					}
@@ -379,7 +379,7 @@ func TestGet(t *testing.T) {
 			switch tc.intention {
 			case "simple":
 				mockRow := mocks.NewRow(ctrl)
-				mockRow.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...interface{}) error {
+				mockRow.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...any) error {
 					*pointers[0].(*uint64) = 1
 					*pointers[1].(*string) = "helm"
 					*pointers[2].(*string) = chartRepository
@@ -387,38 +387,38 @@ func TestGet(t *testing.T) {
 
 					return nil
 				})
-				dummyFn := func(_ context.Context, scanner func(pgx.Row) error, _ string, _ ...interface{}) error {
+				dummyFn := func(_ context.Context, scanner func(pgx.Row) error, _ string, _ ...any) error {
 					return scanner(mockRow)
 				}
 				mockDatabase.EXPECT().Get(gomock.Any(), gomock.Any(), gomock.Any(), uint64(1)).DoAndReturn(dummyFn)
 
 				enrichRows := mocks.NewRows(ctrl)
-				enrichRows.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...interface{}) error {
+				enrichRows.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...any) error {
 					*pointers[0].(*uint64) = 1
 					*pointers[1].(*string) = model.DefaultPattern
 					*pointers[2].(*string) = "1.0.0"
 
 					return nil
 				})
-				enrichFn := func(_ context.Context, scanner func(pgx.Rows) error, _ string, _ ...interface{}) error {
+				enrichFn := func(_ context.Context, scanner func(pgx.Rows) error, _ string, _ ...any) error {
 					return scanner(enrichRows)
 				}
 				mockDatabase.EXPECT().List(gomock.Any(), gomock.Any(), gomock.Any(), []uint64{1}).DoAndReturn(enrichFn)
 			case "no rows":
 				mockRow := mocks.NewRow(ctrl)
-				mockRow.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...interface{}) error {
+				mockRow.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...any) error {
 					return pgx.ErrNoRows
 				})
-				dummyFn := func(_ context.Context, scanner func(pgx.Row) error, _ string, _ ...interface{}) error {
+				dummyFn := func(_ context.Context, scanner func(pgx.Row) error, _ string, _ ...any) error {
 					return scanner(mockRow)
 				}
 				mockDatabase.EXPECT().Get(gomock.Any(), gomock.Any(), gomock.Any(), uint64(1)).DoAndReturn(dummyFn)
 			case "scan error":
 				mockRow := mocks.NewRow(ctrl)
-				mockRow.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...interface{}) error {
+				mockRow.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...any) error {
 					return errors.New("unable to read int")
 				})
-				dummyFn := func(_ context.Context, scanner func(pgx.Row) error, _ string, _ ...interface{}) error {
+				dummyFn := func(_ context.Context, scanner func(pgx.Row) error, _ string, _ ...any) error {
 					return scanner(mockRow)
 				}
 				mockDatabase.EXPECT().Get(gomock.Any(), gomock.Any(), gomock.Any(), uint64(1)).DoAndReturn(dummyFn)
@@ -517,7 +517,7 @@ func TestCreate(t *testing.T) {
 				mockDatabase.EXPECT().Exec(gomock.Any(), gomock.Any()).Return(nil)
 
 				mockRow := mocks.NewRow(ctrl)
-				mockRow.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...interface{}) error {
+				mockRow.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...any) error {
 					*pointers[0].(*uint64) = 1
 					*pointers[1].(*string) = "github"
 					*pointers[2].(*string) = ketchupRepository
@@ -525,20 +525,20 @@ func TestCreate(t *testing.T) {
 
 					return nil
 				})
-				dummyFn := func(_ context.Context, scanner func(pgx.Row) error, _ string, _ ...interface{}) error {
+				dummyFn := func(_ context.Context, scanner func(pgx.Row) error, _ string, _ ...any) error {
 					return scanner(mockRow)
 				}
 				mockDatabase.EXPECT().Get(gomock.Any(), gomock.Any(), gomock.Any(), "github", ketchupRepository, "").DoAndReturn(dummyFn)
 
 				enrichRows := mocks.NewRows(ctrl)
-				enrichRows.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...interface{}) error {
+				enrichRows.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...any) error {
 					*pointers[0].(*uint64) = 1
 					*pointers[1].(*string) = model.DefaultPattern
 					*pointers[2].(*string) = "1.0.0"
 
 					return nil
 				})
-				enrichFn := func(_ context.Context, scanner func(pgx.Rows) error, _ string, _ ...interface{}) error {
+				enrichFn := func(_ context.Context, scanner func(pgx.Rows) error, _ string, _ ...any) error {
 					return scanner(enrichRows)
 				}
 				mockDatabase.EXPECT().List(gomock.Any(), gomock.Any(), gomock.Any(), []uint64{1}).DoAndReturn(enrichFn)

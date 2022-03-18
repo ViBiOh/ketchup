@@ -139,7 +139,7 @@ func (a App) login(ctx context.Context, repository string) (string, error) {
 
 func browseRegistryTagsList(body io.ReadCloser, versions map[string]semver.Version, patterns map[string]semver.Pattern) error {
 	done := make(chan struct{})
-	versionsStream := make(chan interface{}, runtime.NumCPU())
+	versionsStream := make(chan any, runtime.NumCPU())
 
 	go func() {
 		defer close(done)
@@ -154,7 +154,7 @@ func browseRegistryTagsList(body io.ReadCloser, versions map[string]semver.Versi
 		}
 	}()
 
-	if err := httpjson.Stream(body, func() interface{} {
+	if err := httpjson.Stream(body, func() any {
 		return new(string)
 	}, versionsStream, "tags"); err != nil {
 		return fmt.Errorf("unable to read tags: %s", err)

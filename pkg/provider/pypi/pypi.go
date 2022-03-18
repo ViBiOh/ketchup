@@ -15,7 +15,7 @@ const (
 )
 
 type packageResp struct {
-	Versions map[string]interface{} `json:"releases"`
+	Versions map[string]any `json:"releases"`
 }
 
 // App of package

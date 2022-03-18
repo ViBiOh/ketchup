@@ -45,7 +45,7 @@ func (m *UserStore) Count(arg0 context.Context) (uint64, error) {
 }
 
 // Count indicates an expected call of Count.
-func (mr *UserStoreMockRecorder) Count(arg0 interface{}) *gomock.Call {
+func (mr *UserStoreMockRecorder) Count(arg0 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Count", reflect.TypeOf((*UserStore)(nil).Count), arg0)
 }
@@ -60,7 +60,7 @@ func (m *UserStore) Create(arg0 context.Context, arg1 model.User) (uint64, error
 }
 
 // Create indicates an expected call of Create.
-func (mr *UserStoreMockRecorder) Create(arg0, arg1 interface{}) *gomock.Call {
+func (mr *UserStoreMockRecorder) Create(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*UserStore)(nil).Create), arg0, arg1)
 }
@@ -74,7 +74,7 @@ func (m *UserStore) DoAtomic(arg0 context.Context, arg1 func(context.Context) er
 }
 
 // DoAtomic indicates an expected call of DoAtomic.
-func (mr *UserStoreMockRecorder) DoAtomic(arg0, arg1 interface{}) *gomock.Call {
+func (mr *UserStoreMockRecorder) DoAtomic(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DoAtomic", reflect.TypeOf((*UserStore)(nil).DoAtomic), arg0, arg1)
 }
@@ -89,7 +89,7 @@ func (m *UserStore) GetByEmail(arg0 context.Context, arg1 string) (model.User, e
 }
 
 // GetByEmail indicates an expected call of GetByEmail.
-func (mr *UserStoreMockRecorder) GetByEmail(arg0, arg1 interface{}) *gomock.Call {
+func (mr *UserStoreMockRecorder) GetByEmail(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByEmail", reflect.TypeOf((*UserStore)(nil).GetByEmail), arg0, arg1)
 }
@@ -104,7 +104,7 @@ func (m *UserStore) GetByLoginID(arg0 context.Context, arg1 uint64) (model.User,
 }
 
 // GetByLoginID indicates an expected call of GetByLoginID.
-func (mr *UserStoreMockRecorder) GetByLoginID(arg0, arg1 interface{}) *gomock.Call {
+func (mr *UserStoreMockRecorder) GetByLoginID(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByLoginID", reflect.TypeOf((*UserStore)(nil).GetByLoginID), arg0, arg1)
 }
@@ -119,7 +119,7 @@ func (m *UserStore) ListReminderUsers(arg0 context.Context) ([]model.User, error
 }
 
 // ListReminderUsers indicates an expected call of ListReminderUsers.
-func (mr *UserStoreMockRecorder) ListReminderUsers(arg0 interface{}) *gomock.Call {
+func (mr *UserStoreMockRecorder) ListReminderUsers(arg0 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListReminderUsers", reflect.TypeOf((*UserStore)(nil).ListReminderUsers), arg0)
 }

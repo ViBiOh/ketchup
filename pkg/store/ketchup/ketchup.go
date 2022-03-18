@@ -100,7 +100,7 @@ func (a App) List(ctx context.Context, pageSize uint, last string) ([]model.Ketc
 
 	var query strings.Builder
 	query.WriteString(listQuery)
-	queryArgs := []interface{}{
+	queryArgs := []any{
 		user.ID,
 	}
 
@@ -232,7 +232,7 @@ func (a App) ListOutdatedByFrequency(ctx context.Context, frequency model.Ketchu
 	}
 
 	query := listOutdatedByFrequencyQuery
-	params := []interface{}{strings.ToLower(frequency.String())}
+	params := []any{strings.ToLower(frequency.String())}
 
 	if len(userIds) > 0 {
 		query += " AND k.user_id = ANY ($2)"

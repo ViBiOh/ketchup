@@ -23,7 +23,7 @@ func (a App) PublicTemplateFunc(_ http.ResponseWriter, r *http.Request) (rendere
 		return renderer.NewPage("", http.StatusInternalServerError, nil), err
 	}
 
-	return renderer.NewPage("public", http.StatusOK, map[string]interface{}{
+	return renderer.NewPage("public", http.StatusOK, map[string]any{
 		"Security": securityPayload,
 		"Suggests": a.suggests(r.Context(), nil, 3),
 		"Root":     "/",
@@ -49,7 +49,7 @@ func (a App) AppTemplateFunc(_ http.ResponseWriter, r *http.Request) (renderer.P
 		return renderer.NewPage("", http.StatusInternalServerError, nil), err
 	}
 
-	content := map[string]interface{}{
+	content := map[string]any{
 		"Root":     appPath,
 		"Ketchups": ketchups,
 	}
@@ -75,7 +75,7 @@ func (a App) suggests(ctx context.Context, ignoreIds []uint64, count uint64) []m
 	}
 
 	var suggests []model.Repository
-	items, err := cache.Retrieve(ctx, a.redisApp, suggestCacheKey(user), &suggests, func() (interface{}, error) {
+	items, err := cache.Retrieve(ctx, a.redisApp, suggestCacheKey(user), &suggests, func() (any, error) {
 		return a.repositoryService.Suggest(ctx, ignoreIds, count)
 	}, time.Hour*24)
 	if err != nil {

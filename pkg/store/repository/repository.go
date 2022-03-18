@@ -28,7 +28,7 @@ func (a App) DoAtomic(ctx context.Context, action func(context.Context) error) e
 	return a.db.DoAtomic(ctx, action)
 }
 
-func (a App) list(ctx context.Context, query string, args ...interface{}) ([]model.Repository, uint64, error) {
+func (a App) list(ctx context.Context, query string, args ...any) ([]model.Repository, uint64, error) {
 	var count uint64
 	var list []model.Repository
 
@@ -58,7 +58,7 @@ func (a App) list(ctx context.Context, query string, args ...interface{}) ([]mod
 	return list, count, a.enrichRepositoriesVersions(ctx, list)
 }
 
-func (a App) get(ctx context.Context, query string, args ...interface{}) (model.Repository, error) {
+func (a App) get(ctx context.Context, query string, args ...any) (model.Repository, error) {
 	var rawRepositoryKind string
 	item := model.NewEmptyRepository()
 
@@ -105,7 +105,7 @@ WHERE
 func (a App) List(ctx context.Context, pageSize uint, last string) ([]model.Repository, uint64, error) {
 	var query strings.Builder
 	query.WriteString(listQuery)
-	var queryArgs []interface{}
+	var queryArgs []any
 
 	if len(last) != 0 {
 		lastID, err := strconv.ParseUint(last, 10, 64)
@@ -152,7 +152,7 @@ const listByKindRestartQuery = `
 func (a App) ListByKinds(ctx context.Context, pageSize uint, last string, kinds ...model.RepositoryKind) ([]model.Repository, uint64, error) {
 	var query strings.Builder
 	query.WriteString(listByKindsQuery)
-	var queryArgs []interface{}
+	var queryArgs []any
 
 	kindsValue := make([]string, len(kinds))
 	for i, kind := range kinds {

@@ -45,7 +45,7 @@ func (m *KetchupStore) Create(arg0 context.Context, arg1 model.Ketchup) (uint64,
 }
 
 // Create indicates an expected call of Create.
-func (mr *KetchupStoreMockRecorder) Create(arg0, arg1 interface{}) *gomock.Call {
+func (mr *KetchupStoreMockRecorder) Create(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*KetchupStore)(nil).Create), arg0, arg1)
 }
@@ -59,7 +59,7 @@ func (m *KetchupStore) Delete(arg0 context.Context, arg1 model.Ketchup) error {
 }
 
 // Delete indicates an expected call of Delete.
-func (mr *KetchupStoreMockRecorder) Delete(arg0, arg1 interface{}) *gomock.Call {
+func (mr *KetchupStoreMockRecorder) Delete(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*KetchupStore)(nil).Delete), arg0, arg1)
 }
@@ -73,7 +73,7 @@ func (m *KetchupStore) DoAtomic(arg0 context.Context, arg1 func(context.Context)
 }
 
 // DoAtomic indicates an expected call of DoAtomic.
-func (mr *KetchupStoreMockRecorder) DoAtomic(arg0, arg1 interface{}) *gomock.Call {
+func (mr *KetchupStoreMockRecorder) DoAtomic(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DoAtomic", reflect.TypeOf((*KetchupStore)(nil).DoAtomic), arg0, arg1)
 }
@@ -88,7 +88,7 @@ func (m *KetchupStore) GetByRepository(arg0 context.Context, arg1 uint64, arg2 s
 }
 
 // GetByRepository indicates an expected call of GetByRepository.
-func (mr *KetchupStoreMockRecorder) GetByRepository(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
+func (mr *KetchupStoreMockRecorder) GetByRepository(arg0, arg1, arg2, arg3 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByRepository", reflect.TypeOf((*KetchupStore)(nil).GetByRepository), arg0, arg1, arg2, arg3)
 }
@@ -104,7 +104,7 @@ func (m *KetchupStore) List(arg0 context.Context, arg1 uint, arg2 string) ([]mod
 }
 
 // List indicates an expected call of List.
-func (mr *KetchupStoreMockRecorder) List(arg0, arg1, arg2 interface{}) *gomock.Call {
+func (mr *KetchupStoreMockRecorder) List(arg0, arg1, arg2 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*KetchupStore)(nil).List), arg0, arg1, arg2)
 }
@@ -112,7 +112,7 @@ func (mr *KetchupStoreMockRecorder) List(arg0, arg1, arg2 interface{}) *gomock.C
 // ListByRepositoriesIDAndFrequencies mocks base method.
 func (m *KetchupStore) ListByRepositoriesIDAndFrequencies(arg0 context.Context, arg1 []uint64, arg2 ...model.KetchupFrequency) ([]model.Ketchup, error) {
 	m.ctrl.T.Helper()
-	varargs := []interface{}{arg0, arg1}
+	varargs := []any{arg0, arg1}
 	for _, a := range arg2 {
 		varargs = append(varargs, a)
 	}
@@ -123,16 +123,16 @@ func (m *KetchupStore) ListByRepositoriesIDAndFrequencies(arg0 context.Context, 
 }
 
 // ListByRepositoriesIDAndFrequencies indicates an expected call of ListByRepositoriesIDAndFrequencies.
-func (mr *KetchupStoreMockRecorder) ListByRepositoriesIDAndFrequencies(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
+func (mr *KetchupStoreMockRecorder) ListByRepositoriesIDAndFrequencies(arg0, arg1 any, arg2 ...any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	varargs := append([]interface{}{arg0, arg1}, arg2...)
+	varargs := append([]any{arg0, arg1}, arg2...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListByRepositoriesIDAndFrequencies", reflect.TypeOf((*KetchupStore)(nil).ListByRepositoriesIDAndFrequencies), varargs...)
 }
 
 // ListOutdatedByFrequency mocks base method.
 func (m *KetchupStore) ListOutdatedByFrequency(arg0 context.Context, arg1 model.KetchupFrequency, arg2 ...uint64) ([]model.Ketchup, error) {
 	m.ctrl.T.Helper()
-	varargs := []interface{}{arg0, arg1}
+	varargs := []any{arg0, arg1}
 	for _, a := range arg2 {
 		varargs = append(varargs, a)
 	}
@@ -143,9 +143,9 @@ func (m *KetchupStore) ListOutdatedByFrequency(arg0 context.Context, arg1 model.
 }
 
 // ListOutdatedByFrequency indicates an expected call of ListOutdatedByFrequency.
-func (mr *KetchupStoreMockRecorder) ListOutdatedByFrequency(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
+func (mr *KetchupStoreMockRecorder) ListOutdatedByFrequency(arg0, arg1 any, arg2 ...any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	varargs := append([]interface{}{arg0, arg1}, arg2...)
+	varargs := append([]any{arg0, arg1}, arg2...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListOutdatedByFrequency", reflect.TypeOf((*KetchupStore)(nil).ListOutdatedByFrequency), varargs...)
 }
 
@@ -158,7 +158,7 @@ func (m *KetchupStore) Update(arg0 context.Context, arg1 model.Ketchup, arg2 str
 }
 
 // Update indicates an expected call of Update.
-func (mr *KetchupStoreMockRecorder) Update(arg0, arg1, arg2 interface{}) *gomock.Call {
+func (mr *KetchupStoreMockRecorder) Update(arg0, arg1, arg2 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*KetchupStore)(nil).Update), arg0, arg1, arg2)
 }
@@ -172,7 +172,7 @@ func (m *KetchupStore) UpdateAll(arg0 context.Context) error {
 }
 
 // UpdateAll indicates an expected call of UpdateAll.
-func (mr *KetchupStoreMockRecorder) UpdateAll(arg0 interface{}) *gomock.Call {
+func (mr *KetchupStoreMockRecorder) UpdateAll(arg0 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateAll", reflect.TypeOf((*KetchupStore)(nil).UpdateAll), arg0)
 }
@@ -186,7 +186,7 @@ func (m *KetchupStore) UpdateVersion(arg0 context.Context, arg1, arg2 uint64, ar
 }
 
 // UpdateVersion indicates an expected call of UpdateVersion.
-func (mr *KetchupStoreMockRecorder) UpdateVersion(arg0, arg1, arg2, arg3, arg4 interface{}) *gomock.Call {
+func (mr *KetchupStoreMockRecorder) UpdateVersion(arg0, arg1, arg2, arg3, arg4 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateVersion", reflect.TypeOf((*KetchupStore)(nil).UpdateVersion), arg0, arg1, arg2, arg3, arg4)
 }
