@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/ViBiOh/flags"
+	"github.com/ViBiOh/httputils/v4/pkg/breaksync"
 	"github.com/ViBiOh/httputils/v4/pkg/clock"
 	"github.com/ViBiOh/httputils/v4/pkg/logger"
 	"github.com/ViBiOh/ketchup/pkg/model"
@@ -167,27 +168,25 @@ func (a App) syncReleasesByUser(ctx context.Context, releases []model.Release, k
 	sort.Sort(model.ReleaseByRepositoryIDAndPattern(releases))
 	sort.Sort(model.KetchupByRepositoryIDAndPattern(ketchups))
 
-	index := 0
-	size := len(ketchups)
+	releaseRupture := breaksync.NewRupture("release", func(releaseID string) string {
+		return releaseID
+	})
 
-	for _, release := range releases {
-		for index < size {
-			current := ketchups[index]
-
-			if release.Repository.ID < current.Repository.ID || (release.Repository.ID == current.Repository.ID && release.Pattern < current.Pattern) {
-				break // release is out of sync, we need to go forward release
-			}
-
-			index++
-
-			if release.Repository.ID != current.Repository.ID || release.Pattern != current.Pattern {
-				continue // ketchup is not sync with release, we need for go forward ketchup
-			}
-
-			if current.Version != release.Version.Name {
-				a.handleKetchupNotification(ctx, usersToNotify, current, release)
-			}
+	err := breaksync.NewSynchronization().AddSources(breaksync.NewSliceSource(releases, releaseRupture), breaksync.NewSliceSource(ketchups, nil)).AddRuptures(releaseRupture).Run(func(synchronised uint64, items []any) error {
+		if synchronised != 0 {
+			return nil
 		}
+
+		release := items[0].(model.Release)
+		ketchup := items[1].(model.Ketchup)
+
+		if ketchup.Version != release.Version.Name {
+			a.handleKetchupNotification(ctx, usersToNotify, ketchup, release)
+		}
+		return nil
+	})
+	if err != nil {
+		logger.Error("unable to synchronise releases and ketchups: %s", err)
 	}
 
 	return usersToNotify
