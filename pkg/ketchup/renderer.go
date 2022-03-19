@@ -74,8 +74,7 @@ func (a App) suggests(ctx context.Context, ignoreIds []uint64, count uint64) []m
 		ignoreIds = []uint64{0}
 	}
 
-	var suggests []model.Repository
-	items, err := cache.Retrieve(ctx, a.redisApp, suggestCacheKey(user), &suggests, func() (any, error) {
+	items, err := cache.Retrieve(ctx, a.redisApp, suggestCacheKey(user), func() ([]model.Repository, error) {
 		return a.repositoryService.Suggest(ctx, ignoreIds, count)
 	}, time.Hour*24)
 	if err != nil {
@@ -83,13 +82,5 @@ func (a App) suggests(ctx context.Context, ignoreIds []uint64, count uint64) []m
 		return nil
 	}
 
-	if repos, ok := items.([]model.Repository); ok {
-		return repos
-	}
-
-	if repos, ok := items.(*[]model.Repository); ok {
-		return *repos
-	}
-
-	return nil
+	return items
 }
