@@ -20,22 +20,19 @@ func TestGetByEmail(t *testing.T) {
 		email string
 	}
 
-	cases := []struct {
-		intention string
-		args      args
-		want      model.User
-		wantErr   error
+	cases := map[string]struct {
+		args    args
+		want    model.User
+		wantErr error
 	}{
-		{
-			"simple",
+		"simple": {
 			args{
 				email: testEmail,
 			},
 			model.NewUser(1, testEmail, authModel.NewUser(1, "")),
 			nil,
 		},
-		{
-			"no rows",
+		"no rows": {
 			args{
 				email: testEmail,
 			},
@@ -44,8 +41,8 @@ func TestGetByEmail(t *testing.T) {
 		},
 	}
 
-	for _, tc := range cases {
-		t.Run(tc.intention, func(t *testing.T) {
+	for intention, tc := range cases {
+		t.Run(intention, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
@@ -53,7 +50,7 @@ func TestGetByEmail(t *testing.T) {
 
 			instance := App{db: mockDatabase}
 
-			switch tc.intention {
+			switch intention {
 			case "simple":
 				mockRow := mocks.NewRow(ctrl)
 				mockRow.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...any) error {
@@ -100,22 +97,19 @@ func TestGetByLoginID(t *testing.T) {
 		loginID uint64
 	}
 
-	cases := []struct {
-		intention string
-		args      args
-		want      model.User
-		wantErr   error
+	cases := map[string]struct {
+		args    args
+		want    model.User
+		wantErr error
 	}{
-		{
-			"simple",
+		"simple": {
 			args{
 				loginID: 2,
 			},
 			model.NewUser(1, testEmail, authModel.NewUser(2, "")),
 			nil,
 		},
-		{
-			"no rows",
+		"no rows": {
 			args{
 				loginID: 2,
 			},
@@ -124,8 +118,8 @@ func TestGetByLoginID(t *testing.T) {
 		},
 	}
 
-	for _, tc := range cases {
-		t.Run(tc.intention, func(t *testing.T) {
+	for intention, tc := range cases {
+		t.Run(intention, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
@@ -133,7 +127,7 @@ func TestGetByLoginID(t *testing.T) {
 
 			instance := App{db: mockDatabase}
 
-			switch tc.intention {
+			switch intention {
 			case "simple":
 				mockRow := mocks.NewRow(ctrl)
 				mockRow.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...any) error {
@@ -180,14 +174,12 @@ func TestCreate(t *testing.T) {
 		o model.User
 	}
 
-	cases := []struct {
-		intention string
-		args      args
-		want      uint64
-		wantErr   error
+	cases := map[string]struct {
+		args    args
+		want    uint64
+		wantErr error
 	}{
-		{
-			"simple",
+		"simple": {
 			args{
 				o: model.NewUser(0, testEmail, authModel.User{
 					ID:       1,
@@ -200,8 +192,8 @@ func TestCreate(t *testing.T) {
 		},
 	}
 
-	for _, tc := range cases {
-		t.Run(tc.intention, func(t *testing.T) {
+	for intention, tc := range cases {
+		t.Run(intention, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
@@ -209,7 +201,7 @@ func TestCreate(t *testing.T) {
 
 			instance := App{db: mockDatabase}
 
-			switch tc.intention {
+			switch intention {
 			case "simple":
 				mockDatabase.EXPECT().Create(gomock.Any(), gomock.Any(), testEmail, uint64(1)).Return(uint64(1), nil)
 			}
@@ -232,20 +224,18 @@ func TestCreate(t *testing.T) {
 }
 
 func TestCount(t *testing.T) {
-	cases := []struct {
-		intention string
-		want      uint64
-		wantErr   error
+	cases := map[string]struct {
+		want    uint64
+		wantErr error
 	}{
-		{
-			"simple",
+		"simple": {
 			1,
 			nil,
 		},
 	}
 
-	for _, tc := range cases {
-		t.Run(tc.intention, func(t *testing.T) {
+	for intention, tc := range cases {
+		t.Run(intention, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
@@ -253,7 +243,7 @@ func TestCount(t *testing.T) {
 
 			instance := App{db: mockDatabase}
 
-			switch tc.intention {
+			switch intention {
 			case "simple":
 				mockRow := mocks.NewRow(ctrl)
 				mockRow.EXPECT().Scan(gomock.Any()).DoAndReturn(func(pointers ...any) error {

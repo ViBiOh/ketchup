@@ -18,62 +18,53 @@ func TestUpdateVersions(t *testing.T) {
 		o model.Repository
 	}
 
-	cases := []struct {
-		intention string
-		args      args
-		wantErr   error
+	cases := map[string]struct {
+		args    args
+		wantErr error
 	}{
-		{
-			"no version",
+		"no version": {
 			args{
 				o: model.NewEmptyRepository(),
 			},
 			nil,
 		},
-		{
-			"create error",
+		"create error": {
 			args{
 				o: model.NewGithubRepository(0, "").AddVersion(model.DefaultPattern, "1.0.0"),
 			},
 			errFailed,
 		},
-		{
-			"create",
+		"create": {
 			args{
 				o: model.NewGithubRepository(0, "").AddVersion(model.DefaultPattern, "1.0.0"),
 			},
 			nil,
 		},
-		{
-			"no update",
+		"no update": {
 			args{
 				o: model.NewGithubRepository(0, "").AddVersion(model.DefaultPattern, "1.0.0"),
 			},
 			nil,
 		},
-		{
-			"update error",
+		"update error": {
 			args{
 				o: model.NewGithubRepository(0, "").AddVersion(model.DefaultPattern, "1.0.0"),
 			},
 			errFailed,
 		},
-		{
-			"update",
+		"update": {
 			args{
 				o: model.NewGithubRepository(0, "").AddVersion(model.DefaultPattern, "1.0.0"),
 			},
 			nil,
 		},
-		{
-			"delete error",
+		"delete error": {
 			args{
 				o: model.NewGithubRepository(0, ""),
 			},
 			errFailed,
 		},
-		{
-			"delete",
+		"delete": {
 			args{
 				o: model.NewGithubRepository(0, ""),
 			},
@@ -81,8 +72,8 @@ func TestUpdateVersions(t *testing.T) {
 		},
 	}
 
-	for _, tc := range cases {
-		t.Run(tc.intention, func(t *testing.T) {
+	for intention, tc := range cases {
+		t.Run(intention, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
@@ -90,7 +81,7 @@ func TestUpdateVersions(t *testing.T) {
 
 			instance := App{db: mockDatabase}
 
-			switch tc.intention {
+			switch intention {
 			case "no version":
 				mockDatabase.EXPECT().List(gomock.Any(), gomock.Any(), gomock.Any(), uint64(0)).Return(nil)
 			case "create error":

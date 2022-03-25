@@ -14,16 +14,14 @@ import (
 )
 
 func TestMiddleware(t *testing.T) {
-	cases := []struct {
-		intention  string
+	cases := map[string]struct {
 		next       http.Handler
 		request    *http.Request
 		want       string
 		wantStatus int
 		wantHeader http.Header
 	}{
-		{
-			"simple",
+		"simple": {
 			http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				if _, err := w.Write([]byte(model.ReadUser(r.Context()).Email)); err != nil {
 					t.Errorf("unable to write: %s", err)
@@ -34,8 +32,7 @@ func TestMiddleware(t *testing.T) {
 			http.StatusOK,
 			http.Header{},
 		},
-		{
-			"nil",
+		"nil": {
 			nil,
 			httptest.NewRequest(http.MethodGet, "/", nil),
 			"",
@@ -44,13 +41,13 @@ func TestMiddleware(t *testing.T) {
 		},
 	}
 
-	for _, tc := range cases {
-		t.Run(tc.intention, func(t *testing.T) {
+	for intention, tc := range cases {
+		t.Run(intention, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
 			userService := mocks.NewUserService(ctrl)
-			if tc.intention == "simple" {
+			if intention == "simple" {
 				userService.EXPECT().StoreInContext(gomock.Any()).Return(model.StoreUser(context.Background(), model.NewUser(1, "nobody@localhost", authModel.NewUser(1, "test"))))
 			}
 

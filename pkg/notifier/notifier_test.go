@@ -33,19 +33,17 @@ func safeParse(version string) semver.Version {
 }
 
 func TestFlags(t *testing.T) {
-	cases := []struct {
-		intention string
-		want      string
+	cases := map[string]struct {
+		want string
 	}{
-		{
-			"simple",
+		"simple": {
 			"Usage of simple:\n  -pushUrl string\n    \t[notifier] Pushgateway URL {SIMPLE_PUSH_URL}\n",
 		},
 	}
 
-	for _, tc := range cases {
-		t.Run(tc.intention, func(t *testing.T) {
-			fs := flag.NewFlagSet(tc.intention, flag.ContinueOnError)
+	for intention, tc := range cases {
+		t.Run(intention, func(t *testing.T) {
+			fs := flag.NewFlagSet(intention, flag.ContinueOnError)
 			Flags(fs, "")
 
 			var writer strings.Builder
@@ -66,46 +64,40 @@ func TestGetNewRepositoryReleases(t *testing.T) {
 		repo model.Repository
 	}
 
-	cases := []struct {
-		intention string
-		instance  App
-		args      args
-		want      []model.Release
+	cases := map[string]struct {
+		instance App
+		args     args
+		want     []model.Release
 	}{
-		{
-			"empty",
+		"empty": {
 			App{},
 			args{
 				repo: model.NewGithubRepository(0, ""),
 			},
 			nil,
 		},
-		{
-			"no new",
+		"no new": {
 			App{},
 			args{
 				repo: model.NewGithubRepository(1, repositoryName).AddVersion(model.DefaultPattern, repositoryVersion),
 			},
 			nil,
 		},
-		{
-			"invalid version",
+		"invalid version": {
 			App{},
 			args{
 				repo: model.NewGithubRepository(1, repositoryName).AddVersion(model.DefaultPattern, "abcde"),
 			},
 			nil,
 		},
-		{
-			"not greater",
+		"not greater": {
 			App{},
 			args{
 				repo: model.NewGithubRepository(1, repositoryName).AddVersion(model.DefaultPattern, "1.1.0"),
 			},
 			nil,
 		},
-		{
-			"greater",
+		"greater": {
 			App{},
 			args{
 				repo: model.NewGithubRepository(1, repositoryName).AddVersion(model.DefaultPattern, repositoryVersion),
@@ -116,8 +108,8 @@ func TestGetNewRepositoryReleases(t *testing.T) {
 		},
 	}
 
-	for _, tc := range cases {
-		t.Run(tc.intention, func(t *testing.T) {
+	for intention, tc := range cases {
+		t.Run(intention, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
@@ -125,7 +117,7 @@ func TestGetNewRepositoryReleases(t *testing.T) {
 
 			tc.instance.repositoryService = mockRepositoryService
 
-			switch tc.intention {
+			switch intention {
 			case "empty":
 				mockRepositoryService.EXPECT().LatestVersions(gomock.Any(), gomock.Any()).Return(nil, nil)
 			case "no new":
@@ -159,30 +151,26 @@ func TestGetKetchupToNotify(t *testing.T) {
 		releases []model.Release
 	}
 
-	cases := []struct {
-		intention string
-		args      args
-		want      map[model.User][]model.Release
-		wantErr   error
+	cases := map[string]struct {
+		args    args
+		want    map[model.User][]model.Release
+		wantErr error
 	}{
-		{
-			"list error",
+		"list error": {
 			args{
 				ctx: context.Background(),
 			},
 			nil,
 			errors.New("failed"),
 		},
-		{
-			"empty",
+		"empty": {
 			args{
 				ctx: context.Background(),
 			},
 			make(map[model.User][]model.Release),
 			nil,
 		},
-		{
-			"one release, n ketchups",
+		"one release, n ketchups": {
 			args{
 				ctx: context.Background(),
 				releases: []model.Release{
@@ -241,8 +229,8 @@ func TestGetKetchupToNotify(t *testing.T) {
 		},
 	}
 
-	for _, tc := range cases {
-		t.Run(tc.intention, func(t *testing.T) {
+	for intention, tc := range cases {
+		t.Run(intention, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
@@ -253,7 +241,7 @@ func TestGetKetchupToNotify(t *testing.T) {
 				clock:          clock.New(time.Unix(1609459200, 0)),
 			}
 
-			switch tc.intention {
+			switch intention {
 			case "list error":
 				mockKetchupService.EXPECT().ListForRepositories(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, errors.New("failed"))
 			case "empty":
@@ -332,14 +320,12 @@ func TestSendNotification(t *testing.T) {
 		ketchupToNotify map[model.User][]model.Release
 	}
 
-	cases := []struct {
-		intention string
-		instance  App
-		args      args
-		wantErr   error
+	cases := map[string]struct {
+		instance App
+		args     args
+		wantErr  error
 	}{
-		{
-			"empty",
+		"empty": {
 			App{},
 			args{
 				ctx:             context.Background(),
@@ -347,8 +333,7 @@ func TestSendNotification(t *testing.T) {
 			},
 			nil,
 		},
-		{
-			"no mailer",
+		"no mailer": {
 			App{},
 			args{
 				ctx: context.Background(),
@@ -368,8 +353,7 @@ func TestSendNotification(t *testing.T) {
 			},
 			nil,
 		},
-		{
-			"mailer disabled",
+		"mailer disabled": {
 			App{},
 			args{
 				ctx: context.Background(),
@@ -389,8 +373,7 @@ func TestSendNotification(t *testing.T) {
 			},
 			nil,
 		},
-		{
-			"mailer error",
+		"mailer error": {
 			App{},
 			args{
 				ctx: context.TODO(),
@@ -410,8 +393,7 @@ func TestSendNotification(t *testing.T) {
 			},
 			errors.New("unable to send email to nobody@localhost: invalid context"),
 		},
-		{
-			"multiple releases",
+		"multiple releases": {
 			App{},
 			args{
 				ctx: context.Background(),
@@ -439,15 +421,15 @@ func TestSendNotification(t *testing.T) {
 		},
 	}
 
-	for _, tc := range cases {
-		t.Run(tc.intention, func(t *testing.T) {
+	for intention, tc := range cases {
+		t.Run(intention, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
 			mailerApp := mocks.NewMailer(ctrl)
 			tc.instance.mailerApp = mailerApp
 
-			switch tc.intention {
+			switch intention {
 			case "no mailer":
 				tc.instance.mailerApp = nil
 			case "mailer disabled":

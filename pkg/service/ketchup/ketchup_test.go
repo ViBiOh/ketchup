@@ -27,15 +27,13 @@ func TestList(t *testing.T) {
 		last     string
 	}
 
-	cases := []struct {
-		intention string
+	cases := map[string]struct {
 		args      args
 		want      []model.Ketchup
 		wantCount uint64
 		wantErr   error
 	}{
-		{
-			"simple",
+		"simple": {
 			args{},
 			[]model.Ketchup{
 				{Pattern: model.DefaultPattern, Version: "1.0.0", Frequency: model.Daily, Semver: "Patch", Repository: model.NewGithubRepository(1, ketchupRepository).AddVersion(model.DefaultPattern, "1.0.2")},
@@ -44,8 +42,7 @@ func TestList(t *testing.T) {
 			2,
 			nil,
 		},
-		{
-			"error",
+		"error": {
 			args{},
 			nil,
 			0,
@@ -53,8 +50,8 @@ func TestList(t *testing.T) {
 		},
 	}
 
-	for _, tc := range cases {
-		t.Run(tc.intention, func(t *testing.T) {
+	for intention, tc := range cases {
+		t.Run(intention, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
@@ -64,7 +61,7 @@ func TestList(t *testing.T) {
 				ketchupStore: mockKetchupStore,
 			}
 
-			switch tc.intention {
+			switch intention {
 			case "simple":
 				mockKetchupStore.EXPECT().List(gomock.Any(), gomock.Any(), gomock.Any()).Return([]model.Ketchup{
 					model.NewKetchup(model.DefaultPattern, "1.2.3", model.Daily, false, model.NewGithubRepository(2, viwsRepository).AddVersion(model.DefaultPattern, "1.2.3")),
@@ -98,14 +95,12 @@ func TestListForRepositories(t *testing.T) {
 		repositories []model.Repository
 	}
 
-	cases := []struct {
-		intention string
-		args      args
-		want      []model.Ketchup
-		wantErr   error
+	cases := map[string]struct {
+		args    args
+		want    []model.Ketchup
+		wantErr error
 	}{
-		{
-			"simple",
+		"simple": {
 			args{
 				repositories: []model.Repository{
 					model.NewGithubRepository(1, ""),
@@ -118,16 +113,15 @@ func TestListForRepositories(t *testing.T) {
 			},
 			nil,
 		},
-		{
-			"error",
+		"error": {
 			args{},
 			nil,
 			httpModel.ErrInternalError,
 		},
 	}
 
-	for _, tc := range cases {
-		t.Run(tc.intention, func(t *testing.T) {
+	for intention, tc := range cases {
+		t.Run(intention, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
@@ -137,7 +131,7 @@ func TestListForRepositories(t *testing.T) {
 				ketchupStore: mockKetchupStore,
 			}
 
-			switch tc.intention {
+			switch intention {
 			case "simple":
 				mockKetchupStore.EXPECT().ListByRepositoriesIDAndFrequencies(gomock.Any(), gomock.Any(), gomock.Any()).Return([]model.Ketchup{
 					model.NewKetchup(model.DefaultPattern, "1.0.0", model.Daily, false, model.NewGithubRepository(1, ketchupRepository).AddVersion(model.DefaultPattern, "1.0.2")),
@@ -170,14 +164,12 @@ func TestCreate(t *testing.T) {
 		item model.Ketchup
 	}
 
-	cases := []struct {
-		intention string
-		args      args
-		want      model.Ketchup
-		wantErr   error
+	cases := map[string]struct {
+		args    args
+		want    model.Ketchup
+		wantErr error
 	}{
-		{
-			"start atomic error",
+		"start atomic error": {
 			args{
 				ctx:  context.TODO(),
 				item: model.Ketchup{},
@@ -185,8 +177,7 @@ func TestCreate(t *testing.T) {
 			model.Ketchup{},
 			errAtomicStart,
 		},
-		{
-			"repository error",
+		"repository error": {
 			args{
 				ctx:  context.Background(),
 				item: model.Ketchup{},
@@ -194,8 +185,7 @@ func TestCreate(t *testing.T) {
 			model.Ketchup{},
 			httpModel.ErrInvalid,
 		},
-		{
-			"check error",
+		"check error": {
 			args{
 				ctx:  context.Background(),
 				item: model.NewKetchup(model.DefaultPattern, "", model.Daily, false, model.NewGithubRepository(1, ketchupRepository)),
@@ -203,8 +193,7 @@ func TestCreate(t *testing.T) {
 			model.Ketchup{},
 			httpModel.ErrInvalid,
 		},
-		{
-			"create error",
+		"create error": {
 			args{
 				ctx:  model.StoreUser(context.Background(), model.NewUser(1, "", authModel.NewUser(0, ""))),
 				item: model.NewKetchup(model.DefaultPattern, "0.0.0", model.Daily, false, model.NewGithubRepository(1, ketchupRepository)),
@@ -212,8 +201,7 @@ func TestCreate(t *testing.T) {
 			model.Ketchup{},
 			httpModel.ErrInternalError,
 		},
-		{
-			"success",
+		"success": {
 			args{
 				ctx:  model.StoreUser(context.Background(), model.NewUser(1, "", authModel.NewUser(0, ""))),
 				item: model.NewKetchup(model.DefaultPattern, "1.0.0", model.Daily, false, model.NewGithubRepository(1, ketchupRepository)),
@@ -223,8 +211,8 @@ func TestCreate(t *testing.T) {
 		},
 	}
 
-	for _, tc := range cases {
-		t.Run(tc.intention, func(t *testing.T) {
+	for intention, tc := range cases {
+		t.Run(intention, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
@@ -236,7 +224,7 @@ func TestCreate(t *testing.T) {
 				repositoryService: mockRepositoryService,
 			}
 
-			switch tc.intention {
+			switch intention {
 			case "start atomic error":
 				mockKetchupStore.EXPECT().DoAtomic(gomock.Any(), gomock.Any()).Return(errAtomicStart)
 			case "repository error", "check error":
@@ -286,14 +274,12 @@ func TestUpdate(t *testing.T) {
 		item       model.Ketchup
 	}
 
-	cases := []struct {
-		intention string
-		args      args
-		want      model.Ketchup
-		wantErr   error
+	cases := map[string]struct {
+		args    args
+		want    model.Ketchup
+		wantErr error
 	}{
-		{
-			"start atomic error",
+		"start atomic error": {
 			args{
 				ctx:  context.TODO(),
 				item: model.Ketchup{},
@@ -301,8 +287,7 @@ func TestUpdate(t *testing.T) {
 			model.Ketchup{},
 			errAtomicStart,
 		},
-		{
-			"fetch error",
+		"fetch error": {
 			args{
 				ctx:  context.Background(),
 				item: model.Ketchup{},
@@ -310,8 +295,7 @@ func TestUpdate(t *testing.T) {
 			model.Ketchup{},
 			httpModel.ErrInternalError,
 		},
-		{
-			"check error",
+		"check error": {
 			args{
 				ctx:  context.Background(),
 				item: model.NewKetchup(model.DefaultPattern, "", model.Daily, false, model.NewGithubRepository(1, ketchupRepository)),
@@ -319,8 +303,7 @@ func TestUpdate(t *testing.T) {
 			model.Ketchup{},
 			httpModel.ErrInvalid,
 		},
-		{
-			"pattern change error",
+		"pattern change error": {
 			args{
 				ctx:        model.StoreUser(context.Background(), model.NewUser(1, "", authModel.NewUser(0, ""))),
 				oldPattern: "0.9.0",
@@ -329,8 +312,7 @@ func TestUpdate(t *testing.T) {
 			model.Ketchup{},
 			httpModel.ErrInternalError,
 		},
-		{
-			"pattern change success",
+		"pattern change success": {
 			args{
 				ctx:        model.StoreUser(context.Background(), model.NewUser(1, "", authModel.NewUser(0, ""))),
 				oldPattern: "0.9.0",
@@ -345,8 +327,7 @@ func TestUpdate(t *testing.T) {
 			},
 			nil,
 		},
-		{
-			"update error",
+		"update error": {
 			args{
 				ctx:  model.StoreUser(context.Background(), model.NewUser(1, "", authModel.NewUser(0, ""))),
 				item: model.NewKetchup(model.DefaultPattern, "0.0.0", model.Daily, false, model.NewGithubRepository(2, "")),
@@ -354,8 +335,7 @@ func TestUpdate(t *testing.T) {
 			model.Ketchup{},
 			httpModel.ErrInternalError,
 		},
-		{
-			"success",
+		"success": {
 			args{
 				ctx:        model.StoreUser(context.Background(), model.NewUser(1, "", authModel.NewUser(0, ""))),
 				oldPattern: "0.9.0",
@@ -372,8 +352,8 @@ func TestUpdate(t *testing.T) {
 		},
 	}
 
-	for _, tc := range cases {
-		t.Run(tc.intention, func(t *testing.T) {
+	for intention, tc := range cases {
+		t.Run(intention, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
@@ -385,7 +365,7 @@ func TestUpdate(t *testing.T) {
 				repositoryService: mockRepositoryService,
 			}
 
-			switch tc.intention {
+			switch intention {
 			case "start atomic error":
 				mockKetchupStore.EXPECT().DoAtomic(gomock.Any(), gomock.Any()).Return(errAtomicStart)
 			case "fetch error":
@@ -466,45 +446,39 @@ func TestDelete(t *testing.T) {
 		item model.Ketchup
 	}
 
-	cases := []struct {
-		intention string
-		args      args
-		wantErr   error
+	cases := map[string]struct {
+		args    args
+		wantErr error
 	}{
-		{
-			"start atomic error",
+		"start atomic error": {
 			args{
 				ctx:  context.TODO(),
 				item: model.Ketchup{},
 			},
 			errAtomicStart,
 		},
-		{
-			"fetch error",
+		"fetch error": {
 			args{
 				ctx:  context.Background(),
 				item: model.NewKetchup(model.DefaultPattern, "", model.Daily, false, model.NewGithubRepository(0, "")),
 			},
 			httpModel.ErrInternalError,
 		},
-		{
-			"check error",
+		"check error": {
 			args{
 				ctx:  context.Background(),
 				item: model.NewKetchup(model.DefaultPattern, "", model.Daily, false, model.NewGithubRepository(1, "")),
 			},
 			httpModel.ErrInvalid,
 		},
-		{
-			"delete error",
+		"delete error": {
 			args{
 				ctx:  model.StoreUser(context.Background(), model.NewUser(1, "", authModel.NewUser(0, ""))),
 				item: model.NewKetchup(model.DefaultPattern, "", model.Daily, false, model.NewGithubRepository(3, "")),
 			},
 			httpModel.ErrInternalError,
 		},
-		{
-			"success",
+		"success": {
 			args{
 				ctx:  model.StoreUser(context.Background(), model.NewUser(1, "", authModel.NewUser(0, ""))),
 				item: model.NewKetchup(model.DefaultPattern, "", model.Daily, false, model.NewGithubRepository(1, "")),
@@ -513,8 +487,8 @@ func TestDelete(t *testing.T) {
 		},
 	}
 
-	for _, tc := range cases {
-		t.Run(tc.intention, func(t *testing.T) {
+	for intention, tc := range cases {
+		t.Run(intention, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
@@ -524,7 +498,7 @@ func TestDelete(t *testing.T) {
 				ketchupStore: mockKetchupStore,
 			}
 
-			switch tc.intention {
+			switch intention {
 			case "start atomic error":
 				mockKetchupStore.EXPECT().DoAtomic(gomock.Any(), gomock.Any()).Return(errAtomicStart)
 			case "fetch error":
@@ -577,20 +551,17 @@ func TestCheck(t *testing.T) {
 		new model.Ketchup
 	}
 
-	cases := []struct {
-		intention string
-		args      args
-		wantErr   error
+	cases := map[string]struct {
+		args    args
+		wantErr error
 	}{
-		{
-			"no user",
+		"no user": {
 			args{
 				ctx: context.Background(),
 			},
 			errors.New("you must be logged in for interacting"),
 		},
-		{
-			"delete",
+		"delete": {
 			args{
 				ctx: model.StoreUser(context.Background(), model.NewUser(1, "", authModel.NewUser(0, ""))),
 				old: model.NewKetchup(model.DefaultPattern, "1.0.0", model.Daily, false, model.NewEmptyRepository()),
@@ -598,8 +569,7 @@ func TestCheck(t *testing.T) {
 			},
 			nil,
 		},
-		{
-			"no pattern",
+		"no pattern": {
 			args{
 				ctx: model.StoreUser(context.Background(), model.NewUser(1, "", authModel.NewUser(0, ""))),
 				old: model.Ketchup{},
@@ -607,8 +577,7 @@ func TestCheck(t *testing.T) {
 			},
 			errors.New("pattern is required"),
 		},
-		{
-			"invalid pattern",
+		"invalid pattern": {
 			args{
 				ctx: model.StoreUser(context.Background(), model.NewUser(1, "", authModel.NewUser(0, ""))),
 				old: model.Ketchup{},
@@ -616,8 +585,7 @@ func TestCheck(t *testing.T) {
 			},
 			errors.New("pattern is invalid"),
 		},
-		{
-			"no version",
+		"no version": {
 			args{
 				ctx: model.StoreUser(context.Background(), model.NewUser(1, "", authModel.NewUser(0, ""))),
 				old: model.NewKetchup(model.DefaultPattern, "1.0.0", model.Daily, false, model.NewEmptyRepository()),
@@ -625,16 +593,14 @@ func TestCheck(t *testing.T) {
 			},
 			errors.New("version is required"),
 		},
-		{
-			"create error",
+		"create error": {
 			args{
 				ctx: model.StoreUser(context.Background(), model.NewUser(1, "", authModel.NewUser(0, ""))),
 				new: model.Ketchup{Version: "1.0.0", Pattern: "stable", Repository: model.NewGithubRepository(1, ""), User: model.NewUser(1, "", authModel.NewUser(0, ""))},
 			},
 			errors.New("unable to check if ketchup already exists"),
 		},
-		{
-			"create already exists",
+		"create already exists": {
 			args{
 				ctx: model.StoreUser(context.Background(), model.NewUser(1, "", authModel.NewUser(0, ""))),
 				new: model.Ketchup{Pattern: model.DefaultPattern, Version: "1.0.0", Repository: model.NewGithubRepository(2, ketchupRepository), User: model.NewUser(1, "", authModel.NewUser(0, ""))},
@@ -643,8 +609,8 @@ func TestCheck(t *testing.T) {
 		},
 	}
 
-	for _, tc := range cases {
-		t.Run(tc.intention, func(t *testing.T) {
+	for intention, tc := range cases {
+		t.Run(intention, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
@@ -654,7 +620,7 @@ func TestCheck(t *testing.T) {
 				ketchupStore: mockKetchupStore,
 			}
 
-			switch tc.intention {
+			switch intention {
 			case "no pattern", "invalid pattern", "no version":
 				mockKetchupStore.EXPECT().GetByRepository(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(model.Ketchup{}, nil)
 			case "create error":

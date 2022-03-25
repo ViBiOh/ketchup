@@ -37,15 +37,13 @@ func TestList(t *testing.T) {
 		last     string
 	}
 
-	cases := []struct {
-		intention string
+	cases := map[string]struct {
 		args      args
 		want      []model.Repository
 		wantCount uint64
 		wantErr   error
 	}{
-		{
-			"simple",
+		"simple": {
 			args{},
 			[]model.Repository{
 				model.NewGithubRepository(1, ketchupRepository).AddVersion(model.DefaultPattern, "1.0.0"),
@@ -54,8 +52,7 @@ func TestList(t *testing.T) {
 			2,
 			nil,
 		},
-		{
-			"error",
+		"error": {
 			args{},
 			nil,
 			0,
@@ -63,8 +60,8 @@ func TestList(t *testing.T) {
 		},
 	}
 
-	for _, tc := range cases {
-		t.Run(tc.intention, func(t *testing.T) {
+	for intention, tc := range cases {
+		t.Run(intention, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
@@ -74,7 +71,7 @@ func TestList(t *testing.T) {
 				repositoryStore: mockRepositoryStore,
 			}
 
-			switch tc.intention {
+			switch intention {
 			case "simple":
 				mockRepositoryStore.EXPECT().List(gomock.Any(), gomock.Any(), gomock.Any()).Return([]model.Repository{
 					model.NewGithubRepository(1, ketchupRepository).AddVersion(model.DefaultPattern, "1.0.0"),
@@ -110,14 +107,12 @@ func TestSuggest(t *testing.T) {
 		count     uint64
 	}
 
-	cases := []struct {
-		intention string
-		args      args
-		want      []model.Repository
-		wantErr   error
+	cases := map[string]struct {
+		args    args
+		want    []model.Repository
+		wantErr error
 	}{
-		{
-			"simple",
+		"simple": {
 			args{
 				ctx: context.Background(),
 			},
@@ -126,8 +121,7 @@ func TestSuggest(t *testing.T) {
 			},
 			nil,
 		},
-		{
-			"error",
+		"error": {
 			args{
 				ctx: context.Background(),
 			},
@@ -136,8 +130,8 @@ func TestSuggest(t *testing.T) {
 		},
 	}
 
-	for _, tc := range cases {
-		t.Run(tc.intention, func(t *testing.T) {
+	for intention, tc := range cases {
+		t.Run(intention, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
@@ -147,7 +141,7 @@ func TestSuggest(t *testing.T) {
 				repositoryStore: mockRepositoryStore,
 			}
 
-			switch tc.intention {
+			switch intention {
 			case "simple":
 				mockRepositoryStore.EXPECT().Suggest(gomock.Any(), gomock.Any(), gomock.Any()).Return([]model.Repository{
 					model.NewGithubRepository(1, ketchupRepository).AddVersion(model.DefaultPattern, "1.2.3"),
@@ -182,14 +176,12 @@ func TestGetOrCreate(t *testing.T) {
 		pattern        string
 	}
 
-	cases := []struct {
-		intention string
-		args      args
-		want      model.Repository
-		wantErr   error
+	cases := map[string]struct {
+		args    args
+		want    model.Repository
+		wantErr error
 	}{
-		{
-			"get error",
+		"get error": {
 			args{
 				ctx:            context.Background(),
 				name:           "error",
@@ -199,8 +191,7 @@ func TestGetOrCreate(t *testing.T) {
 			model.NewEmptyRepository(),
 			httpModel.ErrInternalError,
 		},
-		{
-			"exists with pattern",
+		"exists with pattern": {
 			args{
 				ctx:            context.Background(),
 				name:           "exist",
@@ -210,8 +201,7 @@ func TestGetOrCreate(t *testing.T) {
 			model.NewGithubRepository(1, ketchupRepository).AddVersion(model.DefaultPattern, "1.0.0"),
 			nil,
 		},
-		{
-			"exists no pattern error",
+		"exists no pattern error": {
 			args{
 				ctx:            context.Background(),
 				name:           "exist",
@@ -221,8 +211,7 @@ func TestGetOrCreate(t *testing.T) {
 			model.NewEmptyRepository(),
 			httpModel.ErrInternalError,
 		},
-		{
-			"exists pattern not found",
+		"exists pattern not found": {
 			args{
 				ctx:            context.Background(),
 				name:           "exist",
@@ -232,8 +221,7 @@ func TestGetOrCreate(t *testing.T) {
 			model.NewEmptyRepository(),
 			httpModel.ErrNotFound,
 		},
-		{
-			"exists but no pattern",
+		"exists but no pattern": {
 			args{
 				ctx:            context.Background(),
 				name:           "exist",
@@ -243,8 +231,7 @@ func TestGetOrCreate(t *testing.T) {
 			model.NewGithubRepository(1, ketchupRepository).AddVersion(model.DefaultPattern, "1.0.0"),
 			nil,
 		},
-		{
-			"update error",
+		"update error": {
 			args{
 				ctx:            context.Background(),
 				name:           "exist",
@@ -254,8 +241,7 @@ func TestGetOrCreate(t *testing.T) {
 			model.NewEmptyRepository(),
 			httpModel.ErrInternalError,
 		},
-		{
-			"create",
+		"create": {
 			args{
 				ctx:            context.Background(),
 				name:           "not found",
@@ -267,8 +253,8 @@ func TestGetOrCreate(t *testing.T) {
 		},
 	}
 
-	for _, tc := range cases {
-		t.Run(tc.intention, func(t *testing.T) {
+	for intention, tc := range cases {
+		t.Run(intention, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
@@ -280,7 +266,7 @@ func TestGetOrCreate(t *testing.T) {
 				githubApp:       mockGithub,
 			}
 
-			switch tc.intention {
+			switch intention {
 			case "get error":
 				mockRepositoryStore.EXPECT().GetByName(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(model.NewEmptyRepository(), errors.New("failed"))
 			case "exists with pattern":
@@ -341,14 +327,12 @@ func TestCreate(t *testing.T) {
 		item model.Repository
 	}
 
-	cases := []struct {
-		intention string
-		args      args
-		want      model.Repository
-		wantErr   error
+	cases := map[string]struct {
+		args    args
+		want    model.Repository
+		wantErr error
 	}{
-		{
-			"invalid",
+		"invalid": {
 			args{
 				ctx:  context.Background(),
 				item: model.NewGithubRepository(1, ""),
@@ -356,8 +340,7 @@ func TestCreate(t *testing.T) {
 			model.NewEmptyRepository(),
 			httpModel.ErrInvalid,
 		},
-		{
-			"release error",
+		"release error": {
 			args{
 				ctx:  context.Background(),
 				item: model.NewGithubRepository(1, "invalid"),
@@ -365,8 +348,7 @@ func TestCreate(t *testing.T) {
 			model.NewEmptyRepository(),
 			httpModel.ErrNotFound,
 		},
-		{
-			"create error",
+		"create error": {
 			args{
 				ctx:  context.Background(),
 				item: model.NewGithubRepository(1, "vibioh").AddVersion(model.DefaultPattern, "0.0.0"),
@@ -374,8 +356,7 @@ func TestCreate(t *testing.T) {
 			model.NewGithubRepository(1, "vibioh").AddVersion(model.DefaultPattern, "1.0.0"),
 			httpModel.ErrInternalError,
 		},
-		{
-			"success",
+		"success": {
 			args{
 				ctx:  context.Background(),
 				item: model.NewGithubRepository(1, ketchupRepository).AddVersion(model.DefaultPattern, "0.0.0"),
@@ -385,8 +366,8 @@ func TestCreate(t *testing.T) {
 		},
 	}
 
-	for _, tc := range cases {
-		t.Run(tc.intention, func(t *testing.T) {
+	for intention, tc := range cases {
+		t.Run(intention, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
@@ -398,7 +379,7 @@ func TestCreate(t *testing.T) {
 				githubApp:       mockGithub,
 			}
 
-			switch tc.intention {
+			switch intention {
 			case "invalid":
 				mockRepositoryStore.EXPECT().GetByName(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(model.NewEmptyRepository(), nil)
 			case "release error":
@@ -448,45 +429,39 @@ func TestUpdate(t *testing.T) {
 		item model.Repository
 	}
 
-	cases := []struct {
-		intention string
-		args      args
-		wantErr   error
+	cases := map[string]struct {
+		args    args
+		wantErr error
 	}{
-		{
-			"start atomic error",
+		"start atomic error": {
 			args{
 				ctx:  context.TODO(),
 				item: model.NewEmptyRepository(),
 			},
 			errAtomicStart,
 		},
-		{
-			"fetch error",
+		"fetch error": {
 			args{
 				ctx:  context.Background(),
 				item: model.NewGithubRepository(0, ""),
 			},
 			httpModel.ErrInternalError,
 		},
-		{
-			"invalid check",
+		"invalid check": {
 			args{
 				ctx:  context.Background(),
 				item: model.NewGithubRepository(1, ""),
 			},
 			httpModel.ErrInvalid,
 		},
-		{
-			"update error",
+		"update error": {
 			args{
 				ctx:  context.Background(),
 				item: model.NewGithubRepository(1, "").AddVersion(model.DefaultPattern, "1.2.3"),
 			},
 			httpModel.ErrInternalError,
 		},
-		{
-			"success",
+		"success": {
 			args{
 				ctx:  context.Background(),
 				item: model.NewGithubRepository(3, "").AddVersion(model.DefaultPattern, "1.2.3"),
@@ -495,8 +470,8 @@ func TestUpdate(t *testing.T) {
 		},
 	}
 
-	for _, tc := range cases {
-		t.Run(tc.intention, func(t *testing.T) {
+	for intention, tc := range cases {
+		t.Run(intention, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
@@ -506,7 +481,7 @@ func TestUpdate(t *testing.T) {
 				repositoryStore: mockRepositoryStore,
 			}
 
-			switch tc.intention {
+			switch intention {
 			case "start atomic error":
 				mockRepositoryStore.EXPECT().DoAtomic(gomock.Any(), gomock.Any()).Return(errAtomicStart)
 			case "fetch error":
@@ -560,27 +535,23 @@ func TestClean(t *testing.T) {
 		ctx context.Context
 	}
 
-	cases := []struct {
-		intention string
-		args      args
-		wantErr   error
+	cases := map[string]struct {
+		args    args
+		wantErr error
 	}{
-		{
-			"error",
+		"error": {
 			args{
 				ctx: context.Background(),
 			},
 			httpModel.ErrInternalError,
 		},
-		{
-			"error versions",
+		"error versions": {
 			args{
 				ctx: context.Background(),
 			},
 			httpModel.ErrInternalError,
 		},
-		{
-			"success",
+		"success": {
 			args{
 				ctx: context.Background(),
 			},
@@ -588,8 +559,8 @@ func TestClean(t *testing.T) {
 		},
 	}
 
-	for _, tc := range cases {
-		t.Run(tc.intention, func(t *testing.T) {
+	for intention, tc := range cases {
+		t.Run(intention, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
@@ -599,7 +570,7 @@ func TestClean(t *testing.T) {
 				repositoryStore: mockRepositoryStore,
 			}
 
-			switch tc.intention {
+			switch intention {
 			case "error":
 				dummyFn := func(ctx context.Context, do func(ctx context.Context) error) error {
 					return do(ctx)
@@ -644,50 +615,43 @@ func TestCheck(t *testing.T) {
 		new model.Repository
 	}
 
-	cases := []struct {
-		intention string
-		args      args
-		wantErr   error
+	cases := map[string]struct {
+		args    args
+		wantErr error
 	}{
-		{
-			"delete",
+		"delete": {
 			args{
 				old: model.NewGithubRepository(1, ""),
 			},
 			nil,
 		},
-		{
-			"name required",
+		"name required": {
 			args{
 				new: model.NewGithubRepository(1, "").AddVersion(model.DefaultPattern, "1.0.0"),
 			},
 			errors.New("name is required"),
 		},
-		{
-			"no kind change",
+		"no kind change": {
 			args{
 				old: model.NewGithubRepository(1, ketchupRepository).AddVersion(model.DefaultPattern, "1.0.0"),
 				new: model.NewHelmRepository(1, chartRepository, "app"),
 			},
 			errors.New("kind cannot be changed"),
 		},
-		{
-			"version required for update",
+		"version required for update": {
 			args{
 				old: model.NewGithubRepository(1, ketchupRepository).AddVersion(model.DefaultPattern, "1.0.0"),
 				new: model.NewGithubRepository(1, ketchupRepository),
 			},
 			errors.New("version is required"),
 		},
-		{
-			"get error",
+		"get error": {
 			args{
 				new: model.NewGithubRepository(1, "error"),
 			},
 			errors.New("unable to check if name already exists"),
 		},
-		{
-			"exist",
+		"exist": {
 			args{
 				new: model.NewGithubRepository(1, "exist"),
 			},
@@ -695,8 +659,8 @@ func TestCheck(t *testing.T) {
 		},
 	}
 
-	for _, tc := range cases {
-		t.Run(tc.intention, func(t *testing.T) {
+	for intention, tc := range cases {
+		t.Run(intention, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
@@ -706,7 +670,7 @@ func TestCheck(t *testing.T) {
 				repositoryStore: mockRepositoryStore,
 			}
 
-			switch tc.intention {
+			switch intention {
 			case "name required":
 				mockRepositoryStore.EXPECT().GetByName(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(model.NewEmptyRepository(), nil)
 			case "no kind change":
@@ -743,34 +707,29 @@ func TestSanitizeName(t *testing.T) {
 		name string
 	}
 
-	cases := []struct {
-		intention string
-		args      args
-		want      string
+	cases := map[string]struct {
+		args args
+		want string
 	}{
-		{
-			"nothing to do",
+		"nothing to do": {
 			args{
 				name: "test",
 			},
 			"test",
 		},
-		{
-			"domain prefix",
+		"domain prefix": {
 			args{
 				name: "github.com/vibioh/ketchup",
 			},
 			ketchupRepository,
 		},
-		{
-			"full url",
+		"full url": {
 			args{
 				name: "https://github.com/vibioh/ketchup",
 			},
 			ketchupRepository,
 		},
-		{
-			"with suffix",
+		"with suffix": {
 			args{
 				name: "https://github.com/vibioh/ketchup/releases/latest",
 			},
@@ -778,8 +737,8 @@ func TestSanitizeName(t *testing.T) {
 		},
 	}
 
-	for _, tc := range cases {
-		t.Run(tc.intention, func(t *testing.T) {
+	for intention, tc := range cases {
+		t.Run(intention, func(t *testing.T) {
 			if got := sanitizeName(tc.args.name); got != tc.want {
 				t.Errorf("sanitizeName() = `%s`, want `%s`", got, tc.want)
 			}

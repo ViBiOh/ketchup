@@ -15,30 +15,26 @@ func TestParseKetchupFrequency(t *testing.T) {
 		value string
 	}
 
-	cases := []struct {
-		intention string
-		args      args
-		want      KetchupFrequency
-		wantErr   error
+	cases := map[string]struct {
+		args    args
+		want    KetchupFrequency
+		wantErr error
 	}{
-		{
-			"UpperCase",
+		"UpperCase": {
 			args{
 				value: "NONE",
 			},
 			None,
 			nil,
 		},
-		{
-			"equal",
+		"equal": {
 			args{
 				value: "Weekly",
 			},
 			Weekly,
 			nil,
 		},
-		{
-			"not found",
+		"not found": {
 			args{
 				value: "wrong",
 			},
@@ -47,8 +43,8 @@ func TestParseKetchupFrequency(t *testing.T) {
 		},
 	}
 
-	for _, tc := range cases {
-		t.Run(tc.intention, func(t *testing.T) {
+	for intention, tc := range cases {
+		t.Run(intention, func(t *testing.T) {
 			got, gotErr := ParseKetchupFrequency(tc.args.value)
 
 			failed := false
@@ -75,13 +71,11 @@ func TestKetchupByRepositoryID(t *testing.T) {
 		array []Ketchup
 	}
 
-	cases := []struct {
-		intention string
-		args      args
-		want      []Ketchup
+	cases := map[string]struct {
+		args args
+		want []Ketchup
 	}{
-		{
-			"simple",
+		"simple": {
 			args{
 				array: []Ketchup{
 					NewKetchup(DefaultPattern, "", Daily, false, NewGithubRepository(10, "")),
@@ -97,8 +91,8 @@ func TestKetchupByRepositoryID(t *testing.T) {
 		},
 	}
 
-	for _, tc := range cases {
-		t.Run(tc.intention, func(t *testing.T) {
+	for intention, tc := range cases {
+		t.Run(intention, func(t *testing.T) {
 			sort.Sort(KetchupByRepositoryIDAndPattern(tc.args.array))
 			if got := tc.args.array; !reflect.DeepEqual(got, tc.want) {
 				t.Errorf("KetchupByRepositoryID() = %+v, want %+v", got, tc.want)
@@ -112,13 +106,11 @@ func TestKetchupByPriority(t *testing.T) {
 		array []Ketchup
 	}
 
-	cases := []struct {
-		intention string
-		args      args
-		want      []Ketchup
+	cases := map[string]struct {
+		args args
+		want []Ketchup
 	}{
-		{
-			"alphabetic",
+		"alphabetic": {
 			args{
 				array: []Ketchup{
 					NewKetchup("", "", Daily, false, NewGithubRepository(0, "abc")),
@@ -134,8 +126,7 @@ func TestKetchupByPriority(t *testing.T) {
 				NewKetchup("", "", Daily, false, NewGithubRepository(0, "jkl")),
 			},
 		},
-		{
-			"semver",
+		"semver": {
 			args{
 				array: []Ketchup{
 					{Semver: "Minor", Repository: NewGithubRepository(0, "abc")},
@@ -151,8 +142,7 @@ func TestKetchupByPriority(t *testing.T) {
 				{Semver: "", Repository: NewGithubRepository(0, "def")},
 			},
 		},
-		{
-			"full",
+		"full": {
 			args{
 				array: []Ketchup{
 					{Semver: "Major", Repository: NewGithubRepository(0, "abc")},
@@ -178,8 +168,8 @@ func TestKetchupByPriority(t *testing.T) {
 		},
 	}
 
-	for _, tc := range cases {
-		t.Run(tc.intention, func(t *testing.T) {
+	for intention, tc := range cases {
+		t.Run(intention, func(t *testing.T) {
 			sort.Sort(KetchupByPriority(tc.args.array))
 			if got := tc.args.array; !reflect.DeepEqual(got, tc.want) {
 				t.Errorf("KetchupByPriority() = %+v, want %+v", got, tc.want)
@@ -193,13 +183,11 @@ func TestReleaseByRepositoryID(t *testing.T) {
 		array []Release
 	}
 
-	cases := []struct {
-		intention string
-		args      args
-		want      []Release
+	cases := map[string]struct {
+		args args
+		want []Release
 	}{
-		{
-			"simple",
+		"simple": {
 			args{
 				array: []Release{
 					NewRelease(NewGithubRepository(10, ""), DefaultPattern, semver.Version{}),
@@ -215,8 +203,8 @@ func TestReleaseByRepositoryID(t *testing.T) {
 		},
 	}
 
-	for _, tc := range cases {
-		t.Run(tc.intention, func(t *testing.T) {
+	for intention, tc := range cases {
+		t.Run(intention, func(t *testing.T) {
 			sort.Sort(ReleaseByRepositoryIDAndPattern(tc.args.array))
 			if got := tc.args.array; !reflect.DeepEqual(got, tc.want) {
 				t.Errorf("ReleaseByRepositoryID() = %+v, want %+v", got, tc.want)
@@ -230,13 +218,11 @@ func TestReleaseByKindAndName(t *testing.T) {
 		array []Release
 	}
 
-	cases := []struct {
-		intention string
-		args      args
-		want      []Release
+	cases := map[string]struct {
+		args args
+		want []Release
 	}{
-		{
-			"simple",
+		"simple": {
 			args{
 				array: []Release{
 					NewRelease(NewHelmRepository(3, "http://chart", "app"), DefaultPattern, semver.Version{}),
@@ -252,8 +238,8 @@ func TestReleaseByKindAndName(t *testing.T) {
 		},
 	}
 
-	for _, tc := range cases {
-		t.Run(tc.intention, func(t *testing.T) {
+	for intention, tc := range cases {
+		t.Run(intention, func(t *testing.T) {
 			sort.Sort(ReleaseByKindAndName(tc.args.array))
 			if got := tc.args.array; !reflect.DeepEqual(got, tc.want) {
 				t.Errorf("ReleaseByRepositoryID() = %+v, want %+v", got, tc.want)

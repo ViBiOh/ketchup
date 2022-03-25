@@ -7,25 +7,22 @@ import (
 )
 
 func TestString(t *testing.T) {
-	cases := []struct {
-		intention string
-		instance  RepositoryKind
-		want      string
+	cases := map[string]struct {
+		instance RepositoryKind
+		want     string
 	}{
-		{
-			"github",
+		"github": {
 			Github,
 			"github",
 		},
-		{
-			"helm",
+		"helm": {
 			Helm,
 			"helm",
 		},
 	}
 
-	for _, tc := range cases {
-		t.Run(tc.intention, func(t *testing.T) {
+	for intention, tc := range cases {
+		t.Run(intention, func(t *testing.T) {
 			if got := tc.instance.String(); got != tc.want {
 				t.Errorf("String() = `%s`, want `%s`", got, tc.want)
 			}
@@ -38,30 +35,26 @@ func TestURL(t *testing.T) {
 		pattern string
 	}
 
-	cases := []struct {
-		intention string
-		instance  Repository
-		args      args
-		want      string
+	cases := map[string]struct {
+		instance Repository
+		args     args
+		want     string
 	}{
-		{
-			"helm",
+		"helm": {
 			NewHelmRepository(0, "https://charts.vibioh.fr", "app"),
 			args{
 				pattern: DefaultPattern,
 			},
 			"https://charts.vibioh.fr",
 		},
-		{
-			"invalid",
+		"invalid": {
 			NewHelmRepository(0, "charts.fr", ""),
 			args{
 				pattern: DefaultPattern,
 			},
 			"charts.fr",
 		},
-		{
-			"github",
+		"github": {
 			NewGithubRepository(0, "vibioh/ketchup").AddVersion(DefaultPattern, "v1.0.0"),
 			args{
 				pattern: DefaultPattern,
@@ -70,8 +63,8 @@ func TestURL(t *testing.T) {
 		},
 	}
 
-	for _, tc := range cases {
-		t.Run(tc.intention, func(t *testing.T) {
+	for intention, tc := range cases {
+		t.Run(intention, func(t *testing.T) {
 			if got := tc.instance.URL(tc.args.pattern); got != tc.want {
 				t.Errorf("URL() = `%s`, want `%s`", got, tc.want)
 			}
@@ -85,20 +78,17 @@ func TestCompareURL(t *testing.T) {
 		pattern string
 	}
 
-	cases := []struct {
-		intention string
-		instance  Repository
-		args      args
-		want      string
+	cases := map[string]struct {
+		instance Repository
+		args     args
+		want     string
 	}{
-		{
-			"helm",
+		"helm": {
 			NewHelmRepository(0, "https://charts.vibioh.fr", "app"),
 			args{},
 			"https://charts.vibioh.fr",
 		},
-		{
-			"github",
+		"github": {
 			NewGithubRepository(0, "vibioh/ketchup").AddVersion(DefaultPattern, "v1.1.0"),
 			args{
 				version: "v1.0.0",
@@ -108,8 +98,8 @@ func TestCompareURL(t *testing.T) {
 		},
 	}
 
-	for _, tc := range cases {
-		t.Run(tc.intention, func(t *testing.T) {
+	for intention, tc := range cases {
+		t.Run(intention, func(t *testing.T) {
 			if got := tc.instance.CompareURL(tc.args.version, tc.args.pattern); got != tc.want {
 				t.Errorf("URL() = `%s`, want `%s`", got, tc.want)
 			}
@@ -122,22 +112,19 @@ func TestParseRepositoryKind(t *testing.T) {
 		value string
 	}
 
-	cases := []struct {
-		intention string
-		args      args
-		want      RepositoryKind
-		wantErr   error
+	cases := map[string]struct {
+		args    args
+		want    RepositoryKind
+		wantErr error
 	}{
-		{
-			"UpperCase",
+		"UpperCase": {
 			args{
 				value: "HELM",
 			},
 			Helm,
 			nil,
 		},
-		{
-			"not found",
+		"not found": {
 			args{
 				value: "wrong",
 			},
@@ -146,8 +133,8 @@ func TestParseRepositoryKind(t *testing.T) {
 		},
 	}
 
-	for _, tc := range cases {
-		t.Run(tc.intention, func(t *testing.T) {
+	for intention, tc := range cases {
+		t.Run(intention, func(t *testing.T) {
 			got, gotErr := ParseRepositoryKind(tc.args.value)
 
 			failed := false

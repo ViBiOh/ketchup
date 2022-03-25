@@ -25,38 +25,33 @@ func TestStoreInContext(t *testing.T) {
 		ctx context.Context
 	}
 
-	cases := []struct {
-		intention string
-		instance  App
-		args      args
-		want      model.User
+	cases := map[string]struct {
+		instance App
+		args     args
+		want     model.User
 	}{
-		{
-			"no login user",
+		"no login user": {
 			App{},
 			args{
 				ctx: context.Background(),
 			},
 			model.User{},
 		},
-		{
-			"get error",
+		"get error": {
 			App{},
 			args{
 				ctx: authModel.StoreUser(context.Background(), authModel.NewUser(1, "")),
 			},
 			model.User{},
 		},
-		{
-			"not found login",
+		"not found login": {
 			App{},
 			args{
 				ctx: authModel.StoreUser(context.Background(), authModel.NewUser(1, "")),
 			},
 			model.User{},
 		},
-		{
-			"valid",
+		"valid": {
 			App{},
 			args{
 				ctx: authModel.StoreUser(context.Background(), authModel.NewUser(1, "")),
@@ -65,15 +60,15 @@ func TestStoreInContext(t *testing.T) {
 		},
 	}
 
-	for _, tc := range cases {
-		t.Run(tc.intention, func(t *testing.T) {
+	for intention, tc := range cases {
+		t.Run(intention, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
 			mockUserStore := mocks.NewUserStore(ctrl)
 			tc.instance.userStore = mockUserStore
 
-			switch tc.intention {
+			switch intention {
 			case "get error":
 				mockUserStore.EXPECT().GetByLoginID(gomock.Any(), gomock.Any()).Return(model.User{}, errors.New("failed"))
 			case "not found login":
@@ -95,15 +90,13 @@ func TestCreate(t *testing.T) {
 		item model.User
 	}
 
-	cases := []struct {
-		intention string
-		instance  App
-		args      args
-		want      model.User
-		wantErr   error
+	cases := map[string]struct {
+		instance App
+		args     args
+		want     model.User
+		wantErr  error
 	}{
-		{
-			"invalid user",
+		"invalid user": {
 			App{},
 			args{
 				ctx:  context.Background(),
@@ -112,8 +105,7 @@ func TestCreate(t *testing.T) {
 			model.User{},
 			httpModel.ErrInvalid,
 		},
-		{
-			"invalid auth",
+		"invalid auth": {
 			App{},
 			args{
 				ctx:  context.Background(),
@@ -122,8 +114,7 @@ func TestCreate(t *testing.T) {
 			model.User{},
 			httpModel.ErrInvalid,
 		},
-		{
-			"start atomic error",
+		"start atomic error": {
 			App{},
 			args{
 				ctx:  context.Background(),
@@ -132,8 +123,7 @@ func TestCreate(t *testing.T) {
 			model.User{},
 			errAtomicStart,
 		},
-		{
-			"login create error",
+		"login create error": {
 			App{},
 			args{
 				ctx:  context.Background(),
@@ -142,8 +132,7 @@ func TestCreate(t *testing.T) {
 			model.User{},
 			httpModel.ErrInternalError,
 		},
-		{
-			"user create error",
+		"user create error": {
 			App{},
 			args{
 				ctx:  context.Background(),
@@ -152,8 +141,7 @@ func TestCreate(t *testing.T) {
 			model.User{},
 			httpModel.ErrInternalError,
 		},
-		{
-			"success",
+		"success": {
 			App{},
 			args{
 				ctx:  context.Background(),
@@ -164,8 +152,8 @@ func TestCreate(t *testing.T) {
 		},
 	}
 
-	for _, tc := range cases {
-		t.Run(tc.intention, func(t *testing.T) {
+	for intention, tc := range cases {
+		t.Run(intention, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
@@ -178,7 +166,7 @@ func TestCreate(t *testing.T) {
 				return action(ctx)
 			}
 
-			switch tc.intention {
+			switch intention {
 			case "invalid user":
 				mockUserStore.EXPECT().GetByEmail(gomock.Any(), gomock.Any()).Return(model.User{}, nil)
 			case "invalid auth":
@@ -229,22 +217,19 @@ func TestCheck(t *testing.T) {
 		new model.User
 	}
 
-	cases := []struct {
-		intention string
-		instance  App
-		args      args
-		wantErr   error
+	cases := map[string]struct {
+		instance App
+		args     args
+		wantErr  error
 	}{
-		{
-			"delete",
+		"delete": {
 			App{},
 			args{
 				ctx: context.Background(),
 			},
 			nil,
 		},
-		{
-			"no name",
+		"no name": {
 			App{},
 			args{
 				ctx: context.Background(),
@@ -252,8 +237,7 @@ func TestCheck(t *testing.T) {
 			},
 			errors.New("email is required"),
 		},
-		{
-			"get error",
+		"get error": {
 			App{},
 			args{
 				ctx: context.Background(),
@@ -261,8 +245,7 @@ func TestCheck(t *testing.T) {
 			},
 			errors.New("unable to check if email already exists"),
 		},
-		{
-			"already used",
+		"already used": {
 			App{},
 			args{
 				ctx: context.Background(),
@@ -272,8 +255,8 @@ func TestCheck(t *testing.T) {
 		},
 	}
 
-	for _, tc := range cases {
-		t.Run(tc.intention, func(t *testing.T) {
+	for intention, tc := range cases {
+		t.Run(intention, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
@@ -281,7 +264,7 @@ func TestCheck(t *testing.T) {
 
 			tc.instance.userStore = mockUserStore
 
-			switch tc.intention {
+			switch intention {
 			case "no name":
 				mockUserStore.EXPECT().GetByEmail(gomock.Any(), gomock.Any()).Return(model.User{}, nil)
 			case "get error":

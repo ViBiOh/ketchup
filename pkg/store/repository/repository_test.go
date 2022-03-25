@@ -25,15 +25,13 @@ func TestList(t *testing.T) {
 		last     string
 	}
 
-	cases := []struct {
-		intention string
+	cases := map[string]struct {
 		args      args
 		want      []model.Repository
 		wantCount uint64
 		wantErr   error
 	}{
-		{
-			"success",
+		"success": {
 			args{
 				pageSize: 20,
 			},
@@ -44,8 +42,7 @@ func TestList(t *testing.T) {
 			2,
 			nil,
 		},
-		{
-			"invalid last",
+		"invalid last": {
 			args{
 				pageSize: 20,
 				last:     "abc",
@@ -54,8 +51,7 @@ func TestList(t *testing.T) {
 			0,
 			errors.New("invalid last key"),
 		},
-		{
-			"last",
+		"last": {
 			args{
 				pageSize: 20,
 				last:     "2",
@@ -64,8 +60,7 @@ func TestList(t *testing.T) {
 			0,
 			nil,
 		},
-		{
-			"error",
+		"error": {
 			args{
 				pageSize: 20,
 			},
@@ -73,8 +68,7 @@ func TestList(t *testing.T) {
 			0,
 			errors.New("timeout"),
 		},
-		{
-			"scan error",
+		"scan error": {
 			args{
 				pageSize: 20,
 			},
@@ -82,8 +76,7 @@ func TestList(t *testing.T) {
 			0,
 			errors.New("unable to read int"),
 		},
-		{
-			"invalid kind",
+		"invalid kind": {
 			args{
 				pageSize: 20,
 			},
@@ -93,8 +86,8 @@ func TestList(t *testing.T) {
 		},
 	}
 
-	for _, tc := range cases {
-		t.Run(tc.intention, func(t *testing.T) {
+	for intention, tc := range cases {
+		t.Run(intention, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
@@ -102,7 +95,7 @@ func TestList(t *testing.T) {
 
 			instance := App{db: mockDatabase}
 
-			switch tc.intention {
+			switch intention {
 			case "success":
 				mockRows := mocks.NewRows(ctrl)
 				mockRows.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...any) error {
@@ -221,14 +214,12 @@ func TestSuggest(t *testing.T) {
 		count     uint64
 	}
 
-	cases := []struct {
-		intention string
-		args      args
-		want      []model.Repository
-		wantErr   error
+	cases := map[string]struct {
+		args    args
+		want    []model.Repository
+		wantErr error
 	}{
-		{
-			"simple",
+		"simple": {
 			args{
 				ignoreIds: []uint64{8000},
 				count:     2,
@@ -241,8 +232,8 @@ func TestSuggest(t *testing.T) {
 		},
 	}
 
-	for _, tc := range cases {
-		t.Run(tc.intention, func(t *testing.T) {
+	for intention, tc := range cases {
+		t.Run(intention, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
@@ -250,7 +241,7 @@ func TestSuggest(t *testing.T) {
 
 			instance := App{db: mockDatabase}
 
-			switch tc.intention {
+			switch intention {
 			case "simple":
 				mockRows := mocks.NewRows(ctrl)
 				mockRows.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...any) error {
@@ -329,15 +320,13 @@ func TestGet(t *testing.T) {
 		forUpdate bool
 	}
 
-	cases := []struct {
-		intention string
+	cases := map[string]struct {
 		args      args
 		expectSQL string
 		want      model.Repository
 		wantErr   error
 	}{
-		{
-			"simple",
+		"simple": {
 			args{
 				id: 1,
 			},
@@ -345,8 +334,7 @@ func TestGet(t *testing.T) {
 			model.NewHelmRepository(1, chartRepository, "app").AddVersion(model.DefaultPattern, "1.0.0"),
 			nil,
 		},
-		{
-			"no rows",
+		"no rows": {
 			args{
 				id:        1,
 				forUpdate: true,
@@ -355,8 +343,7 @@ func TestGet(t *testing.T) {
 			model.NewEmptyRepository(),
 			nil,
 		},
-		{
-			"scan error",
+		"scan error": {
 			args{
 				id:        1,
 				forUpdate: true,
@@ -367,8 +354,8 @@ func TestGet(t *testing.T) {
 		},
 	}
 
-	for _, tc := range cases {
-		t.Run(tc.intention, func(t *testing.T) {
+	for intention, tc := range cases {
+		t.Run(intention, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
@@ -376,7 +363,7 @@ func TestGet(t *testing.T) {
 
 			instance := App{db: mockDatabase}
 
-			switch tc.intention {
+			switch intention {
 			case "simple":
 				mockRow := mocks.NewRow(ctrl)
 				mockRow.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...any) error {
@@ -450,46 +437,40 @@ func TestCreate(t *testing.T) {
 		o model.Repository
 	}
 
-	cases := []struct {
-		intention string
-		args      args
-		want      uint64
-		wantErr   error
+	cases := map[string]struct {
+		args    args
+		want    uint64
+		wantErr error
 	}{
-		{
-			"error lock",
+		"error lock": {
 			args{
 				o: model.NewGithubRepository(0, ketchupRepository).AddVersion(model.DefaultPattern, "1.0.0"),
 			},
 			0,
 			errors.New("unable to obtain lock"),
 		},
-		{
-			"error get",
+		"error get": {
 			args{
 				o: model.NewGithubRepository(0, ketchupRepository).AddVersion(model.DefaultPattern, "1.0.0"),
 			},
 			0,
 			errors.New("unable to read"),
 		},
-		{
-			"found get",
+		"found get": {
 			args{
 				o: model.NewGithubRepository(0, ketchupRepository).AddVersion(model.DefaultPattern, "1.0.0"),
 			},
 			0,
 			errors.New("repository already exists with name"),
 		},
-		{
-			"error create",
+		"error create": {
 			args{
 				o: model.NewGithubRepository(0, ketchupRepository).AddVersion(model.DefaultPattern, "1.0.0"),
 			},
 			0,
 			errors.New("timeout"),
 		},
-		{
-			"success",
+		"success": {
 			args{
 				o: model.NewGithubRepository(0, ketchupRepository).AddVersion(model.DefaultPattern, "1.0.0"),
 			},
@@ -498,8 +479,8 @@ func TestCreate(t *testing.T) {
 		},
 	}
 
-	for _, tc := range cases {
-		t.Run(tc.intention, func(t *testing.T) {
+	for intention, tc := range cases {
+		t.Run(intention, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
@@ -507,7 +488,7 @@ func TestCreate(t *testing.T) {
 
 			instance := App{db: mockDatabase}
 
-			switch tc.intention {
+			switch intention {
 			case "error lock":
 				mockDatabase.EXPECT().Exec(gomock.Any(), gomock.Any()).Return(errors.New("unable to obtain lock"))
 			case "error get":
@@ -576,18 +557,16 @@ func TestCreate(t *testing.T) {
 }
 
 func TestDeleteUnused(t *testing.T) {
-	cases := []struct {
-		intention string
-		wantErr   error
+	cases := map[string]struct {
+		wantErr error
 	}{
-		{
-			"simple",
+		"simple": {
 			nil,
 		},
 	}
 
-	for _, tc := range cases {
-		t.Run(tc.intention, func(t *testing.T) {
+	for intention, tc := range cases {
+		t.Run(intention, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
@@ -595,7 +574,7 @@ func TestDeleteUnused(t *testing.T) {
 
 			instance := App{db: mockDatabase}
 
-			switch tc.intention {
+			switch intention {
 			case "simple":
 				mockDatabase.EXPECT().Exec(gomock.Any(), gomock.Any()).Return(nil)
 			}
@@ -616,18 +595,16 @@ func TestDeleteUnused(t *testing.T) {
 }
 
 func TestDeleteUnusedVersions(t *testing.T) {
-	cases := []struct {
-		intention string
-		wantErr   error
+	cases := map[string]struct {
+		wantErr error
 	}{
-		{
-			"simple",
+		"simple": {
 			nil,
 		},
 	}
 
-	for _, tc := range cases {
-		t.Run(tc.intention, func(t *testing.T) {
+	for intention, tc := range cases {
+		t.Run(intention, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
@@ -635,7 +612,7 @@ func TestDeleteUnusedVersions(t *testing.T) {
 
 			instance := App{db: mockDatabase}
 
-			switch tc.intention {
+			switch intention {
 			case "simple":
 				mockDatabase.EXPECT().Exec(gomock.Any(), gomock.Any()).Return(nil)
 			}

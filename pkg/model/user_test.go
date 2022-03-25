@@ -10,27 +10,23 @@ func TestReadUser(t *testing.T) {
 		ctx context.Context
 	}
 
-	cases := []struct {
-		intention string
-		args      args
-		want      User
+	cases := map[string]struct {
+		args args
+		want User
 	}{
-		{
-			"empty",
+		"empty": {
 			args{
 				ctx: context.Background(),
 			},
 			User{},
 		},
-		{
-			"with User",
+		"with User": {
 			args{
 				ctx: StoreUser(context.Background(), User{ID: 8000, Email: "nobody@localhost"}),
 			},
 			User{ID: 8000, Email: "nobody@localhost"},
 		},
-		{
-			"not an User",
+		"not an User": {
 			args{
 				ctx: context.WithValue(context.Background(), ctxUserKey, args{}),
 			},
@@ -38,8 +34,8 @@ func TestReadUser(t *testing.T) {
 		},
 	}
 
-	for _, tc := range cases {
-		t.Run(tc.intention, func(t *testing.T) {
+	for intention, tc := range cases {
+		t.Run(intention, func(t *testing.T) {
 			if got := ReadUser(tc.args.ctx); got != tc.want {
 				t.Errorf("ReadUser() = %v, want %v", got, tc.want)
 			}

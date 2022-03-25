@@ -19,15 +19,13 @@ func TestGetNewStandardReleases(t *testing.T) {
 		ctx context.Context
 	}
 
-	cases := []struct {
-		intention string
-		instance  App
-		args      args
-		want      []model.Release
-		wantErr   error
+	cases := map[string]struct {
+		instance App
+		args     args
+		want     []model.Release
+		wantErr  error
 	}{
-		{
-			"list error",
+		"list error": {
 			App{},
 			args{
 				ctx: context.Background(),
@@ -35,8 +33,7 @@ func TestGetNewStandardReleases(t *testing.T) {
 			nil,
 			errors.New("failed"),
 		},
-		{
-			"github error",
+		"github error": {
 			App{},
 			args{
 				ctx: context.Background(),
@@ -44,8 +41,7 @@ func TestGetNewStandardReleases(t *testing.T) {
 			nil,
 			nil,
 		},
-		{
-			"same version",
+		"same version": {
 			App{},
 			args{
 				ctx: context.Background(),
@@ -53,8 +49,7 @@ func TestGetNewStandardReleases(t *testing.T) {
 			nil,
 			nil,
 		},
-		{
-			"success",
+		"success": {
 			App{},
 			args{
 				ctx: context.Background(),
@@ -68,8 +63,8 @@ func TestGetNewStandardReleases(t *testing.T) {
 		},
 	}
 
-	for _, tc := range cases {
-		t.Run(tc.intention, func(t *testing.T) {
+	for intention, tc := range cases {
+		t.Run(intention, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
@@ -77,7 +72,7 @@ func TestGetNewStandardReleases(t *testing.T) {
 
 			tc.instance.repositoryService = mockRepositoryService
 
-			switch tc.intention {
+			switch intention {
 			case "list error":
 				mockRepositoryService.EXPECT().ListByKinds(gomock.Any(), gomock.Any(), gomock.Any(), model.Github, model.Docker, model.NPM, model.Pypi).Return(nil, uint64(0), errors.New("failed"))
 			case "github error":
@@ -136,16 +131,14 @@ func TestGetNewHelmReleases(t *testing.T) {
 		content string
 	}
 
-	cases := []struct {
-		intention string
+	cases := map[string]struct {
 		instance  App
 		args      args
 		want      []model.Release
 		wantCount uint64
 		wantErr   error
 	}{
-		{
-			"fetch error",
+		"fetch error": {
 			App{},
 			args{
 				content: "test",
@@ -154,8 +147,7 @@ func TestGetNewHelmReleases(t *testing.T) {
 			0,
 			errors.New("db error"),
 		},
-		{
-			"no repository",
+		"no repository": {
 			App{},
 			args{
 				content: "test",
@@ -164,8 +156,7 @@ func TestGetNewHelmReleases(t *testing.T) {
 			0,
 			nil,
 		},
-		{
-			"helm error",
+		"helm error": {
 			App{},
 			args{
 				content: "test",
@@ -174,8 +165,7 @@ func TestGetNewHelmReleases(t *testing.T) {
 			4,
 			nil,
 		},
-		{
-			"helm",
+		"helm": {
 			App{},
 			args{
 				content: "test",
@@ -190,8 +180,8 @@ func TestGetNewHelmReleases(t *testing.T) {
 		},
 	}
 
-	for _, tc := range cases {
-		t.Run(tc.intention, func(t *testing.T) {
+	for intention, tc := range cases {
+		t.Run(intention, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
@@ -201,7 +191,7 @@ func TestGetNewHelmReleases(t *testing.T) {
 			tc.instance.repositoryService = mockRepositoryService
 			tc.instance.helmApp = mockHelmProvider
 
-			switch tc.intention {
+			switch intention {
 			case "fetch error":
 				mockRepositoryService.EXPECT().ListByKinds(gomock.Any(), gomock.Any(), gomock.Any(), model.Helm).Return(nil, uint64(0), errors.New("db error"))
 			case "no repository":

@@ -18,29 +18,25 @@ func TestGetNextURL(t *testing.T) {
 	lowerCaseHeader.Add("link", `rel="prev"; /v2/prev`)
 	lowerCaseHeader.Add("link", `rel="next"; /v2/next`)
 
-	cases := []struct {
-		intention string
-		args      args
-		want      string
+	cases := map[string]struct {
+		args args
+		want string
 	}{
-		{
-			"empty",
+		"empty": {
 			args{
 				headers:  http.Header{},
 				registry: "http://localhost",
 			},
 			"",
 		},
-		{
-			"uppercase link with next",
+		"uppercase link with next": {
 			args{
 				headers:  upperCaseHeader,
 				registry: "http://localhost",
 			},
 			"http://localhost/v2/test",
 		},
-		{
-			"lowercase link with previous and next inverted",
+		"lowercase link with previous and next inverted": {
 			args{
 				headers:  lowerCaseHeader,
 				registry: "http://localhost",
@@ -49,8 +45,8 @@ func TestGetNextURL(t *testing.T) {
 		},
 	}
 
-	for _, tc := range cases {
-		t.Run(tc.intention, func(t *testing.T) {
+	for intention, tc := range cases {
+		t.Run(intention, func(t *testing.T) {
 			if got := getNextURL(tc.args.headers, tc.args.registry); got != tc.want {
 				t.Errorf("getNextURL() =`%s`, want`%s`", got, tc.want)
 			}

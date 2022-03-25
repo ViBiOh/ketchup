@@ -15,166 +15,145 @@ func TestCheck(t *testing.T) {
 		version Version
 	}
 
-	cases := []struct {
-		intention string
-		instance  Pattern
-		args      args
-		want      bool
+	cases := map[string]struct {
+		instance Pattern
+		args     args
+		want     bool
 	}{
-		{
-			"too short",
+		"too short": {
 			safeParsePattern("1"),
 			args{
 				version: safeParse(stableVersion),
 			},
 			true,
 		},
-		{
-			"no version",
+		"no version": {
 			safeParsePattern("^latest"),
 			args{
 				version: safeParse(stableVersion),
 			},
 			true,
 		},
-		{
-			"latest",
+		"latest": {
 			safeParsePattern("latest"),
 			args{
 				version: safeParse(stableVersion),
 			},
 			true,
 		},
-		{
-			"latest beta",
+		"latest beta": {
 			safeParsePattern("latest"),
 			args{
 				version: safeParse(betaVersion),
 			},
 			true,
 		},
-		{
-			"stable",
+		"stable": {
 			safeParsePattern("stable"),
 			args{
 				version: safeParse(stableVersion),
 			},
 			true,
 		},
-		{
-			"stable beta",
+		"stable beta": {
 			safeParsePattern("stable"),
 			args{
 				version: safeParse(betaVersion),
 			},
 			false,
 		},
-		{
-			"simple caret",
+		"simple caret": {
 			safeParsePattern("^2"),
 			args{
 				version: safeParse(stableVersion),
 			},
 			false,
 		},
-		{
-			"simple caret match",
+		"simple caret match": {
 			safeParsePattern("^1"),
 			args{
 				version: safeParse(stableVersion),
 			},
 			true,
 		},
-		{
-			"simple caret match",
+		"double caret match": {
 			safeParsePattern("^11"),
 			args{
 				version: safeParse("12"),
 			},
 			false,
 		},
-		{
-			"caret",
+		"caret": {
 			safeParsePattern("^1.0"),
 			args{
 				version: safeParse(stableVersion),
 			},
 			true,
 		},
-		{
-			"caret minor change",
+		"caret minor change": {
 			safeParsePattern("^1.0"),
 			args{
 				version: safeParse("1.1.0"),
 			},
 			true,
 		},
-		{
-			"caret lower major",
+		"caret lower major": {
 			safeParsePattern("^1.0"),
 			args{
 				version: safeParse("0.1.0"),
 			},
 			false,
 		},
-		{
-			"caret greater major",
+		"caret greater major": {
 			safeParsePattern("^1.0"),
 			args{
 				version: safeParse("2.0.0"),
 			},
 			false,
 		},
-		{
-			"caret no beta",
+		"caret no beta": {
 			safeParsePattern("^1.0"),
 			args{
 				version: safeParse(betaVersion),
 			},
 			false,
 		},
-		{
-			"caret beta",
+		"caret beta": {
 			safeParsePattern("^1-0"),
 			args{
 				version: safeParse("1.1.0-beta1"),
 			},
 			true,
 		},
-		{
-			"tilde",
+		"tilde": {
 			safeParsePattern("~1.1"),
 			args{
 				version: safeParse("1.1.1"),
 			},
 			true,
 		},
-		{
-			"tilde major change",
+		"tilde major change": {
 			safeParsePattern("~1.1"),
 			args{
 				version: safeParse("2.1.1"),
 			},
 			false,
 		},
-		{
-			"tilde minor change",
+		"tilde minor change": {
 			safeParsePattern("~1.1"),
 			args{
 				version: safeParse("1.2.1"),
 			},
 			false,
 		},
-		{
-			"tilde no beta",
+		"tilde no beta": {
 			safeParsePattern("~1.0"),
 			args{
 				version: safeParse(betaVersion),
 			},
 			false,
 		},
-		{
-			"tilde beta",
+		"tilde beta": {
 			safeParsePattern("~1.1.0-0"),
 			args{
 				version: safeParse("1.1.0-beta1"),
@@ -183,8 +162,8 @@ func TestCheck(t *testing.T) {
 		},
 	}
 
-	for _, tc := range cases {
-		t.Run(tc.intention, func(t *testing.T) {
+	for intention, tc := range cases {
+		t.Run(intention, func(t *testing.T) {
 			if got := tc.instance.Check(tc.args.version); got != tc.want {
 				t.Errorf("Check() = %t, want %t", got, tc.want)
 			}
