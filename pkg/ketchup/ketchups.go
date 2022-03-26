@@ -76,7 +76,7 @@ func (a App) handleCreate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := cache.OnModify(ctx, a.redisApp, suggestCacheKey(model.ReadUser(ctx)), nil); err != nil {
+	if err := cache.EvictOnSuccess(ctx, a.redisApp, suggestCacheKey(model.ReadUser(ctx)), nil); err != nil {
 		logger.Error("unable to evict suggests cache: %s", err)
 	}
 
@@ -135,7 +135,7 @@ func (a App) handleDelete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := cache.OnModify(ctx, a.redisApp, suggestCacheKey(model.ReadUser(ctx)), nil); err != nil {
+	if err := cache.EvictOnSuccess(ctx, a.redisApp, suggestCacheKey(model.ReadUser(ctx)), nil); err != nil {
 		logger.Error("unable to evict suggests cache: %s", err)
 	}
 

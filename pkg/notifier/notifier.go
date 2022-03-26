@@ -42,7 +42,7 @@ type Config struct {
 // Flags adds flags for configuring package
 func Flags(fs *flag.FlagSet, prefix string) Config {
 	return Config{
-		pushURL: flags.New(prefix, "notifier", "PushUrl").Default("", nil).Label("Pushgateway URL").ToString(fs),
+		pushURL: flags.String(fs, prefix, "notifier", "PushUrl", "Pushgateway URL", "", nil),
 	}
 }
 
@@ -162,6 +162,14 @@ func (a App) getKetchupToNotify(ctx context.Context, releases []model.Release) (
 	return userToNotify, nil
 }
 
+func releaseKey(r model.Release) string {
+	return fmt.Sprintf("%d|%s", r.Repository.ID, r.Pattern)
+}
+
+func ketchupKey(k model.Ketchup) string {
+	return fmt.Sprintf("%d|%s", k.Repository.ID, k.Pattern)
+}
+
 func (a App) syncReleasesByUser(ctx context.Context, releases []model.Release, ketchups []model.Ketchup) map[model.User][]model.Release {
 	usersToNotify := make(map[model.User][]model.Release)
 
@@ -172,7 +180,7 @@ func (a App) syncReleasesByUser(ctx context.Context, releases []model.Release, k
 		return releaseID
 	})
 
-	err := breaksync.NewSynchronization().AddSources(breaksync.NewSliceSource(releases, releaseRupture), breaksync.NewSliceSource(ketchups, nil)).AddRuptures(releaseRupture).Run(func(synchronised uint64, items []any) error {
+	err := breaksync.NewSynchronization().AddSources(breaksync.NewSliceSource(releases, releaseKey, releaseRupture), breaksync.NewSliceSource(ketchups, ketchupKey, nil)).Run(func(synchronised uint64, items []any) error {
 		if synchronised != 0 {
 			return nil
 		}

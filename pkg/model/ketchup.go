@@ -61,11 +61,6 @@ func NewKetchup(pattern, version string, frequency KetchupFrequency, updateWhenN
 	}
 }
 
-// Key for breaksync
-func (k Ketchup) Key() string {
-	return fmt.Sprintf("%d|%s", k.Repository.ID, k.Pattern)
-}
-
 // WithID generate ID of the ketchup
 func (k Ketchup) WithID() Ketchup {
 	k.ID = sha.New(k)[:8]
@@ -133,11 +128,6 @@ func NewRelease(repository Repository, pattern string, version semver.Version) R
 		Version:    version,
 		URL:        repository.VersionURL(version.Name),
 	}
-}
-
-// Key for breaksync
-func (r Release) Key() string {
-	return fmt.Sprintf("%d|%s", r.Repository.ID, r.Pattern)
 }
 
 // SetUpdated marks released as auto updated

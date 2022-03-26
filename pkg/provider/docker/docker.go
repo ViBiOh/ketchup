@@ -42,8 +42,8 @@ type Config struct {
 // Flags adds flags for configuring package
 func Flags(fs *flag.FlagSet, prefix string, overrides ...flags.Override) Config {
 	return Config{
-		username: flags.New(prefix, "docker", "Username").Default("", overrides).Label("Registry Username").ToString(fs),
-		password: flags.New(prefix, "docker", "Password").Default("", overrides).Label("Registry Password").ToString(fs),
+		username: flags.String(fs, prefix, "docker", "Username", "Registry Username", "", overrides),
+		password: flags.String(fs, prefix, "docker", "Password", "Registry Password", "", overrides),
 	}
 }
 
@@ -139,13 +139,13 @@ func (a App) login(ctx context.Context, repository string) (string, error) {
 
 func browseRegistryTagsList(body io.ReadCloser, versions map[string]semver.Version, patterns map[string]semver.Pattern) error {
 	done := make(chan struct{})
-	versionsStream := make(chan any, runtime.NumCPU())
+	versionsStream := make(chan string, runtime.NumCPU())
 
 	go func() {
 		defer close(done)
 
 		for tag := range versionsStream {
-			tagVersion, err := semver.Parse(*(tag.(*string)))
+			tagVersion, err := semver.Parse(tag)
 			if err != nil {
 				continue
 			}
@@ -154,9 +154,7 @@ func browseRegistryTagsList(body io.ReadCloser, versions map[string]semver.Versi
 		}
 	}()
 
-	if err := httpjson.Stream(body, func() any {
-		return new(string)
-	}, versionsStream, "tags"); err != nil {
+	if err := httpjson.Stream(body, versionsStream, "tags", true); err != nil {
 		return fmt.Errorf("unable to read tags: %s", err)
 	}
 
