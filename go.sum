@@ -34,12 +34,12 @@ dmitri.shuralyov.com/gpu/mtl v0.0.0-20190408044501-666a987793e9/go.mod h1:H6x//7
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
 github.com/BurntSushi/xgb v0.0.0-20160522181843-27f122750802/go.mod h1:IVnqGOEym/WlBOVXweHU+Q+/VP0lqqI8lqeDx9IjBqo=
 github.com/Masterminds/semver/v3 v3.1.1/go.mod h1:VPu/7SZ7ePZ3QOrcuXROw5FAcLl4a0cBrbBpGY/8hQs=
-github.com/ViBiOh/auth/v2 v2.12.1 h1:SXFAj9f2F6DJpmiCPheolCEAfiZKmqFx9r2vhir5xyg=
-github.com/ViBiOh/auth/v2 v2.12.1/go.mod h1:j66TAujWpYEKO/Mwdtp1AilDarxsNVNTBk5YHAzABIA=
+github.com/ViBiOh/auth/v2 v2.12.2 h1:M+1kFJ+sffHOzTd0ec4ssZ+BdfrXdCGP9RESCdi7Jy4=
+github.com/ViBiOh/auth/v2 v2.12.2/go.mod h1:w+748CwTJ9VrXoJcuekvxQzn7KF14CBHWViDrV8KCwI=
 github.com/ViBiOh/flags v1.0.0 h1:ECiQMH2tK04PaCkPRuziWAtxYGtx2Ej8O15ZZ2Jx4Ww=
 github.com/ViBiOh/flags v1.0.0/go.mod h1:W0YgB4Nqou2j/2vevgO3kyrcS2f+ci/+w+jDGzVZilk=
-github.com/ViBiOh/httputils/v4 v4.39.1 h1:Mcx2AZCsHBjLVqGt3DAdwbEQo8ZLa8VIC3JChDaErlE=
-github.com/ViBiOh/httputils/v4 v4.39.1/go.mod h1:obDEhyINLcPZjYHBdUbAOjFAMh2DNqY2LcT52VYLEnI=
+github.com/ViBiOh/httputils/v4 v4.39.2 h1:gx4wNpwA4klv9QYs3vKd7rp2Iaw0Vc9B3jQZIfmlPiQ=
+github.com/ViBiOh/httputils/v4 v4.39.2/go.mod h1:obDEhyINLcPZjYHBdUbAOjFAMh2DNqY2LcT52VYLEnI=
 github.com/ViBiOh/mailer v1.28.1 h1:46LyhrQcfv+4D26GWv9mwCKm3R5gL62HVC1FBBggtOE=
 github.com/ViBiOh/mailer v1.28.1/go.mod h1:1mFUNoKogDQ760CSB1NpSHv0m6ToMKigWx5cyp8z2xI=
 github.com/alecthomas/template v0.0.0-20160405071501-a0175ee3bccc/go.mod h1:LOuyumcjzFXgccqObfd/Ljyb9UuFJ6TxHnclSeseNhc=

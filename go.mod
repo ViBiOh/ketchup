@@ -3,9 +3,9 @@ module github.com/ViBiOh/ketchup
 go 1.18
 
 require (
-	github.com/ViBiOh/auth/v2 v2.12.1
+	github.com/ViBiOh/auth/v2 v2.12.2
 	github.com/ViBiOh/flags v1.0.0
-	github.com/ViBiOh/httputils/v4 v4.39.1
+	github.com/ViBiOh/httputils/v4 v4.39.2
 	github.com/ViBiOh/mailer v1.28.1
 	github.com/golang/mock v1.6.0
 	github.com/jackc/pgconn v1.11.0
