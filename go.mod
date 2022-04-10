@@ -5,14 +5,14 @@ go 1.18
 require (
 	github.com/ViBiOh/auth/v2 v2.12.3
 	github.com/ViBiOh/flags v1.0.0
-	github.com/ViBiOh/httputils/v4 v4.39.3
+	github.com/ViBiOh/httputils/v4 v4.39.4
 	github.com/ViBiOh/mailer v1.28.3
 	github.com/golang/mock v1.6.0
 	github.com/jackc/pgconn v1.11.0
 	github.com/jackc/pgproto3/v2 v2.2.0
 	github.com/jackc/pgx/v4 v4.15.0
 	github.com/prometheus/client_golang v1.12.1
-	go.opentelemetry.io/otel/trace v1.6.1
+	go.opentelemetry.io/otel/trace v1.6.3
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
 )
 
@@ -39,10 +39,10 @@ require (
 	github.com/tdewolff/minify/v2 v2.10.0 // indirect
 	github.com/tdewolff/parse/v2 v2.5.27 // indirect
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.31.0 // indirect
-	go.opentelemetry.io/otel v1.6.1 // indirect
-	go.opentelemetry.io/otel/exporters/jaeger v1.6.1 // indirect
+	go.opentelemetry.io/otel v1.6.3 // indirect
+	go.opentelemetry.io/otel/exporters/jaeger v1.6.3 // indirect
 	go.opentelemetry.io/otel/metric v0.28.0 // indirect
-	go.opentelemetry.io/otel/sdk v1.6.1 // indirect
+	go.opentelemetry.io/otel/sdk v1.6.3 // indirect
 	golang.org/x/crypto v0.0.0-20220321153916-2c7772ba3064 // indirect
 	golang.org/x/sys v0.0.0-20220310020820-b874c991c1a5 // indirect
 	golang.org/x/term v0.0.0-20210927222741-03fcf44c2211 // indirect
