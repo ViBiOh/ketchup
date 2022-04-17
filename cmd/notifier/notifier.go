@@ -45,7 +45,7 @@ func main() {
 	logger.Global(logger.New(loggerConfig))
 	defer logger.Close()
 
-	ketchupDb, err := db.New(dbConfig, tracer.App{})
+	ketchupDb, err := db.New(dbConfig, nil)
 	logger.Fatal(err)
 	defer ketchupDb.Close()
 
