@@ -104,11 +104,11 @@ func main() {
 	promServer := server.New(promServerConfig)
 	prometheusApp := prometheus.New(prometheusConfig)
 
-	ketchupDb, err := db.New(dbConfig, tracerApp)
+	ketchupDb, err := db.New(dbConfig, tracerApp.GetTracer("database"))
 	logger.Fatal(err)
 	defer ketchupDb.Close()
 
-	redisApp := redis.New(redisConfig, prometheusApp.Registerer(), tracerApp)
+	redisApp := redis.New(redisConfig, prometheusApp.Registerer(), tracerApp.GetTracer("redis"))
 
 	healthApp := health.New(healthConfig, ketchupDb.Ping, redisApp.Ping)
 
@@ -127,7 +127,7 @@ func main() {
 	logger.Fatal(err)
 	defer mailerApp.Close()
 
-	publicRendererApp, err := renderer.New(rendererConfig, content, ketchup.FuncMap, tracerApp)
+	publicRendererApp, err := renderer.New(rendererConfig, content, ketchup.FuncMap, tracerApp.GetTracer("renderer"))
 	logger.Fatal(err)
 
 	notifierApp := notifier.New(notifierConfig, repositoryServiceApp, ketchupServiceApp, userServiceApp, mailerApp, helmApp)
