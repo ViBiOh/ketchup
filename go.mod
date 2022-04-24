@@ -6,7 +6,7 @@ require (
 	github.com/ViBiOh/auth/v2 v2.12.6
 	github.com/ViBiOh/flags v1.0.0
 	github.com/ViBiOh/httputils/v4 v4.41.1
-	github.com/ViBiOh/mailer v1.28.5
+	github.com/ViBiOh/mailer v1.28.6
 	github.com/golang/mock v1.6.0
 	github.com/jackc/pgconn v1.12.0
 	github.com/jackc/pgproto3/v2 v2.3.0
