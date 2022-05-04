@@ -71,13 +71,12 @@ func (a App) getNewStandardReleases(ctx context.Context) ([]model.Release, uint6
 		}
 
 		for _, repo := range repositories {
+			repo := repo
 			count++
 
-			func(repo model.Repository) {
-				wg.Go(func() {
-					workerOutput <- a.getNewRepositoryReleases(ctx, repo)
-				})
-			}(repo)
+			wg.Go(func() {
+				workerOutput <- a.getNewRepositoryReleases(ctx, repo)
+			})
 		}
 
 		if repoCount < int(pageSize) {
