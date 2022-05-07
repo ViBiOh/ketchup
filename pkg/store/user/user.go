@@ -38,11 +38,10 @@ WHERE
 // GetByEmail retrieve user by email
 func (a App) GetByEmail(ctx context.Context, email string) (model.User, error) {
 	var item model.User
-	scanner := func(row pgx.Row) error {
-		err := row.Scan(&item.ID, &item.Email, &item.Login.ID)
-		if err == pgx.ErrNoRows {
-			item = model.User{}
-			return nil
+	scanner := func(row pgx.Row) (err error) {
+		switch err = row.Scan(&item.ID, &item.Email, &item.Login.ID); err {
+		case pgx.ErrNoRows:
+			err = nil
 		}
 
 		return err
@@ -65,10 +64,9 @@ WHERE
 // GetByLoginID retrieves user by id
 func (a App) GetByLoginID(ctx context.Context, loginID uint64) (model.User, error) {
 	var item model.User
-	scanner := func(row pgx.Row) error {
-		err := row.Scan(&item.ID, &item.Email, &item.Login.ID)
-		if err == pgx.ErrNoRows {
-			item = model.User{}
+	scanner := func(row pgx.Row) (err error) {
+		switch err = row.Scan(&item.ID, &item.Email, &item.Login.ID); err {
+		case pgx.ErrNoRows:
 			return nil
 		}
 
