@@ -8,9 +8,9 @@ require (
 	github.com/ViBiOh/httputils/v4 v4.41.3
 	github.com/ViBiOh/mailer v1.28.7
 	github.com/golang/mock v1.6.0
-	github.com/jackc/pgconn v1.12.0
+	github.com/jackc/pgconn v1.12.1
 	github.com/jackc/pgproto3/v2 v2.3.0
-	github.com/jackc/pgx/v4 v4.16.0
+	github.com/jackc/pgx/v4 v4.16.1
 	github.com/prometheus/client_golang v1.12.1
 	go.opentelemetry.io/otel/trace v1.7.0
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
