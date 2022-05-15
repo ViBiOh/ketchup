@@ -11,7 +11,7 @@ require (
 	github.com/jackc/pgconn v1.12.0
 	github.com/jackc/pgproto3/v2 v2.3.0
 	github.com/jackc/pgx/v4 v4.16.0
-	github.com/prometheus/client_golang v1.12.1
+	github.com/prometheus/client_golang v1.12.2
 	go.opentelemetry.io/otel/trace v1.7.0
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
 )
