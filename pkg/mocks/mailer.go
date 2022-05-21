@@ -58,7 +58,7 @@ func (m *Mailer) Send(arg0 context.Context, arg1 model.MailRequest) error {
 }
 
 // Send indicates an expected call of Send.
-func (mr *MailerMockRecorder) Send(arg0, arg1 any) *gomock.Call {
+func (mr *MailerMockRecorder) Send(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Send", reflect.TypeOf((*Mailer)(nil).Send), arg0, arg1)
 }

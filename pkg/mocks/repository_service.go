@@ -45,7 +45,7 @@ func (m *RepositoryService) Clean(arg0 context.Context) error {
 }
 
 // Clean indicates an expected call of Clean.
-func (mr *RepositoryServiceMockRecorder) Clean(arg0 any) *gomock.Call {
+func (mr *RepositoryServiceMockRecorder) Clean(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Clean", reflect.TypeOf((*RepositoryService)(nil).Clean), arg0)
 }
@@ -60,7 +60,7 @@ func (m *RepositoryService) GetOrCreate(arg0 context.Context, arg1 model.Reposit
 }
 
 // GetOrCreate indicates an expected call of GetOrCreate.
-func (mr *RepositoryServiceMockRecorder) GetOrCreate(arg0, arg1, arg2, arg3, arg4 any) *gomock.Call {
+func (mr *RepositoryServiceMockRecorder) GetOrCreate(arg0, arg1, arg2, arg3, arg4 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetOrCreate", reflect.TypeOf((*RepositoryService)(nil).GetOrCreate), arg0, arg1, arg2, arg3, arg4)
 }
@@ -75,7 +75,7 @@ func (m *RepositoryService) LatestVersions(arg0 context.Context, arg1 model.Repo
 }
 
 // LatestVersions indicates an expected call of LatestVersions.
-func (mr *RepositoryServiceMockRecorder) LatestVersions(arg0, arg1 any) *gomock.Call {
+func (mr *RepositoryServiceMockRecorder) LatestVersions(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LatestVersions", reflect.TypeOf((*RepositoryService)(nil).LatestVersions), arg0, arg1)
 }
@@ -91,7 +91,7 @@ func (m *RepositoryService) List(arg0 context.Context, arg1 uint, arg2 string) (
 }
 
 // List indicates an expected call of List.
-func (mr *RepositoryServiceMockRecorder) List(arg0, arg1, arg2 any) *gomock.Call {
+func (mr *RepositoryServiceMockRecorder) List(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*RepositoryService)(nil).List), arg0, arg1, arg2)
 }
@@ -99,7 +99,7 @@ func (mr *RepositoryServiceMockRecorder) List(arg0, arg1, arg2 any) *gomock.Call
 // ListByKinds mocks base method.
 func (m *RepositoryService) ListByKinds(arg0 context.Context, arg1 uint, arg2 string, arg3 ...model.RepositoryKind) ([]model.Repository, uint64, error) {
 	m.ctrl.T.Helper()
-	varargs := []any{arg0, arg1, arg2}
+	varargs := []interface{}{arg0, arg1, arg2}
 	for _, a := range arg3 {
 		varargs = append(varargs, a)
 	}
@@ -111,9 +111,9 @@ func (m *RepositoryService) ListByKinds(arg0 context.Context, arg1 uint, arg2 st
 }
 
 // ListByKinds indicates an expected call of ListByKinds.
-func (mr *RepositoryServiceMockRecorder) ListByKinds(arg0, arg1, arg2 any, arg3 ...any) *gomock.Call {
+func (mr *RepositoryServiceMockRecorder) ListByKinds(arg0, arg1, arg2 interface{}, arg3 ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	varargs := append([]any{arg0, arg1, arg2}, arg3...)
+	varargs := append([]interface{}{arg0, arg1, arg2}, arg3...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListByKinds", reflect.TypeOf((*RepositoryService)(nil).ListByKinds), varargs...)
 }
 
@@ -127,7 +127,7 @@ func (m *RepositoryService) Suggest(arg0 context.Context, arg1 []uint64, arg2 ui
 }
 
 // Suggest indicates an expected call of Suggest.
-func (mr *RepositoryServiceMockRecorder) Suggest(arg0, arg1, arg2 any) *gomock.Call {
+func (mr *RepositoryServiceMockRecorder) Suggest(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Suggest", reflect.TypeOf((*RepositoryService)(nil).Suggest), arg0, arg1, arg2)
 }
@@ -141,7 +141,7 @@ func (m *RepositoryService) Update(arg0 context.Context, arg1 model.Repository) 
 }
 
 // Update indicates an expected call of Update.
-func (mr *RepositoryServiceMockRecorder) Update(arg0, arg1 any) *gomock.Call {
+func (mr *RepositoryServiceMockRecorder) Update(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*RepositoryService)(nil).Update), arg0, arg1)
 }

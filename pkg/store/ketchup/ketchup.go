@@ -199,11 +199,10 @@ INNER JOIN
   ketchup.user AS u ON u.id = k.user_id
 WHERE
   k.version <> rv.version
-  AND k.frequency = $1
 `
 
-// ListOutdatedByFrequency lists outdated ketchup by frequency id
-func (a App) ListOutdatedByFrequency(ctx context.Context, frequency model.KetchupFrequency, userIds ...uint64) ([]model.Ketchup, error) {
+// ListOutdated lists outdated ketchup by frequency id
+func (a App) ListOutdated(ctx context.Context, userIds ...uint64) ([]model.Ketchup, error) {
 	var list []model.Ketchup
 
 	scanner := func(rows pgx.Rows) error {
@@ -232,7 +231,7 @@ func (a App) ListOutdatedByFrequency(ctx context.Context, frequency model.Ketchu
 	}
 
 	query := listOutdatedByFrequencyQuery
-	params := []any{strings.ToLower(frequency.String())}
+	var params []any
 
 	if len(userIds) > 0 {
 		query += " AND k.user_id = ANY ($2)"

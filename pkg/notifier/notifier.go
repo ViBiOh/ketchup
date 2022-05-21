@@ -148,7 +148,7 @@ func (a App) getKetchupToNotify(ctx context.Context, releases []model.Release) (
 	userToNotify := a.syncReleasesByUser(ctx, releases, ketchups)
 
 	if a.clock.Now().Weekday() == time.Monday {
-		weeklyKetchups, err := a.ketchupService.ListOutdatedByFrequency(ctx, model.Weekly)
+		weeklyKetchups, err := a.ketchupService.ListOutdated(ctx)
 		if err != nil {
 			return nil, fmt.Errorf("unable to get weekly ketchups: %w", err)
 		}
@@ -176,23 +176,24 @@ func (a App) syncReleasesByUser(ctx context.Context, releases []model.Release, k
 	sort.Sort(model.ReleaseByRepositoryIDAndPattern(releases))
 	sort.Sort(model.KetchupByRepositoryIDAndPattern(ketchups))
 
-	releaseRupture := breaksync.NewRupture("release", func(releaseID string) string {
-		return releaseID
-	})
+	err := breaksync.NewSynchronization().
+		AddSources(
+			breaksync.NewSliceSource(releases, releaseKey, breaksync.NewRupture("release", breaksync.Identity)),
+			breaksync.NewSliceSource(ketchups, ketchupKey, nil),
+		).
+		Run(func(synchronised uint64, items []any) error {
+			if synchronised != 0 {
+				return nil
+			}
 
-	err := breaksync.NewSynchronization().AddSources(breaksync.NewSliceSource(releases, releaseKey, releaseRupture), breaksync.NewSliceSource(ketchups, ketchupKey, nil)).Run(func(synchronised uint64, items []any) error {
-		if synchronised != 0 {
+			release := items[0].(model.Release)
+			ketchup := items[1].(model.Ketchup)
+
+			if ketchup.Version != release.Version.Name {
+				a.handleKetchupNotification(ctx, usersToNotify, ketchup, release)
+			}
 			return nil
-		}
-
-		release := items[0].(model.Release)
-		ketchup := items[1].(model.Ketchup)
-
-		if ketchup.Version != release.Version.Name {
-			a.handleKetchupNotification(ctx, usersToNotify, ketchup, release)
-		}
-		return nil
-	})
+		})
 	if err != nil {
 		logger.Error("unable to synchronise releases and ketchups: %s", err)
 	}
@@ -283,7 +284,7 @@ func (a App) Remind(ctx context.Context) error {
 		return fmt.Errorf("unable to get reminder users: %s", err)
 	}
 
-	remindKetchups, err := a.ketchupService.ListOutdatedByFrequency(ctx, model.Daily, usersToRemind...)
+	remindKetchups, err := a.ketchupService.ListOutdated(ctx, usersToRemind...)
 	if err != nil {
 		return fmt.Errorf("unable to get daily ketchups to remind: %s", err)
 	}

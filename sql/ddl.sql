@@ -79,13 +79,3 @@ CREATE TABLE ketchup.ketchup (
 );
 
 CREATE UNIQUE INDEX ketchup_id ON ketchup.ketchup(user_id, repository_id, pattern);
-
--- data
-DO $$
-  DECLARE login_id BIGINT;
-  DECLARE profile_id BIGINT;
-  BEGIN
-    INSERT INTO auth.login (login, password) VALUES ('scheduler', 'service-account') RETURNING id INTO login_id;
-    INSERT INTO auth.profile (name) VALUES ('admin') RETURNING id INTO profile_id;
-    INSERT INTO auth.login_profile (login_id, profile_id) VALUES (login_id, profile_id);
-END $$;

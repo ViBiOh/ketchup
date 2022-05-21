@@ -45,7 +45,7 @@ func (m *KetchupService) Create(arg0 context.Context, arg1 model.Ketchup) (model
 }
 
 // Create indicates an expected call of Create.
-func (mr *KetchupServiceMockRecorder) Create(arg0, arg1 any) *gomock.Call {
+func (mr *KetchupServiceMockRecorder) Create(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*KetchupService)(nil).Create), arg0, arg1)
 }
@@ -59,7 +59,7 @@ func (m *KetchupService) Delete(arg0 context.Context, arg1 model.Ketchup) error 
 }
 
 // Delete indicates an expected call of Delete.
-func (mr *KetchupServiceMockRecorder) Delete(arg0, arg1 any) *gomock.Call {
+func (mr *KetchupServiceMockRecorder) Delete(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*KetchupService)(nil).Delete), arg0, arg1)
 }
@@ -75,7 +75,7 @@ func (m *KetchupService) List(arg0 context.Context, arg1 uint, arg2 string) ([]m
 }
 
 // List indicates an expected call of List.
-func (mr *KetchupServiceMockRecorder) List(arg0, arg1, arg2 any) *gomock.Call {
+func (mr *KetchupServiceMockRecorder) List(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*KetchupService)(nil).List), arg0, arg1, arg2)
 }
@@ -83,7 +83,7 @@ func (mr *KetchupServiceMockRecorder) List(arg0, arg1, arg2 any) *gomock.Call {
 // ListForRepositories mocks base method.
 func (m *KetchupService) ListForRepositories(arg0 context.Context, arg1 []model.Repository, arg2 ...model.KetchupFrequency) ([]model.Ketchup, error) {
 	m.ctrl.T.Helper()
-	varargs := []any{arg0, arg1}
+	varargs := []interface{}{arg0, arg1}
 	for _, a := range arg2 {
 		varargs = append(varargs, a)
 	}
@@ -94,30 +94,30 @@ func (m *KetchupService) ListForRepositories(arg0 context.Context, arg1 []model.
 }
 
 // ListForRepositories indicates an expected call of ListForRepositories.
-func (mr *KetchupServiceMockRecorder) ListForRepositories(arg0, arg1 any, arg2 ...any) *gomock.Call {
+func (mr *KetchupServiceMockRecorder) ListForRepositories(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	varargs := append([]any{arg0, arg1}, arg2...)
+	varargs := append([]interface{}{arg0, arg1}, arg2...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListForRepositories", reflect.TypeOf((*KetchupService)(nil).ListForRepositories), varargs...)
 }
 
-// ListOutdatedByFrequency mocks base method.
-func (m *KetchupService) ListOutdatedByFrequency(arg0 context.Context, arg1 model.KetchupFrequency, arg2 ...model.User) ([]model.Ketchup, error) {
+// ListOutdated mocks base method.
+func (m *KetchupService) ListOutdated(arg0 context.Context, arg1 ...model.User) ([]model.Ketchup, error) {
 	m.ctrl.T.Helper()
-	varargs := []any{arg0, arg1}
-	for _, a := range arg2 {
+	varargs := []interface{}{arg0}
+	for _, a := range arg1 {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "ListOutdatedByFrequency", varargs...)
+	ret := m.ctrl.Call(m, "ListOutdated", varargs...)
 	ret0, _ := ret[0].([]model.Ketchup)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// ListOutdatedByFrequency indicates an expected call of ListOutdatedByFrequency.
-func (mr *KetchupServiceMockRecorder) ListOutdatedByFrequency(arg0, arg1 any, arg2 ...any) *gomock.Call {
+// ListOutdated indicates an expected call of ListOutdated.
+func (mr *KetchupServiceMockRecorder) ListOutdated(arg0 interface{}, arg1 ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	varargs := append([]any{arg0, arg1}, arg2...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListOutdatedByFrequency", reflect.TypeOf((*KetchupService)(nil).ListOutdatedByFrequency), varargs...)
+	varargs := append([]interface{}{arg0}, arg1...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListOutdated", reflect.TypeOf((*KetchupService)(nil).ListOutdated), varargs...)
 }
 
 // Update mocks base method.
@@ -130,7 +130,7 @@ func (m *KetchupService) Update(arg0 context.Context, arg1 string, arg2 model.Ke
 }
 
 // Update indicates an expected call of Update.
-func (mr *KetchupServiceMockRecorder) Update(arg0, arg1, arg2 any) *gomock.Call {
+func (mr *KetchupServiceMockRecorder) Update(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*KetchupService)(nil).Update), arg0, arg1, arg2)
 }
@@ -144,7 +144,7 @@ func (m *KetchupService) UpdateAll(arg0 context.Context) error {
 }
 
 // UpdateAll indicates an expected call of UpdateAll.
-func (mr *KetchupServiceMockRecorder) UpdateAll(arg0 any) *gomock.Call {
+func (mr *KetchupServiceMockRecorder) UpdateAll(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateAll", reflect.TypeOf((*KetchupService)(nil).UpdateAll), arg0)
 }
@@ -158,7 +158,7 @@ func (m *KetchupService) UpdateVersion(arg0 context.Context, arg1, arg2 uint64, 
 }
 
 // UpdateVersion indicates an expected call of UpdateVersion.
-func (mr *KetchupServiceMockRecorder) UpdateVersion(arg0, arg1, arg2, arg3, arg4 any) *gomock.Call {
+func (mr *KetchupServiceMockRecorder) UpdateVersion(arg0, arg1, arg2, arg3, arg4 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateVersion", reflect.TypeOf((*KetchupService)(nil).UpdateVersion), arg0, arg1, arg2, arg3, arg4)
 }

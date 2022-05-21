@@ -44,7 +44,7 @@ func (m *AuthService) Check(arg0 context.Context, arg1, arg2 model.User) error {
 }
 
 // Check indicates an expected call of Check.
-func (mr *AuthServiceMockRecorder) Check(arg0, arg1, arg2 any) *gomock.Call {
+func (mr *AuthServiceMockRecorder) Check(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Check", reflect.TypeOf((*AuthService)(nil).Check), arg0, arg1, arg2)
 }
@@ -59,7 +59,7 @@ func (m *AuthService) Create(arg0 context.Context, arg1 model.User) (model.User,
 }
 
 // Create indicates an expected call of Create.
-func (mr *AuthServiceMockRecorder) Create(arg0, arg1 any) *gomock.Call {
+func (mr *AuthServiceMockRecorder) Create(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*AuthService)(nil).Create), arg0, arg1)
 }

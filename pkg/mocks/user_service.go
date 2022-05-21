@@ -43,7 +43,7 @@ func (m *UserService) StoreInContext(arg0 context.Context) context.Context {
 }
 
 // StoreInContext indicates an expected call of StoreInContext.
-func (mr *UserServiceMockRecorder) StoreInContext(arg0 any) *gomock.Call {
+func (mr *UserServiceMockRecorder) StoreInContext(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StoreInContext", reflect.TypeOf((*UserService)(nil).StoreInContext), arg0)
 }

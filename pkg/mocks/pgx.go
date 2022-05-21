@@ -36,9 +36,9 @@ func (m *Row) EXPECT() *RowMockRecorder {
 }
 
 // Scan mocks base method.
-func (m *Row) Scan(arg0 ...any) error {
+func (m *Row) Scan(arg0 ...interface{}) error {
 	m.ctrl.T.Helper()
-	varargs := []any{}
+	varargs := []interface{}{}
 	for _, a := range arg0 {
 		varargs = append(varargs, a)
 	}
@@ -48,7 +48,7 @@ func (m *Row) Scan(arg0 ...any) error {
 }
 
 // Scan indicates an expected call of Scan.
-func (mr *RowMockRecorder) Scan(arg0 ...any) *gomock.Call {
+func (mr *RowMockRecorder) Scan(arg0 ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Scan", reflect.TypeOf((*Row)(nil).Scan), arg0...)
 }
@@ -159,9 +159,9 @@ func (mr *RowsMockRecorder) RawValues() *gomock.Call {
 }
 
 // Scan mocks base method.
-func (m *Rows) Scan(arg0 ...any) error {
+func (m *Rows) Scan(arg0 ...interface{}) error {
 	m.ctrl.T.Helper()
-	varargs := []any{}
+	varargs := []interface{}{}
 	for _, a := range arg0 {
 		varargs = append(varargs, a)
 	}
@@ -171,16 +171,16 @@ func (m *Rows) Scan(arg0 ...any) error {
 }
 
 // Scan indicates an expected call of Scan.
-func (mr *RowsMockRecorder) Scan(arg0 ...any) *gomock.Call {
+func (mr *RowsMockRecorder) Scan(arg0 ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Scan", reflect.TypeOf((*Rows)(nil).Scan), arg0...)
 }
 
 // Values mocks base method.
-func (m *Rows) Values() ([]any, error) {
+func (m *Rows) Values() ([]interface{}, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Values")
-	ret0, _ := ret[0].([]any)
+	ret0, _ := ret[0].([]interface{})
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

@@ -45,7 +45,7 @@ func (m *GenericProvider) LatestVersions(arg0 context.Context, arg1 string, arg2
 }
 
 // LatestVersions indicates an expected call of LatestVersions.
-func (mr *GenericProviderMockRecorder) LatestVersions(arg0, arg1, arg2 any) *gomock.Call {
+func (mr *GenericProviderMockRecorder) LatestVersions(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LatestVersions", reflect.TypeOf((*GenericProvider)(nil).LatestVersions), arg0, arg1, arg2)
 }

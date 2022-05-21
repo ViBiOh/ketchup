@@ -103,3 +103,11 @@ run:
 .PHONY: run-notifier
 run-notifier:
 	$(NOTIFIER_RUNNER)
+
+.PHONY: sidecars
+sidecars:
+	docker run --detach --name "ketchup-pg" --publish "127.0.0.1:$(KETCHUP_DB_PORT):5432" --env "POSTGRES_USER=$(KETCHUP_DB_USER)" --env "POSTGRES_PASSWORD=$(KETCHUP_DB_PASS)" --env "POSTGRES_DB=$(KETCHUP_DB_NAME)" "postgres"
+
+.PHONY: sidecars-off
+sidecars-off:
+	docker rm --force --volumes "ketchup-pg"

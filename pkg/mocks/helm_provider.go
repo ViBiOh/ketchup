@@ -45,7 +45,7 @@ func (m *HelmProvider) FetchIndex(arg0 context.Context, arg1 string, arg2 map[st
 }
 
 // FetchIndex indicates an expected call of FetchIndex.
-func (mr *HelmProviderMockRecorder) FetchIndex(arg0, arg1, arg2 any) *gomock.Call {
+func (mr *HelmProviderMockRecorder) FetchIndex(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FetchIndex", reflect.TypeOf((*HelmProvider)(nil).FetchIndex), arg0, arg1, arg2)
 }
@@ -60,7 +60,7 @@ func (m *HelmProvider) LatestVersions(arg0 context.Context, arg1, arg2 string, a
 }
 
 // LatestVersions indicates an expected call of LatestVersions.
-func (mr *HelmProviderMockRecorder) LatestVersions(arg0, arg1, arg2, arg3 any) *gomock.Call {
+func (mr *HelmProviderMockRecorder) LatestVersions(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LatestVersions", reflect.TypeOf((*HelmProvider)(nil).LatestVersions), arg0, arg1, arg2, arg3)
 }
