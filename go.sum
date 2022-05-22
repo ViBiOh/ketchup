@@ -38,8 +38,8 @@ github.com/ViBiOh/auth/v2 v2.12.8 h1:bKKv5UoOoY87AI0Nfw4iLuh3Z2n3AeI5gC1rW+sDdRI
 github.com/ViBiOh/auth/v2 v2.12.8/go.mod h1:4xXoXjdqyzJtfNjnTHvteaUTvc9nQ6GMzBPPffigyx4=
 github.com/ViBiOh/flags v1.0.0 h1:ECiQMH2tK04PaCkPRuziWAtxYGtx2Ej8O15ZZ2Jx4Ww=
 github.com/ViBiOh/flags v1.0.0/go.mod h1:W0YgB4Nqou2j/2vevgO3kyrcS2f+ci/+w+jDGzVZilk=
-github.com/ViBiOh/httputils/v4 v4.41.5 h1:LxUk4jOxwmodZuX3t1yBQQy8JdcuhfDy5P3XhQgM7vw=
-github.com/ViBiOh/httputils/v4 v4.41.5/go.mod h1:aT1MzvqYpo42wRdpp2Z04g5ylmHw4lITt+ShUgR7Q9M=
+github.com/ViBiOh/httputils/v4 v4.42.0 h1:PTOPm5uKLTaMzh/uaBxknlVSZpT1BfZNII7js69g7ac=
+github.com/ViBiOh/httputils/v4 v4.42.0/go.mod h1:aT1MzvqYpo42wRdpp2Z04g5ylmHw4lITt+ShUgR7Q9M=
 github.com/ViBiOh/mailer v1.28.8 h1:CCPfHur5SKdtNroEYvdrq2gUcaEhAMu4rlHHHSiNCak=
 github.com/ViBiOh/mailer v1.28.8/go.mod h1:5+v5E1p08rKWjhi/JLg39BuaYw5JIbbqsypj03RBCmk=
 github.com/alecthomas/template v0.0.0-20160405071501-a0175ee3bccc/go.mod h1:LOuyumcjzFXgccqObfd/Ljyb9UuFJ6TxHnclSeseNhc=
