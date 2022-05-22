@@ -23,7 +23,6 @@ import (
 	repositoryStore "github.com/ViBiOh/ketchup/pkg/store/repository"
 	userStore "github.com/ViBiOh/ketchup/pkg/store/user"
 	mailer "github.com/ViBiOh/mailer/pkg/client"
-	"go.opentelemetry.io/otel/trace"
 )
 
 func main() {
@@ -69,12 +68,8 @@ func main() {
 
 	logger.Info("Starting notifier...")
 
-	ctx := context.Background()
-	if tracer := tracerApp.GetTracer("notifier"); tracer != nil {
-		var span trace.Span
-		ctx, span = tracer.Start(ctx, "notifier")
-		defer span.End()
-	}
+	ctx, end := tracer.StartSpan(context.Background(), tracerApp.GetTracer("notifier"), "notifier")
+	defer end()
 
 	switch *notificationType {
 	case "daily":
