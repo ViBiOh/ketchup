@@ -15,21 +15,28 @@ func (a App) getNewReleases(ctx context.Context) ([]model.Release, uint64, error
 	var releases, helmReleases []model.Release
 	var releasesCount, helmCount uint64
 
-	wg := concurrent.NewFailFast(2)
-	ctx = wg.WithContext(ctx)
+	wg := concurrent.NewLimited(2)
 
-	wg.Go(func() (err error) {
+	wg.Go(func() {
+		var err error
+
 		releases, releasesCount, err = a.getNewStandardReleases(ctx)
-		return
-	})
-	wg.Go(func() (err error) {
-		helmReleases, helmCount, err = a.getNewHelmReleases(ctx)
-		return
+		if err != nil {
+			logger.Error("unable to fetch standard releases: %s", err)
+		}
 	})
 
-	if err := wg.Wait(); err != nil {
-		return nil, 0, err
-	}
+	wg.Go(func() {
+		var err error
+
+		helmReleases, helmCount, err = a.getNewHelmReleases(ctx)
+
+		if err != nil {
+			logger.Error("unable to fetch helm releases: %s", err)
+		}
+	})
+
+	wg.Wait()
 
 	return append(releases, helmReleases...), releasesCount + helmCount, nil
 }
