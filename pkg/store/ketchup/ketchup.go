@@ -234,7 +234,7 @@ func (a App) ListOutdated(ctx context.Context, userIds ...uint64) ([]model.Ketch
 	var params []any
 
 	if len(userIds) > 0 {
-		query += " AND k.user_id = ANY ($2)"
+		query += " AND k.user_id = ANY ($1)"
 		params = append(params, userIds)
 	}
 
