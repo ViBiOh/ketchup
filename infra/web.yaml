@@ -38,29 +38,29 @@ spec:
       KETCHUP_TRACER_URL: http://jaeger.monitoring:14268/api/traces
       OTEL_SERVICE_NAME: ketchup
     secrets:
-      KETCHUP_DB_PASS: AgAyziZsl2XTmsNQSZV8dmOpNmOfzQMFVvM39T4OEcBnU/ocR9cznincVPFU1r+DmwRm3eHXxJU8/8EHtzRbk5IiGeH2ajZT/EL3IH/2OEJco7NR6hg8Hb8MClPA33IflcCA5mpMeW2wVJRfVcxQyVXT3ZWDB/vaNsYFIOBHtWJ3VnTj4RzGqnxWezixs1cXaXuh83waS0znzDCC05BCSHB/xMOYwU8aNHZfW24CP/vNkbsRsKnEuoXdlUNKAbKr//2X7emCVRhN1j5VVcLQEGKz4+HIEEFy5RRXySG5wBtmNaRS3m4H2m22cvQRLpszy2+IjujKvKEsKhXdqsWQZmoFx+PoX+V+VVMnlroIwWDcQfPJ7ETN4EFMoOysryniuIf7y/ji+k2W98XvCzmEB0bK6s3SPk896+MFG0MaOK+HUmCw5t1LNDFI2ngE5Edfp9gJ9efHE01ddNeQyQ70WoAA0XCjalxooiySFFtDLz/dIs75VuNFLMxmHNO8b66RMoVI9MguwP0ROStl+qQ5fCRT+uffBDwcgldKvCRg6NNg3hLMaVFP6lksZLVE9judPoWrVF/pYN8OFB7IPzF2ozSkiebFykebLBYAceEOJAwO6HUY0y7bF4TixPddINJDPXpcZyj2Ec4TyDWZA1UB+f1GStRxHJT9fvpRQO4+bui2N639BFCYJ32J/mFc6si9pGmKODTn36hF7eFBJr9owb6V/KKcYjF511c3/RBCEo471FyhfSp8OwRPKuD+bSy6IntnW3U03JbXjee1Z4o=
-      KETCHUP_REDIS_PASSWORD: AgBB9rWshPmIBYCvEnTh3PWam0w7D5rppRsMdtclEFErVOGguBN9ek866uMhUmuddnIDuaxEocTwzbUqIhHhcATClCAcz9IZ/t6oV4QKlRTyhEgAdG+4aXQ8RY3VbW4Yct18Flv5YdS7sEhxYdhEGZ0vC0MYptnIfGWxQ0w7+5Oiaw4zOSgRwID5nBVNPomX0zWC4Qna26uqUEra3Y+Ormg1V7sFTYyjkwEN+7KzadPyZrj6QHdGYjm9Lt98DiBWzZ0oBvafeEE/le7v9rRON2euHQzEaIN/NmIuFBOS/qt6anL/FmpxvBNoQ+jm5aiHEpWmcVZBfos+6aR9CNIlRrEN9jMNi+cOgpenZ2b8lspNqY1dv08DXv3vDhNZlAvFfCnvzzd/lB88aHImFbyuXVa0t7BlNEbczsuaX6aoBOBwsQRavhyPwfGeBl9ZKrI/sk9iDIqhPkjLEnj32eqDivJ/HScT1e6WPyV8afqy7AjIX0ggNupHuTUeVzNOTuscrJHRCz9TpbP8gdITP0uP+oYJVe4R61IDjGwaSUbI4Q2JRd2dJBZiQAPEKTF20hCSSt1FaroJYGm6ZoIBVq0nb4qAiWHhEbuT0Z0RUatrb60kUPrIot4k/VQo6ExN1zCKEbmJXxLZ6RX7JDMC1bAk8lEz+o1Y1+AHXwDCLGrzDADCwDD/dz1T3DkCwo7nyGgLO7v0nRrYXlRlbnKyYJiJ/jnjhKYgaap/ZAbr5XRws4Xs8GOkmhj3em2piYNnTu9rq1Fj84Vu4YJS+H5ovn89w80=
-      KETCHUP_GITHUB_TOKEN: AgCOpn4qwh7WJP8BKQe0CjOW9EyfFZJSJVcJK1ULAXh7SrxUiXUyb5CgyDqDZfIC7INby5zdn8qtVjuT0D0UPsxiMpmpzskXhnMGYPysLX+R16heD6Wh9A4new6C+tQBQry2P4oDUpYvElum11Wu2UsoAG4YCx81zd2VyVH/fJVb2H9f7omqXRdkOTpo30g4XJr9pbyUGJtAjs1j38laYzVJ+wI+2IHhqhYj2Ffz2/202fsru8nWneGTgztWtmFv5OWl3DFXe+ws4fh8A98mKmkv/Oyh+Fzy6NglBDV/RAEIUDUgSOnSf3i7hPZjBRxhdrIfvnzClDWsun2WA4aC92FRtC0TjPcyHA1JscBvEteYJzN3VdEcR+M58Xu9442S4GQGx44NqEibGFb6nSHvJ99+YXEdRcWs1m7JLU7dR7i2uk6n316yiknZ15xYC1MXyRxk6nsS6xavjUxKikws7YvTJRMs8+9GZYLL93WmMHKTgQs3E+R4c8L7mrqVhuyYXooQgwEcFOxtiMsC8zjlfYF4Y7KWnZCi7JESEvfQtxuMyQbpsmPF3oceDZmU8trnpH8l0mZLNyKLiEbQFvi9AzPDyaZczUoUDA0SEvIB8hktLRpq9y0tZ5UVV9/8rqqO9tsZuukoVSj9CHlKDiCNmAvd/KP66utfhcRxPKFAQx1UBDEV+/Jw6gmFuC7KRhJnGcz/30u222eas7YxwSZpquvRsr5nZqHPovGR+AhHc+alIH2YgcL4gcy7
-      KETCHUP_DOCKER_PASSWORD: AgC42KAGgvi6HO0RKZ1/kdLIoffLI5II3/GXrZQpS0d35/CNTrtMjslVFfEN8UbK5nazGeTkbPkF+c9gAX3Tot5eVKFzGXI1bm0qSGq0hhG8EuCpsjt6/ItiDHWcVdrKrzvUoScs0SW6Z83FzuXiCQQIJRCJBzfRPU1lIykWNpDMQp43SoWnslp23fArNVGgOBNAfiOECgb2NnC2MVafUlc0yGCGNwjZSxI5eSQtgYbtzQUl4dQLrX2qJI/YR44hbYgvaXMaii2mnEnMysg+YsigNa5z4U7hejwwnx55fRP/2GyZCeLHXvhbSQwygGy0j4Btjs+7gJ4YBTUoVKkcRN81BstNWOZT89z7xFVBjE79pe10U/8RJf9xyXY4B9AcsDusxglHCjVgL5bSmPLX1U/50NfJ9ChoZPwUfD9gg2LS9wn/xSuNOTYKoEtOLyWo/dbqUFDbQt4/3EGv8Jj+etuC77f/Kkrdbr2/Pwexwh5XRsL8D0FCVjjMTo+2wklb9nCrjNmW7UPtOChoaBwxWRb7CqXQT9GWLjdjIjrJabu/2rqpZlWrfKm9jm7trNUCuGqUssob8x6NY1tdtLJGMUGjcSE2J/wNzwr8FxhiLKhFunAQCoFiTXIVYIY9vTDoxI5eU6o6cKbRKt+oTb9E4OH8gmTXVG/t6yCzTIG2jwaTBswy/nlaQcTMDdFhLPD07NbSdOXk69yzX6yH+LmJkPP87a3NRgHK620fcdddYfrAGmGVi00=
+      KETCHUP_DB_PASS: AgCWT67qe+wCI4FvZ1BkZhhz2nV08gLwajubUxm9mi3jc1CdXJHqS/se2JGDcBsCLbd1ZWxPt9O5dTcziTBBkBK5Ng0as6rDYGMEyDX84/J0AYWy786CNJRQM0fOzJsuEte6JjlqDLsElNFCnhg8WYidKBxFA09BVh0OcddJOOTBaXJWhwXudilc9GqK3C0GgzTHWRTN6sRm7TB9Ie5FMcN2gooPllLNxFNVSeAJxWYgi25DB53myk5Pnj4LY/qrPM11VFFkUOESEWyo65DM1a4LA/L0TG4CBa5r187+rkkfMNZ64zNmxvwXrGoEA3GHMIScF60ByvapQ/+M5opt4K1bIJnOpmoJWQ26a1SSLvdx3doZREde+QmvUGpTotBAeMJXnzgN+5iDGR5xL7NJl0EIJqsL6jafQejlctMoX4IXhX/3EsNwbLItrmW2gwGOe0X6damKC3kgi62xItHNh7Le10cuaniOU6EMLJZHb3zg7MgUjxwGcde2YMyCOK/60AGQju2p5iAzyw2BG2UgZ4elZuCy4IfGl5UNsv6vgCX+kwj8h7Uj2rDdq2iZEN0C7mYkErXMiTK4H16PZJgpP/ymZRZC/aGoSFkBufDNPqzmVbs7TgR+x+cvfReHS9TANQv67HMi+TK62rVi1ooInsyCyc1fW/Nonq2rKEIoxsVaIRAZw2vspq5eM/Cez53DsfD4JFzmMHrAUuM01XOxi7B47sAs05nzeEhlBKUZn8HZiMD+X/7pZ5O8M4wM0YZMJ/aRSjT34dEaG1K8ruI=
+      KETCHUP_REDIS_PASSWORD: AgBiY2sSkcZFvGHD3CLgFw/50vziSiTqwSc6NKA/9cjZFmQM5d6qmGr0CyeSCEHIo7UYLdTqB8qr9WFl9oS5WBEurOIIN6VdPK29k3+mB48otJWxEHzx6PTCsN9/2FHzYGXe/AZKWtB6WLcbmDR8em1YKegTkk6StmVikAlU5f+VBAIBxINIIvQaB2lcKCg/6+Mx2/vsxXjFvN/aDoBV81lh79XhAAY+VSbQ+FSWVXR377Gu9LINQgotGbwMKpUa71h6uiPkqqsLEVqHA76f42ZeXgXOFqHMexZY0GiTCKf0zjREmf8WgN3X0rOnfCmVDuKkYbq18EDcfsfwonpU33eSvu0YDlPoiponf0g0uz/IWzFaehTX6bas0Qc+IHTvR5QZmWl/wvwH1PUgGJE2H88XgMje/GIBm/WZbj/HbhZCtpvpoJuMCA2/SWFHly03rRNt4fOveVzXgwzxgf69csqc5XgoEbMdlOtEnyR+0VpnxClxKy5y1JV4jeastA9CPmYRsH7DE/PPi3vm1RAKHYvKUncFU203fxdXVmK4XXNOju0lYcIaQdtkif5CwVjw/Fb79QFVgJLV5I1H4mqkaTa+AEKMnAnKv/wIcaBkBAc5r7dURBSBfsWqcC45Gog5lpCJ+dtW6CF4ATspgE4ImHMqZh+QtDwxQUpNR/uHSO5B1GJMWR0wOKZlFTxf2aThSmY3BkSzo7Pn2k++u7tVplQebiTEfZUNQ2i4ql8UQzVRaAc74G4CY+pGjjRZDF8G1bkYA2puxKlmajqtwwI1Inc=
+      KETCHUP_GITHUB_TOKEN: AgARvTwXOLsDtTMap3ICKbxoLlCqMv7DN8UtfidP87S150VlpoU/IqIc9jiBeYVpVIeshIlABchpga+BZCPtAipEAY/fB6LjSeR6/2viSnfDbpcU+KjFrpKksYkz8YWPY0kv0Dy/m4Hh36cRA/+nh6QgzABAGH7rz2ze1DjaTLurOqokd04xAKYWAtfe1w/rsR3sLgq8AYPhCAufRRQVnKenMa0tTOg4rbOz063YBMGe/S0QXYZxNPDAfW2i8LLVSKXevlvp6hkqL3VN/qYNj3T+7tLO4xHmqWVb66k13zps3IaqSn1H/5qwQ7oczBiDCsMq4R1mIxfM69FCxx6IOL10AAigp9IqkVNQQE3o27CikOmgXtM5OJM3WbwT1Xo1jFs4lwWDdXoRHoB3Bvl4YOaXVls2ZkAfH3dzXgLbG8yoIvFfceyhu7iUta+BUBZunf4i3mpBjOm82mbRJbol+/bob7tpYhaULmifjxyZVXkA02Jq31LniBGZbJ91YVVvLjdVFnivHc+OiL3J+FXkElvxmKwCSDJQlx4Gl54/IyAPHViO+hGqLVGglDV1lYtpMgEVBjElhihI2vjhkVt1L2gNlVz3b7WFx3tnJmtExDsehBVXNeDAu7B2VXjTNB6UaRFCPDDr1qiNDPIA8qZnpsDbZPKfVCAkskN/m+cxLD09i3HN7F2h0zFJvQp5G/huSUTFQXBzXl63IH0DODgwnNKYz1A26PULsOc4Cf7i5Ti9C1IAv+Zf06FS
+      KETCHUP_DOCKER_PASSWORD: AgANfQDC8EoofGhr39c49+RF79tvhytPC+4pimvUlt/Lw5syFeYEzEzL3vpJ7A5ppTm9b+PwclYcXPqV3n04DBXYSHyvqnQ2ADBkxBkmJlomGZHzoERSeqwSJJ+a92aa+hzZbblfcAIeaeMl9RXemLhvfzcTQDPtPP7DoOCuXlbIdnNp5XFhWab5Na49XDGcd+Wz1gZf0WCHNs3NeJTUyxMZNmty/ckZi/9RFoPFgZ2wLTURDgvVIc2eVP0ryhoUOMg5u8nE5HC26/dilGNyeP/uyyek33rqIrXewh4fytrm4sdmYchAHUPy5WeO/fkrNIjHzd8hahKwkww1bNmeApEhhlb4If6qu3fArclYPCBo2VEpJHWECAGlVUf7YoVar6bY+GCYJCQkTdtspYbbB7wYg9/Rw+inLeybUHr+VHeQyIypJ/dt7iMQXLQE9Q5sTdfT9SaA7NpNlO8vNjMn2a8WKsEnWGoSloz8nUsUG3UZB0nbqyQ1n3kBOHWevG0IamuB3N0SxeXZHfJQ3g76Hjzqkpyf74uJFajeiMM7irgDHH6jBBwgj/bIBXwEE1hD79SOCyPMAPXKr31UFamyE69gDjP9Hm4QwXqP/QzrJRkxXHE4kbKSM37557UmEOFC+Is6CXPbEUx3rXj9NSJqTtimXlYqxaLbytf30o0OOzMrZqIkZqj/S4AUL6UU/AkaVXOO+eyPVseqjESqZnOLj8o7nzGvtFH3avGM/J35DfLbobjXcic=
     ingress:
       enabled: true
       compress: true
       hosts:
-      - ketchup.vibioh.fr
+        - ketchup.vibioh.fr
     canary:
       enabled: true
       url: https://ketchup.vibioh.fr
     affinity:
       podAffinity:
         preferredDuringSchedulingIgnoredDuringExecution:
-        - weight: 100
-          podAffinityTerm:
-            labelSelector:
-              matchExpressions:
-              - key: app.kubernetes.io/instance
-                operator: In
-                values:
-                - ketchup-db
-            topologyKey: "kubernetes.io/hostname"
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                  - key: app.kubernetes.io/instance
+                    operator: In
+                    values:
+                      - ketchup-db
+              topologyKey: "kubernetes.io/hostname"
     pprof:
       enabled: true
