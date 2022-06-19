@@ -102,12 +102,12 @@ Usage of ketchup:
         [owasp] X-Frame-Options {KETCHUP_FRAME_OPTIONS} (default "deny")
   -githubToken string
         [github] OAuth Token {KETCHUP_GITHUB_TOKEN}
-  -graceDuration string
-        [http] Grace duration when SIGTERM received {KETCHUP_GRACE_DURATION} (default "30s")
+  -graceDuration duration
+        [http] Grace duration when SIGTERM received {KETCHUP_GRACE_DURATION} (default 30s)
   -hsts
         [owasp] Indicate Strict Transport Security {KETCHUP_HSTS} (default true)
-  -idleTimeout string
-        [server] Idle Timeout {KETCHUP_IDLE_TIMEOUT} (default "2m")
+  -idleTimeout duration
+        [server] Idle Timeout {KETCHUP_IDLE_TIMEOUT} (default 2m0s)
   -key string
         [server] Key file {KETCHUP_KEY}
   -loggerJson
@@ -142,24 +142,24 @@ Usage of ketchup:
         [prometheus] Certificate file {KETCHUP_PROMETHEUS_CERT}
   -prometheusGzip
         [prometheus] Enable gzip compression of metrics output {KETCHUP_PROMETHEUS_GZIP}
-  -prometheusIdleTimeout string
-        [prometheus] Idle Timeout {KETCHUP_PROMETHEUS_IDLE_TIMEOUT} (default "10s")
+  -prometheusIdleTimeout duration
+        [prometheus] Idle Timeout {KETCHUP_PROMETHEUS_IDLE_TIMEOUT} (default 10s)
   -prometheusIgnore string
         [prometheus] Ignored path prefixes for metrics, comma separated {KETCHUP_PROMETHEUS_IGNORE}
   -prometheusKey string
         [prometheus] Key file {KETCHUP_PROMETHEUS_KEY}
   -prometheusPort uint
         [prometheus] Listen port (0 to disable) {KETCHUP_PROMETHEUS_PORT} (default 9090)
-  -prometheusReadTimeout string
-        [prometheus] Read Timeout {KETCHUP_PROMETHEUS_READ_TIMEOUT} (default "5s")
-  -prometheusShutdownTimeout string
-        [prometheus] Shutdown Timeout {KETCHUP_PROMETHEUS_SHUTDOWN_TIMEOUT} (default "5s")
-  -prometheusWriteTimeout string
-        [prometheus] Write Timeout {KETCHUP_PROMETHEUS_WRITE_TIMEOUT} (default "10s")
+  -prometheusReadTimeout duration
+        [prometheus] Read Timeout {KETCHUP_PROMETHEUS_READ_TIMEOUT} (default 5s)
+  -prometheusShutdownTimeout duration
+        [prometheus] Shutdown Timeout {KETCHUP_PROMETHEUS_SHUTDOWN_TIMEOUT} (default 5s)
+  -prometheusWriteTimeout duration
+        [prometheus] Write Timeout {KETCHUP_PROMETHEUS_WRITE_TIMEOUT} (default 10s)
   -publicURL string
         Public URL {KETCHUP_PUBLIC_URL} (default "https://ketchup.vibioh.fr")
-  -readTimeout string
-        [server] Read Timeout {KETCHUP_READ_TIMEOUT} (default "5s")
+  -readTimeout duration
+        [server] Read Timeout {KETCHUP_READ_TIMEOUT} (default 5s)
   -redisAddress string
         [redis] Redis Address (blank to disable) {KETCHUP_REDIS_ADDRESS} (default "localhost:6379")
   -redisAlias string
@@ -176,8 +176,8 @@ Usage of ketchup:
         [scheduler] Hour of cron, 24-hour format {KETCHUP_SCHEDULER_HOUR} (default "08:00")
   -schedulerTimezone string
         [scheduler] Timezone {KETCHUP_SCHEDULER_TIMEZONE} (default "Europe/Paris")
-  -shutdownTimeout string
-        [server] Shutdown Timeout {KETCHUP_SHUTDOWN_TIMEOUT} (default "10s")
+  -shutdownTimeout duration
+        [server] Shutdown Timeout {KETCHUP_SHUTDOWN_TIMEOUT} (default 10s)
   -title string
         Application title {KETCHUP_TITLE} (default "Ketchup")
   -tracerRate string
@@ -188,8 +188,8 @@ Usage of ketchup:
         [alcotest] URL to check {KETCHUP_URL}
   -userAgent string
         [alcotest] User-Agent for check {KETCHUP_USER_AGENT} (default "Alcotest")
-  -writeTimeout string
-        [server] Write Timeout {KETCHUP_WRITE_TIMEOUT} (default "10s")
+  -writeTimeout duration
+        [server] Write Timeout {KETCHUP_WRITE_TIMEOUT} (default 10s)
 ```
 
 ## Contributing

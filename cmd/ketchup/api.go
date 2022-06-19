@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"time"
 
 	_ "net/http/pprof"
 
@@ -66,7 +67,7 @@ func main() {
 	fs := flag.NewFlagSet("ketchup", flag.ExitOnError)
 
 	appServerConfig := server.Flags(fs, "")
-	promServerConfig := server.Flags(fs, "prometheus", flags.NewOverride("Port", uint(9090)), flags.NewOverride("IdleTimeout", "10s"), flags.NewOverride("ShutdownTimeout", "5s"))
+	promServerConfig := server.Flags(fs, "prometheus", flags.NewOverride("Port", uint(9090)), flags.NewOverride("IdleTimeout", 10*time.Second), flags.NewOverride("ShutdownTimeout", 5*time.Second))
 	healthConfig := health.Flags(fs, "")
 
 	alcotestConfig := alcotest.Flags(fs, "")
