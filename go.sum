@@ -36,8 +36,8 @@ github.com/BurntSushi/xgb v0.0.0-20160522181843-27f122750802/go.mod h1:IVnqGOEym
 github.com/Masterminds/semver/v3 v3.1.1/go.mod h1:VPu/7SZ7ePZ3QOrcuXROw5FAcLl4a0cBrbBpGY/8hQs=
 github.com/ViBiOh/auth/v2 v2.12.12 h1:QTZl6v+Y+F9cdRfvUWMU+rnr4MChuv2Qkzjw+dr7OFg=
 github.com/ViBiOh/auth/v2 v2.12.12/go.mod h1:+dmhth2EszqtuUKj4M34ihnI/b3x8nneFmsuHYZZmVs=
-github.com/ViBiOh/flags v1.0.0 h1:ECiQMH2tK04PaCkPRuziWAtxYGtx2Ej8O15ZZ2Jx4Ww=
-github.com/ViBiOh/flags v1.0.0/go.mod h1:W0YgB4Nqou2j/2vevgO3kyrcS2f+ci/+w+jDGzVZilk=
+github.com/ViBiOh/flags v1.1.0 h1:2iCnAy2GeIjqdhZ8gE0Z1JhXLg73WNbFSxkJWfkPhW0=
+github.com/ViBiOh/flags v1.1.0/go.mod h1:W0YgB4Nqou2j/2vevgO3kyrcS2f+ci/+w+jDGzVZilk=
 github.com/ViBiOh/httputils/v4 v4.43.0 h1:gCfKN1/wRrVxK4r3cDv6IsgkD9YKqRQisjIw5oxsTeE=
 github.com/ViBiOh/httputils/v4 v4.43.0/go.mod h1:Wb7F+LQHW1GyiWc1SdzM1qH72M9ZKIqJymDrXHlzpT0=
 github.com/ViBiOh/mailer v1.28.12 h1:dn1WAQ9+UEuLjSPnFowx89y5YtYrS4WZ6ep0WdDFixo=
