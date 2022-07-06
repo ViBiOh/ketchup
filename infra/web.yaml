@@ -47,9 +47,6 @@ spec:
       compress: true
       hosts:
         - ketchup.vibioh.fr
-    canary:
-      enabled: true
-      url: https://ketchup.vibioh.fr
     affinity:
       podAffinity:
         preferredDuringSchedulingIgnoredDuringExecution:
