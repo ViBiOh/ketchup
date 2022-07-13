@@ -24,7 +24,7 @@ spec:
     cleanupOnFail: true
   values:
     nameOverride: ketchup-notifier
-    jobLabel:
+    jobLabels:
       k8s-cleaner: "true"
     schedule: "0 7 * * *" # manager is in UTC
     image:
