@@ -9,6 +9,7 @@ import (
 )
 
 // Mailer interface client
+//
 //go:generate mockgen -destination ../mocks/mailer.go -mock_names Mailer=Mailer -package mocks github.com/ViBiOh/ketchup/pkg/model Mailer
 type Mailer interface {
 	Enabled() bool
@@ -16,6 +17,7 @@ type Mailer interface {
 }
 
 // AuthService defines interactions with underlying User provider
+//
 //go:generate mockgen -destination ../mocks/auth_service.go -mock_names AuthService=AuthService -package mocks github.com/ViBiOh/ketchup/pkg/model AuthService
 type AuthService interface {
 	Create(context.Context, authModel.User) (authModel.User, error)
@@ -23,12 +25,14 @@ type AuthService interface {
 }
 
 // UserService for storing user in context
+//
 //go:generate mockgen -destination ../mocks/user_service.go -mock_names UserService=UserService -package mocks github.com/ViBiOh/ketchup/pkg/model UserService
 type UserService interface {
 	StoreInContext(context.Context) context.Context
 }
 
 // UserStore defines interactions with User storage
+//
 //go:generate mockgen -destination ../mocks/user_store.go -mock_names UserStore=UserStore -package mocks github.com/ViBiOh/ketchup/pkg/model UserStore
 type UserStore interface {
 	DoAtomic(context.Context, func(context.Context) error) error
@@ -40,12 +44,14 @@ type UserStore interface {
 }
 
 // GenericProvider defines interactions with common providers
+//
 //go:generate mockgen -destination ../mocks/generic_provider.go -mock_names GenericProvider=GenericProvider -package mocks github.com/ViBiOh/ketchup/pkg/model GenericProvider
 type GenericProvider interface {
 	LatestVersions(context.Context, string, []string) (map[string]semver.Version, error)
 }
 
 // HelmProvider defines interactions with helm
+//
 //go:generate mockgen -destination ../mocks/helm_provider.go -mock_names HelmProvider=HelmProvider -package mocks github.com/ViBiOh/ketchup/pkg/model HelmProvider
 type HelmProvider interface {
 	FetchIndex(context.Context, string, map[string][]string) (map[string]map[string]semver.Version, error)
@@ -53,6 +59,7 @@ type HelmProvider interface {
 }
 
 // RepositoryService defines interactions with repository
+//
 //go:generate mockgen -destination ../mocks/repository_service.go -mock_names RepositoryService=RepositoryService -package mocks github.com/ViBiOh/ketchup/pkg/model RepositoryService
 type RepositoryService interface {
 	List(context.Context, uint, string) ([]Repository, uint64, error)
@@ -65,6 +72,7 @@ type RepositoryService interface {
 }
 
 // RepositoryStore defines interactions with repository storage
+//
 //go:generate mockgen -destination ../mocks/repository_store.go -mock_names RepositoryStore=RepositoryStore -package mocks github.com/ViBiOh/ketchup/pkg/model RepositoryStore
 type RepositoryStore interface {
 	DoAtomic(ctx context.Context, action func(context.Context) error) error
@@ -80,6 +88,7 @@ type RepositoryStore interface {
 }
 
 // KetchupService defines interactions with ketchup
+//
 //go:generate mockgen -destination ../mocks/ketchup_service.go -mock_names KetchupService=KetchupService -package mocks github.com/ViBiOh/ketchup/pkg/model KetchupService
 type KetchupService interface {
 	List(ctx context.Context, pageSize uint, last string) ([]Ketchup, uint64, error)
@@ -93,6 +102,7 @@ type KetchupService interface {
 }
 
 // KetchupStore defines interactions with ketchup storage
+//
 //go:generate mockgen -destination ../mocks/ketchup_store.go -mock_names KetchupStore=KetchupStore -package mocks github.com/ViBiOh/ketchup/pkg/model KetchupStore
 type KetchupStore interface {
 	DoAtomic(ctx context.Context, action func(context.Context) error) error
