@@ -60,7 +60,7 @@ func (a App) handleCreate(w http.ResponseWriter, r *http.Request) {
 
 	switch repositoryKind {
 	case model.Helm:
-		repository = model.NewHelmRepository(0, strings.TrimSuffix(name, "/"), r.FormValue("part"))
+		repository = model.NewHelmRepository(model.Identifier(0), strings.TrimSuffix(name, "/"), r.FormValue("part"))
 	case model.Docker:
 		repository = model.NewRepository(0, repositoryKind, strings.TrimPrefix(name, "docker.io/"), "")
 	default:
@@ -109,7 +109,7 @@ func (a App) handleUpdate(w http.ResponseWriter, r *http.Request) {
 
 	updateWhenNotify := r.FormValue("update-when-notify") == "true"
 
-	item := model.NewKetchup(r.FormValue("pattern"), r.FormValue("version"), ketchupFrequency, updateWhenNotify, model.NewGithubRepository(id, "")).WithID()
+	item := model.NewKetchup(r.FormValue("pattern"), r.FormValue("version"), ketchupFrequency, updateWhenNotify, model.NewGithubRepository(model.Identifier(id), "")).WithID()
 
 	updated, err := a.ketchupService.Update(r.Context(), r.FormValue("old-pattern"), item)
 	if err != nil {
@@ -128,7 +128,7 @@ func (a App) handleDelete(w http.ResponseWriter, r *http.Request) {
 	}
 
 	ctx := r.Context()
-	item := model.NewKetchup(r.FormValue("pattern"), "", model.Daily, false, model.NewGithubRepository(id, "")).WithID()
+	item := model.NewKetchup(r.FormValue("pattern"), "", model.Daily, false, model.NewGithubRepository(model.Identifier(id), "")).WithID()
 
 	if err := a.ketchupService.Delete(ctx, item); err != nil {
 		a.rendererApp.Error(w, r, nil, err)

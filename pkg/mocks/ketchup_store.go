@@ -36,10 +36,10 @@ func (m *KetchupStore) EXPECT() *KetchupStoreMockRecorder {
 }
 
 // Create mocks base method.
-func (m *KetchupStore) Create(arg0 context.Context, arg1 model.Ketchup) (uint64, error) {
+func (m *KetchupStore) Create(arg0 context.Context, arg1 model.Ketchup) (model.Identifier, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Create", arg0, arg1)
-	ret0, _ := ret[0].(uint64)
+	ret0, _ := ret[0].(model.Identifier)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -79,7 +79,7 @@ func (mr *KetchupStoreMockRecorder) DoAtomic(arg0, arg1 interface{}) *gomock.Cal
 }
 
 // GetByRepository mocks base method.
-func (m *KetchupStore) GetByRepository(arg0 context.Context, arg1 uint64, arg2 string, arg3 bool) (model.Ketchup, error) {
+func (m *KetchupStore) GetByRepository(arg0 context.Context, arg1 model.Identifier, arg2 string, arg3 bool) (model.Ketchup, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetByRepository", arg0, arg1, arg2, arg3)
 	ret0, _ := ret[0].(model.Ketchup)
@@ -110,7 +110,7 @@ func (mr *KetchupStoreMockRecorder) List(arg0, arg1, arg2 interface{}) *gomock.C
 }
 
 // ListByRepositoriesIDAndFrequencies mocks base method.
-func (m *KetchupStore) ListByRepositoriesIDAndFrequencies(arg0 context.Context, arg1 []uint64, arg2 ...model.KetchupFrequency) ([]model.Ketchup, error) {
+func (m *KetchupStore) ListByRepositoriesIDAndFrequencies(arg0 context.Context, arg1 []model.Identifier, arg2 ...model.KetchupFrequency) ([]model.Ketchup, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0, arg1}
 	for _, a := range arg2 {
@@ -130,7 +130,7 @@ func (mr *KetchupStoreMockRecorder) ListByRepositoriesIDAndFrequencies(arg0, arg
 }
 
 // ListOutdated mocks base method.
-func (m *KetchupStore) ListOutdated(arg0 context.Context, arg1 ...uint64) ([]model.Ketchup, error) {
+func (m *KetchupStore) ListOutdated(arg0 context.Context, arg1 ...model.Identifier) ([]model.Ketchup, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0}
 	for _, a := range arg1 {
@@ -178,7 +178,7 @@ func (mr *KetchupStoreMockRecorder) UpdateAll(arg0 interface{}) *gomock.Call {
 }
 
 // UpdateVersion mocks base method.
-func (m *KetchupStore) UpdateVersion(arg0 context.Context, arg1, arg2 uint64, arg3, arg4 string) error {
+func (m *KetchupStore) UpdateVersion(arg0 context.Context, arg1, arg2 model.Identifier, arg3, arg4 string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UpdateVersion", arg0, arg1, arg2, arg3, arg4)
 	ret0, _ := ret[0].(error)

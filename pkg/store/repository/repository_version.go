@@ -27,7 +27,7 @@ func (a App) enrichRepositoriesVersions(ctx context.Context, repositories []mode
 		return nil
 	}
 
-	ids := make([]uint64, len(repositories))
+	ids := make([]model.Identifier, len(repositories))
 	for index, repository := range repositories {
 		ids[index] = repository.ID
 	}
@@ -35,7 +35,7 @@ func (a App) enrichRepositoriesVersions(ctx context.Context, repositories []mode
 	var repository model.Repository
 
 	scanner := func(rows pgx.Rows) error {
-		var repositoryID uint64
+		var repositoryID model.Identifier
 		var pattern, version string
 
 		if err := rows.Scan(&repositoryID, &pattern, &version); err != nil {
@@ -54,7 +54,7 @@ func (a App) enrichRepositoriesVersions(ctx context.Context, repositories []mode
 	return a.db.List(ctx, scanner, listRepositoryVersionsForIDsQuery, ids)
 }
 
-func findRepository(repositories []model.Repository, id uint64) model.Repository {
+func findRepository(repositories []model.Repository, id model.Identifier) model.Repository {
 	for _, repo := range repositories {
 		if repo.ID == id {
 			return repo

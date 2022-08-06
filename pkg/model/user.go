@@ -17,7 +17,7 @@ const (
 type User struct {
 	Email string         `json:"email"`
 	Login authModel.User `json:"login"`
-	ID    uint64         `json:"id"`
+	ID    Identifier     `json:"id"`
 }
 
 // String implements stringer
@@ -35,11 +35,11 @@ func (u User) String() string {
 
 // IsZero check if instance is valued or not
 func (u User) IsZero() bool {
-	return u.ID == 0 && u.Login.ID == 0
+	return u.ID.IsZero() && u.Login.ID == 0
 }
 
 // NewUser creates new User instance
-func NewUser(id uint64, email string, login authModel.User) User {
+func NewUser(id Identifier, email string, login authModel.User) User {
 	return User{
 		ID:    id,
 		Email: email,

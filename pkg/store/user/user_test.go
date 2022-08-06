@@ -54,7 +54,7 @@ func TestGetByEmail(t *testing.T) {
 			case "simple":
 				mockRow := mocks.NewRow(ctrl)
 				mockRow.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...any) error {
-					*pointers[0].(*uint64) = 1
+					*pointers[0].(*model.Identifier) = model.Identifier(1)
 					*pointers[1].(*string) = testEmail
 					*pointers[2].(*uint64) = 1
 
@@ -131,7 +131,7 @@ func TestGetByLoginID(t *testing.T) {
 			case "simple":
 				mockRow := mocks.NewRow(ctrl)
 				mockRow.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...any) error {
-					*pointers[0].(*uint64) = 1
+					*pointers[0].(*model.Identifier) = 1
 					*pointers[1].(*string) = testEmail
 					*pointers[2].(*uint64) = 2
 
@@ -176,7 +176,7 @@ func TestCreate(t *testing.T) {
 
 	cases := map[string]struct {
 		args    args
-		want    uint64
+		want    model.Identifier
 		wantErr error
 	}{
 		"simple": {

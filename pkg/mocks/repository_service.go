@@ -118,7 +118,7 @@ func (mr *RepositoryServiceMockRecorder) ListByKinds(arg0, arg1, arg2 interface{
 }
 
 // Suggest mocks base method.
-func (m *RepositoryService) Suggest(arg0 context.Context, arg1 []uint64, arg2 uint64) ([]model.Repository, error) {
+func (m *RepositoryService) Suggest(arg0 context.Context, arg1 []model.Identifier, arg2 uint64) ([]model.Repository, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Suggest", arg0, arg1, arg2)
 	ret0, _ := ret[0].([]model.Repository)

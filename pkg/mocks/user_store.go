@@ -51,10 +51,10 @@ func (mr *UserStoreMockRecorder) Count(arg0 interface{}) *gomock.Call {
 }
 
 // Create mocks base method.
-func (m *UserStore) Create(arg0 context.Context, arg1 model.User) (uint64, error) {
+func (m *UserStore) Create(arg0 context.Context, arg1 model.User) (model.Identifier, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Create", arg0, arg1)
-	ret0, _ := ret[0].(uint64)
+	ret0, _ := ret[0].(model.Identifier)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

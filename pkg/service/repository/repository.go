@@ -57,7 +57,7 @@ func (a App) ListByKinds(ctx context.Context, pageSize uint, last string, kinds 
 }
 
 // Suggest repositories
-func (a App) Suggest(ctx context.Context, ignoreIds []uint64, count uint64) ([]model.Repository, error) {
+func (a App) Suggest(ctx context.Context, ignoreIds []model.Identifier, count uint64) ([]model.Repository, error) {
 	list, err := a.repositoryStore.Suggest(ctx, ignoreIds, count)
 	if err != nil {
 		return nil, httpModel.WrapInternal(fmt.Errorf("unable to suggest: %w", err))
@@ -185,18 +185,18 @@ func (a App) check(ctx context.Context, old, new model.Repository) error {
 		output = append(output, errors.New("name is required"))
 	}
 
-	if old.ID != 0 && new.Kind != old.Kind {
+	if !old.ID.IsZero() && new.Kind != old.Kind {
 		output = append(output, errors.New("kind cannot be changed"))
 	}
 
-	if old.ID != 0 && len(new.Versions) == 0 {
+	if !old.ID.IsZero() && len(new.Versions) == 0 {
 		output = append(output, errors.New("version is required"))
 	}
 
 	repositoryWithName, err := a.repositoryStore.GetByName(ctx, new.Kind, new.Name, new.Part)
 	if err != nil {
 		output = append(output, errors.New("unable to check if name already exists"))
-	} else if repositoryWithName.ID != 0 && repositoryWithName.ID != new.ID {
+	} else if !repositoryWithName.IsZero() && repositoryWithName.ID != new.ID {
 		output = append(output, errors.New("name already exists"))
 	}
 

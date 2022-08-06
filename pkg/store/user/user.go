@@ -118,8 +118,10 @@ INSERT INTO
 `
 
 // Create user
-func (a App) Create(ctx context.Context, o model.User) (uint64, error) {
-	return a.db.Create(ctx, insertQuery, o.Email, o.Login.ID)
+func (a App) Create(ctx context.Context, o model.User) (model.Identifier, error) {
+	id, err := a.db.Create(ctx, insertQuery, o.Email, o.Login.ID)
+
+	return model.Identifier(id), err
 }
 
 const countQuery = `

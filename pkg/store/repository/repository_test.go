@@ -36,8 +36,8 @@ func TestList(t *testing.T) {
 				pageSize: 20,
 			},
 			[]model.Repository{
-				model.NewGithubRepository(1, ketchupRepository).AddVersion(model.DefaultPattern, "1.0.0"),
-				model.NewGithubRepository(2, viwsRepository).AddVersion(model.DefaultPattern, "1.2.3"),
+				model.NewGithubRepository(model.Identifier(1), ketchupRepository).AddVersion(model.DefaultPattern, "1.0.0"),
+				model.NewGithubRepository(model.Identifier(2), viwsRepository).AddVersion(model.DefaultPattern, "1.2.3"),
 			},
 			2,
 			nil,
@@ -99,7 +99,7 @@ func TestList(t *testing.T) {
 			case "success":
 				mockRows := mocks.NewRows(ctrl)
 				mockRows.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...any) error {
-					*pointers[0].(*uint64) = 1
+					*pointers[0].(*model.Identifier) = model.Identifier(1)
 					*pointers[1].(*string) = "github"
 					*pointers[2].(*string) = ketchupRepository
 					*pointers[3].(*string) = ""
@@ -108,7 +108,7 @@ func TestList(t *testing.T) {
 					return nil
 				})
 				mockRows.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...any) error {
-					*pointers[0].(*uint64) = 2
+					*pointers[0].(*model.Identifier) = model.Identifier(2)
 					*pointers[1].(*string) = "github"
 					*pointers[2].(*string) = viwsRepository
 					*pointers[3].(*string) = ""
@@ -126,14 +126,14 @@ func TestList(t *testing.T) {
 
 				enrichRows := mocks.NewRows(ctrl)
 				enrichRows.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...any) error {
-					*pointers[0].(*uint64) = 1
+					*pointers[0].(*model.Identifier) = model.Identifier(1)
 					*pointers[1].(*string) = model.DefaultPattern
 					*pointers[2].(*string) = "1.0.0"
 
 					return nil
 				})
 				enrichRows.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...any) error {
-					*pointers[0].(*uint64) = 2
+					*pointers[0].(*model.Identifier) = model.Identifier(2)
 					*pointers[1].(*string) = model.DefaultPattern
 					*pointers[2].(*string) = "1.2.3"
 
@@ -145,7 +145,7 @@ func TestList(t *testing.T) {
 					}
 					return scanner(enrichRows)
 				}
-				mockDatabase.EXPECT().List(gomock.Any(), gomock.Any(), gomock.Any(), []uint64{1, 2}).DoAndReturn(enrichFn)
+				mockDatabase.EXPECT().List(gomock.Any(), gomock.Any(), gomock.Any(), []model.Identifier{1, 2}).DoAndReturn(enrichFn)
 
 			case "last":
 				mockDatabase.EXPECT().List(gomock.Any(), gomock.Any(), gomock.Any(), uint64(2), uint(20)).Return(nil)
@@ -169,7 +169,7 @@ func TestList(t *testing.T) {
 			case "invalid kind":
 				mockRows := mocks.NewRows(ctrl)
 				mockRows.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...any) error {
-					*pointers[0].(*uint64) = 1
+					*pointers[0].(*model.Identifier) = model.Identifier(1)
 					*pointers[1].(*string) = "wrong"
 					*pointers[2].(*string) = ketchupRepository
 					*pointers[3].(*string) = ""
@@ -210,7 +210,7 @@ func TestList(t *testing.T) {
 
 func TestSuggest(t *testing.T) {
 	type args struct {
-		ignoreIds []uint64
+		ignoreIds []model.Identifier
 		count     uint64
 	}
 
@@ -221,12 +221,12 @@ func TestSuggest(t *testing.T) {
 	}{
 		"simple": {
 			args{
-				ignoreIds: []uint64{8000},
+				ignoreIds: []model.Identifier{8000},
 				count:     2,
 			},
 			[]model.Repository{
-				model.NewGithubRepository(1, ketchupRepository).AddVersion(model.DefaultPattern, "1.0.0"),
-				model.NewHelmRepository(2, chartRepository, "app").AddVersion(model.DefaultPattern, "1.2.3"),
+				model.NewGithubRepository(model.Identifier(1), ketchupRepository).AddVersion(model.DefaultPattern, "1.0.0"),
+				model.NewHelmRepository(model.Identifier(2), chartRepository, "app").AddVersion(model.DefaultPattern, "1.2.3"),
 			},
 			nil,
 		},
@@ -245,7 +245,7 @@ func TestSuggest(t *testing.T) {
 			case "simple":
 				mockRows := mocks.NewRows(ctrl)
 				mockRows.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...any) error {
-					*pointers[0].(*uint64) = 1
+					*pointers[0].(*model.Identifier) = model.Identifier(1)
 					*pointers[1].(*string) = "github"
 					*pointers[2].(*string) = ketchupRepository
 					*pointers[3].(*string) = ""
@@ -254,7 +254,7 @@ func TestSuggest(t *testing.T) {
 					return nil
 				})
 				mockRows.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...any) error {
-					*pointers[0].(*uint64) = 2
+					*pointers[0].(*model.Identifier) = model.Identifier(2)
 					*pointers[1].(*string) = "helm"
 					*pointers[2].(*string) = chartRepository
 					*pointers[3].(*string) = "app"
@@ -268,18 +268,18 @@ func TestSuggest(t *testing.T) {
 					}
 					return scanner(mockRows)
 				}
-				mockDatabase.EXPECT().List(gomock.Any(), gomock.Any(), gomock.Any(), uint64(2), []uint64{8000}).DoAndReturn(dummyFn)
+				mockDatabase.EXPECT().List(gomock.Any(), gomock.Any(), gomock.Any(), uint64(2), []model.Identifier{8000}).DoAndReturn(dummyFn)
 
 				enrichRows := mocks.NewRows(ctrl)
 				enrichRows.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...any) error {
-					*pointers[0].(*uint64) = 1
+					*pointers[0].(*model.Identifier) = model.Identifier(1)
 					*pointers[1].(*string) = model.DefaultPattern
 					*pointers[2].(*string) = "1.0.0"
 
 					return nil
 				})
 				enrichRows.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...any) error {
-					*pointers[0].(*uint64) = 2
+					*pointers[0].(*model.Identifier) = model.Identifier(2)
 					*pointers[1].(*string) = model.DefaultPattern
 					*pointers[2].(*string) = "1.2.3"
 
@@ -291,7 +291,7 @@ func TestSuggest(t *testing.T) {
 					}
 					return scanner(enrichRows)
 				}
-				mockDatabase.EXPECT().List(gomock.Any(), gomock.Any(), gomock.Any(), []uint64{1, 2}).DoAndReturn(enrichFn)
+				mockDatabase.EXPECT().List(gomock.Any(), gomock.Any(), gomock.Any(), []model.Identifier{1, 2}).DoAndReturn(enrichFn)
 			}
 
 			got, gotErr := instance.Suggest(context.Background(), tc.args.ignoreIds, tc.args.count)
@@ -316,7 +316,7 @@ func TestSuggest(t *testing.T) {
 
 func TestGet(t *testing.T) {
 	type args struct {
-		id        uint64
+		id        model.Identifier
 		forUpdate bool
 	}
 
@@ -331,7 +331,7 @@ func TestGet(t *testing.T) {
 				id: 1,
 			},
 			"SELECT id, kind, name, part FROM ketchup.repository WHERE id =",
-			model.NewHelmRepository(1, chartRepository, "app").AddVersion(model.DefaultPattern, "1.0.0"),
+			model.NewHelmRepository(model.Identifier(1), chartRepository, "app").AddVersion(model.DefaultPattern, "1.0.0"),
 			nil,
 		},
 		"no rows": {
@@ -367,7 +367,7 @@ func TestGet(t *testing.T) {
 			case "simple":
 				mockRow := mocks.NewRow(ctrl)
 				mockRow.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...any) error {
-					*pointers[0].(*uint64) = 1
+					*pointers[0].(*model.Identifier) = model.Identifier(1)
 					*pointers[1].(*string) = "helm"
 					*pointers[2].(*string) = chartRepository
 					*pointers[3].(*string) = "app"
@@ -377,11 +377,11 @@ func TestGet(t *testing.T) {
 				dummyFn := func(_ context.Context, scanner func(pgx.Row) error, _ string, _ ...any) error {
 					return scanner(mockRow)
 				}
-				mockDatabase.EXPECT().Get(gomock.Any(), gomock.Any(), gomock.Any(), uint64(1)).DoAndReturn(dummyFn)
+				mockDatabase.EXPECT().Get(gomock.Any(), gomock.Any(), gomock.Any(), model.Identifier(1)).DoAndReturn(dummyFn)
 
 				enrichRows := mocks.NewRows(ctrl)
 				enrichRows.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...any) error {
-					*pointers[0].(*uint64) = 1
+					*pointers[0].(*model.Identifier) = model.Identifier(1)
 					*pointers[1].(*string) = model.DefaultPattern
 					*pointers[2].(*string) = "1.0.0"
 
@@ -390,7 +390,7 @@ func TestGet(t *testing.T) {
 				enrichFn := func(_ context.Context, scanner func(pgx.Rows) error, _ string, _ ...any) error {
 					return scanner(enrichRows)
 				}
-				mockDatabase.EXPECT().List(gomock.Any(), gomock.Any(), gomock.Any(), []uint64{1}).DoAndReturn(enrichFn)
+				mockDatabase.EXPECT().List(gomock.Any(), gomock.Any(), gomock.Any(), []model.Identifier{1}).DoAndReturn(enrichFn)
 			case "no rows":
 				mockRow := mocks.NewRow(ctrl)
 				mockRow.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...any) error {
@@ -399,7 +399,7 @@ func TestGet(t *testing.T) {
 				dummyFn := func(_ context.Context, scanner func(pgx.Row) error, _ string, _ ...any) error {
 					return scanner(mockRow)
 				}
-				mockDatabase.EXPECT().Get(gomock.Any(), gomock.Any(), gomock.Any(), uint64(1)).DoAndReturn(dummyFn)
+				mockDatabase.EXPECT().Get(gomock.Any(), gomock.Any(), gomock.Any(), model.Identifier(1)).DoAndReturn(dummyFn)
 			case "scan error":
 				mockRow := mocks.NewRow(ctrl)
 				mockRow.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...any) error {
@@ -408,7 +408,7 @@ func TestGet(t *testing.T) {
 				dummyFn := func(_ context.Context, scanner func(pgx.Row) error, _ string, _ ...any) error {
 					return scanner(mockRow)
 				}
-				mockDatabase.EXPECT().Get(gomock.Any(), gomock.Any(), gomock.Any(), uint64(1)).DoAndReturn(dummyFn)
+				mockDatabase.EXPECT().Get(gomock.Any(), gomock.Any(), gomock.Any(), model.Identifier(1)).DoAndReturn(dummyFn)
 			}
 
 			got, gotErr := instance.Get(context.Background(), tc.args.id, tc.args.forUpdate)
@@ -439,40 +439,40 @@ func TestCreate(t *testing.T) {
 
 	cases := map[string]struct {
 		args    args
-		want    uint64
+		want    model.Identifier
 		wantErr error
 	}{
 		"error lock": {
 			args{
-				o: model.NewGithubRepository(0, ketchupRepository).AddVersion(model.DefaultPattern, "1.0.0"),
+				o: model.NewGithubRepository(model.Identifier(0), ketchupRepository).AddVersion(model.DefaultPattern, "1.0.0"),
 			},
 			0,
 			errors.New("unable to obtain lock"),
 		},
 		"error get": {
 			args{
-				o: model.NewGithubRepository(0, ketchupRepository).AddVersion(model.DefaultPattern, "1.0.0"),
+				o: model.NewGithubRepository(model.Identifier(0), ketchupRepository).AddVersion(model.DefaultPattern, "1.0.0"),
 			},
 			0,
 			errors.New("unable to read"),
 		},
 		"found get": {
 			args{
-				o: model.NewGithubRepository(0, ketchupRepository).AddVersion(model.DefaultPattern, "1.0.0"),
+				o: model.NewGithubRepository(model.Identifier(0), ketchupRepository).AddVersion(model.DefaultPattern, "1.0.0"),
 			},
 			0,
 			errors.New("repository already exists with name"),
 		},
 		"error create": {
 			args{
-				o: model.NewGithubRepository(0, ketchupRepository).AddVersion(model.DefaultPattern, "1.0.0"),
+				o: model.NewGithubRepository(model.Identifier(0), ketchupRepository).AddVersion(model.DefaultPattern, "1.0.0"),
 			},
 			0,
 			errors.New("timeout"),
 		},
 		"success": {
 			args{
-				o: model.NewGithubRepository(0, ketchupRepository).AddVersion(model.DefaultPattern, "1.0.0"),
+				o: model.NewGithubRepository(model.Identifier(0), ketchupRepository).AddVersion(model.DefaultPattern, "1.0.0"),
 			},
 			1,
 			nil,
@@ -499,7 +499,7 @@ func TestCreate(t *testing.T) {
 
 				mockRow := mocks.NewRow(ctrl)
 				mockRow.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...any) error {
-					*pointers[0].(*uint64) = 1
+					*pointers[0].(*model.Identifier) = model.Identifier(1)
 					*pointers[1].(*string) = "github"
 					*pointers[2].(*string) = ketchupRepository
 					*pointers[3].(*string) = ""
@@ -513,7 +513,7 @@ func TestCreate(t *testing.T) {
 
 				enrichRows := mocks.NewRows(ctrl)
 				enrichRows.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...any) error {
-					*pointers[0].(*uint64) = 1
+					*pointers[0].(*model.Identifier) = model.Identifier(1)
 					*pointers[1].(*string) = model.DefaultPattern
 					*pointers[2].(*string) = "1.0.0"
 
@@ -522,7 +522,7 @@ func TestCreate(t *testing.T) {
 				enrichFn := func(_ context.Context, scanner func(pgx.Rows) error, _ string, _ ...any) error {
 					return scanner(enrichRows)
 				}
-				mockDatabase.EXPECT().List(gomock.Any(), gomock.Any(), gomock.Any(), []uint64{1}).DoAndReturn(enrichFn)
+				mockDatabase.EXPECT().List(gomock.Any(), gomock.Any(), gomock.Any(), []model.Identifier{1}).DoAndReturn(enrichFn)
 			case "error create":
 				mockDatabase.EXPECT().Exec(gomock.Any(), gomock.Any()).Return(nil)
 				mockDatabase.EXPECT().Get(gomock.Any(), gomock.Any(), gomock.Any(), "github", ketchupRepository, "").Return(nil)
@@ -531,8 +531,8 @@ func TestCreate(t *testing.T) {
 				mockDatabase.EXPECT().Exec(gomock.Any(), gomock.Any()).Return(nil)
 				mockDatabase.EXPECT().Get(gomock.Any(), gomock.Any(), gomock.Any(), "github", ketchupRepository, "").Return(nil)
 				mockDatabase.EXPECT().Create(gomock.Any(), gomock.Any(), "github", ketchupRepository, "").Return(uint64(1), nil)
-				mockDatabase.EXPECT().List(gomock.Any(), gomock.Any(), gomock.Any(), uint64(1)).Return(nil)
-				mockDatabase.EXPECT().One(gomock.Any(), gomock.Any(), uint64(1), model.DefaultPattern, "1.0.0").Return(nil)
+				mockDatabase.EXPECT().List(gomock.Any(), gomock.Any(), gomock.Any(), model.Identifier(1)).Return(nil)
+				mockDatabase.EXPECT().One(gomock.Any(), gomock.Any(), model.Identifier(1), model.DefaultPattern, "1.0.0").Return(nil)
 			}
 
 			got, gotErr := instance.Create(context.Background(), tc.args.o)

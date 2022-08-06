@@ -78,15 +78,15 @@ func TestKetchupByRepositoryID(t *testing.T) {
 		"simple": {
 			args{
 				array: []Ketchup{
-					NewKetchup(DefaultPattern, "", Daily, false, NewGithubRepository(10, "")),
-					NewKetchup(DefaultPattern, "", Daily, false, NewGithubRepository(1, "")),
-					NewKetchup("latest", "", Daily, false, NewGithubRepository(1, "")),
+					NewKetchup(DefaultPattern, "", Daily, false, NewGithubRepository(Identifier(10), "")),
+					NewKetchup(DefaultPattern, "", Daily, false, NewGithubRepository(Identifier(1), "")),
+					NewKetchup("latest", "", Daily, false, NewGithubRepository(Identifier(1), "")),
 				},
 			},
 			[]Ketchup{
-				NewKetchup("latest", "", Daily, false, NewGithubRepository(1, "")),
-				NewKetchup(DefaultPattern, "", Daily, false, NewGithubRepository(1, "")),
-				NewKetchup(DefaultPattern, "", Daily, false, NewGithubRepository(10, "")),
+				NewKetchup("latest", "", Daily, false, NewGithubRepository(Identifier(1), "")),
+				NewKetchup(DefaultPattern, "", Daily, false, NewGithubRepository(Identifier(1), "")),
+				NewKetchup(DefaultPattern, "", Daily, false, NewGithubRepository(Identifier(10), "")),
 			},
 		},
 	}
@@ -113,57 +113,57 @@ func TestKetchupByPriority(t *testing.T) {
 		"alphabetic": {
 			args{
 				array: []Ketchup{
-					NewKetchup("", "", Daily, false, NewGithubRepository(0, "abc")),
-					NewKetchup("", "", Daily, false, NewGithubRepository(0, "ghi")),
-					NewKetchup("", "", Daily, false, NewGithubRepository(0, "jkl")),
-					NewKetchup("", "", Daily, false, NewGithubRepository(0, "def")),
+					NewKetchup("", "", Daily, false, NewGithubRepository(Identifier(0), "abc")),
+					NewKetchup("", "", Daily, false, NewGithubRepository(Identifier(0), "ghi")),
+					NewKetchup("", "", Daily, false, NewGithubRepository(Identifier(0), "jkl")),
+					NewKetchup("", "", Daily, false, NewGithubRepository(Identifier(0), "def")),
 				},
 			},
 			[]Ketchup{
-				NewKetchup("", "", Daily, false, NewGithubRepository(0, "abc")),
-				NewKetchup("", "", Daily, false, NewGithubRepository(0, "def")),
-				NewKetchup("", "", Daily, false, NewGithubRepository(0, "ghi")),
-				NewKetchup("", "", Daily, false, NewGithubRepository(0, "jkl")),
+				NewKetchup("", "", Daily, false, NewGithubRepository(Identifier(0), "abc")),
+				NewKetchup("", "", Daily, false, NewGithubRepository(Identifier(0), "def")),
+				NewKetchup("", "", Daily, false, NewGithubRepository(Identifier(0), "ghi")),
+				NewKetchup("", "", Daily, false, NewGithubRepository(Identifier(0), "jkl")),
 			},
 		},
 		"semver": {
 			args{
 				array: []Ketchup{
-					{Semver: "Minor", Repository: NewGithubRepository(0, "abc")},
-					{Semver: "Major", Repository: NewGithubRepository(0, "ghi")},
-					{Semver: "Patch", Repository: NewGithubRepository(0, "jkl")},
-					{Semver: "", Repository: NewGithubRepository(0, "def")},
+					{Semver: "Minor", Repository: NewGithubRepository(Identifier(0), "abc")},
+					{Semver: "Major", Repository: NewGithubRepository(Identifier(0), "ghi")},
+					{Semver: "Patch", Repository: NewGithubRepository(Identifier(0), "jkl")},
+					{Semver: "", Repository: NewGithubRepository(Identifier(0), "def")},
 				},
 			},
 			[]Ketchup{
-				{Semver: "Major", Repository: NewGithubRepository(0, "ghi")},
-				{Semver: "Minor", Repository: NewGithubRepository(0, "abc")},
-				{Semver: "Patch", Repository: NewGithubRepository(0, "jkl")},
-				{Semver: "", Repository: NewGithubRepository(0, "def")},
+				{Semver: "Major", Repository: NewGithubRepository(Identifier(0), "ghi")},
+				{Semver: "Minor", Repository: NewGithubRepository(Identifier(0), "abc")},
+				{Semver: "Patch", Repository: NewGithubRepository(Identifier(0), "jkl")},
+				{Semver: "", Repository: NewGithubRepository(Identifier(0), "def")},
 			},
 		},
 		"full": {
 			args{
 				array: []Ketchup{
-					{Semver: "Major", Repository: NewGithubRepository(0, "abc")},
-					{Semver: "", Repository: NewGithubRepository(0, "abcd")},
-					{Semver: "Patch", Repository: NewGithubRepository(0, "jkl")},
-					{Semver: "", Repository: NewGithubRepository(0, "defg")},
-					{Semver: "Patch", Repository: NewGithubRepository(0, "jjl")},
-					{Semver: "Patch", Repository: NewHelmRepository(0, "jjl", "def")},
-					{Semver: "Patch", Repository: NewHelmRepository(0, "jjl", "abc")},
-					{Semver: "Major", Repository: NewGithubRepository(0, "ghi")},
+					{Semver: "Major", Repository: NewGithubRepository(Identifier(0), "abc")},
+					{Semver: "", Repository: NewGithubRepository(Identifier(0), "abcd")},
+					{Semver: "Patch", Repository: NewGithubRepository(Identifier(0), "jkl")},
+					{Semver: "", Repository: NewGithubRepository(Identifier(0), "defg")},
+					{Semver: "Patch", Repository: NewGithubRepository(Identifier(0), "jjl")},
+					{Semver: "Patch", Repository: NewHelmRepository(Identifier(0), "jjl", "def")},
+					{Semver: "Patch", Repository: NewHelmRepository(Identifier(0), "jjl", "abc")},
+					{Semver: "Major", Repository: NewGithubRepository(Identifier(0), "ghi")},
 				},
 			},
 			[]Ketchup{
-				{Semver: "Major", Repository: NewGithubRepository(0, "abc")},
-				{Semver: "Major", Repository: NewGithubRepository(0, "ghi")},
-				{Semver: "Patch", Repository: NewGithubRepository(0, "jjl")},
-				{Semver: "Patch", Repository: NewGithubRepository(0, "jkl")},
-				{Semver: "", Repository: NewGithubRepository(0, "abcd")},
-				{Semver: "", Repository: NewGithubRepository(0, "defg")},
-				{Semver: "Patch", Repository: NewHelmRepository(0, "jjl", "abc")},
-				{Semver: "Patch", Repository: NewHelmRepository(0, "jjl", "def")},
+				{Semver: "Major", Repository: NewGithubRepository(Identifier(0), "abc")},
+				{Semver: "Major", Repository: NewGithubRepository(Identifier(0), "ghi")},
+				{Semver: "Patch", Repository: NewGithubRepository(Identifier(0), "jjl")},
+				{Semver: "Patch", Repository: NewGithubRepository(Identifier(0), "jkl")},
+				{Semver: "", Repository: NewGithubRepository(Identifier(0), "abcd")},
+				{Semver: "", Repository: NewGithubRepository(Identifier(0), "defg")},
+				{Semver: "Patch", Repository: NewHelmRepository(Identifier(0), "jjl", "abc")},
+				{Semver: "Patch", Repository: NewHelmRepository(Identifier(0), "jjl", "def")},
 			},
 		},
 	}
@@ -190,15 +190,15 @@ func TestReleaseByRepositoryID(t *testing.T) {
 		"simple": {
 			args{
 				array: []Release{
-					NewRelease(NewGithubRepository(10, ""), DefaultPattern, semver.Version{}),
-					NewRelease(NewGithubRepository(1, "stable"), DefaultPattern, semver.Version{}),
-					NewRelease(NewGithubRepository(1, "~1.10"), DefaultPattern, semver.Version{}),
+					NewRelease(NewGithubRepository(Identifier(10), ""), DefaultPattern, semver.Version{}),
+					NewRelease(NewGithubRepository(Identifier(1), "stable"), DefaultPattern, semver.Version{}),
+					NewRelease(NewGithubRepository(Identifier(1), "~1.10"), DefaultPattern, semver.Version{}),
 				},
 			},
 			[]Release{
-				NewRelease(NewGithubRepository(1, "stable"), DefaultPattern, semver.Version{}),
-				NewRelease(NewGithubRepository(1, "~1.10"), DefaultPattern, semver.Version{}),
-				NewRelease(NewGithubRepository(10, ""), DefaultPattern, semver.Version{}),
+				NewRelease(NewGithubRepository(Identifier(1), "stable"), DefaultPattern, semver.Version{}),
+				NewRelease(NewGithubRepository(Identifier(1), "~1.10"), DefaultPattern, semver.Version{}),
+				NewRelease(NewGithubRepository(Identifier(10), ""), DefaultPattern, semver.Version{}),
 			},
 		},
 	}
@@ -225,15 +225,15 @@ func TestReleaseByKindAndName(t *testing.T) {
 		"simple": {
 			args{
 				array: []Release{
-					NewRelease(NewHelmRepository(3, "http://chart", "app"), DefaultPattern, semver.Version{}),
-					NewRelease(NewGithubRepository(1, "vibioh/github"), DefaultPattern, semver.Version{}),
-					NewRelease(NewHelmRepository(2, "http://chart", "cron"), DefaultPattern, semver.Version{}),
+					NewRelease(NewHelmRepository(Identifier(3), "http://chart", "app"), DefaultPattern, semver.Version{}),
+					NewRelease(NewGithubRepository(Identifier(1), "vibioh/github"), DefaultPattern, semver.Version{}),
+					NewRelease(NewHelmRepository(Identifier(2), "http://chart", "cron"), DefaultPattern, semver.Version{}),
 				},
 			},
 			[]Release{
-				NewRelease(NewGithubRepository(1, "vibioh/github"), DefaultPattern, semver.Version{}),
-				NewRelease(NewHelmRepository(3, "http://chart", "app"), DefaultPattern, semver.Version{}),
-				NewRelease(NewHelmRepository(2, "http://chart", "cron"), DefaultPattern, semver.Version{}),
+				NewRelease(NewGithubRepository(Identifier(1), "vibioh/github"), DefaultPattern, semver.Version{}),
+				NewRelease(NewHelmRepository(Identifier(3), "http://chart", "app"), DefaultPattern, semver.Version{}),
+				NewRelease(NewHelmRepository(Identifier(2), "http://chart", "cron"), DefaultPattern, semver.Version{}),
 			},
 		},
 	}

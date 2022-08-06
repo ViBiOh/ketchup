@@ -41,7 +41,7 @@ func (a App) List(ctx context.Context, pageSize uint, last string) ([]model.Ketc
 
 // ListForRepositories of ketchups
 func (a App) ListForRepositories(ctx context.Context, repositories []model.Repository, frequencies ...model.KetchupFrequency) ([]model.Ketchup, error) {
-	ids := make([]uint64, len(repositories))
+	ids := make([]model.Identifier, len(repositories))
 	for index, repo := range repositories {
 		ids[index] = repo.ID
 	}
@@ -56,7 +56,7 @@ func (a App) ListForRepositories(ctx context.Context, repositories []model.Repos
 
 // ListOutdated ketchups outdated
 func (a App) ListOutdated(ctx context.Context, users ...model.User) ([]model.Ketchup, error) {
-	usersIds := make([]uint64, len(users))
+	usersIds := make([]model.Identifier, len(users))
 	for i, user := range users {
 		usersIds[i] = user.ID
 	}
@@ -156,7 +156,7 @@ func (a App) Update(ctx context.Context, oldPattern string, item model.Ketchup) 
 }
 
 // UpdateVersion of a ketchup
-func (a App) UpdateVersion(ctx context.Context, userID, repositoryID uint64, pattern, version string) error {
+func (a App) UpdateVersion(ctx context.Context, userID, repositoryID model.Identifier, pattern, version string) error {
 	if len(pattern) == 0 {
 		return errors.New("pattern is required")
 	}

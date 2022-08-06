@@ -36,10 +36,10 @@ func (m *RepositoryStore) EXPECT() *RepositoryStoreMockRecorder {
 }
 
 // Create mocks base method.
-func (m *RepositoryStore) Create(arg0 context.Context, arg1 model.Repository) (uint64, error) {
+func (m *RepositoryStore) Create(arg0 context.Context, arg1 model.Repository) (model.Identifier, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Create", arg0, arg1)
-	ret0, _ := ret[0].(uint64)
+	ret0, _ := ret[0].(model.Identifier)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -93,7 +93,7 @@ func (mr *RepositoryStoreMockRecorder) DoAtomic(arg0, arg1 interface{}) *gomock.
 }
 
 // Get mocks base method.
-func (m *RepositoryStore) Get(arg0 context.Context, arg1 uint64, arg2 bool) (model.Repository, error) {
+func (m *RepositoryStore) Get(arg0 context.Context, arg1 model.Identifier, arg2 bool) (model.Repository, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Get", arg0, arg1, arg2)
 	ret0, _ := ret[0].(model.Repository)
@@ -160,7 +160,7 @@ func (mr *RepositoryStoreMockRecorder) ListByKinds(arg0, arg1, arg2 interface{},
 }
 
 // Suggest mocks base method.
-func (m *RepositoryStore) Suggest(arg0 context.Context, arg1 []uint64, arg2 uint64) ([]model.Repository, error) {
+func (m *RepositoryStore) Suggest(arg0 context.Context, arg1 []model.Identifier, arg2 uint64) ([]model.Repository, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Suggest", arg0, arg1, arg2)
 	ret0, _ := ret[0].([]model.Repository)

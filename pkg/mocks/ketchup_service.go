@@ -150,7 +150,7 @@ func (mr *KetchupServiceMockRecorder) UpdateAll(arg0 interface{}) *gomock.Call {
 }
 
 // UpdateVersion mocks base method.
-func (m *KetchupService) UpdateVersion(arg0 context.Context, arg1, arg2 uint64, arg3, arg4 string) error {
+func (m *KetchupService) UpdateVersion(arg0 context.Context, arg1, arg2 model.Identifier, arg3, arg4 string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UpdateVersion", arg0, arg1, arg2, arg3, arg4)
 	ret0, _ := ret[0].(error)

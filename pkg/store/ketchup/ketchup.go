@@ -147,7 +147,7 @@ WHERE
 `
 
 // ListByRepositoriesIDAndFrequencies lists ketchup by repositories id and given frequencies
-func (a App) ListByRepositoriesIDAndFrequencies(ctx context.Context, ids []uint64, frequencies ...model.KetchupFrequency) ([]model.Ketchup, error) {
+func (a App) ListByRepositoriesIDAndFrequencies(ctx context.Context, ids []model.Identifier, frequencies ...model.KetchupFrequency) ([]model.Ketchup, error) {
 	var list []model.Ketchup
 
 	scanner := func(rows pgx.Rows) error {
@@ -202,7 +202,7 @@ WHERE
 `
 
 // ListOutdated lists outdated ketchup by frequency id
-func (a App) ListOutdated(ctx context.Context, userIds ...uint64) ([]model.Ketchup, error) {
+func (a App) ListOutdated(ctx context.Context, userIds ...model.Identifier) ([]model.Ketchup, error) {
 	var list []model.Ketchup
 
 	scanner := func(rows pgx.Rows) error {
@@ -307,7 +307,7 @@ WHERE
 `
 
 // GetByRepository retrieves ketchup for a repository and patern
-func (a App) GetByRepository(ctx context.Context, id uint64, pattern string, forUpdate bool) (model.Ketchup, error) {
+func (a App) GetByRepository(ctx context.Context, id model.Identifier, pattern string, forUpdate bool) (model.Ketchup, error) {
 	query := getQuery
 	if forUpdate {
 		query += " FOR UPDATE"
@@ -316,7 +316,7 @@ func (a App) GetByRepository(ctx context.Context, id uint64, pattern string, for
 	user := model.ReadUser(ctx)
 	item := model.Ketchup{
 		User:       user,
-		Repository: model.NewGithubRepository(0, ""),
+		Repository: model.NewGithubRepository(model.Identifier(0), ""),
 	}
 
 	scanner := func(row pgx.Row) error {
@@ -367,8 +367,10 @@ INSERT INTO
 `
 
 // Create a ketchup
-func (a App) Create(ctx context.Context, o model.Ketchup) (uint64, error) {
-	return a.db.Create(ctx, insertQuery, o.Pattern, o.Version, strings.ToLower(o.Frequency.String()), o.UpdateWhenNotify, o.Repository.ID, model.ReadUser(ctx).ID)
+func (a App) Create(ctx context.Context, o model.Ketchup) (model.Identifier, error) {
+	id, err := a.db.Create(ctx, insertQuery, o.Pattern, o.Version, strings.ToLower(o.Frequency.String()), o.UpdateWhenNotify, o.Repository.ID, model.ReadUser(ctx).ID)
+
+	return model.Identifier(id), err
 }
 
 const updateQuery = `
@@ -423,7 +425,7 @@ WHERE
 `
 
 // UpdateVersion of a ketchup
-func (a App) UpdateVersion(ctx context.Context, userID, repositoryID uint64, pattern, version string) error {
+func (a App) UpdateVersion(ctx context.Context, userID, repositoryID model.Identifier, pattern, version string) error {
 	return a.db.One(ctx, updateVersionQuery, repositoryID, userID, pattern, version)
 }
 

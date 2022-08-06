@@ -46,8 +46,8 @@ func TestList(t *testing.T) {
 		"simple": {
 			args{},
 			[]model.Repository{
-				model.NewGithubRepository(1, ketchupRepository).AddVersion(model.DefaultPattern, "1.0.0"),
-				model.NewGithubRepository(2, viwsRepository).AddVersion(model.DefaultPattern, "1.2.3"),
+				model.NewGithubRepository(model.Identifier(1), ketchupRepository).AddVersion(model.DefaultPattern, "1.0.0"),
+				model.NewGithubRepository(model.Identifier(2), viwsRepository).AddVersion(model.DefaultPattern, "1.2.3"),
 			},
 			2,
 			nil,
@@ -74,8 +74,8 @@ func TestList(t *testing.T) {
 			switch intention {
 			case "simple":
 				mockRepositoryStore.EXPECT().List(gomock.Any(), gomock.Any(), gomock.Any()).Return([]model.Repository{
-					model.NewGithubRepository(1, ketchupRepository).AddVersion(model.DefaultPattern, "1.0.0"),
-					model.NewGithubRepository(2, viwsRepository).AddVersion(model.DefaultPattern, "1.2.3"),
+					model.NewGithubRepository(model.Identifier(1), ketchupRepository).AddVersion(model.DefaultPattern, "1.0.0"),
+					model.NewGithubRepository(model.Identifier(2), viwsRepository).AddVersion(model.DefaultPattern, "1.2.3"),
 				}, uint64(2), nil)
 			case "error":
 				mockRepositoryStore.EXPECT().List(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, uint64(0), errors.New("failed"))
@@ -103,7 +103,7 @@ func TestList(t *testing.T) {
 func TestSuggest(t *testing.T) {
 	type args struct {
 		ctx       context.Context
-		ignoreIds []uint64
+		ignoreIds []model.Identifier
 		count     uint64
 	}
 
@@ -117,7 +117,7 @@ func TestSuggest(t *testing.T) {
 				ctx: context.Background(),
 			},
 			[]model.Repository{
-				model.NewGithubRepository(1, ketchupRepository).AddVersion(model.DefaultPattern, "1.2.3"),
+				model.NewGithubRepository(model.Identifier(1), ketchupRepository).AddVersion(model.DefaultPattern, "1.2.3"),
 			},
 			nil,
 		},
@@ -144,7 +144,7 @@ func TestSuggest(t *testing.T) {
 			switch intention {
 			case "simple":
 				mockRepositoryStore.EXPECT().Suggest(gomock.Any(), gomock.Any(), gomock.Any()).Return([]model.Repository{
-					model.NewGithubRepository(1, ketchupRepository).AddVersion(model.DefaultPattern, "1.2.3"),
+					model.NewGithubRepository(model.Identifier(1), ketchupRepository).AddVersion(model.DefaultPattern, "1.2.3"),
 				}, nil)
 			case "error":
 				mockRepositoryStore.EXPECT().Suggest(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, errors.New("failed"))
@@ -198,7 +198,7 @@ func TestGetOrCreate(t *testing.T) {
 				repositoryKind: model.Github,
 				pattern:        model.DefaultPattern,
 			},
-			model.NewGithubRepository(1, ketchupRepository).AddVersion(model.DefaultPattern, "1.0.0"),
+			model.NewGithubRepository(model.Identifier(1), ketchupRepository).AddVersion(model.DefaultPattern, "1.0.0"),
 			nil,
 		},
 		"exists no pattern error": {
@@ -228,7 +228,7 @@ func TestGetOrCreate(t *testing.T) {
 				repositoryKind: model.Github,
 				pattern:        model.DefaultPattern,
 			},
-			model.NewGithubRepository(1, ketchupRepository).AddVersion(model.DefaultPattern, "1.0.0"),
+			model.NewGithubRepository(model.Identifier(1), ketchupRepository).AddVersion(model.DefaultPattern, "1.0.0"),
 			nil,
 		},
 		"update error": {
@@ -248,7 +248,7 @@ func TestGetOrCreate(t *testing.T) {
 				repositoryKind: model.Github,
 				pattern:        model.DefaultPattern,
 			},
-			model.NewGithubRepository(1, "not found").AddVersion(model.DefaultPattern, "1.0.0"),
+			model.NewGithubRepository(model.Identifier(1), "not found").AddVersion(model.DefaultPattern, "1.0.0"),
 			nil,
 		},
 	}
@@ -270,30 +270,30 @@ func TestGetOrCreate(t *testing.T) {
 			case "get error":
 				mockRepositoryStore.EXPECT().GetByName(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(model.NewEmptyRepository(), errors.New("failed"))
 			case "exists with pattern":
-				mockRepositoryStore.EXPECT().GetByName(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(model.NewGithubRepository(1, ketchupRepository).AddVersion(model.DefaultPattern, "1.0.0"), nil)
+				mockRepositoryStore.EXPECT().GetByName(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(model.NewGithubRepository(model.Identifier(1), ketchupRepository).AddVersion(model.DefaultPattern, "1.0.0"), nil)
 			case "exists no pattern error":
-				mockRepositoryStore.EXPECT().GetByName(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(model.NewGithubRepository(1, ketchupRepository), nil)
+				mockRepositoryStore.EXPECT().GetByName(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(model.NewGithubRepository(model.Identifier(1), ketchupRepository), nil)
 				mockGithub.EXPECT().LatestVersions(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, errors.New("failed"))
 			case "exists pattern not found":
-				mockRepositoryStore.EXPECT().GetByName(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(model.NewGithubRepository(1, ketchupRepository), nil)
+				mockRepositoryStore.EXPECT().GetByName(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(model.NewGithubRepository(model.Identifier(1), ketchupRepository), nil)
 				mockGithub.EXPECT().LatestVersions(gomock.Any(), gomock.Any(), gomock.Any()).Return(map[string]semver.Version{
 					"latest": safeParse("1.0.0"),
 				}, nil)
 			case "exists but no pattern":
-				mockRepositoryStore.EXPECT().GetByName(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(model.NewGithubRepository(1, ketchupRepository), nil)
+				mockRepositoryStore.EXPECT().GetByName(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(model.NewGithubRepository(model.Identifier(1), ketchupRepository), nil)
 				mockRepositoryStore.EXPECT().UpdateVersions(gomock.Any(), gomock.Any()).Return(nil)
 				mockGithub.EXPECT().LatestVersions(gomock.Any(), gomock.Any(), gomock.Any()).Return(map[string]semver.Version{
 					model.DefaultPattern: safeParse("1.0.0"),
 				}, nil)
 			case "update error":
-				mockRepositoryStore.EXPECT().GetByName(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(model.NewGithubRepository(1, ketchupRepository), nil)
+				mockRepositoryStore.EXPECT().GetByName(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(model.NewGithubRepository(model.Identifier(1), ketchupRepository), nil)
 				mockRepositoryStore.EXPECT().UpdateVersions(gomock.Any(), gomock.Any()).Return(errors.New("failed"))
 				mockGithub.EXPECT().LatestVersions(gomock.Any(), gomock.Any(), gomock.Any()).Return(map[string]semver.Version{
 					model.DefaultPattern: safeParse("1.0.0"),
 				}, nil)
 			case "create":
 				mockRepositoryStore.EXPECT().GetByName(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(model.NewEmptyRepository(), nil)
-				mockRepositoryStore.EXPECT().Create(gomock.Any(), gomock.Any()).Return(uint64(1), nil)
+				mockRepositoryStore.EXPECT().Create(gomock.Any(), gomock.Any()).Return(model.Identifier(1), nil)
 				mockRepositoryStore.EXPECT().GetByName(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(model.NewEmptyRepository(), nil)
 				dummyFn := func(ctx context.Context, do func(ctx context.Context) error) error {
 					return do(ctx)
@@ -335,7 +335,7 @@ func TestCreate(t *testing.T) {
 		"invalid": {
 			args{
 				ctx:  context.Background(),
-				item: model.NewGithubRepository(1, ""),
+				item: model.NewGithubRepository(model.Identifier(1), ""),
 			},
 			model.NewEmptyRepository(),
 			httpModel.ErrInvalid,
@@ -343,7 +343,7 @@ func TestCreate(t *testing.T) {
 		"release error": {
 			args{
 				ctx:  context.Background(),
-				item: model.NewGithubRepository(1, "invalid"),
+				item: model.NewGithubRepository(model.Identifier(1), "invalid"),
 			},
 			model.NewEmptyRepository(),
 			httpModel.ErrNotFound,
@@ -351,17 +351,17 @@ func TestCreate(t *testing.T) {
 		"create error": {
 			args{
 				ctx:  context.Background(),
-				item: model.NewGithubRepository(1, "vibioh").AddVersion(model.DefaultPattern, "0.0.0"),
+				item: model.NewGithubRepository(model.Identifier(1), "vibioh").AddVersion(model.DefaultPattern, "0.0.0"),
 			},
-			model.NewGithubRepository(1, "vibioh").AddVersion(model.DefaultPattern, "1.0.0"),
+			model.NewGithubRepository(model.Identifier(1), "vibioh").AddVersion(model.DefaultPattern, "1.0.0"),
 			httpModel.ErrInternalError,
 		},
 		"success": {
 			args{
 				ctx:  context.Background(),
-				item: model.NewGithubRepository(1, ketchupRepository).AddVersion(model.DefaultPattern, "0.0.0"),
+				item: model.NewGithubRepository(model.Identifier(1), ketchupRepository).AddVersion(model.DefaultPattern, "0.0.0"),
 			},
-			model.NewGithubRepository(1, ketchupRepository).AddVersion(model.DefaultPattern, "1.0.0"),
+			model.NewGithubRepository(model.Identifier(1), ketchupRepository).AddVersion(model.DefaultPattern, "1.0.0"),
 			nil,
 		},
 	}
@@ -390,7 +390,7 @@ func TestCreate(t *testing.T) {
 					return do(ctx)
 				}
 				mockRepositoryStore.EXPECT().DoAtomic(gomock.Any(), gomock.Any()).DoAndReturn(dummyFn)
-				mockRepositoryStore.EXPECT().Create(gomock.Any(), gomock.Any()).Return(uint64(0), errors.New("failed"))
+				mockRepositoryStore.EXPECT().Create(gomock.Any(), gomock.Any()).Return(model.Identifier(0), errors.New("failed"))
 				mockGithub.EXPECT().LatestVersions(gomock.Any(), gomock.Any(), gomock.Any()).Return(map[string]semver.Version{
 					model.DefaultPattern: safeParse("1.0.0"),
 				}, nil)
@@ -400,7 +400,7 @@ func TestCreate(t *testing.T) {
 					return do(ctx)
 				}
 				mockRepositoryStore.EXPECT().DoAtomic(gomock.Any(), gomock.Any()).DoAndReturn(dummyFn)
-				mockRepositoryStore.EXPECT().Create(gomock.Any(), gomock.Any()).Return(uint64(1), nil)
+				mockRepositoryStore.EXPECT().Create(gomock.Any(), gomock.Any()).Return(model.Identifier(1), nil)
 				mockGithub.EXPECT().LatestVersions(gomock.Any(), gomock.Any(), gomock.Any()).Return(map[string]semver.Version{
 					model.DefaultPattern: safeParse("1.0.0"),
 				}, nil)
@@ -443,28 +443,28 @@ func TestUpdate(t *testing.T) {
 		"fetch error": {
 			args{
 				ctx:  context.Background(),
-				item: model.NewGithubRepository(0, ""),
+				item: model.NewGithubRepository(model.Identifier(0), ""),
 			},
 			httpModel.ErrInternalError,
 		},
 		"invalid check": {
 			args{
 				ctx:  context.Background(),
-				item: model.NewGithubRepository(1, ""),
+				item: model.NewGithubRepository(model.Identifier(1), ""),
 			},
 			httpModel.ErrInvalid,
 		},
 		"update error": {
 			args{
 				ctx:  context.Background(),
-				item: model.NewGithubRepository(1, "").AddVersion(model.DefaultPattern, "1.2.3"),
+				item: model.NewGithubRepository(model.Identifier(1), "").AddVersion(model.DefaultPattern, "1.2.3"),
 			},
 			httpModel.ErrInternalError,
 		},
 		"success": {
 			args{
 				ctx:  context.Background(),
-				item: model.NewGithubRepository(3, "").AddVersion(model.DefaultPattern, "1.2.3"),
+				item: model.NewGithubRepository(model.Identifier(3), "").AddVersion(model.DefaultPattern, "1.2.3"),
 			},
 			nil,
 		},
@@ -491,14 +491,14 @@ func TestUpdate(t *testing.T) {
 				}
 				mockRepositoryStore.EXPECT().DoAtomic(gomock.Any(), gomock.Any()).DoAndReturn(dummyFn)
 			case "invalid check":
-				mockRepositoryStore.EXPECT().Get(gomock.Any(), gomock.Any(), gomock.Any()).Return(model.NewGithubRepository(1, ketchupRepository), nil)
+				mockRepositoryStore.EXPECT().Get(gomock.Any(), gomock.Any(), gomock.Any()).Return(model.NewGithubRepository(model.Identifier(1), ketchupRepository), nil)
 				mockRepositoryStore.EXPECT().GetByName(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(model.NewEmptyRepository(), nil)
 				dummyFn := func(ctx context.Context, do func(ctx context.Context) error) error {
 					return do(ctx)
 				}
 				mockRepositoryStore.EXPECT().DoAtomic(gomock.Any(), gomock.Any()).DoAndReturn(dummyFn)
 			case "update error":
-				mockRepositoryStore.EXPECT().Get(gomock.Any(), gomock.Any(), gomock.Any()).Return(model.NewGithubRepository(1, ketchupRepository), nil)
+				mockRepositoryStore.EXPECT().Get(gomock.Any(), gomock.Any(), gomock.Any()).Return(model.NewGithubRepository(model.Identifier(1), ketchupRepository), nil)
 				mockRepositoryStore.EXPECT().GetByName(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(model.NewEmptyRepository(), nil)
 				mockRepositoryStore.EXPECT().UpdateVersions(gomock.Any(), gomock.Any()).Return(errors.New("failed"))
 				dummyFn := func(ctx context.Context, do func(ctx context.Context) error) error {
@@ -506,7 +506,7 @@ func TestUpdate(t *testing.T) {
 				}
 				mockRepositoryStore.EXPECT().DoAtomic(gomock.Any(), gomock.Any()).DoAndReturn(dummyFn)
 			case "success":
-				mockRepositoryStore.EXPECT().Get(gomock.Any(), gomock.Any(), gomock.Any()).Return(model.NewGithubRepository(1, ketchupRepository), nil)
+				mockRepositoryStore.EXPECT().Get(gomock.Any(), gomock.Any(), gomock.Any()).Return(model.NewGithubRepository(model.Identifier(1), ketchupRepository), nil)
 				mockRepositoryStore.EXPECT().GetByName(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(model.NewEmptyRepository(), nil)
 				mockRepositoryStore.EXPECT().UpdateVersions(gomock.Any(), gomock.Any()).Return(nil)
 				dummyFn := func(ctx context.Context, do func(ctx context.Context) error) error {
@@ -621,39 +621,39 @@ func TestCheck(t *testing.T) {
 	}{
 		"delete": {
 			args{
-				old: model.NewGithubRepository(1, ""),
+				old: model.NewGithubRepository(model.Identifier(1), ""),
 			},
 			nil,
 		},
 		"name required": {
 			args{
-				new: model.NewGithubRepository(1, "").AddVersion(model.DefaultPattern, "1.0.0"),
+				new: model.NewGithubRepository(model.Identifier(1), "").AddVersion(model.DefaultPattern, "1.0.0"),
 			},
 			errors.New("name is required"),
 		},
 		"no kind change": {
 			args{
-				old: model.NewGithubRepository(1, ketchupRepository).AddVersion(model.DefaultPattern, "1.0.0"),
-				new: model.NewHelmRepository(1, chartRepository, "app"),
+				old: model.NewGithubRepository(model.Identifier(1), ketchupRepository).AddVersion(model.DefaultPattern, "1.0.0"),
+				new: model.NewHelmRepository(model.Identifier(1), chartRepository, "app"),
 			},
 			errors.New("kind cannot be changed"),
 		},
 		"version required for update": {
 			args{
-				old: model.NewGithubRepository(1, ketchupRepository).AddVersion(model.DefaultPattern, "1.0.0"),
-				new: model.NewGithubRepository(1, ketchupRepository),
+				old: model.NewGithubRepository(model.Identifier(1), ketchupRepository).AddVersion(model.DefaultPattern, "1.0.0"),
+				new: model.NewGithubRepository(model.Identifier(1), ketchupRepository),
 			},
 			errors.New("version is required"),
 		},
 		"get error": {
 			args{
-				new: model.NewGithubRepository(1, "error"),
+				new: model.NewGithubRepository(model.Identifier(1), "error"),
 			},
 			errors.New("unable to check if name already exists"),
 		},
 		"exist": {
 			args{
-				new: model.NewGithubRepository(1, "exist"),
+				new: model.NewGithubRepository(model.Identifier(1), "exist"),
 			},
 			errors.New("name already exists"),
 		},
@@ -680,7 +680,7 @@ func TestCheck(t *testing.T) {
 			case "get error":
 				mockRepositoryStore.EXPECT().GetByName(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(model.NewEmptyRepository(), errors.New("failed"))
 			case "exist":
-				mockRepositoryStore.EXPECT().GetByName(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(model.NewGithubRepository(2, ketchupRepository), nil)
+				mockRepositoryStore.EXPECT().GetByName(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(model.NewGithubRepository(model.Identifier(2), ketchupRepository), nil)
 			}
 
 			gotErr := instance.check(tc.args.ctx, tc.args.old, tc.args.new)

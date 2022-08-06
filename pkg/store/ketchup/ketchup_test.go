@@ -45,7 +45,7 @@ func TestList(t *testing.T) {
 					Pattern:    model.DefaultPattern,
 					Version:    "0.9.0",
 					Frequency:  model.Daily,
-					Repository: model.NewGithubRepository(1, repositoryName).AddVersion(model.DefaultPattern, repositoryVersion),
+					Repository: model.NewGithubRepository(model.Identifier(1), repositoryName).AddVersion(model.DefaultPattern, repositoryVersion),
 					User:       model.NewUser(3, testEmail, authModel.NewUser(0, "")),
 				},
 				{
@@ -53,7 +53,7 @@ func TestList(t *testing.T) {
 					Pattern:    model.DefaultPattern,
 					Version:    repositoryVersion,
 					Frequency:  model.Daily,
-					Repository: model.NewHelmRepository(2, chartRepository, "app").AddVersion(model.DefaultPattern, repositoryVersion),
+					Repository: model.NewHelmRepository(model.Identifier(2), chartRepository, "app").AddVersion(model.DefaultPattern, repositoryVersion),
 					User:       model.NewUser(3, testEmail, authModel.NewUser(0, "")),
 				},
 			},
@@ -95,7 +95,7 @@ func TestList(t *testing.T) {
 					*pointers[1].(*string) = "0.9.0"
 					*pointers[2].(*string) = "daily"
 					*pointers[3].(*bool) = false
-					*pointers[4].(*uint64) = 1
+					*pointers[4].(*model.Identifier) = model.Identifier(1)
 					*pointers[5].(*string) = repositoryName
 					*pointers[6].(*string) = ""
 					*pointers[7].(*string) = "github"
@@ -109,7 +109,7 @@ func TestList(t *testing.T) {
 					*pointers[1].(*string) = repositoryVersion
 					*pointers[2].(*string) = "daily"
 					*pointers[3].(*bool) = false
-					*pointers[4].(*uint64) = 2
+					*pointers[4].(*model.Identifier) = model.Identifier(2)
 					*pointers[5].(*string) = chartRepository
 					*pointers[6].(*string) = "app"
 					*pointers[7].(*string) = "helm"
@@ -124,9 +124,9 @@ func TestList(t *testing.T) {
 					}
 					return scanner(mockRows)
 				}
-				mockDatabase.EXPECT().List(gomock.Any(), gomock.Any(), gomock.Any(), uint64(3), uint(20)).DoAndReturn(dummyFn)
+				mockDatabase.EXPECT().List(gomock.Any(), gomock.Any(), gomock.Any(), model.Identifier(3), uint(20)).DoAndReturn(dummyFn)
 			case "error":
-				mockDatabase.EXPECT().List(gomock.Any(), gomock.Any(), gomock.Any(), uint64(3), uint(20)).Return(errors.New("failed"))
+				mockDatabase.EXPECT().List(gomock.Any(), gomock.Any(), gomock.Any(), model.Identifier(3), uint(20)).Return(errors.New("failed"))
 			case "invalid kind":
 				mockRows := mocks.NewRows(ctrl)
 				mockRows.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...any) error {
@@ -134,7 +134,7 @@ func TestList(t *testing.T) {
 					*pointers[1].(*string) = "0.9.0"
 					*pointers[2].(*string) = "daily"
 					*pointers[3].(*bool) = false
-					*pointers[4].(*uint64) = 1
+					*pointers[4].(*model.Identifier) = model.Identifier(1)
 					*pointers[5].(*string) = repositoryName
 					*pointers[6].(*string) = ""
 					*pointers[7].(*string) = "wrong"
@@ -149,7 +149,7 @@ func TestList(t *testing.T) {
 					}
 					return scanner(mockRows)
 				}
-				mockDatabase.EXPECT().List(gomock.Any(), gomock.Any(), gomock.Any(), uint64(3), uint(20)).DoAndReturn(dummyFn)
+				mockDatabase.EXPECT().List(gomock.Any(), gomock.Any(), gomock.Any(), model.Identifier(3), uint(20)).DoAndReturn(dummyFn)
 			}
 
 			got, gotCount, gotErr := instance.List(testCtx, tc.args.pageSize, "")
@@ -176,7 +176,7 @@ func TestList(t *testing.T) {
 
 func TestListByRepositoriesIDAndFrequencies(t *testing.T) {
 	type args struct {
-		ids       []uint64
+		ids       []model.Identifier
 		frequency model.KetchupFrequency
 	}
 
@@ -187,7 +187,7 @@ func TestListByRepositoriesIDAndFrequencies(t *testing.T) {
 	}{
 		"simple": {
 			args{
-				ids:       []uint64{1, 2},
+				ids:       []model.Identifier{1, 2},
 				frequency: model.Daily,
 			},
 			[]model.Ketchup{
@@ -195,14 +195,14 @@ func TestListByRepositoriesIDAndFrequencies(t *testing.T) {
 					Pattern:    model.DefaultPattern,
 					Version:    "0.9.0",
 					Frequency:  model.Daily,
-					Repository: model.NewGithubRepository(1, ""),
+					Repository: model.NewGithubRepository(model.Identifier(1), ""),
 					User:       model.NewUser(1, testEmail, authModel.NewUser(0, "")),
 				},
 				{
 					Pattern:    model.DefaultPattern,
 					Version:    repositoryVersion,
 					Frequency:  model.Daily,
-					Repository: model.NewGithubRepository(2, ""),
+					Repository: model.NewGithubRepository(model.Identifier(2), ""),
 					User:       model.NewUser(2, "guest@domain", authModel.NewUser(0, "")),
 				},
 			},
@@ -210,7 +210,7 @@ func TestListByRepositoriesIDAndFrequencies(t *testing.T) {
 		},
 		"error": {
 			args{
-				ids:       []uint64{1, 2},
+				ids:       []model.Identifier{1, 2},
 				frequency: model.Daily,
 			},
 			nil,
@@ -235,8 +235,8 @@ func TestListByRepositoriesIDAndFrequencies(t *testing.T) {
 					*pointers[1].(*string) = "0.9.0"
 					*pointers[2].(*string) = "daily"
 					*pointers[3].(*bool) = false
-					*pointers[4].(*uint64) = 1
-					*pointers[5].(*uint64) = 1
+					*pointers[4].(*model.Identifier) = model.Identifier(1)
+					*pointers[5].(*model.Identifier) = model.Identifier(1)
 					*pointers[6].(*string) = testEmail
 
 					return nil
@@ -246,8 +246,8 @@ func TestListByRepositoriesIDAndFrequencies(t *testing.T) {
 					*pointers[1].(*string) = repositoryVersion
 					*pointers[2].(*string) = "daily"
 					*pointers[3].(*bool) = false
-					*pointers[4].(*uint64) = 2
-					*pointers[5].(*uint64) = 2
+					*pointers[4].(*model.Identifier) = model.Identifier(2)
+					*pointers[5].(*model.Identifier) = model.Identifier(2)
 					*pointers[6].(*string) = "guest@domain"
 
 					return nil
@@ -285,7 +285,7 @@ func TestListByRepositoriesIDAndFrequencies(t *testing.T) {
 
 func TestGetByRepository(t *testing.T) {
 	type args struct {
-		id        uint64
+		id        model.Identifier
 		pattern   string
 		forUpdate bool
 	}
@@ -304,7 +304,7 @@ func TestGetByRepository(t *testing.T) {
 				Pattern:    model.DefaultPattern,
 				Version:    "0.9.0",
 				Frequency:  model.Daily,
-				Repository: model.NewGithubRepository(1, repositoryName),
+				Repository: model.NewGithubRepository(model.Identifier(1), repositoryName),
 				User:       model.NewUser(3, testEmail, authModel.NewUser(0, "")),
 			},
 			nil,
@@ -337,8 +337,8 @@ func TestGetByRepository(t *testing.T) {
 					*pointers[1].(*string) = "0.9.0"
 					*pointers[2].(*string) = "daily"
 					*pointers[3].(*bool) = false
-					*pointers[4].(*uint64) = 1
-					*pointers[5].(*uint64) = 3
+					*pointers[4].(*model.Identifier) = model.Identifier(1)
+					*pointers[5].(*model.Identifier) = model.Identifier(3)
 					*pointers[6].(*string) = repositoryName
 					*pointers[7].(*string) = ""
 					*pointers[8].(*string) = "github"
@@ -348,7 +348,7 @@ func TestGetByRepository(t *testing.T) {
 				dummyFn := func(_ context.Context, scanner func(pgx.Row) error, _ string, _ ...any) error {
 					return scanner(mockRow)
 				}
-				mockDatabase.EXPECT().Get(gomock.Any(), gomock.Any(), gomock.Any(), tc.args.id, uint64(3), tc.args.pattern).DoAndReturn(dummyFn)
+				mockDatabase.EXPECT().Get(gomock.Any(), gomock.Any(), gomock.Any(), tc.args.id, model.Identifier(3), tc.args.pattern).DoAndReturn(dummyFn)
 			case "no rows":
 				mockRow := mocks.NewRow(ctrl)
 				mockRow.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...any) error {
@@ -357,9 +357,9 @@ func TestGetByRepository(t *testing.T) {
 				dummyFn := func(_ context.Context, scanner func(pgx.Row) error, _ string, _ ...any) error {
 					return scanner(mockRow)
 				}
-				mockDatabase.EXPECT().Get(gomock.Any(), gomock.Any(), gomock.Any(), tc.args.id, uint64(3), tc.args.pattern).DoAndReturn(dummyFn)
+				mockDatabase.EXPECT().Get(gomock.Any(), gomock.Any(), gomock.Any(), tc.args.id, model.Identifier(3), tc.args.pattern).DoAndReturn(dummyFn)
 			case "error":
-				mockDatabase.EXPECT().Get(gomock.Any(), gomock.Any(), gomock.Any(), tc.args.id, uint64(3), tc.args.pattern).Return(errors.New("failed"))
+				mockDatabase.EXPECT().Get(gomock.Any(), gomock.Any(), gomock.Any(), tc.args.id, model.Identifier(3), tc.args.pattern).Return(errors.New("failed"))
 			}
 
 			got, gotErr := instance.GetByRepository(testCtx, tc.args.id, tc.args.pattern, tc.args.forUpdate)
@@ -386,7 +386,7 @@ func TestCreate(t *testing.T) {
 
 	cases := map[string]struct {
 		args    args
-		want    uint64
+		want    model.Identifier
 		wantErr error
 	}{
 		"simple": {
@@ -395,7 +395,7 @@ func TestCreate(t *testing.T) {
 					Pattern:    model.DefaultPattern,
 					Version:    "0.9.0",
 					Frequency:  model.Daily,
-					Repository: model.NewGithubRepository(1, ""),
+					Repository: model.NewGithubRepository(model.Identifier(1), ""),
 				},
 			},
 			1,
@@ -414,7 +414,7 @@ func TestCreate(t *testing.T) {
 
 			switch intention {
 			case "simple":
-				mockDatabase.EXPECT().Create(gomock.Any(), gomock.Any(), model.DefaultPattern, "0.9.0", "daily", gomock.Any(), uint64(1), uint64(3)).Return(uint64(1), nil)
+				mockDatabase.EXPECT().Create(gomock.Any(), gomock.Any(), model.DefaultPattern, "0.9.0", "daily", gomock.Any(), model.Identifier(1), model.Identifier(3)).Return(uint64(1), nil)
 			}
 
 			got, gotErr := instance.Create(testCtx, tc.args.o)
@@ -450,7 +450,7 @@ func TestUpdate(t *testing.T) {
 					Pattern:    model.DefaultPattern,
 					Version:    "0.9.0",
 					Frequency:  model.Daily,
-					Repository: model.NewGithubRepository(1, ""),
+					Repository: model.NewGithubRepository(model.Identifier(1), ""),
 				},
 				oldPattern: "stable",
 			},
@@ -469,7 +469,7 @@ func TestUpdate(t *testing.T) {
 
 			switch intention {
 			case "simple":
-				mockDatabase.EXPECT().One(gomock.Any(), gomock.Any(), uint64(1), uint64(3), model.DefaultPattern, model.DefaultPattern, "0.9.0", "daily", gomock.Any()).Return(nil)
+				mockDatabase.EXPECT().One(gomock.Any(), gomock.Any(), model.Identifier(1), model.Identifier(3), model.DefaultPattern, model.DefaultPattern, "0.9.0", "daily", gomock.Any()).Return(nil)
 			}
 
 			gotErr := instance.Update(testCtx, tc.args.o, tc.args.oldPattern)
@@ -500,7 +500,7 @@ func TestDelete(t *testing.T) {
 			args{
 				o: model.Ketchup{
 					Pattern:    "stable",
-					Repository: model.NewGithubRepository(1, ""),
+					Repository: model.NewGithubRepository(model.Identifier(1), ""),
 				},
 			},
 			nil,
@@ -518,7 +518,7 @@ func TestDelete(t *testing.T) {
 
 			switch intention {
 			case "simple":
-				mockDatabase.EXPECT().One(gomock.Any(), gomock.Any(), uint64(1), uint64(3), model.DefaultPattern).Return(nil)
+				mockDatabase.EXPECT().One(gomock.Any(), gomock.Any(), model.Identifier(1), model.Identifier(3), model.DefaultPattern).Return(nil)
 			}
 
 			gotErr := instance.Delete(testCtx, tc.args.o)

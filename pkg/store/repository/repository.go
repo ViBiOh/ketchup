@@ -207,7 +207,7 @@ LIMIT $1
 `
 
 // Suggest repositories
-func (a App) Suggest(ctx context.Context, ignoreIds []uint64, count uint64) ([]model.Repository, error) {
+func (a App) Suggest(ctx context.Context, ignoreIds []model.Identifier, count uint64) ([]model.Repository, error) {
 	list, _, err := a.list(ctx, suggestQuery, count, ignoreIds)
 	return list, err
 }
@@ -225,7 +225,7 @@ WHERE
 `
 
 // Get repository by id
-func (a App) Get(ctx context.Context, id uint64, forUpdate bool) (model.Repository, error) {
+func (a App) Get(ctx context.Context, id model.Identifier, forUpdate bool) (model.Repository, error) {
 	query := getQuery
 	if forUpdate {
 		query += " FOR UPDATE"
@@ -272,7 +272,7 @@ INSERT INTO
 `
 
 // Create a repository
-func (a App) Create(ctx context.Context, o model.Repository) (uint64, error) {
+func (a App) Create(ctx context.Context, o model.Repository) (model.Identifier, error) {
 	if err := a.db.Exec(ctx, insertLock); err != nil {
 		return 0, err
 	}
@@ -282,7 +282,7 @@ func (a App) Create(ctx context.Context, o model.Repository) (uint64, error) {
 		return 0, err
 	}
 
-	if item.ID != 0 {
+	if !item.ID.IsZero() {
 		return 0, fmt.Errorf("%s repository already exists with name=%s part=%s", o.Kind.String(), o.Name, o.Part)
 	}
 
@@ -291,8 +291,8 @@ func (a App) Create(ctx context.Context, o model.Repository) (uint64, error) {
 		return 0, err
 	}
 
-	o.ID = id
-	return id, a.UpdateVersions(ctx, o)
+	o.ID = model.Identifier(id)
+	return o.ID, a.UpdateVersions(ctx, o)
 }
 
 const deleteQuery = `

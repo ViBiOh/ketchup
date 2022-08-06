@@ -8,6 +8,12 @@ import (
 	mailerModel "github.com/ViBiOh/mailer/pkg/model"
 )
 
+type Identifier uint64
+
+func (i Identifier) IsZero() bool {
+	return i == 0
+}
+
 // Mailer interface client
 //
 //go:generate mockgen -destination ../mocks/mailer.go -mock_names Mailer=Mailer -package mocks github.com/ViBiOh/ketchup/pkg/model Mailer
@@ -39,7 +45,7 @@ type UserStore interface {
 	ListReminderUsers(ctx context.Context) ([]User, error)
 	GetByLoginID(context.Context, uint64) (User, error)
 	GetByEmail(context.Context, string) (User, error)
-	Create(context.Context, User) (uint64, error)
+	Create(context.Context, User) (Identifier, error)
 	Count(context.Context) (uint64, error)
 }
 
@@ -64,7 +70,7 @@ type HelmProvider interface {
 type RepositoryService interface {
 	List(context.Context, uint, string) ([]Repository, uint64, error)
 	ListByKinds(context.Context, uint, string, ...RepositoryKind) ([]Repository, uint64, error)
-	Suggest(context.Context, []uint64, uint64) ([]Repository, error)
+	Suggest(context.Context, []Identifier, uint64) ([]Repository, error)
 	GetOrCreate(context.Context, RepositoryKind, string, string, string) (Repository, error)
 	Update(context.Context, Repository) error
 	Clean(context.Context) error
@@ -78,10 +84,10 @@ type RepositoryStore interface {
 	DoAtomic(ctx context.Context, action func(context.Context) error) error
 	List(ctx context.Context, pageSize uint, last string) ([]Repository, uint64, error)
 	ListByKinds(ctx context.Context, pageSize uint, last string, kinds ...RepositoryKind) ([]Repository, uint64, error)
-	Suggest(ctx context.Context, ignoreIds []uint64, count uint64) ([]Repository, error)
-	Get(ctx context.Context, id uint64, forUpdate bool) (Repository, error)
+	Suggest(ctx context.Context, ignoreIds []Identifier, count uint64) ([]Repository, error)
+	Get(ctx context.Context, id Identifier, forUpdate bool) (Repository, error)
 	GetByName(ctx context.Context, repositoryKind RepositoryKind, name, part string) (Repository, error)
-	Create(ctx context.Context, o Repository) (uint64, error)
+	Create(ctx context.Context, o Repository) (Identifier, error)
 	UpdateVersions(ctx context.Context, o Repository) error
 	DeleteUnused(ctx context.Context) error
 	DeleteUnusedVersions(ctx context.Context) error
@@ -97,7 +103,7 @@ type KetchupService interface {
 	Create(ctx context.Context, item Ketchup) (Ketchup, error)
 	Update(ctx context.Context, oldPattern string, item Ketchup) (Ketchup, error)
 	UpdateAll(ctx context.Context) error
-	UpdateVersion(ctx context.Context, userID, repositoryID uint64, pattern, version string) error
+	UpdateVersion(ctx context.Context, userID, repositoryID Identifier, pattern, version string) error
 	Delete(ctx context.Context, item Ketchup) error
 }
 
@@ -107,12 +113,12 @@ type KetchupService interface {
 type KetchupStore interface {
 	DoAtomic(ctx context.Context, action func(context.Context) error) error
 	List(ctx context.Context, page uint, last string) ([]Ketchup, uint64, error)
-	ListByRepositoriesIDAndFrequencies(ctx context.Context, ids []uint64, frequencies ...KetchupFrequency) ([]Ketchup, error)
-	ListOutdated(ctx context.Context, usersIds ...uint64) ([]Ketchup, error)
-	GetByRepository(ctx context.Context, id uint64, pattern string, forUpdate bool) (Ketchup, error)
-	Create(ctx context.Context, o Ketchup) (uint64, error)
+	ListByRepositoriesIDAndFrequencies(ctx context.Context, ids []Identifier, frequencies ...KetchupFrequency) ([]Ketchup, error)
+	ListOutdated(ctx context.Context, usersIds ...Identifier) ([]Ketchup, error)
+	GetByRepository(ctx context.Context, id Identifier, pattern string, forUpdate bool) (Ketchup, error)
+	Create(ctx context.Context, o Ketchup) (Identifier, error)
 	Update(ctx context.Context, o Ketchup, oldPattern string) error
 	UpdateAll(ctx context.Context) error
-	UpdateVersion(ctx context.Context, userID, repositoryID uint64, pattern, version string) error
+	UpdateVersion(ctx context.Context, userID, repositoryID Identifier, pattern, version string) error
 	Delete(ctx context.Context, o Ketchup) error
 }

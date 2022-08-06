@@ -55,7 +55,7 @@ func TestGetNewStandardReleases(t *testing.T) {
 				ctx: context.Background(),
 			},
 			[]model.Release{model.NewRelease(
-				model.NewGithubRepository(1, repositoryName).AddVersion(model.DefaultPattern, repositoryVersion),
+				model.NewGithubRepository(model.Identifier(1), repositoryName).AddVersion(model.DefaultPattern, repositoryVersion),
 				model.DefaultPattern,
 				safeParse("1.1.0"),
 			)},
@@ -77,12 +77,12 @@ func TestGetNewStandardReleases(t *testing.T) {
 				mockRepositoryService.EXPECT().ListByKinds(gomock.Any(), gomock.Any(), gomock.Any(), model.Github, model.Docker, model.NPM, model.Pypi).Return(nil, uint64(0), errors.New("failed"))
 			case "github error":
 				mockRepositoryService.EXPECT().ListByKinds(gomock.Any(), gomock.Any(), gomock.Any(), model.Github, model.Docker, model.NPM, model.Pypi).Return([]model.Repository{
-					model.NewGithubRepository(1, repositoryName).AddVersion(model.DefaultPattern, repositoryVersion),
+					model.NewGithubRepository(model.Identifier(1), repositoryName).AddVersion(model.DefaultPattern, repositoryVersion),
 				}, uint64(1), nil)
 				mockRepositoryService.EXPECT().LatestVersions(gomock.Any(), gomock.Any()).Return(nil, errors.New("failed"))
 			case "same version":
 				mockRepositoryService.EXPECT().ListByKinds(gomock.Any(), gomock.Any(), gomock.Any(), model.Github, model.Docker, model.NPM, model.Pypi).Return([]model.Repository{
-					model.NewGithubRepository(1, repositoryName).AddVersion(model.DefaultPattern, repositoryVersion),
+					model.NewGithubRepository(model.Identifier(1), repositoryName).AddVersion(model.DefaultPattern, repositoryVersion),
 				}, uint64(1), nil)
 				mockRepositoryService.EXPECT().LatestVersions(gomock.Any(), gomock.Any()).Return(map[string]semver.Version{
 					model.DefaultPattern: {
@@ -91,7 +91,7 @@ func TestGetNewStandardReleases(t *testing.T) {
 				}, nil)
 			case "success":
 				mockRepositoryService.EXPECT().ListByKinds(gomock.Any(), gomock.Any(), gomock.Any(), model.Github, model.Docker, model.NPM, model.Pypi).Return([]model.Repository{
-					model.NewGithubRepository(1, repositoryName).AddVersion(model.DefaultPattern, repositoryVersion),
+					model.NewGithubRepository(model.Identifier(1), repositoryName).AddVersion(model.DefaultPattern, repositoryVersion),
 				}, uint64(1), nil)
 				mockRepositoryService.EXPECT().LatestVersions(gomock.Any(), gomock.Any()).Return(map[string]semver.Version{
 					model.DefaultPattern: safeParse("1.1.0"),
@@ -122,10 +122,10 @@ func TestGetNewStandardReleases(t *testing.T) {
 }
 
 func TestGetNewHelmReleases(t *testing.T) {
-	postgresRepo := model.NewHelmRepository(4, "https://charts.helm.sh/stable", "postgreql").AddVersion(model.DefaultPattern, "3.0.0")
-	appRepo := model.NewHelmRepository(1, "https://charts.vibioh.fr", "app").AddVersion(model.DefaultPattern, "1.0.0").AddVersion("1.0", "1.0.0").AddVersion("~1.0", "a.b.c")
-	cronRepo := model.NewHelmRepository(2, "https://charts.vibioh.fr", "cron").AddVersion(model.DefaultPattern, "1.0.0")
-	fluxRepo := model.NewHelmRepository(3, "https://charts.vibioh.fr", "flux").AddVersion(model.DefaultPattern, "1.0.0")
+	postgresRepo := model.NewHelmRepository(model.Identifier(4), "https://charts.helm.sh/stable", "postgreql").AddVersion(model.DefaultPattern, "3.0.0")
+	appRepo := model.NewHelmRepository(model.Identifier(1), "https://charts.vibioh.fr", "app").AddVersion(model.DefaultPattern, "1.0.0").AddVersion("1.0", "1.0.0").AddVersion("~1.0", "a.b.c")
+	cronRepo := model.NewHelmRepository(model.Identifier(2), "https://charts.vibioh.fr", "cron").AddVersion(model.DefaultPattern, "1.0.0")
+	fluxRepo := model.NewHelmRepository(model.Identifier(3), "https://charts.vibioh.fr", "flux").AddVersion(model.DefaultPattern, "1.0.0")
 
 	type args struct {
 		content string
@@ -198,10 +198,10 @@ func TestGetNewHelmReleases(t *testing.T) {
 				mockRepositoryService.EXPECT().ListByKinds(gomock.Any(), gomock.Any(), gomock.Any(), model.Helm).Return(nil, uint64(0), nil)
 			case "helm error":
 				mockRepositoryService.EXPECT().ListByKinds(gomock.Any(), gomock.Any(), gomock.Any(), model.Helm).Return([]model.Repository{
-					model.NewHelmRepository(1, "https://charts.vibioh.fr", "app"),
-					model.NewHelmRepository(1, "https://charts.vibioh.fr", "cron"),
-					model.NewHelmRepository(1, "https://charts.vibioh.fr", "flux"),
-					model.NewHelmRepository(1, "https://charts.helm.sh/stable", "postgreql"),
+					model.NewHelmRepository(model.Identifier(1), "https://charts.vibioh.fr", "app"),
+					model.NewHelmRepository(model.Identifier(1), "https://charts.vibioh.fr", "cron"),
+					model.NewHelmRepository(model.Identifier(1), "https://charts.vibioh.fr", "flux"),
+					model.NewHelmRepository(model.Identifier(1), "https://charts.helm.sh/stable", "postgreql"),
 				}, uint64(4), nil)
 				mockHelmProvider.EXPECT().FetchIndex(gomock.Any(), gomock.Any(), gomock.Any()).Times(2).Return(nil, errors.New("helm error"))
 			case "helm":

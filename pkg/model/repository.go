@@ -78,12 +78,12 @@ type Repository struct {
 	Versions map[string]string `json:"versions"`
 	Name     string            `json:"name"`
 	Part     string            `json:"part"`
-	ID       uint64            `json:"id"`
+	ID       Identifier        `json:"id"`
 	Kind     RepositoryKind    `json:"kind"`
 }
 
 // NewRepository create new Repository with initialized values
-func NewRepository(id uint64, kind RepositoryKind, name, part string) Repository {
+func NewRepository(id Identifier, kind RepositoryKind, name, part string) Repository {
 	return Repository{
 		ID:       id,
 		Kind:     kind,
@@ -101,12 +101,12 @@ func NewEmptyRepository() Repository {
 }
 
 // NewGithubRepository create new Repository with initialized values
-func NewGithubRepository(id uint64, name string) Repository {
+func NewGithubRepository(id Identifier, name string) Repository {
 	return NewRepository(id, Github, name, "")
 }
 
 // NewHelmRepository create new Repository with initialized values
-func NewHelmRepository(id uint64, name, part string) Repository {
+func NewHelmRepository(id Identifier, name, part string) Repository {
 	return NewRepository(id, Helm, name, part)
 }
 
@@ -119,7 +119,7 @@ func (r Repository) AddVersion(pattern, version string) Repository {
 
 // IsZero return false if instance is not initialized
 func (r Repository) IsZero() bool {
-	return r.ID == 0
+	return r.ID.IsZero()
 }
 
 // URL format the URL of given repository with current version

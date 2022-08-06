@@ -57,7 +57,7 @@ func (a App) AppTemplateFunc(_ http.ResponseWriter, r *http.Request) (renderer.P
 	ketchupsCount := uint64(len(ketchups))
 
 	if ketchupsCount <= suggestThresold {
-		ketchupIds := make([]uint64, ketchupsCount)
+		ketchupIds := make([]model.Identifier, ketchupsCount)
 		for index, ketchup := range ketchups {
 			ketchupIds[index] = ketchup.Repository.ID
 		}
@@ -68,10 +68,10 @@ func (a App) AppTemplateFunc(_ http.ResponseWriter, r *http.Request) (renderer.P
 	return renderer.NewPage("ketchup", http.StatusOK, content), nil
 }
 
-func (a App) suggests(ctx context.Context, ignoreIds []uint64, count uint64) []model.Repository {
+func (a App) suggests(ctx context.Context, ignoreIds []model.Identifier, count uint64) []model.Repository {
 	user := model.ReadUser(ctx)
 	if user.IsZero() {
-		ignoreIds = []uint64{0}
+		ignoreIds = []model.Identifier{0}
 	}
 
 	items, err := cache.Retrieve(ctx, a.redisApp, suggestCacheKey(user), func(ctx context.Context) ([]model.Repository, error) {

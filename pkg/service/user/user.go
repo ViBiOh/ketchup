@@ -95,7 +95,7 @@ func (a App) check(ctx context.Context, _, new model.User) error {
 
 	if userWithEmail, err := a.userStore.GetByEmail(ctx, new.Email); err != nil {
 		output = append(output, errors.New("unable to check if email already exists"))
-	} else if userWithEmail.ID != 0 {
+	} else if !userWithEmail.ID.IsZero() {
 		output = append(output, errors.New("email already used"))
 	}
 
