@@ -649,7 +649,7 @@ func TestCheck(t *testing.T) {
 			args{
 				new: model.NewGithubRepository(model.Identifier(1), "error"),
 			},
-			errors.New("unable to check if name already exists"),
+			errors.New("check if name already exists"),
 		},
 		"exist": {
 			args{

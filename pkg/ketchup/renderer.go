@@ -78,7 +78,7 @@ func (a App) suggests(ctx context.Context, ignoreIds []model.Identifier, count u
 		return a.repositoryService.Suggest(ctx, ignoreIds, count)
 	}, time.Hour*24)
 	if err != nil {
-		logger.Warn("unable to get suggests: %s", err)
+		logger.Warn("get suggests: %s", err)
 		return nil
 	}
 

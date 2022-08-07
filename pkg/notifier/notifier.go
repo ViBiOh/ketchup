@@ -62,26 +62,26 @@ func New(config Config, repositoryService model.RepositoryService, ketchupServic
 // Notify users for new ketchup
 func (a App) Notify(ctx context.Context) error {
 	if err := a.repositoryService.Clean(ctx); err != nil {
-		return fmt.Errorf("unable to clean repository before starting: %w", err)
+		return fmt.Errorf("clean repository before starting: %w", err)
 	}
 
 	newReleases, repoCount, err := a.getNewReleases(ctx)
 	if err != nil {
-		return fmt.Errorf("unable to get new releases: %w", err)
+		return fmt.Errorf("get new releases: %w", err)
 	}
 
 	sort.Sort(model.ReleaseByRepositoryIDAndPattern(newReleases))
 	if err := a.updateRepositories(ctx, newReleases); err != nil {
-		return fmt.Errorf("unable to update repositories: %w", err)
+		return fmt.Errorf("update repositories: %w", err)
 	}
 
 	ketchupsToNotify, err := a.getKetchupToNotify(ctx, newReleases)
 	if err != nil {
-		return fmt.Errorf("unable to get ketchup to notify: %w", err)
+		return fmt.Errorf("get ketchup to notify: %w", err)
 	}
 
 	if err := a.sendNotification(ctx, "ketchup", ketchupsToNotify); err != nil {
-		return fmt.Errorf("unable to send notification: %s", err)
+		return fmt.Errorf("send notification: %s", err)
 	}
 
 	if len(a.pushURL) != 0 {
@@ -89,7 +89,7 @@ func (a App) Notify(ctx context.Context) error {
 
 		userCount, err := a.userService.Count(ctx)
 		if err != nil {
-			logger.Error("unable to get users count: %s", err)
+			logger.Error("get users count: %s", err)
 		} else {
 			metrics.WithLabelValues("users").Set(float64(userCount))
 		}
@@ -99,7 +99,7 @@ func (a App) Notify(ctx context.Context) error {
 		metrics.WithLabelValues("notifications").Set(float64(len(ketchupsToNotify)))
 
 		if err := push.New(a.pushURL, "ketchup").Gatherer(registry).Push(); err != nil {
-			logger.Error("unable to push metrics: %s", err)
+			logger.Error("push metrics: %s", err)
 		}
 	}
 
@@ -116,7 +116,7 @@ func (a App) updateRepositories(ctx context.Context, releases []model.Release) e
 	for _, release := range releases {
 		if release.Repository.ID != repo.ID {
 			if err := a.repositoryService.Update(ctx, repo); err != nil {
-				return fmt.Errorf("unable to update repository `%s`: %s", repo.Name, err)
+				return fmt.Errorf("update repository `%s`: %s", repo.Name, err)
 			}
 
 			repo = release.Repository
@@ -126,7 +126,7 @@ func (a App) updateRepositories(ctx context.Context, releases []model.Release) e
 	}
 
 	if err := a.repositoryService.Update(ctx, repo); err != nil {
-		return fmt.Errorf("unable to update repository `%s`: %s", repo.Name, err)
+		return fmt.Errorf("update repository `%s`: %s", repo.Name, err)
 	}
 
 	return nil
@@ -140,7 +140,7 @@ func (a App) getKetchupToNotify(ctx context.Context, releases []model.Release) (
 
 	ketchups, err := a.ketchupService.ListForRepositories(ctx, repositories, model.Daily, model.None)
 	if err != nil {
-		return nil, fmt.Errorf("unable to get ketchups for repositories: %w", err)
+		return nil, fmt.Errorf("get ketchups for repositories: %w", err)
 	}
 
 	logger.Info("%d daily ketchups updates", len(ketchups))
@@ -150,7 +150,7 @@ func (a App) getKetchupToNotify(ctx context.Context, releases []model.Release) (
 	if a.clock.Now().Weekday() == time.Monday {
 		weeklyKetchups, err := a.ketchupService.ListOutdated(ctx)
 		if err != nil {
-			return nil, fmt.Errorf("unable to get weekly ketchups: %w", err)
+			return nil, fmt.Errorf("get weekly ketchups: %w", err)
 		}
 
 		logger.Info("%d weekly ketchups updates", len(weeklyKetchups))
@@ -195,7 +195,7 @@ func (a App) syncReleasesByUser(ctx context.Context, releases []model.Release, k
 			return nil
 		})
 	if err != nil {
-		logger.Error("unable to synchronise releases and ketchups: %s", err)
+		logger.Error("synchronise releases and ketchups: %s", err)
 	}
 
 	return usersToNotify
@@ -205,7 +205,7 @@ func (a App) appendKetchupsToUser(ctx context.Context, usersToNotify map[model.U
 	for _, ketchup := range ketchups {
 		ketchupVersion, err := semver.Parse(ketchup.Version)
 		if err != nil {
-			logger.WithField("version", ketchup.Version).Error("unable to parse version of ketchup: %s", err)
+			logger.WithField("version", ketchup.Version).Error("parse version of ketchup: %s", err)
 			continue
 		}
 
@@ -236,7 +236,7 @@ func (a App) handleUpdateWhenNotify(ctx context.Context, ketchup model.Ketchup, 
 
 	log.Info("Auto-updating ketchup to %s", release.Version.Name)
 	if err := a.ketchupService.UpdateVersion(ctx, ketchup.User.ID, ketchup.Repository.ID, ketchup.Pattern, release.Version.Name); err != nil {
-		log.Error("unable to update ketchup: %s", err)
+		log.Error("update ketchup: %s", err)
 		return release.SetUpdated(1)
 	}
 
@@ -270,7 +270,7 @@ func (a App) sendNotification(ctx context.Context, template string, ketchupToNot
 		mr = mr.WithSubject(subject)
 
 		if err := a.mailerApp.Send(ctx, mr); err != nil {
-			return fmt.Errorf("unable to send email to %s: %s", user.Email, err)
+			return fmt.Errorf("send email to %s: %s", user.Email, err)
 		}
 	}
 
@@ -281,12 +281,12 @@ func (a App) sendNotification(ctx context.Context, template string, ketchupToNot
 func (a App) Remind(ctx context.Context) error {
 	usersToRemind, err := a.userService.ListReminderUsers(ctx)
 	if err != nil {
-		return fmt.Errorf("unable to get reminder users: %s", err)
+		return fmt.Errorf("get reminder users: %s", err)
 	}
 
 	remindKetchups, err := a.ketchupService.ListOutdated(ctx, usersToRemind...)
 	if err != nil {
-		return fmt.Errorf("unable to get daily ketchups to remind: %s", err)
+		return fmt.Errorf("get daily ketchups to remind: %s", err)
 	}
 
 	if len(remindKetchups) == 0 {
@@ -297,7 +297,7 @@ func (a App) Remind(ctx context.Context) error {
 	a.appendKetchupsToUser(ctx, usersToNotify, remindKetchups)
 
 	if err := a.sendNotification(ctx, "ketchup_remind", usersToNotify); err != nil {
-		return fmt.Errorf("unable to send remind notification: %s", err)
+		return fmt.Errorf("send remind notification: %s", err)
 	}
 
 	return nil

@@ -100,14 +100,14 @@ WHERE
 func (a App) UpdateVersions(ctx context.Context, o model.Repository) error {
 	patterns, err := a.getRepositoryVersions(ctx, o)
 	if err != nil {
-		return fmt.Errorf("unable to fetch repository versions: %w", err)
+		return fmt.Errorf("fetch repository versions: %w", err)
 	}
 
 	for pattern, version := range patterns {
 		repositoryVersion, ok := o.Versions[pattern]
 		if !ok {
 			if err := a.db.One(ctx, deleteRepositoryVersionQuery, o.ID, pattern); err != nil {
-				return fmt.Errorf("unable to delete repository version: %w", err)
+				return fmt.Errorf("delete repository version: %w", err)
 			}
 			continue
 		}
@@ -117,7 +117,7 @@ func (a App) UpdateVersions(ctx context.Context, o model.Repository) error {
 		}
 
 		if err := a.db.One(ctx, updateRepositoryVersionQuery, o.ID, pattern, repositoryVersion); err != nil {
-			return fmt.Errorf("unable to update repository version: %w", err)
+			return fmt.Errorf("update repository version: %w", err)
 		}
 	}
 
@@ -127,7 +127,7 @@ func (a App) UpdateVersions(ctx context.Context, o model.Repository) error {
 		}
 
 		if err := a.db.One(ctx, createRepositoryVersionQuery, o.ID, pattern, version); err != nil {
-			return fmt.Errorf("unable to create repository version: %w", err)
+			return fmt.Errorf("create repository version: %w", err)
 		}
 	}
 
@@ -161,7 +161,7 @@ func (a App) getRepositoryVersions(ctx context.Context, o model.Repository) (map
 
 	err := a.db.List(ctx, scanner, listRepositoryVersionQuery, o.ID)
 	if err != nil {
-		return nil, fmt.Errorf("unable to list repository version: %w", err)
+		return nil, fmt.Errorf("list repository version: %w", err)
 	}
 
 	return patterns, err

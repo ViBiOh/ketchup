@@ -36,7 +36,7 @@ func (a App) StoreInContext(ctx context.Context) context.Context {
 
 	item, err := a.userStore.GetByLoginID(ctx, id)
 	if err != nil || item.IsZero() {
-		logger.Error("unable to get user with login %d: %s", id, err)
+		logger.Error("get user with login %d: %s", id, err)
 		return ctx
 	}
 
@@ -63,14 +63,14 @@ func (a App) Create(ctx context.Context, item model.User) (model.User, error) {
 	err := a.userStore.DoAtomic(ctx, func(ctx context.Context) error {
 		loginUser, err := a.authApp.Create(ctx, item.Login)
 		if err != nil {
-			return httpModel.WrapInternal(fmt.Errorf("unable to create login: %w", err))
+			return httpModel.WrapInternal(fmt.Errorf("create login: %w", err))
 		}
 
 		item.Login = loginUser
 
 		id, err := a.userStore.Create(ctx, item)
 		if err != nil {
-			return httpModel.WrapInternal(fmt.Errorf("unable to create: %w", err))
+			return httpModel.WrapInternal(fmt.Errorf("create: %w", err))
 		}
 
 		item.ID = id
@@ -94,7 +94,7 @@ func (a App) check(ctx context.Context, _, new model.User) error {
 	}
 
 	if userWithEmail, err := a.userStore.GetByEmail(ctx, new.Email); err != nil {
-		output = append(output, errors.New("unable to check if email already exists"))
+		output = append(output, errors.New("check if email already exists"))
 	} else if !userWithEmail.ID.IsZero() {
 		output = append(output, errors.New("email already used"))
 	}

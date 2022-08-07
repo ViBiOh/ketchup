@@ -391,7 +391,7 @@ func TestSendNotification(t *testing.T) {
 					},
 				},
 			},
-			errors.New("unable to send email to nobody@localhost: invalid context"),
+			errors.New("send email to nobody@localhost: invalid context"),
 		},
 		"multiple releases": {
 			App{},

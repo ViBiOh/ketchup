@@ -98,7 +98,7 @@ func (v Version) Compare(other Version) string {
 func Parse(version string) (Version, error) {
 	matches := semverMatcher.FindStringSubmatch(version)
 	if len(matches) == 0 {
-		return Version{}, fmt.Errorf("unable to parse version: %s", version)
+		return Version{}, fmt.Errorf("parse version: %s", version)
 	}
 
 	semver := Version{

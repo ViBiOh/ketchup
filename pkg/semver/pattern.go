@@ -75,7 +75,7 @@ func ParsePattern(pattern string) (Pattern, error) {
 
 	version, err := Parse(pattern[1:])
 	if err != nil {
-		return Pattern{}, fmt.Errorf("unable to parse version in pattern: %s", err)
+		return Pattern{}, fmt.Errorf("parse version in pattern: %s", err)
 	}
 
 	constraintVersionSuffix := ""

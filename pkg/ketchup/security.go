@@ -40,18 +40,18 @@ var colors = map[int64]securityQuestion{
 func (a App) generateToken(ctx context.Context) (securityPayload, error) {
 	questionID, err := rand.Int(rand.Reader, big.NewInt(int64(len(colors))))
 	if err != nil {
-		return securityPayload{}, fmt.Errorf("unable to generate random int: %w", err)
+		return securityPayload{}, fmt.Errorf("generate random int: %w", err)
 	}
 
 	token, err := uuid.New()
 	if err != nil {
-		return securityPayload{}, fmt.Errorf("unable to generate uuid: %s", err)
+		return securityPayload{}, fmt.Errorf("generate uuid: %s", err)
 	}
 
 	id := questionID.Int64()
 
 	if err := a.redisApp.Store(ctx, tokenKey(token), fmt.Sprintf("%d", id), time.Minute*5); err != nil {
-		return securityPayload{}, fmt.Errorf("unable to store token: %s", err)
+		return securityPayload{}, fmt.Errorf("store token: %s", err)
 	}
 
 	return securityPayload{
@@ -63,7 +63,7 @@ func (a App) generateToken(ctx context.Context) (securityPayload, error) {
 func (a App) validateToken(ctx context.Context, token, answer string) bool {
 	questionIDString, err := a.redisApp.Load(ctx, tokenKey(token))
 	if err != nil {
-		logger.Warn("unable to retrieve captcha token: %s", err)
+		logger.Warn("retrieve captcha token: %s", err)
 		return false
 	}
 
@@ -83,7 +83,7 @@ func (a App) validateToken(ctx context.Context, token, answer string) bool {
 
 func (a App) cleanToken(ctx context.Context, token string) {
 	if err := a.redisApp.Delete(ctx, tokenKey(token)); err != nil {
-		logger.WithField("token", token).Error("unable to delete token: %s", err)
+		logger.WithField("token", token).Error("delete token: %s", err)
 	}
 }
 

@@ -59,12 +59,12 @@ func New(config Config) App {
 func (a App) LatestVersions(ctx context.Context, repository string, patterns []string) (map[string]semver.Version, error) {
 	versions, compiledPatterns, err := model.PreparePatternMatching(patterns)
 	if err != nil {
-		return nil, fmt.Errorf("unable to prepare pattern matching: %s", err)
+		return nil, fmt.Errorf("prepare pattern matching: %s", err)
 	}
 
 	registry, repository, auth, err := a.getImageDetails(ctx, repository)
 	if err != nil {
-		return nil, fmt.Errorf("unable to compute image details: %s", err)
+		return nil, fmt.Errorf("compute image details: %s", err)
 	}
 
 	url := fmt.Sprintf("%s/v2/%s/tags/list", registry, repository)
@@ -78,7 +78,7 @@ func (a App) LatestVersions(ctx context.Context, repository string, patterns []s
 
 		resp, err := req.Send(ctx, nil)
 		if err != nil {
-			return nil, fmt.Errorf("unable to fetch tags: %s", err)
+			return nil, fmt.Errorf("fetch tags: %s", err)
 		}
 
 		if err := browseRegistryTagsList(resp.Body, versions, compiledPatterns); err != nil {
@@ -109,7 +109,7 @@ func (a App) getImageDetails(ctx context.Context, repository string) (string, st
 
 	bearerToken, err := a.login(ctx, repository)
 	if err != nil {
-		return "", "", "", fmt.Errorf("unable to authenticate to docker hub: %s", err)
+		return "", "", "", fmt.Errorf("authenticate to docker hub: %s", err)
 	}
 
 	return registryURL, repository, fmt.Sprintf("Bearer %s", bearerToken), nil
@@ -126,12 +126,12 @@ func (a App) login(ctx context.Context, repository string) (string, error) {
 
 	resp, err := request.Post(authURL).Form(ctx, values)
 	if err != nil {
-		return "", fmt.Errorf("unable to authenticate to `%s`: %s", authURL, err)
+		return "", fmt.Errorf("authenticate to `%s`: %s", authURL, err)
 	}
 
 	var authContent authResponse
 	if err := httpjson.Read(resp, &authContent); err != nil {
-		return "", fmt.Errorf("unable to read auth token: %s", err)
+		return "", fmt.Errorf("read auth token: %s", err)
 	}
 
 	return authContent.AccessToken, nil
@@ -155,7 +155,7 @@ func browseRegistryTagsList(body io.ReadCloser, versions map[string]semver.Versi
 	}()
 
 	if err := httpjson.Stream(body, versionsStream, "tags", true); err != nil {
-		return fmt.Errorf("unable to read tags: %s", err)
+		return fmt.Errorf("read tags: %s", err)
 	}
 
 	<-done

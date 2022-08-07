@@ -598,7 +598,7 @@ func TestCheck(t *testing.T) {
 				ctx: model.StoreUser(context.Background(), model.NewUser(1, "", authModel.NewUser(0, ""))),
 				new: model.Ketchup{Version: "1.0.0", Pattern: "stable", Repository: model.NewGithubRepository(model.Identifier(1), ""), User: model.NewUser(1, "", authModel.NewUser(0, ""))},
 			},
-			errors.New("unable to check if ketchup already exists"),
+			errors.New("check if ketchup already exists"),
 		},
 		"create already exists": {
 			args{

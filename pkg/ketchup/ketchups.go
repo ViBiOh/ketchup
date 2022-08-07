@@ -77,7 +77,7 @@ func (a App) handleCreate(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := cache.EvictOnSuccess(ctx, a.redisApp, suggestCacheKey(model.ReadUser(ctx)), nil); err != nil {
-		logger.Error("unable to evict suggests cache: %s", err)
+		logger.Error("evict suggests cache: %s", err)
 	}
 
 	a.rendererApp.Redirect(w, r, fmt.Sprintf("%s/", appPath), renderer.NewSuccessMessage(fmt.Sprintf("%s created with success!", created.Repository.Name)))
@@ -136,7 +136,7 @@ func (a App) handleDelete(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := cache.EvictOnSuccess(ctx, a.redisApp, suggestCacheKey(model.ReadUser(ctx)), nil); err != nil {
-		logger.Error("unable to evict suggests cache: %s", err)
+		logger.Error("evict suggests cache: %s", err)
 	}
 
 	a.rendererApp.Redirect(w, r, fmt.Sprintf("%s/", appPath), renderer.NewSuccessMessage("Deleted with success!"))

@@ -30,17 +30,17 @@ func New() App {
 func (a App) LatestVersions(ctx context.Context, name string, patterns []string) (map[string]semver.Version, error) {
 	versions, compiledPatterns, err := model.PreparePatternMatching(patterns)
 	if err != nil {
-		return nil, fmt.Errorf("unable to prepare pattern matching: %s", err)
+		return nil, fmt.Errorf("prepare pattern matching: %s", err)
 	}
 
 	resp, err := request.Get(fmt.Sprintf("%s/%s/json", registryURL, name)).Send(ctx, nil)
 	if err != nil {
-		return nil, fmt.Errorf("unable to fetch registry: %s", err)
+		return nil, fmt.Errorf("fetch registry: %s", err)
 	}
 
 	var content packageResp
 	if err := httpjson.Read(resp, &content); err != nil {
-		return nil, fmt.Errorf("unable to read versions: %s", err)
+		return nil, fmt.Errorf("read versions: %s", err)
 	}
 
 	for version := range content.Versions {

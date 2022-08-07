@@ -161,21 +161,21 @@ func TestParse(t *testing.T) {
 				version: "release.r60.1",
 			},
 			Version{},
-			errors.New("unable to parse version"),
+			errors.New("parse version"),
 		},
 		"not a semver too many": {
 			args{
 				version: "v2.2.1.0-0.3.rc3",
 			},
 			Version{},
-			errors.New("unable to parse version"),
+			errors.New("parse version"),
 		},
 		"prefixed version": {
 			args{
 				version: "stable-2.10.1",
 			},
 			Version{},
-			errors.New("unable to parse version"),
+			errors.New("parse version"),
 		},
 		"flag rc version": {
 			args{

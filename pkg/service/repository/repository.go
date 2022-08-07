@@ -40,7 +40,7 @@ func New(repositoryStore model.RepositoryStore, githubApp model.GenericProvider,
 func (a App) List(ctx context.Context, pageSize uint, last string) ([]model.Repository, uint64, error) {
 	list, total, err := a.repositoryStore.List(ctx, pageSize, last)
 	if err != nil {
-		return nil, 0, httpModel.WrapInternal(fmt.Errorf("unable to list: %w", err))
+		return nil, 0, httpModel.WrapInternal(fmt.Errorf("list: %w", err))
 	}
 
 	return list, total, nil
@@ -50,7 +50,7 @@ func (a App) List(ctx context.Context, pageSize uint, last string) ([]model.Repo
 func (a App) ListByKinds(ctx context.Context, pageSize uint, last string, kinds ...model.RepositoryKind) ([]model.Repository, uint64, error) {
 	list, total, err := a.repositoryStore.ListByKinds(ctx, pageSize, last, kinds...)
 	if err != nil {
-		return nil, 0, httpModel.WrapInternal(fmt.Errorf("unable to list by kind: %w", err))
+		return nil, 0, httpModel.WrapInternal(fmt.Errorf("list by kind: %w", err))
 	}
 
 	return list, total, nil
@@ -60,7 +60,7 @@ func (a App) ListByKinds(ctx context.Context, pageSize uint, last string, kinds 
 func (a App) Suggest(ctx context.Context, ignoreIds []model.Identifier, count uint64) ([]model.Repository, error) {
 	list, err := a.repositoryStore.Suggest(ctx, ignoreIds, count)
 	if err != nil {
-		return nil, httpModel.WrapInternal(fmt.Errorf("unable to suggest: %w", err))
+		return nil, httpModel.WrapInternal(fmt.Errorf("suggest: %w", err))
 	}
 
 	return list, nil
@@ -89,7 +89,7 @@ func (a App) GetOrCreate(ctx context.Context, kind model.RepositoryKind, name, p
 	repo.Versions[pattern] = ""
 	versions, err := a.LatestVersions(ctx, repo)
 	if err != nil {
-		return model.NewEmptyRepository(), httpModel.WrapInternal(fmt.Errorf("unable to get releases for `%s`: %w", repo.Name, err))
+		return model.NewEmptyRepository(), httpModel.WrapInternal(fmt.Errorf("get releases for `%s`: %w", repo.Name, err))
 	}
 
 	version, ok := versions[pattern]
@@ -99,7 +99,7 @@ func (a App) GetOrCreate(ctx context.Context, kind model.RepositoryKind, name, p
 
 	repo.Versions[pattern] = version.Name
 	if err := a.repositoryStore.UpdateVersions(ctx, repo); err != nil {
-		return model.NewEmptyRepository(), httpModel.WrapInternal(fmt.Errorf("unable to update repository versions `%s`: %w", repo.Name, err))
+		return model.NewEmptyRepository(), httpModel.WrapInternal(fmt.Errorf("update repository versions `%s`: %w", repo.Name, err))
 	}
 
 	return repo, nil
@@ -112,7 +112,7 @@ func (a App) create(ctx context.Context, item model.Repository) (model.Repositor
 
 	versions, err := a.LatestVersions(ctx, item)
 	if err != nil {
-		return model.NewEmptyRepository(), httpModel.WrapNotFound(fmt.Errorf("unable to get releases for `%s`: %w", item.Name, err))
+		return model.NewEmptyRepository(), httpModel.WrapNotFound(fmt.Errorf("get releases for `%s`: %w", item.Name, err))
 	}
 
 	for pattern, version := range versions {
@@ -122,7 +122,7 @@ func (a App) create(ctx context.Context, item model.Repository) (model.Repositor
 	err = a.repositoryStore.DoAtomic(ctx, func(ctx context.Context) error {
 		id, err := a.repositoryStore.Create(ctx, item)
 		if err != nil {
-			return httpModel.WrapInternal(fmt.Errorf("unable to create: %w", err))
+			return httpModel.WrapInternal(fmt.Errorf("create: %w", err))
 		}
 
 		item.ID = id
@@ -137,7 +137,7 @@ func (a App) Update(ctx context.Context, item model.Repository) error {
 	return a.repositoryStore.DoAtomic(ctx, func(ctx context.Context) error {
 		old, err := a.repositoryStore.Get(ctx, item.ID, true)
 		if err != nil {
-			return httpModel.WrapInternal(fmt.Errorf("unable to fetch: %w", err))
+			return httpModel.WrapInternal(fmt.Errorf("fetch: %w", err))
 		}
 
 		current := model.Repository{
@@ -152,7 +152,7 @@ func (a App) Update(ctx context.Context, item model.Repository) error {
 		}
 
 		if err := a.repositoryStore.UpdateVersions(ctx, current); err != nil {
-			return httpModel.WrapInternal(fmt.Errorf("unable to update: %w", err))
+			return httpModel.WrapInternal(fmt.Errorf("update: %w", err))
 		}
 
 		return nil
@@ -163,11 +163,11 @@ func (a App) Update(ctx context.Context, item model.Repository) error {
 func (a App) Clean(ctx context.Context) error {
 	return a.repositoryStore.DoAtomic(ctx, func(ctx context.Context) error {
 		if err := a.repositoryStore.DeleteUnused(ctx); err != nil {
-			return httpModel.WrapInternal(fmt.Errorf("unable to delete unused repository: %w", err))
+			return httpModel.WrapInternal(fmt.Errorf("delete unused repository: %w", err))
 		}
 
 		if err := a.repositoryStore.DeleteUnusedVersions(ctx); err != nil {
-			return httpModel.WrapInternal(fmt.Errorf("unable to delete unused repository versions: %w", err))
+			return httpModel.WrapInternal(fmt.Errorf("delete unused repository versions: %w", err))
 		}
 
 		return nil
@@ -195,7 +195,7 @@ func (a App) check(ctx context.Context, old, new model.Repository) error {
 
 	repositoryWithName, err := a.repositoryStore.GetByName(ctx, new.Kind, new.Name, new.Part)
 	if err != nil {
-		output = append(output, errors.New("unable to check if name already exists"))
+		output = append(output, errors.New("check if name already exists"))
 	} else if !repositoryWithName.IsZero() && repositoryWithName.ID != new.ID {
 		output = append(output, errors.New("name already exists"))
 	}

@@ -14,7 +14,7 @@ func PreparePatternMatching(patterns []string) (map[string]semver.Version, map[s
 	for _, pattern := range patterns {
 		p, err := semver.ParsePattern(pattern)
 		if err != nil {
-			return nil, nil, fmt.Errorf("unable to parse pattern: %s", err)
+			return nil, nil, fmt.Errorf("parse pattern: %s", err)
 		}
 
 		versions[pattern] = semver.Version{}

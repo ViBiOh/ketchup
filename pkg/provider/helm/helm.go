@@ -36,18 +36,18 @@ func New() App {
 func (a App) FetchIndex(ctx context.Context, url string, chartsPatterns map[string][]string) (map[string]map[string]semver.Version, error) {
 	resp, err := request.Get(fmt.Sprintf("%s/%s", url, indexName)).Send(ctx, nil)
 	if err != nil {
-		return nil, fmt.Errorf("unable to request repository: %w", err)
+		return nil, fmt.Errorf("request repository: %w", err)
 	}
 
 	defer func() {
 		if err := resp.Body.Close(); err != nil {
-			logger.Error("unable to close response body: %s", err)
+			logger.Error("close response body: %s", err)
 		}
 	}()
 
 	var index charts
 	if err := yaml.NewDecoder(resp.Body).Decode(&index); err != nil && err != io.EOF {
-		return nil, fmt.Errorf("unable to parse yaml index: %s", err)
+		return nil, fmt.Errorf("parse yaml index: %s", err)
 	}
 
 	output := make(map[string]map[string]semver.Version, len(index.Entries))
@@ -59,7 +59,7 @@ func (a App) FetchIndex(ctx context.Context, url string, chartsPatterns map[stri
 
 		versions, compiledPatterns, err := model.PreparePatternMatching(patterns)
 		if err != nil {
-			return nil, fmt.Errorf("unable to prepare pattern matching for `%s`: %s", key, err)
+			return nil, fmt.Errorf("prepare pattern matching for `%s`: %s", key, err)
 		}
 
 		for _, chart := range charts {

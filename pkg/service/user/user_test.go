@@ -243,7 +243,7 @@ func TestCheck(t *testing.T) {
 				ctx: context.Background(),
 				new: model.NewUser(1, testEmail, authModel.NewUser(1, "")),
 			},
-			errors.New("unable to check if email already exists"),
+			errors.New("check if email already exists"),
 		},
 		"already used": {
 			App{},

@@ -27,7 +27,7 @@ func (a App) Signup() http.Handler {
 
 		token := r.FormValue("token")
 		if !a.validateToken(r.Context(), token, r.FormValue("answer")) {
-			a.rendererApp.Error(w, r, nil, httpModel.WrapInvalid(errors.New("unable to validate security question")))
+			a.rendererApp.Error(w, r, nil, httpModel.WrapInvalid(errors.New("validate security question")))
 			return
 		}
 

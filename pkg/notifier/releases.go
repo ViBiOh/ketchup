@@ -22,7 +22,7 @@ func (a App) getNewReleases(ctx context.Context) ([]model.Release, uint64, error
 
 		releases, releasesCount, err = a.getNewStandardReleases(ctx)
 		if err != nil {
-			logger.Error("unable to fetch standard releases: %s", err)
+			logger.Error("fetch standard releases: %s", err)
 		}
 	})
 
@@ -32,7 +32,7 @@ func (a App) getNewReleases(ctx context.Context) ([]model.Release, uint64, error
 		helmReleases, helmCount, err = a.getNewHelmReleases(ctx)
 
 		if err != nil {
-			logger.Error("unable to fetch helm releases: %s", err)
+			logger.Error("fetch helm releases: %s", err)
 		}
 	})
 
@@ -69,7 +69,7 @@ func (a App) getNewStandardReleases(ctx context.Context) ([]model.Release, uint6
 	for {
 		repositories, _, err := a.repositoryService.ListByKinds(ctx, pageSize, last, model.Github, model.Docker, model.NPM, model.Pypi)
 		if err != nil {
-			return nil, count, fmt.Errorf("unable to fetch standard repositories: %s", err)
+			return nil, count, fmt.Errorf("fetch standard repositories: %s", err)
 		}
 
 		repoCount := len(repositories)
@@ -105,7 +105,7 @@ func (a App) getNewStandardReleases(ctx context.Context) ([]model.Release, uint6
 func (a App) getNewRepositoryReleases(ctx context.Context, repo model.Repository) []model.Release {
 	versions, err := a.repositoryService.LatestVersions(ctx, repo)
 	if err != nil {
-		logger.Error("unable to get latest versions of %s `%s`: %s", repo.Kind, repo.Name, err)
+		logger.Error("get latest versions of %s `%s`: %s", repo.Kind, repo.Name, err)
 		return nil
 	}
 
@@ -126,7 +126,7 @@ func (a App) getNewHelmReleases(ctx context.Context) ([]model.Release, uint64, e
 	for {
 		repositories, _, err := a.repositoryService.ListByKinds(ctx, pageSize, last, model.Helm)
 		if err != nil {
-			return nil, count, fmt.Errorf("unable to fetch Helm repositories: %s", err)
+			return nil, count, fmt.Errorf("fetch Helm repositories: %s", err)
 		}
 
 		repoCount := len(repositories)
@@ -189,7 +189,7 @@ func (a App) getFetchHelmSources(ctx context.Context, repos map[string]model.Rep
 
 	values, err := a.helmApp.FetchIndex(ctx, url, charts)
 	if err != nil {
-		logger.WithField("url", url).Error("unable to fetch helm index: %s", err)
+		logger.WithField("url", url).Error("fetch helm index: %s", err)
 		return nil
 	}
 
@@ -213,13 +213,13 @@ func appendVersion(releases []model.Release, upstreamVersion semver.Version, rep
 
 	compiledPattern, err := semver.ParsePattern(repoPattern)
 	if err != nil {
-		logger.Error("unable to parse pattern: %s", err)
+		logger.Error("parse pattern: %s", err)
 		return releases
 	}
 
 	repositoryVersion, err := semver.Parse(repoVersionName)
 	if err != nil {
-		logger.Error("unable to parse version: %s", err)
+		logger.Error("parse version: %s", err)
 		return releases
 	}
 

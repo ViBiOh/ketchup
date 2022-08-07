@@ -74,7 +74,7 @@ func TestList(t *testing.T) {
 			},
 			nil,
 			0,
-			errors.New("unable to read int"),
+			errors.New("read int"),
 		},
 		"invalid kind": {
 			args{
@@ -156,7 +156,7 @@ func TestList(t *testing.T) {
 			case "scan error":
 				mockRows := mocks.NewRows(ctrl)
 				mockRows.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...any) error {
-					return errors.New("unable to read int")
+					return errors.New("read int")
 				})
 				dummyFn := func(_ context.Context, scanner func(pgx.Rows) error, _ string, _ ...any) error {
 					if err := scanner(mockRows); err != nil {
@@ -350,7 +350,7 @@ func TestGet(t *testing.T) {
 			},
 			"SELECT id, kind, name, part FROM ketchup.repository WHERE id =",
 			model.NewEmptyRepository(),
-			errors.New("unable to read int"),
+			errors.New("read int"),
 		},
 	}
 
@@ -403,7 +403,7 @@ func TestGet(t *testing.T) {
 			case "scan error":
 				mockRow := mocks.NewRow(ctrl)
 				mockRow.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...any) error {
-					return errors.New("unable to read int")
+					return errors.New("read int")
 				})
 				dummyFn := func(_ context.Context, scanner func(pgx.Row) error, _ string, _ ...any) error {
 					return scanner(mockRow)
@@ -447,14 +447,14 @@ func TestCreate(t *testing.T) {
 				o: model.NewGithubRepository(model.Identifier(0), ketchupRepository).AddVersion(model.DefaultPattern, "1.0.0"),
 			},
 			0,
-			errors.New("unable to obtain lock"),
+			errors.New("obtain lock"),
 		},
 		"error get": {
 			args{
 				o: model.NewGithubRepository(model.Identifier(0), ketchupRepository).AddVersion(model.DefaultPattern, "1.0.0"),
 			},
 			0,
-			errors.New("unable to read"),
+			errors.New("read"),
 		},
 		"found get": {
 			args{
@@ -490,10 +490,10 @@ func TestCreate(t *testing.T) {
 
 			switch intention {
 			case "error lock":
-				mockDatabase.EXPECT().Exec(gomock.Any(), gomock.Any()).Return(errors.New("unable to obtain lock"))
+				mockDatabase.EXPECT().Exec(gomock.Any(), gomock.Any()).Return(errors.New("obtain lock"))
 			case "error get":
 				mockDatabase.EXPECT().Exec(gomock.Any(), gomock.Any()).Return(nil)
-				mockDatabase.EXPECT().Get(gomock.Any(), gomock.Any(), gomock.Any(), "github", ketchupRepository, "").Return(errors.New("unable to read"))
+				mockDatabase.EXPECT().Get(gomock.Any(), gomock.Any(), gomock.Any(), "github", ketchupRepository, "").Return(errors.New("read"))
 			case "found get":
 				mockDatabase.EXPECT().Exec(gomock.Any(), gomock.Any()).Return(nil)
 
