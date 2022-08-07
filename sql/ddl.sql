@@ -26,11 +26,11 @@ CREATE SCHEMA ketchup;
 -- user
 CREATE SEQUENCE ketchup.user_seq;
 CREATE TABLE ketchup.user (
-  id BIGINT NOT NULL DEFAULT nextval('ketchup.user_seq'),
-  email TEXT NOT NULL,
-  login_id BIGINT NOT NULL REFERENCES auth.login(id) ON DELETE CASCADE,
-  reminder BOOL NOT NULL,
-  creation_date TIMESTAMP WITH TIME ZONE DEFAULT now()
+  id            BIGINT                   NOT NULL DEFAULT nextval('ketchup.user_seq'),
+  email         TEXT                     NOT NULL,
+  login_id      BIGINT                   NOT NULL REFERENCES auth.login(id) ON DELETE CASCADE,
+  reminder      BOOL                     NOT NULL,
+  creation_date TIMESTAMP WITH TIME ZONE          DEFAULT now()
 );
 ALTER SEQUENCE ketchup.user_seq OWNED BY ketchup.user.id;
 
@@ -44,11 +44,11 @@ CREATE TYPE ketchup.repository_kind AS ENUM ('github', 'helm', 'docker', 'npm', 
 -- repository
 CREATE SEQUENCE ketchup.repository_seq;
 CREATE TABLE ketchup.repository (
-  id BIGINT NOT NULL DEFAULT nextval('ketchup.repository_seq'),
-  kind ketchup.repository_kind NOT NULL,
-  name TEXT NOT NULL,
-  part TEXT NOT NULL DEFAULT '',
-  creation_date TIMESTAMP WITH TIME ZONE DEFAULT now()
+  id   BIGINT                            NOT NULL DEFAULT nextval('ketchup.repository_seq'),
+  kind ketchup.repository_kind           NOT NULL,
+  name TEXT                              NOT NULL,
+  part TEXT                              NOT NULL DEFAULT '',
+  creation_date TIMESTAMP WITH TIME ZONE          DEFAULT now()
 );
 ALTER SEQUENCE ketchup.repository_seq OWNED BY ketchup.repository.id;
 
@@ -58,8 +58,8 @@ CREATE UNIQUE INDEX repository_repository ON ketchup.repository(kind, name, part
 -- repository_version
 CREATE TABLE ketchup.repository_version (
   repository_id BIGINT NOT NULL REFERENCES ketchup.repository(id) ON DELETE CASCADE,
-  pattern TEXT NOT NULL DEFAULT 'stable',
-  version TEXT NOT NULL
+  pattern       TEXT   NOT NULL DEFAULT 'stable',
+  version       TEXT   NOT NULL
 );
 
 CREATE UNIQUE INDEX repository_version_id ON ketchup.repository_version(repository_id, pattern);
@@ -69,13 +69,13 @@ CREATE TYPE ketchup.ketchup_frequency AS ENUM ('none', 'daily', 'weekly');
 
 -- ketchup
 CREATE TABLE ketchup.ketchup (
-  user_id BIGINT NOT NULL REFERENCES ketchup.user(id) ON DELETE CASCADE,
-  repository_id BIGINT NOT NULL REFERENCES ketchup.repository(id) ON DELETE CASCADE,
-  pattern TEXT NOT NULL DEFAULT 'stable',
-  version TEXT NOT NULL,
-  frequency ketchup.ketchup_frequency NOT NULL DEFAULT 'daily',
-  update_when_notify BOOL NOT NULL DEFAULT FALSE,
-  creation_date TIMESTAMP WITH TIME ZONE DEFAULT now()
+  user_id            BIGINT                    NOT NULL REFERENCES ketchup.user(id) ON DELETE CASCADE,
+  repository_id      BIGINT                    NOT NULL REFERENCES ketchup.repository(id) ON DELETE CASCADE,
+  pattern            TEXT                      NOT NULL DEFAULT 'stable',
+  version            TEXT                      NOT NULL,
+  frequency          ketchup.ketchup_frequency NOT NULL DEFAULT 'daily',
+  update_when_notify BOOL                      NOT NULL DEFAULT FALSE,
+  creation_date      TIMESTAMP WITH TIME ZONE           DEFAULT now()
 );
 
 CREATE UNIQUE INDEX ketchup_id ON ketchup.ketchup(user_id, repository_id, pattern);
