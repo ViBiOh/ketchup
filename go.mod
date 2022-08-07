@@ -3,13 +3,13 @@ module github.com/ViBiOh/ketchup
 go 1.18
 
 require (
-	github.com/ViBiOh/auth/v2 v2.12.18
+	github.com/ViBiOh/auth/v2 v2.12.19
 	github.com/ViBiOh/flags v1.1.0
 	github.com/ViBiOh/httputils/v4 v4.45.1
 	github.com/ViBiOh/mailer v1.28.19
 	github.com/golang/mock v1.6.0
 	github.com/jackc/pgconn v1.12.1
-	github.com/jackc/pgproto3/v2 v2.3.0
+	github.com/jackc/pgproto3/v2 v2.3.1
 	github.com/jackc/pgx/v4 v4.16.1
 	github.com/prometheus/client_golang v1.12.2
 	go.opentelemetry.io/otel/trace v1.9.0
