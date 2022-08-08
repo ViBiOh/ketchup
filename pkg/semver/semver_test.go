@@ -233,7 +233,7 @@ func TestParse(t *testing.T) {
 			Version{"v1.2.3", 1, 2, 3, -1},
 			nil,
 		},
-		"with sha1": {
+		"with sha": {
 			args{
 				version: "v1.2.3-abcdef123456",
 			},
