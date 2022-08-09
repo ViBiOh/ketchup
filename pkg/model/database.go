@@ -6,9 +6,9 @@ import (
 	"github.com/jackc/pgx/v4"
 )
 
+//go:generate mockgen -source database.go -destination ../mocks/database.go -mock_names Database=Database -package mocks
+
 // Database interface needed
-//
-//go:generate mockgen -destination ../mocks/database.go -mock_names Database=Database -package mocks github.com/ViBiOh/ketchup/pkg/model Database
 type Database interface {
 	List(context.Context, func(pgx.Rows) error, string, ...any) error
 	Get(context.Context, func(pgx.Row) error, string, ...any) error
