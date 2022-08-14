@@ -67,10 +67,10 @@ func (a App) LatestVersions(ctx context.Context, repository string, patterns []s
 		return nil, fmt.Errorf("compute image details: %s", err)
 	}
 
-	url := fmt.Sprintf("%s/v2/%s/tags/list", registry, repository)
+	tagsURL := fmt.Sprintf("%s/v2/%s/tags/list", registry, repository)
 
-	for len(url) != 0 {
-		req := request.Get(url)
+	for len(tagsURL) != 0 {
+		req := request.Get(tagsURL)
 
 		if len(auth) != 0 {
 			req = req.Header("Authorization", auth)
@@ -85,7 +85,7 @@ func (a App) LatestVersions(ctx context.Context, repository string, patterns []s
 			return nil, err
 		}
 
-		url = getNextURL(resp.Header, registry)
+		tagsURL = getNextURL(resp.Header, registry)
 	}
 
 	return versions, nil

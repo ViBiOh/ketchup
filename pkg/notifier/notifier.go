@@ -253,8 +253,8 @@ func (a App) sendNotification(ctx context.Context, template string, ketchupToNot
 		return nil
 	}
 
-	for user, releases := range ketchupToNotify {
-		logger.Info("Sending email to %s for %d releases", user.Email, len(releases))
+	for ketchupUser, releases := range ketchupToNotify {
+		logger.Info("Sending email to %s for %d releases", ketchupUser.Email, len(releases))
 
 		sort.Sort(model.ReleaseByKindAndName(releases))
 
@@ -262,7 +262,7 @@ func (a App) sendNotification(ctx context.Context, template string, ketchupToNot
 			"releases": releases,
 		}
 
-		mr := mailerModel.NewMailRequest().Template(template).From("ketchup@vibioh.fr").As("Ketchup").To(user.Email).Data(payload)
+		mr := mailerModel.NewMailRequest().Template(template).From("ketchup@vibioh.fr").As("Ketchup").To(ketchupUser.Email).Data(payload)
 		subject := fmt.Sprintf("Ketchup - %d new release", len(releases))
 		if len(releases) > 1 {
 			subject += "s"
@@ -270,7 +270,7 @@ func (a App) sendNotification(ctx context.Context, template string, ketchupToNot
 		mr = mr.WithSubject(subject)
 
 		if err := a.mailerApp.Send(ctx, mr); err != nil {
-			return fmt.Errorf("send email to %s: %s", user.Email, err)
+			return fmt.Errorf("send email to %s: %s", ketchupUser.Email, err)
 		}
 	}
 

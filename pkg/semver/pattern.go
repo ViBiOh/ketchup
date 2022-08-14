@@ -33,6 +33,7 @@ type Pattern struct {
 // NewPattern creates new pattern instance
 func NewPattern(name string, constraints ...constraint) Pattern {
 	return Pattern{
+		Name:        name,
 		constraints: constraints,
 	}
 }
