@@ -111,7 +111,7 @@ func (a app) Start(registerer prometheus.Registerer, done <-chan struct{}) {
 func (a app) LatestVersions(ctx context.Context, repository string, patterns []string) (map[string]semver.Version, error) {
 	versions, compiledPatterns, err := model.PreparePatternMatching(patterns)
 	if err != nil {
-		return nil, fmt.Errorf("prepare pattern matching: %s", err)
+		return nil, fmt.Errorf("prepare pattern matching: %w", err)
 	}
 
 	page := 1
@@ -119,12 +119,12 @@ func (a app) LatestVersions(ctx context.Context, repository string, patterns []s
 	for {
 		resp, err := req.Get(fmt.Sprintf("%s/repos/%s/tags?per_page=100&page=%d", apiURL, repository, page)).Send(ctx, nil)
 		if err != nil {
-			return nil, fmt.Errorf("list page %d of tags: %s", page, err)
+			return nil, fmt.Errorf("list page %d of tags: %w", page, err)
 		}
 
 		var tags []Tag
 		if err := httpjson.Read(resp, &tags); err != nil {
-			return nil, fmt.Errorf("read tags page #%d: %s", page, err)
+			return nil, fmt.Errorf("read tags page #%d: %w", page, err)
 		}
 
 		for _, tag := range tags {
@@ -149,12 +149,12 @@ func (a app) LatestVersions(ctx context.Context, repository string, patterns []s
 func (a app) getRateLimit(ctx context.Context) (uint64, error) {
 	resp, err := a.newClient().Get(fmt.Sprintf("%s/rate_limit", apiURL)).Send(ctx, nil)
 	if err != nil {
-		return 0, fmt.Errorf("get rate limit: %s", err)
+		return 0, fmt.Errorf("get rate limit: %w", err)
 	}
 
 	var rateLimits RateLimitResponse
 	if err := httpjson.Read(resp, &rateLimits); err != nil {
-		return 0, fmt.Errorf("read rate limit: %s", err)
+		return 0, fmt.Errorf("read rate limit: %w", err)
 	}
 
 	return rateLimits.Resources["core"].Remaining, nil

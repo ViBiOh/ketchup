@@ -69,7 +69,7 @@ func (a App) getNewStandardReleases(ctx context.Context) ([]model.Release, uint6
 	for {
 		repositories, _, err := a.repositoryService.ListByKinds(ctx, pageSize, last, model.Github, model.Docker, model.NPM, model.Pypi)
 		if err != nil {
-			return nil, count, fmt.Errorf("fetch standard repositories: %s", err)
+			return nil, count, fmt.Errorf("fetch standard repositories: %w", err)
 		}
 
 		repoCount := len(repositories)
@@ -126,7 +126,7 @@ func (a App) getNewHelmReleases(ctx context.Context) ([]model.Release, uint64, e
 	for {
 		repositories, _, err := a.repositoryService.ListByKinds(ctx, pageSize, last, model.Helm)
 		if err != nil {
-			return nil, count, fmt.Errorf("fetch Helm repositories: %s", err)
+			return nil, count, fmt.Errorf("fetch Helm repositories: %w", err)
 		}
 
 		repoCount := len(repositories)

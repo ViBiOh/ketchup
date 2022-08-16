@@ -81,7 +81,7 @@ func (a App) Notify(ctx context.Context) error {
 	}
 
 	if err := a.sendNotification(ctx, "ketchup", ketchupsToNotify); err != nil {
-		return fmt.Errorf("send notification: %s", err)
+		return fmt.Errorf("send notification: %w", err)
 	}
 
 	if len(a.pushURL) != 0 {
@@ -116,7 +116,7 @@ func (a App) updateRepositories(ctx context.Context, releases []model.Release) e
 	for _, release := range releases {
 		if release.Repository.ID != repo.ID {
 			if err := a.repositoryService.Update(ctx, repo); err != nil {
-				return fmt.Errorf("update repository `%s`: %s", repo.Name, err)
+				return fmt.Errorf("update repository `%s`: %w", repo.Name, err)
 			}
 
 			repo = release.Repository
@@ -126,7 +126,7 @@ func (a App) updateRepositories(ctx context.Context, releases []model.Release) e
 	}
 
 	if err := a.repositoryService.Update(ctx, repo); err != nil {
-		return fmt.Errorf("update repository `%s`: %s", repo.Name, err)
+		return fmt.Errorf("update repository `%s`: %w", repo.Name, err)
 	}
 
 	return nil
@@ -270,7 +270,7 @@ func (a App) sendNotification(ctx context.Context, template string, ketchupToNot
 		mr = mr.WithSubject(subject)
 
 		if err := a.mailerApp.Send(ctx, mr); err != nil {
-			return fmt.Errorf("send email to %s: %s", ketchupUser.Email, err)
+			return fmt.Errorf("send email to %s: %w", ketchupUser.Email, err)
 		}
 	}
 
@@ -281,12 +281,12 @@ func (a App) sendNotification(ctx context.Context, template string, ketchupToNot
 func (a App) Remind(ctx context.Context) error {
 	usersToRemind, err := a.userService.ListReminderUsers(ctx)
 	if err != nil {
-		return fmt.Errorf("get reminder users: %s", err)
+		return fmt.Errorf("get reminder users: %w", err)
 	}
 
 	remindKetchups, err := a.ketchupService.ListOutdated(ctx, usersToRemind...)
 	if err != nil {
-		return fmt.Errorf("get daily ketchups to remind: %s", err)
+		return fmt.Errorf("get daily ketchups to remind: %w", err)
 	}
 
 	if len(remindKetchups) == 0 {
@@ -297,7 +297,7 @@ func (a App) Remind(ctx context.Context) error {
 	a.appendKetchupsToUser(ctx, usersToNotify, remindKetchups)
 
 	if err := a.sendNotification(ctx, "ketchup_remind", usersToNotify); err != nil {
-		return fmt.Errorf("send remind notification: %s", err)
+		return fmt.Errorf("send remind notification: %w", err)
 	}
 
 	return nil

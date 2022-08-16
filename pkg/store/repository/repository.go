@@ -110,7 +110,7 @@ func (a App) List(ctx context.Context, pageSize uint, last string) ([]model.Repo
 	if len(last) != 0 {
 		lastID, err := strconv.ParseUint(last, 10, 64)
 		if err != nil {
-			return nil, 0, fmt.Errorf("invalid last key: %s", err)
+			return nil, 0, fmt.Errorf("invalid last key: %w", err)
 		}
 
 		queryArgs = append(queryArgs, lastID)

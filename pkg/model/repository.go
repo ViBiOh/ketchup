@@ -61,12 +61,12 @@ func (r *RepositoryKind) UnmarshalJSON(b []byte) error {
 	var strValue string
 	err := json.Unmarshal(b, &strValue)
 	if err != nil {
-		return fmt.Errorf("unmarshal event type: %s", err)
+		return fmt.Errorf("unmarshal event type: %w", err)
 	}
 
 	value, err := ParseRepositoryKind(strValue)
 	if err != nil {
-		return fmt.Errorf("parse event type: %s", err)
+		return fmt.Errorf("parse event type: %w", err)
 	}
 
 	*r = value

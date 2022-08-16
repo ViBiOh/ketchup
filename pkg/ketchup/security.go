@@ -45,13 +45,13 @@ func (a App) generateToken(ctx context.Context) (securityPayload, error) {
 
 	token, err := uuid.New()
 	if err != nil {
-		return securityPayload{}, fmt.Errorf("generate uuid: %s", err)
+		return securityPayload{}, fmt.Errorf("generate uuid: %w", err)
 	}
 
 	id := questionID.Int64()
 
 	if err := a.redisApp.Store(ctx, tokenKey(token), fmt.Sprintf("%d", id), time.Minute*5); err != nil {
-		return securityPayload{}, fmt.Errorf("store token: %s", err)
+		return securityPayload{}, fmt.Errorf("store token: %w", err)
 	}
 
 	return securityPayload{

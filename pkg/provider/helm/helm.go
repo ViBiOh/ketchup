@@ -47,7 +47,7 @@ func (a App) FetchIndex(ctx context.Context, url string, chartsPatterns map[stri
 
 	var index charts
 	if err := yaml.NewDecoder(resp.Body).Decode(&index); err != nil && err != io.EOF {
-		return nil, fmt.Errorf("parse yaml index: %s", err)
+		return nil, fmt.Errorf("parse yaml index: %w", err)
 	}
 
 	output := make(map[string]map[string]semver.Version, len(index.Entries))
@@ -59,7 +59,7 @@ func (a App) FetchIndex(ctx context.Context, url string, chartsPatterns map[stri
 
 		versions, compiledPatterns, err := model.PreparePatternMatching(patterns)
 		if err != nil {
-			return nil, fmt.Errorf("prepare pattern matching for `%s`: %s", key, err)
+			return nil, fmt.Errorf("prepare pattern matching for `%s`: %w", key, err)
 		}
 
 		for _, chart := range charts {
