@@ -14,6 +14,8 @@ import (
 )
 
 func TestMiddleware(t *testing.T) {
+	t.Parallel()
+
 	cases := map[string]struct {
 		next       http.Handler
 		request    *http.Request
@@ -41,8 +43,12 @@ func TestMiddleware(t *testing.T) {
 		},
 	}
 
-	for intention, tc := range cases {
+	for intention, testCase := range cases {
+		intention, testCase := intention, testCase
+
 		t.Run(intention, func(t *testing.T) {
+			t.Parallel()
+
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
@@ -52,18 +58,18 @@ func TestMiddleware(t *testing.T) {
 			}
 
 			writer := httptest.NewRecorder()
-			New(userService).Middleware(tc.next).ServeHTTP(writer, tc.request)
+			New(userService).Middleware(testCase.next).ServeHTTP(writer, testCase.request)
 
-			if got := writer.Code; got != tc.wantStatus {
-				t.Errorf("Middleware = %d, want %d", got, tc.wantStatus)
+			if got := writer.Code; got != testCase.wantStatus {
+				t.Errorf("Middleware = %d, want %d", got, testCase.wantStatus)
 			}
 
-			if got, _ := request.ReadBodyResponse(writer.Result()); string(got) != tc.want {
-				t.Errorf("Middleware = `%s`, want `%s`", string(got), tc.want)
+			if got, _ := request.ReadBodyResponse(writer.Result()); string(got) != testCase.want {
+				t.Errorf("Middleware = `%s`, want `%s`", string(got), testCase.want)
 			}
 
-			for key := range tc.wantHeader {
-				want := tc.wantHeader.Get(key)
+			for key := range testCase.wantHeader {
+				want := testCase.wantHeader.Get(key)
 				if got := writer.Header().Get(key); got != want {
 					t.Errorf("`%s` Header = `%s`, want `%s`", key, got, want)
 				}

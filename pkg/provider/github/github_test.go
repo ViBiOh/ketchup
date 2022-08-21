@@ -7,6 +7,8 @@ import (
 )
 
 func TestFlags(t *testing.T) {
+	t.Parallel()
+
 	cases := map[string]struct {
 		want string
 	}{
@@ -15,8 +17,12 @@ func TestFlags(t *testing.T) {
 		},
 	}
 
-	for intention, tc := range cases {
+	for intention, testCase := range cases {
+		intention, testCase := intention, testCase
+
 		t.Run(intention, func(t *testing.T) {
+			t.Parallel()
+
 			fs := flag.NewFlagSet(intention, flag.ContinueOnError)
 			Flags(fs, "")
 
@@ -26,8 +32,8 @@ func TestFlags(t *testing.T) {
 
 			result := writer.String()
 
-			if result != tc.want {
-				t.Errorf("Flags() = `%s`, want `%s`", result, tc.want)
+			if result != testCase.want {
+				t.Errorf("Flags() = `%s`, want `%s`", result, testCase.want)
 			}
 		})
 	}

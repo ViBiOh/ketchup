@@ -7,6 +7,8 @@ import (
 )
 
 func TestIsGreater(t *testing.T) {
+	t.Parallel()
+
 	type args struct {
 		other Version
 	}
@@ -81,16 +83,22 @@ func TestIsGreater(t *testing.T) {
 		},
 	}
 
-	for intention, tc := range cases {
+	for intention, testCase := range cases {
+		intention, testCase := intention, testCase
+
 		t.Run(intention, func(t *testing.T) {
-			if got := tc.instance.IsGreater(tc.args.other); got != tc.want {
-				t.Errorf("IsGreater() = %t, want %t", got, tc.want)
+			t.Parallel()
+
+			if got := testCase.instance.IsGreater(testCase.args.other); got != testCase.want {
+				t.Errorf("IsGreater() = %t, want %t", got, testCase.want)
 			}
 		})
 	}
 }
 
 func TestCompare(t *testing.T) {
+	t.Parallel()
+
 	type args struct {
 		other Version
 	}
@@ -137,16 +145,22 @@ func TestCompare(t *testing.T) {
 		},
 	}
 
-	for intention, tc := range cases {
+	for intention, testCase := range cases {
+		intention, testCase := intention, testCase
+
 		t.Run(intention, func(t *testing.T) {
-			if got := tc.instance.Compare(tc.args.other); got != tc.want {
-				t.Errorf("Compare() = `%s`, want `%s`", got, tc.want)
+			t.Parallel()
+
+			if got := testCase.instance.Compare(testCase.args.other); got != testCase.want {
+				t.Errorf("Compare() = `%s`, want `%s`", got, testCase.want)
 			}
 		})
 	}
 }
 
 func TestParse(t *testing.T) {
+	t.Parallel()
+
 	type args struct {
 		version string
 	}
@@ -256,24 +270,28 @@ func TestParse(t *testing.T) {
 		},
 	}
 
-	for intention, tc := range cases {
+	for intention, testCase := range cases {
+		intention, testCase := intention, testCase
+
 		t.Run(intention, func(t *testing.T) {
-			got, gotErr := Parse(tc.args.version)
+			t.Parallel()
+
+			got, gotErr := Parse(testCase.args.version)
 
 			failed := false
 
-			if tc.wantErr == nil && gotErr != nil {
+			if testCase.wantErr == nil && gotErr != nil {
 				failed = true
-			} else if tc.wantErr != nil && gotErr == nil {
+			} else if testCase.wantErr != nil && gotErr == nil {
 				failed = true
-			} else if tc.wantErr != nil && !strings.Contains(gotErr.Error(), tc.wantErr.Error()) {
+			} else if testCase.wantErr != nil && !strings.Contains(gotErr.Error(), testCase.wantErr.Error()) {
 				failed = true
-			} else if got != tc.want {
+			} else if got != testCase.want {
 				failed = true
 			}
 
 			if failed {
-				t.Errorf("Parse() = (%+v, `%s`), want (%+v, `%s`)", got, gotErr, tc.want, tc.wantErr)
+				t.Errorf("Parse() = (%+v, `%s`), want (%+v, `%s`)", got, gotErr, testCase.want, testCase.wantErr)
 			}
 		})
 	}

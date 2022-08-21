@@ -15,6 +15,8 @@ import (
 )
 
 func TestGetNewStandardReleases(t *testing.T) {
+	t.Parallel()
+
 	type args struct {
 		ctx context.Context
 	}
@@ -63,14 +65,20 @@ func TestGetNewStandardReleases(t *testing.T) {
 		},
 	}
 
-	for intention, tc := range cases {
+	pageSize = 20
+
+	for intention, testCase := range cases {
+		intention, testCase := intention, testCase
+
 		t.Run(intention, func(t *testing.T) {
+			t.Parallel()
+
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
 			mockRepositoryService := mocks.NewRepositoryService(ctrl)
 
-			tc.instance.repositoryService = mockRepositoryService
+			testCase.instance.repositoryService = mockRepositoryService
 
 			switch intention {
 			case "list error":
@@ -99,29 +107,30 @@ func TestGetNewStandardReleases(t *testing.T) {
 				}, nil)
 			}
 
-			got, _, gotErr := tc.instance.getNewStandardReleases(tc.args.ctx)
-			pageSize = 20
+			got, _, gotErr := testCase.instance.getNewStandardReleases(testCase.args.ctx)
 
 			failed := false
 
-			if tc.wantErr == nil && gotErr != nil {
+			if testCase.wantErr == nil && gotErr != nil {
 				failed = true
-			} else if tc.wantErr != nil && gotErr == nil {
+			} else if testCase.wantErr != nil && gotErr == nil {
 				failed = true
-			} else if tc.wantErr != nil && !strings.Contains(gotErr.Error(), tc.wantErr.Error()) {
+			} else if testCase.wantErr != nil && !strings.Contains(gotErr.Error(), testCase.wantErr.Error()) {
 				failed = true
-			} else if !reflect.DeepEqual(got, tc.want) {
+			} else if !reflect.DeepEqual(got, testCase.want) {
 				failed = true
 			}
 
 			if failed {
-				t.Errorf("getNewStandardReleases() = (%+v, `%s`), want (%+v, `%s`)", got, gotErr, tc.want, tc.wantErr)
+				t.Errorf("getNewStandardReleases() = (%+v, `%s`), want (%+v, `%s`)", got, gotErr, testCase.want, testCase.wantErr)
 			}
 		})
 	}
 }
 
 func TestGetNewHelmReleases(t *testing.T) {
+	t.Parallel()
+
 	postgresRepo := model.NewHelmRepository(model.Identifier(4), "https://charts.helm.sh/stable", "postgreql").AddVersion(model.DefaultPattern, "3.0.0")
 	appRepo := model.NewHelmRepository(model.Identifier(1), "https://charts.vibioh.fr", "app").AddVersion(model.DefaultPattern, "1.0.0").AddVersion("1.0", "1.0.0").AddVersion("~1.0", "a.b.c")
 	cronRepo := model.NewHelmRepository(model.Identifier(2), "https://charts.vibioh.fr", "cron").AddVersion(model.DefaultPattern, "1.0.0")
@@ -180,16 +189,20 @@ func TestGetNewHelmReleases(t *testing.T) {
 		},
 	}
 
-	for intention, tc := range cases {
+	for intention, testCase := range cases {
+		intention, testCase := intention, testCase
+
 		t.Run(intention, func(t *testing.T) {
+			t.Parallel()
+
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
 			mockRepositoryService := mocks.NewRepositoryService(ctrl)
 			mockHelmProvider := mocks.NewHelmProvider(ctrl)
 
-			tc.instance.repositoryService = mockRepositoryService
-			tc.instance.helmApp = mockHelmProvider
+			testCase.instance.repositoryService = mockRepositoryService
+			testCase.instance.helmApp = mockHelmProvider
 
 			switch intention {
 			case "fetch error":
@@ -227,26 +240,26 @@ func TestGetNewHelmReleases(t *testing.T) {
 				}, nil)
 			}
 
-			got, gotCount, gotErr := tc.instance.getNewHelmReleases(context.Background())
+			got, gotCount, gotErr := testCase.instance.getNewHelmReleases(context.Background())
 
 			failed := false
 
 			sort.Sort(model.ReleaseByRepositoryIDAndPattern(got))
 
-			if tc.wantErr == nil && gotErr != nil {
+			if testCase.wantErr == nil && gotErr != nil {
 				failed = true
-			} else if tc.wantErr != nil && gotErr == nil {
+			} else if testCase.wantErr != nil && gotErr == nil {
 				failed = true
-			} else if tc.wantErr != nil && !strings.Contains(gotErr.Error(), tc.wantErr.Error()) {
+			} else if testCase.wantErr != nil && !strings.Contains(gotErr.Error(), testCase.wantErr.Error()) {
 				failed = true
-			} else if gotCount != tc.wantCount {
+			} else if gotCount != testCase.wantCount {
 				failed = true
-			} else if !reflect.DeepEqual(got, tc.want) {
+			} else if !reflect.DeepEqual(got, testCase.want) {
 				failed = true
 			}
 
 			if failed {
-				t.Errorf("getNewHelmReleases() = (%+v, %d, `%s`), want (%+v, %d, `%s`)", got, gotCount, gotErr, tc.want, tc.wantCount, tc.wantErr)
+				t.Errorf("getNewHelmReleases() = (%+v, %d, `%s`), want (%+v, %d, `%s`)", got, gotCount, gotErr, testCase.want, testCase.wantCount, testCase.wantErr)
 			}
 		})
 	}

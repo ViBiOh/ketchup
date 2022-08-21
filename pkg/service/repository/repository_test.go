@@ -32,6 +32,8 @@ func safeParse(version string) semver.Version {
 }
 
 func TestList(t *testing.T) {
+	t.Parallel()
+
 	type args struct {
 		pageSize uint
 		last     string
@@ -60,8 +62,12 @@ func TestList(t *testing.T) {
 		},
 	}
 
-	for intention, tc := range cases {
+	for intention, testCase := range cases {
+		intention, testCase := intention, testCase
+
 		t.Run(intention, func(t *testing.T) {
+			t.Parallel()
+
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
@@ -81,26 +87,28 @@ func TestList(t *testing.T) {
 				mockRepositoryStore.EXPECT().List(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, uint64(0), errors.New("failed"))
 			}
 
-			got, gotCount, gotErr := instance.List(context.Background(), tc.args.pageSize, tc.args.last)
+			got, gotCount, gotErr := instance.List(context.Background(), testCase.args.pageSize, testCase.args.last)
 
 			failed := false
 
-			if !errors.Is(gotErr, tc.wantErr) {
+			if !errors.Is(gotErr, testCase.wantErr) {
 				failed = true
-			} else if !reflect.DeepEqual(got, tc.want) {
+			} else if !reflect.DeepEqual(got, testCase.want) {
 				failed = true
-			} else if gotCount != tc.wantCount {
+			} else if gotCount != testCase.wantCount {
 				failed = true
 			}
 
 			if failed {
-				t.Errorf("List() = (%+v, %d, `%s`), want (%+v, %d, `%s`)", got, gotCount, gotErr, tc.want, tc.wantCount, tc.wantErr)
+				t.Errorf("List() = (%+v, %d, `%s`), want (%+v, %d, `%s`)", got, gotCount, gotErr, testCase.want, testCase.wantCount, testCase.wantErr)
 			}
 		})
 	}
 }
 
 func TestSuggest(t *testing.T) {
+	t.Parallel()
+
 	type args struct {
 		ctx       context.Context
 		ignoreIds []model.Identifier
@@ -130,8 +138,12 @@ func TestSuggest(t *testing.T) {
 		},
 	}
 
-	for intention, tc := range cases {
+	for intention, testCase := range cases {
+		intention, testCase := intention, testCase
+
 		t.Run(intention, func(t *testing.T) {
+			t.Parallel()
+
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
@@ -150,24 +162,26 @@ func TestSuggest(t *testing.T) {
 				mockRepositoryStore.EXPECT().Suggest(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, errors.New("failed"))
 			}
 
-			got, gotErr := instance.Suggest(tc.args.ctx, tc.args.ignoreIds, tc.args.count)
+			got, gotErr := instance.Suggest(testCase.args.ctx, testCase.args.ignoreIds, testCase.args.count)
 
 			failed := false
 
-			if !errors.Is(gotErr, tc.wantErr) {
+			if !errors.Is(gotErr, testCase.wantErr) {
 				failed = true
-			} else if !reflect.DeepEqual(got, tc.want) {
+			} else if !reflect.DeepEqual(got, testCase.want) {
 				failed = true
 			}
 
 			if failed {
-				t.Errorf("Suggest() = (%+v,`%s`), want (%+v,`%s`)", got, gotErr, tc.want, tc.wantErr)
+				t.Errorf("Suggest() = (%+v,`%s`), want (%+v,`%s`)", got, gotErr, testCase.want, testCase.wantErr)
 			}
 		})
 	}
 }
 
 func TestGetOrCreate(t *testing.T) {
+	t.Parallel()
+
 	type args struct {
 		ctx            context.Context
 		repositoryKind model.RepositoryKind
@@ -253,8 +267,12 @@ func TestGetOrCreate(t *testing.T) {
 		},
 	}
 
-	for intention, tc := range cases {
+	for intention, testCase := range cases {
+		intention, testCase := intention, testCase
+
 		t.Run(intention, func(t *testing.T) {
+			t.Parallel()
+
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
@@ -304,24 +322,26 @@ func TestGetOrCreate(t *testing.T) {
 				}, nil)
 			}
 
-			got, gotErr := instance.GetOrCreate(tc.args.ctx, tc.args.repositoryKind, tc.args.name, tc.args.part, tc.args.pattern)
+			got, gotErr := instance.GetOrCreate(testCase.args.ctx, testCase.args.repositoryKind, testCase.args.name, testCase.args.part, testCase.args.pattern)
 
 			failed := false
 
-			if !errors.Is(gotErr, tc.wantErr) {
+			if !errors.Is(gotErr, testCase.wantErr) {
 				failed = true
-			} else if !reflect.DeepEqual(got, tc.want) {
+			} else if !reflect.DeepEqual(got, testCase.want) {
 				failed = true
 			}
 
 			if failed {
-				t.Errorf("GetOrCreate() = (%+v, `%s`), want (%+v, `%s`)", got, gotErr, tc.want, tc.wantErr)
+				t.Errorf("GetOrCreate() = (%+v, `%s`), want (%+v, `%s`)", got, gotErr, testCase.want, testCase.wantErr)
 			}
 		})
 	}
 }
 
 func TestCreate(t *testing.T) {
+	t.Parallel()
+
 	type args struct {
 		ctx  context.Context
 		item model.Repository
@@ -366,8 +386,12 @@ func TestCreate(t *testing.T) {
 		},
 	}
 
-	for intention, tc := range cases {
+	for intention, testCase := range cases {
+		intention, testCase := intention, testCase
+
 		t.Run(intention, func(t *testing.T) {
+			t.Parallel()
+
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
@@ -406,24 +430,26 @@ func TestCreate(t *testing.T) {
 				}, nil)
 			}
 
-			got, gotErr := instance.create(tc.args.ctx, tc.args.item)
+			got, gotErr := instance.create(testCase.args.ctx, testCase.args.item)
 
 			failed := false
 
-			if !errors.Is(gotErr, tc.wantErr) {
+			if !errors.Is(gotErr, testCase.wantErr) {
 				failed = true
-			} else if !reflect.DeepEqual(got, tc.want) {
+			} else if !reflect.DeepEqual(got, testCase.want) {
 				failed = true
 			}
 
 			if failed {
-				t.Errorf("create() = (%+v, `%s`), want (%+v, `%s`)", got, gotErr, tc.want, tc.wantErr)
+				t.Errorf("create() = (%+v, `%s`), want (%+v, `%s`)", got, gotErr, testCase.want, testCase.wantErr)
 			}
 		})
 	}
 }
 
 func TestUpdate(t *testing.T) {
+	t.Parallel()
+
 	type args struct {
 		ctx  context.Context
 		item model.Repository
@@ -470,8 +496,12 @@ func TestUpdate(t *testing.T) {
 		},
 	}
 
-	for intention, tc := range cases {
+	for intention, testCase := range cases {
+		intention, testCase := intention, testCase
+
 		t.Run(intention, func(t *testing.T) {
+			t.Parallel()
+
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
@@ -515,22 +545,24 @@ func TestUpdate(t *testing.T) {
 				mockRepositoryStore.EXPECT().DoAtomic(gomock.Any(), gomock.Any()).DoAndReturn(dummyFn)
 			}
 
-			gotErr := instance.Update(tc.args.ctx, tc.args.item)
+			gotErr := instance.Update(testCase.args.ctx, testCase.args.item)
 
 			failed := false
 
-			if !errors.Is(gotErr, tc.wantErr) {
+			if !errors.Is(gotErr, testCase.wantErr) {
 				failed = true
 			}
 
 			if failed {
-				t.Errorf("Update() = `%s`, want `%s`", gotErr, tc.wantErr)
+				t.Errorf("Update() = `%s`, want `%s`", gotErr, testCase.wantErr)
 			}
 		})
 	}
 }
 
 func TestClean(t *testing.T) {
+	t.Parallel()
+
 	type args struct {
 		ctx context.Context
 	}
@@ -559,8 +591,12 @@ func TestClean(t *testing.T) {
 		},
 	}
 
-	for intention, tc := range cases {
+	for intention, testCase := range cases {
+		intention, testCase := intention, testCase
+
 		t.Run(intention, func(t *testing.T) {
+			t.Parallel()
+
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
@@ -593,22 +629,24 @@ func TestClean(t *testing.T) {
 				mockRepositoryStore.EXPECT().DeleteUnusedVersions(gomock.Any()).Return(nil)
 			}
 
-			gotErr := instance.Clean(tc.args.ctx)
+			gotErr := instance.Clean(testCase.args.ctx)
 
 			failed := false
 
-			if !errors.Is(gotErr, tc.wantErr) {
+			if !errors.Is(gotErr, testCase.wantErr) {
 				failed = true
 			}
 
 			if failed {
-				t.Errorf("Clean() = `%s`, want `%s`", gotErr, tc.wantErr)
+				t.Errorf("Clean() = `%s`, want `%s`", gotErr, testCase.wantErr)
 			}
 		})
 	}
 }
 
 func TestCheck(t *testing.T) {
+	t.Parallel()
+
 	type args struct {
 		ctx context.Context
 		old model.Repository
@@ -659,8 +697,12 @@ func TestCheck(t *testing.T) {
 		},
 	}
 
-	for intention, tc := range cases {
+	for intention, testCase := range cases {
+		intention, testCase := intention, testCase
+
 		t.Run(intention, func(t *testing.T) {
+			t.Parallel()
+
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
@@ -683,26 +725,28 @@ func TestCheck(t *testing.T) {
 				mockRepositoryStore.EXPECT().GetByName(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(model.NewGithubRepository(model.Identifier(2), ketchupRepository), nil)
 			}
 
-			gotErr := instance.check(tc.args.ctx, tc.args.old, tc.args.new)
+			gotErr := instance.check(testCase.args.ctx, testCase.args.old, testCase.args.new)
 
 			failed := false
 
-			if tc.wantErr == nil && gotErr != nil {
+			if testCase.wantErr == nil && gotErr != nil {
 				failed = true
-			} else if tc.wantErr != nil && gotErr == nil {
+			} else if testCase.wantErr != nil && gotErr == nil {
 				failed = true
-			} else if tc.wantErr != nil && !strings.Contains(gotErr.Error(), tc.wantErr.Error()) {
+			} else if testCase.wantErr != nil && !strings.Contains(gotErr.Error(), testCase.wantErr.Error()) {
 				failed = true
 			}
 
 			if failed {
-				t.Errorf("check() = `%s`, want `%s`", gotErr, tc.wantErr)
+				t.Errorf("check() = `%s`, want `%s`", gotErr, testCase.wantErr)
 			}
 		})
 	}
 }
 
 func TestSanitizeName(t *testing.T) {
+	t.Parallel()
+
 	type args struct {
 		name string
 	}
@@ -737,10 +781,14 @@ func TestSanitizeName(t *testing.T) {
 		},
 	}
 
-	for intention, tc := range cases {
+	for intention, testCase := range cases {
+		intention, testCase := intention, testCase
+
 		t.Run(intention, func(t *testing.T) {
-			if got := sanitizeName(tc.args.name); got != tc.want {
-				t.Errorf("sanitizeName() = `%s`, want `%s`", got, tc.want)
+			t.Parallel()
+
+			if got := sanitizeName(testCase.args.name); got != testCase.want {
+				t.Errorf("sanitizeName() = `%s`, want `%s`", got, testCase.want)
 			}
 		})
 	}

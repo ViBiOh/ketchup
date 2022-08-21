@@ -25,6 +25,8 @@ var (
 )
 
 func TestList(t *testing.T) {
+	t.Parallel()
+
 	type args struct {
 		pageSize uint
 	}
@@ -41,7 +43,7 @@ func TestList(t *testing.T) {
 			},
 			[]model.Ketchup{
 				{
-					ID:         "00fdf978",
+					ID:         "490d40a9",
 					Pattern:    model.DefaultPattern,
 					Version:    "0.9.0",
 					Frequency:  model.Daily,
@@ -49,7 +51,7 @@ func TestList(t *testing.T) {
 					User:       model.NewUser(3, testEmail, authModel.NewUser(0, "")),
 				},
 				{
-					ID:         "f924ec39",
+					ID:         "05ab8439",
 					Pattern:    model.DefaultPattern,
 					Version:    repositoryVersion,
 					Frequency:  model.Daily,
@@ -78,8 +80,12 @@ func TestList(t *testing.T) {
 		},
 	}
 
-	for intention, tc := range cases {
+	for intention, testCase := range cases {
+		intention, testCase := intention, testCase
+
 		t.Run(intention, func(t *testing.T) {
+			t.Parallel()
+
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
@@ -152,29 +158,31 @@ func TestList(t *testing.T) {
 				mockDatabase.EXPECT().List(gomock.Any(), gomock.Any(), gomock.Any(), model.Identifier(3), uint(20)).DoAndReturn(dummyFn)
 			}
 
-			got, gotCount, gotErr := instance.List(testCtx, tc.args.pageSize, "")
+			got, gotCount, gotErr := instance.List(testCtx, testCase.args.pageSize, "")
 			failed := false
 
-			if tc.wantErr == nil && gotErr != nil {
+			if testCase.wantErr == nil && gotErr != nil {
 				failed = true
-			} else if tc.wantErr != nil && gotErr == nil {
+			} else if testCase.wantErr != nil && gotErr == nil {
 				failed = true
-			} else if tc.wantErr != nil && !strings.Contains(gotErr.Error(), tc.wantErr.Error()) {
+			} else if testCase.wantErr != nil && !strings.Contains(gotErr.Error(), testCase.wantErr.Error()) {
 				failed = true
-			} else if !reflect.DeepEqual(got, tc.want) {
+			} else if !reflect.DeepEqual(got, testCase.want) {
 				failed = true
-			} else if gotCount != tc.wantCount {
+			} else if gotCount != testCase.wantCount {
 				failed = true
 			}
 
 			if failed {
-				t.Errorf("List() = (%+v, %d, `%s`), want (%+v, %d, `%s`)", got, gotCount, gotErr, tc.want, tc.wantCount, tc.wantErr)
+				t.Errorf("List() = (%+v, %d, `%s`), want (%+v, %d, `%s`)", got, gotCount, gotErr, testCase.want, testCase.wantCount, testCase.wantErr)
 			}
 		})
 	}
 }
 
 func TestListByRepositoriesIDAndFrequencies(t *testing.T) {
+	t.Parallel()
+
 	type args struct {
 		ids       []model.Identifier
 		frequency model.KetchupFrequency
@@ -218,8 +226,12 @@ func TestListByRepositoriesIDAndFrequencies(t *testing.T) {
 		},
 	}
 
-	for intention, tc := range cases {
+	for intention, testCase := range cases {
+		intention, testCase := intention, testCase
+
 		t.Run(intention, func(t *testing.T) {
+			t.Parallel()
+
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
@@ -258,32 +270,34 @@ func TestListByRepositoriesIDAndFrequencies(t *testing.T) {
 					}
 					return scanner(mockRows)
 				}
-				mockDatabase.EXPECT().List(gomock.Any(), gomock.Any(), gomock.Any(), tc.args.ids, []string{"daily"}).DoAndReturn(dummyFn)
+				mockDatabase.EXPECT().List(gomock.Any(), gomock.Any(), gomock.Any(), testCase.args.ids, []string{"daily"}).DoAndReturn(dummyFn)
 			case "error":
-				mockDatabase.EXPECT().List(gomock.Any(), gomock.Any(), gomock.Any(), tc.args.ids, []string{"daily"}).Return(errors.New("failed"))
+				mockDatabase.EXPECT().List(gomock.Any(), gomock.Any(), gomock.Any(), testCase.args.ids, []string{"daily"}).Return(errors.New("failed"))
 			}
 
-			got, gotErr := instance.ListByRepositoriesIDAndFrequencies(testCtx, tc.args.ids, tc.args.frequency)
+			got, gotErr := instance.ListByRepositoriesIDAndFrequencies(testCtx, testCase.args.ids, testCase.args.frequency)
 			failed := false
 
-			if tc.wantErr == nil && gotErr != nil {
+			if testCase.wantErr == nil && gotErr != nil {
 				failed = true
-			} else if tc.wantErr != nil && gotErr == nil {
+			} else if testCase.wantErr != nil && gotErr == nil {
 				failed = true
-			} else if tc.wantErr != nil && !strings.Contains(gotErr.Error(), tc.wantErr.Error()) {
+			} else if testCase.wantErr != nil && !strings.Contains(gotErr.Error(), testCase.wantErr.Error()) {
 				failed = true
-			} else if !reflect.DeepEqual(got, tc.want) {
+			} else if !reflect.DeepEqual(got, testCase.want) {
 				failed = true
 			}
 
 			if failed {
-				t.Errorf("ListByRepositoriesIDAndFrequencies() = (%+v, `%s`), want (%+v, `%s`)", got, gotErr, tc.want, tc.wantErr)
+				t.Errorf("ListByRepositoriesIDAndFrequencies() = (%+v, `%s`), want (%+v, `%s`)", got, gotErr, testCase.want, testCase.wantErr)
 			}
 		})
 	}
 }
 
 func TestGetByRepository(t *testing.T) {
+	t.Parallel()
+
 	type args struct {
 		id        model.Identifier
 		pattern   string
@@ -320,8 +334,12 @@ func TestGetByRepository(t *testing.T) {
 		},
 	}
 
-	for intention, tc := range cases {
+	for intention, testCase := range cases {
+		intention, testCase := intention, testCase
+
 		t.Run(intention, func(t *testing.T) {
+			t.Parallel()
+
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
@@ -348,7 +366,7 @@ func TestGetByRepository(t *testing.T) {
 				dummyFn := func(_ context.Context, scanner func(pgx.Row) error, _ string, _ ...any) error {
 					return scanner(mockRow)
 				}
-				mockDatabase.EXPECT().Get(gomock.Any(), gomock.Any(), gomock.Any(), tc.args.id, model.Identifier(3), tc.args.pattern).DoAndReturn(dummyFn)
+				mockDatabase.EXPECT().Get(gomock.Any(), gomock.Any(), gomock.Any(), testCase.args.id, model.Identifier(3), testCase.args.pattern).DoAndReturn(dummyFn)
 			case "no rows":
 				mockRow := mocks.NewRow(ctrl)
 				mockRow.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...any) error {
@@ -357,29 +375,31 @@ func TestGetByRepository(t *testing.T) {
 				dummyFn := func(_ context.Context, scanner func(pgx.Row) error, _ string, _ ...any) error {
 					return scanner(mockRow)
 				}
-				mockDatabase.EXPECT().Get(gomock.Any(), gomock.Any(), gomock.Any(), tc.args.id, model.Identifier(3), tc.args.pattern).DoAndReturn(dummyFn)
+				mockDatabase.EXPECT().Get(gomock.Any(), gomock.Any(), gomock.Any(), testCase.args.id, model.Identifier(3), testCase.args.pattern).DoAndReturn(dummyFn)
 			case "error":
-				mockDatabase.EXPECT().Get(gomock.Any(), gomock.Any(), gomock.Any(), tc.args.id, model.Identifier(3), tc.args.pattern).Return(errors.New("failed"))
+				mockDatabase.EXPECT().Get(gomock.Any(), gomock.Any(), gomock.Any(), testCase.args.id, model.Identifier(3), testCase.args.pattern).Return(errors.New("failed"))
 			}
 
-			got, gotErr := instance.GetByRepository(testCtx, tc.args.id, tc.args.pattern, tc.args.forUpdate)
+			got, gotErr := instance.GetByRepository(testCtx, testCase.args.id, testCase.args.pattern, testCase.args.forUpdate)
 
 			failed := false
 
-			if !errors.Is(gotErr, tc.wantErr) {
+			if !errors.Is(gotErr, testCase.wantErr) {
 				failed = true
-			} else if !reflect.DeepEqual(got, tc.want) {
+			} else if !reflect.DeepEqual(got, testCase.want) {
 				failed = true
 			}
 
 			if failed {
-				t.Errorf("GetByRepository() = (%+v, `%s`), want (%+v, `%s`)", got, gotErr, tc.want, tc.wantErr)
+				t.Errorf("GetByRepository() = (%+v, `%s`), want (%+v, `%s`)", got, gotErr, testCase.want, testCase.wantErr)
 			}
 		})
 	}
 }
 
 func TestCreate(t *testing.T) {
+	t.Parallel()
+
 	type args struct {
 		o model.Ketchup
 	}
@@ -403,8 +423,12 @@ func TestCreate(t *testing.T) {
 		},
 	}
 
-	for intention, tc := range cases {
+	for intention, testCase := range cases {
+		intention, testCase := intention, testCase
+
 		t.Run(intention, func(t *testing.T) {
+			t.Parallel()
+
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
@@ -417,24 +441,26 @@ func TestCreate(t *testing.T) {
 				mockDatabase.EXPECT().Create(gomock.Any(), gomock.Any(), model.DefaultPattern, "0.9.0", "daily", gomock.Any(), model.Identifier(1), model.Identifier(3)).Return(uint64(1), nil)
 			}
 
-			got, gotErr := instance.Create(testCtx, tc.args.o)
+			got, gotErr := instance.Create(testCtx, testCase.args.o)
 
 			failed := false
 
-			if !errors.Is(gotErr, tc.wantErr) {
+			if !errors.Is(gotErr, testCase.wantErr) {
 				failed = true
-			} else if got != tc.want {
+			} else if got != testCase.want {
 				failed = true
 			}
 
 			if failed {
-				t.Errorf("Create() = (%d, `%s`), want (%d, `%s`)", got, gotErr, tc.want, tc.wantErr)
+				t.Errorf("Create() = (%d, `%s`), want (%d, `%s`)", got, gotErr, testCase.want, testCase.wantErr)
 			}
 		})
 	}
 }
 
 func TestUpdate(t *testing.T) {
+	t.Parallel()
+
 	type args struct {
 		o          model.Ketchup
 		oldPattern string
@@ -458,8 +484,12 @@ func TestUpdate(t *testing.T) {
 		},
 	}
 
-	for intention, tc := range cases {
+	for intention, testCase := range cases {
+		intention, testCase := intention, testCase
+
 		t.Run(intention, func(t *testing.T) {
+			t.Parallel()
+
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
@@ -472,22 +502,24 @@ func TestUpdate(t *testing.T) {
 				mockDatabase.EXPECT().One(gomock.Any(), gomock.Any(), model.Identifier(1), model.Identifier(3), model.DefaultPattern, model.DefaultPattern, "0.9.0", "daily", gomock.Any()).Return(nil)
 			}
 
-			gotErr := instance.Update(testCtx, tc.args.o, tc.args.oldPattern)
+			gotErr := instance.Update(testCtx, testCase.args.o, testCase.args.oldPattern)
 
 			failed := false
 
-			if !errors.Is(gotErr, tc.wantErr) {
+			if !errors.Is(gotErr, testCase.wantErr) {
 				failed = true
 			}
 
 			if failed {
-				t.Errorf("Update() = `%s`, want `%s`", gotErr, tc.wantErr)
+				t.Errorf("Update() = `%s`, want `%s`", gotErr, testCase.wantErr)
 			}
 		})
 	}
 }
 
 func TestDelete(t *testing.T) {
+	t.Parallel()
+
 	type args struct {
 		o model.Ketchup
 	}
@@ -507,8 +539,12 @@ func TestDelete(t *testing.T) {
 		},
 	}
 
-	for intention, tc := range cases {
+	for intention, testCase := range cases {
+		intention, testCase := intention, testCase
+
 		t.Run(intention, func(t *testing.T) {
+			t.Parallel()
+
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
@@ -521,16 +557,16 @@ func TestDelete(t *testing.T) {
 				mockDatabase.EXPECT().One(gomock.Any(), gomock.Any(), model.Identifier(1), model.Identifier(3), model.DefaultPattern).Return(nil)
 			}
 
-			gotErr := instance.Delete(testCtx, tc.args.o)
+			gotErr := instance.Delete(testCtx, testCase.args.o)
 
 			failed := false
 
-			if !errors.Is(gotErr, tc.wantErr) {
+			if !errors.Is(gotErr, testCase.wantErr) {
 				failed = true
 			}
 
 			if failed {
-				t.Errorf("Delete() = `%s`, want `%s`", gotErr, tc.wantErr)
+				t.Errorf("Delete() = `%s`, want `%s`", gotErr, testCase.wantErr)
 			}
 		})
 	}

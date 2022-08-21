@@ -6,6 +6,8 @@ import (
 )
 
 func TestReadUser(t *testing.T) {
+	t.Parallel()
+
 	type args struct {
 		ctx context.Context
 	}
@@ -34,10 +36,14 @@ func TestReadUser(t *testing.T) {
 		},
 	}
 
-	for intention, tc := range cases {
+	for intention, testCase := range cases {
+		intention, testCase := intention, testCase
+
 		t.Run(intention, func(t *testing.T) {
-			if got := ReadUser(tc.args.ctx); got != tc.want {
-				t.Errorf("ReadUser() = %v, want %v", got, tc.want)
+			t.Parallel()
+
+			if got := ReadUser(testCase.args.ctx); got != testCase.want {
+				t.Errorf("ReadUser() = %v, want %v", got, testCase.want)
 			}
 		})
 	}

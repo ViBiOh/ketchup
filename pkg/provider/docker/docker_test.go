@@ -6,6 +6,8 @@ import (
 )
 
 func TestGetNextURL(t *testing.T) {
+	t.Parallel()
+
 	type args struct {
 		headers  http.Header
 		registry string
@@ -45,10 +47,14 @@ func TestGetNextURL(t *testing.T) {
 		},
 	}
 
-	for intention, tc := range cases {
+	for intention, testCase := range cases {
+		intention, testCase := intention, testCase
+
 		t.Run(intention, func(t *testing.T) {
-			if got := getNextURL(tc.args.headers, tc.args.registry); got != tc.want {
-				t.Errorf("getNextURL() =`%s`, want`%s`", got, tc.want)
+			t.Parallel()
+
+			if got := getNextURL(testCase.args.headers, testCase.args.registry); got != testCase.want {
+				t.Errorf("getNextURL() =`%s`, want`%s`", got, testCase.want)
 			}
 		})
 	}

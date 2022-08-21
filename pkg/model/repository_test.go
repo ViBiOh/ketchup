@@ -7,6 +7,8 @@ import (
 )
 
 func TestString(t *testing.T) {
+	t.Parallel()
+
 	cases := map[string]struct {
 		instance RepositoryKind
 		want     string
@@ -21,16 +23,22 @@ func TestString(t *testing.T) {
 		},
 	}
 
-	for intention, tc := range cases {
+	for intention, testCase := range cases {
+		intention, testCase := intention, testCase
+
 		t.Run(intention, func(t *testing.T) {
-			if got := tc.instance.String(); got != tc.want {
-				t.Errorf("String() = `%s`, want `%s`", got, tc.want)
+			t.Parallel()
+
+			if got := testCase.instance.String(); got != testCase.want {
+				t.Errorf("String() = `%s`, want `%s`", got, testCase.want)
 			}
 		})
 	}
 }
 
 func TestURL(t *testing.T) {
+	t.Parallel()
+
 	type args struct {
 		pattern string
 	}
@@ -63,16 +71,22 @@ func TestURL(t *testing.T) {
 		},
 	}
 
-	for intention, tc := range cases {
+	for intention, testCase := range cases {
+		intention, testCase := intention, testCase
+
 		t.Run(intention, func(t *testing.T) {
-			if got := tc.instance.URL(tc.args.pattern); got != tc.want {
-				t.Errorf("URL() = `%s`, want `%s`", got, tc.want)
+			t.Parallel()
+
+			if got := testCase.instance.URL(testCase.args.pattern); got != testCase.want {
+				t.Errorf("URL() = `%s`, want `%s`", got, testCase.want)
 			}
 		})
 	}
 }
 
 func TestCompareURL(t *testing.T) {
+	t.Parallel()
+
 	type args struct {
 		version string
 		pattern string
@@ -98,16 +112,22 @@ func TestCompareURL(t *testing.T) {
 		},
 	}
 
-	for intention, tc := range cases {
+	for intention, testCase := range cases {
+		intention, testCase := intention, testCase
+
 		t.Run(intention, func(t *testing.T) {
-			if got := tc.instance.CompareURL(tc.args.version, tc.args.pattern); got != tc.want {
-				t.Errorf("URL() = `%s`, want `%s`", got, tc.want)
+			t.Parallel()
+
+			if got := testCase.instance.CompareURL(testCase.args.version, testCase.args.pattern); got != testCase.want {
+				t.Errorf("URL() = `%s`, want `%s`", got, testCase.want)
 			}
 		})
 	}
 }
 
 func TestParseRepositoryKind(t *testing.T) {
+	t.Parallel()
+
 	type args struct {
 		value string
 	}
@@ -133,24 +153,28 @@ func TestParseRepositoryKind(t *testing.T) {
 		},
 	}
 
-	for intention, tc := range cases {
+	for intention, testCase := range cases {
+		intention, testCase := intention, testCase
+
 		t.Run(intention, func(t *testing.T) {
-			got, gotErr := ParseRepositoryKind(tc.args.value)
+			t.Parallel()
+
+			got, gotErr := ParseRepositoryKind(testCase.args.value)
 
 			failed := false
 
-			if tc.wantErr == nil && gotErr != nil {
+			if testCase.wantErr == nil && gotErr != nil {
 				failed = true
-			} else if tc.wantErr != nil && gotErr == nil {
+			} else if testCase.wantErr != nil && gotErr == nil {
 				failed = true
-			} else if tc.wantErr != nil && !strings.Contains(gotErr.Error(), tc.wantErr.Error()) {
+			} else if testCase.wantErr != nil && !strings.Contains(gotErr.Error(), testCase.wantErr.Error()) {
 				failed = true
-			} else if got != tc.want {
+			} else if got != testCase.want {
 				failed = true
 			}
 
 			if failed {
-				t.Errorf("ParseRepositoryKind() = (`%s`, `%s`), want (`%s`, `%s`)", got, gotErr, tc.want, tc.wantErr)
+				t.Errorf("ParseRepositoryKind() = (`%s`, `%s`), want (`%s`, `%s`)", got, gotErr, testCase.want, testCase.wantErr)
 			}
 		})
 	}

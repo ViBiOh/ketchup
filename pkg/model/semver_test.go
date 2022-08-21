@@ -25,6 +25,8 @@ func safeParsePattern(pattern string) semver.Pattern {
 }
 
 func TestCheckPatternsMatching(t *testing.T) {
+	t.Parallel()
+
 	type args struct {
 		versions         map[string]semver.Version
 		compiledPatterns map[string]semver.Pattern
@@ -81,12 +83,16 @@ func TestCheckPatternsMatching(t *testing.T) {
 		},
 	}
 
-	for intention, tc := range cases {
-		t.Run(intention, func(t *testing.T) {
-			CheckPatternsMatching(tc.args.versions, tc.args.compiledPatterns, tc.args.version)
+	for intention, testCase := range cases {
+		intention, testCase := intention, testCase
 
-			if !reflect.DeepEqual(tc.args.versions, tc.want) {
-				t.Errorf("CheckPatternsMatching() = %+v, want %+v", tc.args.versions, tc.want)
+		t.Run(intention, func(t *testing.T) {
+			t.Parallel()
+
+			CheckPatternsMatching(testCase.args.versions, testCase.args.compiledPatterns, testCase.args.version)
+
+			if !reflect.DeepEqual(testCase.args.versions, testCase.want) {
+				t.Errorf("CheckPatternsMatching() = %+v, want %+v", testCase.args.versions, testCase.want)
 			}
 		})
 	}

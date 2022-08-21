@@ -11,6 +11,8 @@ import (
 )
 
 func TestParseKetchupFrequency(t *testing.T) {
+	t.Parallel()
+
 	type args struct {
 		value string
 	}
@@ -43,30 +45,36 @@ func TestParseKetchupFrequency(t *testing.T) {
 		},
 	}
 
-	for intention, tc := range cases {
+	for intention, testCase := range cases {
+		intention, testCase := intention, testCase
+
 		t.Run(intention, func(t *testing.T) {
-			got, gotErr := ParseKetchupFrequency(tc.args.value)
+			t.Parallel()
+
+			got, gotErr := ParseKetchupFrequency(testCase.args.value)
 
 			failed := false
 
-			if tc.wantErr == nil && gotErr != nil {
+			if testCase.wantErr == nil && gotErr != nil {
 				failed = true
-			} else if tc.wantErr != nil && gotErr == nil {
+			} else if testCase.wantErr != nil && gotErr == nil {
 				failed = true
-			} else if tc.wantErr != nil && !strings.Contains(gotErr.Error(), tc.wantErr.Error()) {
+			} else if testCase.wantErr != nil && !strings.Contains(gotErr.Error(), testCase.wantErr.Error()) {
 				failed = true
-			} else if got != tc.want {
+			} else if got != testCase.want {
 				failed = true
 			}
 
 			if failed {
-				t.Errorf("ParseRepositoryKind() = (`%s`, `%s`), want (`%s`, `%s`)", got, gotErr, tc.want, tc.wantErr)
+				t.Errorf("ParseRepositoryKind() = (`%s`, `%s`), want (`%s`, `%s`)", got, gotErr, testCase.want, testCase.wantErr)
 			}
 		})
 	}
 }
 
 func TestKetchupByRepositoryID(t *testing.T) {
+	t.Parallel()
+
 	type args struct {
 		array []Ketchup
 	}
@@ -91,17 +99,23 @@ func TestKetchupByRepositoryID(t *testing.T) {
 		},
 	}
 
-	for intention, tc := range cases {
+	for intention, testCase := range cases {
+		intention, testCase := intention, testCase
+
 		t.Run(intention, func(t *testing.T) {
-			sort.Sort(KetchupByRepositoryIDAndPattern(tc.args.array))
-			if got := tc.args.array; !reflect.DeepEqual(got, tc.want) {
-				t.Errorf("KetchupByRepositoryID() = %+v, want %+v", got, tc.want)
+			t.Parallel()
+
+			sort.Sort(KetchupByRepositoryIDAndPattern(testCase.args.array))
+			if got := testCase.args.array; !reflect.DeepEqual(got, testCase.want) {
+				t.Errorf("KetchupByRepositoryID() = %+v, want %+v", got, testCase.want)
 			}
 		})
 	}
 }
 
 func TestKetchupByPriority(t *testing.T) {
+	t.Parallel()
+
 	type args struct {
 		array []Ketchup
 	}
@@ -168,17 +182,23 @@ func TestKetchupByPriority(t *testing.T) {
 		},
 	}
 
-	for intention, tc := range cases {
+	for intention, testCase := range cases {
+		intention, testCase := intention, testCase
+
 		t.Run(intention, func(t *testing.T) {
-			sort.Sort(KetchupByPriority(tc.args.array))
-			if got := tc.args.array; !reflect.DeepEqual(got, tc.want) {
-				t.Errorf("KetchupByPriority() = %+v, want %+v", got, tc.want)
+			t.Parallel()
+
+			sort.Sort(KetchupByPriority(testCase.args.array))
+			if got := testCase.args.array; !reflect.DeepEqual(got, testCase.want) {
+				t.Errorf("KetchupByPriority() = %+v, want %+v", got, testCase.want)
 			}
 		})
 	}
 }
 
 func TestReleaseByRepositoryID(t *testing.T) {
+	t.Parallel()
+
 	type args struct {
 		array []Release
 	}
@@ -203,17 +223,23 @@ func TestReleaseByRepositoryID(t *testing.T) {
 		},
 	}
 
-	for intention, tc := range cases {
+	for intention, testCase := range cases {
+		intention, testCase := intention, testCase
+
 		t.Run(intention, func(t *testing.T) {
-			sort.Sort(ReleaseByRepositoryIDAndPattern(tc.args.array))
-			if got := tc.args.array; !reflect.DeepEqual(got, tc.want) {
-				t.Errorf("ReleaseByRepositoryID() = %+v, want %+v", got, tc.want)
+			t.Parallel()
+
+			sort.Sort(ReleaseByRepositoryIDAndPattern(testCase.args.array))
+			if got := testCase.args.array; !reflect.DeepEqual(got, testCase.want) {
+				t.Errorf("ReleaseByRepositoryID() = %+v, want %+v", got, testCase.want)
 			}
 		})
 	}
 }
 
 func TestReleaseByKindAndName(t *testing.T) {
+	t.Parallel()
+
 	type args struct {
 		array []Release
 	}
@@ -238,11 +264,15 @@ func TestReleaseByKindAndName(t *testing.T) {
 		},
 	}
 
-	for intention, tc := range cases {
+	for intention, testCase := range cases {
+		intention, testCase := intention, testCase
+
 		t.Run(intention, func(t *testing.T) {
-			sort.Sort(ReleaseByKindAndName(tc.args.array))
-			if got := tc.args.array; !reflect.DeepEqual(got, tc.want) {
-				t.Errorf("ReleaseByRepositoryID() = %+v, want %+v", got, tc.want)
+			t.Parallel()
+
+			sort.Sort(ReleaseByKindAndName(testCase.args.array))
+			if got := testCase.args.array; !reflect.DeepEqual(got, testCase.want) {
+				t.Errorf("ReleaseByRepositoryID() = %+v, want %+v", got, testCase.want)
 			}
 		})
 	}

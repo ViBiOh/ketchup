@@ -14,6 +14,8 @@ import (
 var errFailed = errors.New("timeout")
 
 func TestUpdateVersions(t *testing.T) {
+	t.Parallel()
+
 	type args struct {
 		o model.Repository
 	}
@@ -72,8 +74,12 @@ func TestUpdateVersions(t *testing.T) {
 		},
 	}
 
-	for intention, tc := range cases {
+	for intention, testCase := range cases {
+		intention, testCase := intention, testCase
+
 		t.Run(intention, func(t *testing.T) {
+			t.Parallel()
+
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
@@ -156,16 +162,16 @@ func TestUpdateVersions(t *testing.T) {
 				mockDatabase.EXPECT().One(gomock.Any(), gomock.Any(), model.Identifier(0), model.DefaultPattern).Return(nil)
 			}
 
-			gotErr := instance.UpdateVersions(context.Background(), tc.args.o)
+			gotErr := instance.UpdateVersions(context.Background(), testCase.args.o)
 
 			failed := false
 
-			if !errors.Is(gotErr, tc.wantErr) {
+			if !errors.Is(gotErr, testCase.wantErr) {
 				failed = true
 			}
 
 			if failed {
-				t.Errorf("UpdateVersions() = `%s`, want `%s`", gotErr, tc.wantErr)
+				t.Errorf("UpdateVersions() = `%s`, want `%s`", gotErr, testCase.wantErr)
 			}
 		})
 	}

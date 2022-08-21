@@ -53,7 +53,7 @@ func main() {
 	defer tracerApp.Close()
 	request.AddTracerToDefaultClient(tracerApp.GetProvider())
 
-	mailerApp, err := mailer.New(mailerConfig, nil)
+	mailerApp, err := mailer.New(mailerConfig, nil, tracerApp.GetTracer("mailer"))
 	logger.Fatal(err)
 	defer mailerApp.Close()
 

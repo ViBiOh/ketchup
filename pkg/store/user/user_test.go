@@ -16,6 +16,8 @@ import (
 var testEmail = "nobody@localhost"
 
 func TestGetByEmail(t *testing.T) {
+	t.Parallel()
+
 	type args struct {
 		email string
 	}
@@ -41,8 +43,12 @@ func TestGetByEmail(t *testing.T) {
 		},
 	}
 
-	for intention, tc := range cases {
+	for intention, testCase := range cases {
+		intention, testCase := intention, testCase
+
 		t.Run(intention, func(t *testing.T) {
+			t.Parallel()
+
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
@@ -75,24 +81,26 @@ func TestGetByEmail(t *testing.T) {
 				mockDatabase.EXPECT().Get(gomock.Any(), gomock.Any(), gomock.Any(), testEmail).DoAndReturn(dummyFn)
 			}
 
-			got, gotErr := instance.GetByEmail(context.Background(), tc.args.email)
+			got, gotErr := instance.GetByEmail(context.Background(), testCase.args.email)
 
 			failed := false
 
-			if !errors.Is(gotErr, tc.wantErr) {
+			if !errors.Is(gotErr, testCase.wantErr) {
 				failed = true
-			} else if !reflect.DeepEqual(got, tc.want) {
+			} else if !reflect.DeepEqual(got, testCase.want) {
 				failed = true
 			}
 
 			if failed {
-				t.Errorf("GetByEmail() = (%+v, `%s`), want (%+v, `%s`)", got, gotErr, tc.want, tc.wantErr)
+				t.Errorf("GetByEmail() = (%+v, `%s`), want (%+v, `%s`)", got, gotErr, testCase.want, testCase.wantErr)
 			}
 		})
 	}
 }
 
 func TestGetByLoginID(t *testing.T) {
+	t.Parallel()
+
 	type args struct {
 		loginID uint64
 	}
@@ -118,8 +126,12 @@ func TestGetByLoginID(t *testing.T) {
 		},
 	}
 
-	for intention, tc := range cases {
+	for intention, testCase := range cases {
+		intention, testCase := intention, testCase
+
 		t.Run(intention, func(t *testing.T) {
+			t.Parallel()
+
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
@@ -152,24 +164,26 @@ func TestGetByLoginID(t *testing.T) {
 				mockDatabase.EXPECT().Get(gomock.Any(), gomock.Any(), gomock.Any(), uint64(2)).DoAndReturn(dummyFn)
 			}
 
-			got, gotErr := instance.GetByLoginID(context.Background(), tc.args.loginID)
+			got, gotErr := instance.GetByLoginID(context.Background(), testCase.args.loginID)
 
 			failed := false
 
-			if !errors.Is(gotErr, tc.wantErr) {
+			if !errors.Is(gotErr, testCase.wantErr) {
 				failed = true
-			} else if !reflect.DeepEqual(got, tc.want) {
+			} else if !reflect.DeepEqual(got, testCase.want) {
 				failed = true
 			}
 
 			if failed {
-				t.Errorf("GetByLoginID() = (%+v, `%s`), want (%+v, `%s`)", got, gotErr, tc.want, tc.wantErr)
+				t.Errorf("GetByLoginID() = (%+v, `%s`), want (%+v, `%s`)", got, gotErr, testCase.want, testCase.wantErr)
 			}
 		})
 	}
 }
 
 func TestCreate(t *testing.T) {
+	t.Parallel()
+
 	type args struct {
 		o model.User
 	}
@@ -192,8 +206,12 @@ func TestCreate(t *testing.T) {
 		},
 	}
 
-	for intention, tc := range cases {
+	for intention, testCase := range cases {
+		intention, testCase := intention, testCase
+
 		t.Run(intention, func(t *testing.T) {
+			t.Parallel()
+
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
@@ -206,24 +224,26 @@ func TestCreate(t *testing.T) {
 				mockDatabase.EXPECT().Create(gomock.Any(), gomock.Any(), testEmail, uint64(1)).Return(uint64(1), nil)
 			}
 
-			got, gotErr := instance.Create(context.Background(), tc.args.o)
+			got, gotErr := instance.Create(context.Background(), testCase.args.o)
 
 			failed := false
 
-			if !errors.Is(gotErr, tc.wantErr) {
+			if !errors.Is(gotErr, testCase.wantErr) {
 				failed = true
-			} else if got != tc.want {
+			} else if got != testCase.want {
 				failed = true
 			}
 
 			if failed {
-				t.Errorf("Create() = (%d, `%s`), want (%d, `%s`)", got, gotErr, tc.want, tc.wantErr)
+				t.Errorf("Create() = (%d, `%s`), want (%d, `%s`)", got, gotErr, testCase.want, testCase.wantErr)
 			}
 		})
 	}
 }
 
 func TestCount(t *testing.T) {
+	t.Parallel()
+
 	cases := map[string]struct {
 		want    uint64
 		wantErr error
@@ -234,8 +254,12 @@ func TestCount(t *testing.T) {
 		},
 	}
 
-	for intention, tc := range cases {
+	for intention, testCase := range cases {
+		intention, testCase := intention, testCase
+
 		t.Run(intention, func(t *testing.T) {
+			t.Parallel()
+
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
@@ -261,14 +285,14 @@ func TestCount(t *testing.T) {
 
 			failed := false
 
-			if !errors.Is(gotErr, tc.wantErr) {
+			if !errors.Is(gotErr, testCase.wantErr) {
 				failed = true
-			} else if got != tc.want {
+			} else if got != testCase.want {
 				failed = true
 			}
 
 			if failed {
-				t.Errorf("Count() = (%d, `%s`), want (%d, `%s`)", got, gotErr, tc.want, tc.wantErr)
+				t.Errorf("Count() = (%d, `%s`), want (%d, `%s`)", got, gotErr, testCase.want, testCase.wantErr)
 			}
 		})
 	}
