@@ -3,6 +3,8 @@ package ketchup
 import "testing"
 
 func TestMin(t *testing.T) {
+	t.Parallel()
+
 	type args struct {
 		a uint64
 		b uint64
@@ -28,10 +30,14 @@ func TestMin(t *testing.T) {
 		},
 	}
 
-	for intention, tc := range cases {
+	for intention, testCase := range cases {
+		intention, testCase := intention, testCase
+
 		t.Run(intention, func(t *testing.T) {
-			if got := min(tc.args.a, tc.args.b); got != tc.want {
-				t.Errorf("min() = %d, want %d", got, tc.want)
+			t.Parallel()
+
+			if got := min(testCase.args.a, testCase.args.b); got != testCase.want {
+				t.Errorf("min() = %d, want %d", got, testCase.want)
 			}
 		})
 	}

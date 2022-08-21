@@ -21,6 +21,8 @@ var (
 )
 
 func TestStoreInContext(t *testing.T) {
+	t.Parallel()
+
 	type args struct {
 		ctx context.Context
 	}
@@ -60,13 +62,17 @@ func TestStoreInContext(t *testing.T) {
 		},
 	}
 
-	for intention, tc := range cases {
+	for intention, testCase := range cases {
+		intention, testCase := intention, testCase
+
 		t.Run(intention, func(t *testing.T) {
+			t.Parallel()
+
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
 			mockUserStore := mocks.NewUserStore(ctrl)
-			tc.instance.userStore = mockUserStore
+			testCase.instance.userStore = mockUserStore
 
 			switch intention {
 			case "get error":
@@ -77,14 +83,16 @@ func TestStoreInContext(t *testing.T) {
 				mockUserStore.EXPECT().GetByLoginID(gomock.Any(), gomock.Any()).Return(model.NewUser(1, testEmail, authModel.User{}), nil)
 			}
 
-			if got := tc.instance.StoreInContext(tc.args.ctx); !reflect.DeepEqual(model.ReadUser(got), tc.want) {
-				t.Errorf("StoreInContext() = %+v, want %+v", got, tc.want)
+			if got := testCase.instance.StoreInContext(testCase.args.ctx); !reflect.DeepEqual(model.ReadUser(got), testCase.want) {
+				t.Errorf("StoreInContext() = %+v, want %+v", got, testCase.want)
 			}
 		})
 	}
 }
 
 func TestCreate(t *testing.T) {
+	t.Parallel()
+
 	type args struct {
 		ctx  context.Context
 		item model.User
@@ -152,15 +160,19 @@ func TestCreate(t *testing.T) {
 		},
 	}
 
-	for intention, tc := range cases {
+	for intention, testCase := range cases {
+		intention, testCase := intention, testCase
+
 		t.Run(intention, func(t *testing.T) {
+			t.Parallel()
+
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
 			authApp := mocks.NewAuthService(ctrl)
 			mockUserStore := mocks.NewUserStore(ctrl)
-			tc.instance.authApp = authApp
-			tc.instance.userStore = mockUserStore
+			testCase.instance.authApp = authApp
+			testCase.instance.userStore = mockUserStore
 
 			realDoAtomic := func(ctx context.Context, action func(context.Context) error) error {
 				return action(ctx)
@@ -193,24 +205,26 @@ func TestCreate(t *testing.T) {
 				authApp.EXPECT().Create(gomock.Any(), gomock.Any()).Return(authModel.NewUser(2, "admin"), nil)
 			}
 
-			got, gotErr := tc.instance.Create(tc.args.ctx, tc.args.item)
+			got, gotErr := testCase.instance.Create(testCase.args.ctx, testCase.args.item)
 
 			failed := false
 
-			if !errors.Is(gotErr, tc.wantErr) {
+			if !errors.Is(gotErr, testCase.wantErr) {
 				failed = true
-			} else if !reflect.DeepEqual(got, tc.want) {
+			} else if !reflect.DeepEqual(got, testCase.want) {
 				failed = true
 			}
 
 			if failed {
-				t.Errorf("Create() = (%+v, `%s`), want (%+v, `%s`)", got, gotErr, tc.want, tc.wantErr)
+				t.Errorf("Create() = (%+v, `%s`), want (%+v, `%s`)", got, gotErr, testCase.want, testCase.wantErr)
 			}
 		})
 	}
 }
 
 func TestCheck(t *testing.T) {
+	t.Parallel()
+
 	type args struct {
 		ctx context.Context
 		old model.User
@@ -255,14 +269,18 @@ func TestCheck(t *testing.T) {
 		},
 	}
 
-	for intention, tc := range cases {
+	for intention, testCase := range cases {
+		intention, testCase := intention, testCase
+
 		t.Run(intention, func(t *testing.T) {
+			t.Parallel()
+
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
 			mockUserStore := mocks.NewUserStore(ctrl)
 
-			tc.instance.userStore = mockUserStore
+			testCase.instance.userStore = mockUserStore
 
 			switch intention {
 			case "no name":
@@ -273,20 +291,20 @@ func TestCheck(t *testing.T) {
 				mockUserStore.EXPECT().GetByEmail(gomock.Any(), gomock.Any()).Return(model.NewUser(1, testEmail, authModel.NewUser(1, "")), nil)
 			}
 
-			gotErr := tc.instance.check(tc.args.ctx, tc.args.old, tc.args.new)
+			gotErr := testCase.instance.check(testCase.args.ctx, testCase.args.old, testCase.args.new)
 
 			failed := false
 
-			if tc.wantErr == nil && gotErr != nil {
+			if testCase.wantErr == nil && gotErr != nil {
 				failed = true
-			} else if tc.wantErr != nil && gotErr == nil {
+			} else if testCase.wantErr != nil && gotErr == nil {
 				failed = true
-			} else if tc.wantErr != nil && !strings.Contains(gotErr.Error(), tc.wantErr.Error()) {
+			} else if testCase.wantErr != nil && !strings.Contains(gotErr.Error(), testCase.wantErr.Error()) {
 				failed = true
 			}
 
 			if failed {
-				t.Errorf("check() = `%s`, want `%s`", gotErr, tc.wantErr)
+				t.Errorf("check() = `%s`, want `%s`", gotErr, testCase.wantErr)
 			}
 		})
 	}

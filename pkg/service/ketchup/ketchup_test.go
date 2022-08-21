@@ -22,6 +22,8 @@ var (
 )
 
 func TestList(t *testing.T) {
+	t.Parallel()
+
 	type args struct {
 		pageSize uint
 		last     string
@@ -50,8 +52,12 @@ func TestList(t *testing.T) {
 		},
 	}
 
-	for intention, tc := range cases {
+	for intention, testCase := range cases {
+		intention, testCase := intention, testCase
+
 		t.Run(intention, func(t *testing.T) {
+			t.Parallel()
+
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
@@ -71,26 +77,28 @@ func TestList(t *testing.T) {
 				mockKetchupStore.EXPECT().List(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, uint64(0), errors.New("failed"))
 			}
 
-			got, gotCount, gotErr := instance.List(context.Background(), tc.args.pageSize, tc.args.last)
+			got, gotCount, gotErr := instance.List(context.Background(), testCase.args.pageSize, testCase.args.last)
 
 			failed := false
 
-			if !errors.Is(gotErr, tc.wantErr) {
+			if !errors.Is(gotErr, testCase.wantErr) {
 				failed = true
-			} else if !reflect.DeepEqual(got, tc.want) {
+			} else if !reflect.DeepEqual(got, testCase.want) {
 				failed = true
-			} else if gotCount != tc.wantCount {
+			} else if gotCount != testCase.wantCount {
 				failed = true
 			}
 
 			if failed {
-				t.Errorf("List() = (%+v, %d, `%s`), want (%+v, %d, `%s`)", got, gotCount, gotErr, tc.want, tc.wantCount, tc.wantErr)
+				t.Errorf("List() = (%+v, %d, `%s`), want (%+v, %d, `%s`)", got, gotCount, gotErr, testCase.want, testCase.wantCount, testCase.wantErr)
 			}
 		})
 	}
 }
 
 func TestListForRepositories(t *testing.T) {
+	t.Parallel()
+
 	type args struct {
 		repositories []model.Repository
 	}
@@ -120,8 +128,12 @@ func TestListForRepositories(t *testing.T) {
 		},
 	}
 
-	for intention, tc := range cases {
+	for intention, testCase := range cases {
+		intention, testCase := intention, testCase
+
 		t.Run(intention, func(t *testing.T) {
+			t.Parallel()
+
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
@@ -141,24 +153,26 @@ func TestListForRepositories(t *testing.T) {
 				mockKetchupStore.EXPECT().ListByRepositoriesIDAndFrequencies(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, errors.New("failed"))
 			}
 
-			got, gotErr := instance.ListForRepositories(context.Background(), tc.args.repositories, model.Daily)
+			got, gotErr := instance.ListForRepositories(context.Background(), testCase.args.repositories, model.Daily)
 
 			failed := false
 
-			if !errors.Is(gotErr, tc.wantErr) {
+			if !errors.Is(gotErr, testCase.wantErr) {
 				failed = true
-			} else if !reflect.DeepEqual(got, tc.want) {
+			} else if !reflect.DeepEqual(got, testCase.want) {
 				failed = true
 			}
 
 			if failed {
-				t.Errorf("ListForRepositories() = (%+v, `%s`), want (%+v, `%s`)", got, gotErr, tc.want, tc.wantErr)
+				t.Errorf("ListForRepositories() = (%+v, `%s`), want (%+v, `%s`)", got, gotErr, testCase.want, testCase.wantErr)
 			}
 		})
 	}
 }
 
 func TestCreate(t *testing.T) {
+	t.Parallel()
+
 	type args struct {
 		ctx  context.Context
 		item model.Ketchup
@@ -211,8 +225,12 @@ func TestCreate(t *testing.T) {
 		},
 	}
 
-	for intention, tc := range cases {
+	for intention, testCase := range cases {
+		intention, testCase := intention, testCase
+
 		t.Run(intention, func(t *testing.T) {
+			t.Parallel()
+
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
@@ -250,24 +268,26 @@ func TestCreate(t *testing.T) {
 				mockKetchupStore.EXPECT().Create(gomock.Any(), gomock.Any()).Return(model.Identifier(1), nil)
 			}
 
-			got, gotErr := instance.Create(tc.args.ctx, tc.args.item)
+			got, gotErr := instance.Create(testCase.args.ctx, testCase.args.item)
 
 			failed := false
 
-			if !errors.Is(gotErr, tc.wantErr) {
+			if !errors.Is(gotErr, testCase.wantErr) {
 				failed = true
-			} else if !reflect.DeepEqual(got, tc.want) {
+			} else if !reflect.DeepEqual(got, testCase.want) {
 				failed = true
 			}
 
 			if failed {
-				t.Errorf("Create() = (%+v, `%s`), want (%+v, `%s`)", got, gotErr, tc.want, tc.wantErr)
+				t.Errorf("Create() = (%+v, `%s`), want (%+v, `%s`)", got, gotErr, testCase.want, testCase.wantErr)
 			}
 		})
 	}
 }
 
 func TestUpdate(t *testing.T) {
+	t.Parallel()
+
 	type args struct {
 		ctx        context.Context
 		oldPattern string
@@ -352,8 +372,12 @@ func TestUpdate(t *testing.T) {
 		},
 	}
 
-	for intention, tc := range cases {
+	for intention, testCase := range cases {
+		intention, testCase := intention, testCase
+
 		t.Run(intention, func(t *testing.T) {
+			t.Parallel()
+
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
@@ -423,24 +447,26 @@ func TestUpdate(t *testing.T) {
 				mockKetchupStore.EXPECT().Update(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 			}
 
-			got, gotErr := instance.Update(tc.args.ctx, tc.args.oldPattern, tc.args.item)
+			got, gotErr := instance.Update(testCase.args.ctx, testCase.args.oldPattern, testCase.args.item)
 
 			failed := false
 
-			if !errors.Is(gotErr, tc.wantErr) {
+			if !errors.Is(gotErr, testCase.wantErr) {
 				failed = true
-			} else if !reflect.DeepEqual(got, tc.want) {
+			} else if !reflect.DeepEqual(got, testCase.want) {
 				failed = true
 			}
 
 			if failed {
-				t.Errorf("Update() = (%+v, `%s`), want (%+v, `%s`)", got, gotErr, tc.want, tc.wantErr)
+				t.Errorf("Update() = (%+v, `%s`), want (%+v, `%s`)", got, gotErr, testCase.want, testCase.wantErr)
 			}
 		})
 	}
 }
 
 func TestDelete(t *testing.T) {
+	t.Parallel()
+
 	type args struct {
 		ctx  context.Context
 		item model.Ketchup
@@ -487,8 +513,12 @@ func TestDelete(t *testing.T) {
 		},
 	}
 
-	for intention, tc := range cases {
+	for intention, testCase := range cases {
+		intention, testCase := intention, testCase
+
 		t.Run(intention, func(t *testing.T) {
+			t.Parallel()
+
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
@@ -529,22 +559,24 @@ func TestDelete(t *testing.T) {
 				mockKetchupStore.EXPECT().Delete(gomock.Any(), gomock.Any()).Return(nil)
 			}
 
-			gotErr := instance.Delete(tc.args.ctx, tc.args.item)
+			gotErr := instance.Delete(testCase.args.ctx, testCase.args.item)
 
 			failed := false
 
-			if !errors.Is(gotErr, tc.wantErr) {
+			if !errors.Is(gotErr, testCase.wantErr) {
 				failed = true
 			}
 
 			if failed {
-				t.Errorf("Delete() = `%s`, want `%s`", gotErr, tc.wantErr)
+				t.Errorf("Delete() = `%s`, want `%s`", gotErr, testCase.wantErr)
 			}
 		})
 	}
 }
 
 func TestCheck(t *testing.T) {
+	t.Parallel()
+
 	type args struct {
 		ctx context.Context
 		old model.Ketchup
@@ -609,8 +641,12 @@ func TestCheck(t *testing.T) {
 		},
 	}
 
-	for intention, tc := range cases {
+	for intention, testCase := range cases {
+		intention, testCase := intention, testCase
+
 		t.Run(intention, func(t *testing.T) {
+			t.Parallel()
+
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
@@ -629,20 +665,20 @@ func TestCheck(t *testing.T) {
 				mockKetchupStore.EXPECT().GetByRepository(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(model.NewKetchup(model.DefaultPattern, "1.0.0", model.Daily, false, model.NewGithubRepository(model.Identifier(1), ketchupRepository)), nil)
 			}
 
-			gotErr := instance.check(tc.args.ctx, tc.args.old, tc.args.new)
+			gotErr := instance.check(testCase.args.ctx, testCase.args.old, testCase.args.new)
 
 			failed := false
 
-			if tc.wantErr == nil && gotErr != nil {
+			if testCase.wantErr == nil && gotErr != nil {
 				failed = true
-			} else if tc.wantErr != nil && gotErr == nil {
+			} else if testCase.wantErr != nil && gotErr == nil {
 				failed = true
-			} else if tc.wantErr != nil && !strings.Contains(gotErr.Error(), tc.wantErr.Error()) {
+			} else if testCase.wantErr != nil && !strings.Contains(gotErr.Error(), testCase.wantErr.Error()) {
 				failed = true
 			}
 
 			if failed {
-				t.Errorf("check() = `%s`, want `%s`", gotErr, tc.wantErr)
+				t.Errorf("check() = `%s`, want `%s`", gotErr, testCase.wantErr)
 			}
 		})
 	}

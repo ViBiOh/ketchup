@@ -20,6 +20,8 @@ var (
 )
 
 func TestList(t *testing.T) {
+	t.Parallel()
+
 	type args struct {
 		pageSize uint
 		last     string
@@ -86,8 +88,12 @@ func TestList(t *testing.T) {
 		},
 	}
 
-	for intention, tc := range cases {
+	for intention, testCase := range cases {
+		intention, testCase := intention, testCase
+
 		t.Run(intention, func(t *testing.T) {
+			t.Parallel()
+
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
@@ -186,29 +192,31 @@ func TestList(t *testing.T) {
 				mockDatabase.EXPECT().List(gomock.Any(), gomock.Any(), gomock.Any(), uint(20)).DoAndReturn(dummyFn)
 			}
 
-			got, gotCount, gotErr := instance.List(context.Background(), tc.args.pageSize, tc.args.last)
+			got, gotCount, gotErr := instance.List(context.Background(), testCase.args.pageSize, testCase.args.last)
 			failed := false
 
-			if tc.wantErr == nil && gotErr != nil {
+			if testCase.wantErr == nil && gotErr != nil {
 				failed = true
-			} else if tc.wantErr != nil && gotErr == nil {
+			} else if testCase.wantErr != nil && gotErr == nil {
 				failed = true
-			} else if tc.wantErr != nil && !strings.Contains(gotErr.Error(), tc.wantErr.Error()) {
+			} else if testCase.wantErr != nil && !strings.Contains(gotErr.Error(), testCase.wantErr.Error()) {
 				failed = true
-			} else if !reflect.DeepEqual(got, tc.want) {
+			} else if !reflect.DeepEqual(got, testCase.want) {
 				failed = true
-			} else if gotCount != tc.wantCount {
+			} else if gotCount != testCase.wantCount {
 				failed = true
 			}
 
 			if failed {
-				t.Errorf("List() = (%#v, %d, `%s`), want (%#v, %d, `%s`)", got, gotCount, gotErr, tc.want, tc.wantCount, tc.wantErr)
+				t.Errorf("List() = (%#v, %d, `%s`), want (%#v, %d, `%s`)", got, gotCount, gotErr, testCase.want, testCase.wantCount, testCase.wantErr)
 			}
 		})
 	}
 }
 
 func TestSuggest(t *testing.T) {
+	t.Parallel()
+
 	type args struct {
 		ignoreIds []model.Identifier
 		count     uint64
@@ -232,8 +240,12 @@ func TestSuggest(t *testing.T) {
 		},
 	}
 
-	for intention, tc := range cases {
+	for intention, testCase := range cases {
+		intention, testCase := intention, testCase
+
 		t.Run(intention, func(t *testing.T) {
+			t.Parallel()
+
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
@@ -294,27 +306,29 @@ func TestSuggest(t *testing.T) {
 				mockDatabase.EXPECT().List(gomock.Any(), gomock.Any(), gomock.Any(), []model.Identifier{1, 2}).DoAndReturn(enrichFn)
 			}
 
-			got, gotErr := instance.Suggest(context.Background(), tc.args.ignoreIds, tc.args.count)
+			got, gotErr := instance.Suggest(context.Background(), testCase.args.ignoreIds, testCase.args.count)
 			failed := false
 
-			if tc.wantErr == nil && gotErr != nil {
+			if testCase.wantErr == nil && gotErr != nil {
 				failed = true
-			} else if tc.wantErr != nil && gotErr == nil {
+			} else if testCase.wantErr != nil && gotErr == nil {
 				failed = true
-			} else if tc.wantErr != nil && !strings.Contains(gotErr.Error(), tc.wantErr.Error()) {
+			} else if testCase.wantErr != nil && !strings.Contains(gotErr.Error(), testCase.wantErr.Error()) {
 				failed = true
-			} else if !reflect.DeepEqual(got, tc.want) {
+			} else if !reflect.DeepEqual(got, testCase.want) {
 				failed = true
 			}
 
 			if failed {
-				t.Errorf("Suggest() = (%#v, `%s`), want (%#v, `%s`)", got, gotErr, tc.want, tc.wantErr)
+				t.Errorf("Suggest() = (%#v, `%s`), want (%#v, `%s`)", got, gotErr, testCase.want, testCase.wantErr)
 			}
 		})
 	}
 }
 
 func TestGet(t *testing.T) {
+	t.Parallel()
+
 	type args struct {
 		id        model.Identifier
 		forUpdate bool
@@ -354,8 +368,12 @@ func TestGet(t *testing.T) {
 		},
 	}
 
-	for intention, tc := range cases {
+	for intention, testCase := range cases {
+		intention, testCase := intention, testCase
+
 		t.Run(intention, func(t *testing.T) {
+			t.Parallel()
+
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
@@ -411,28 +429,30 @@ func TestGet(t *testing.T) {
 				mockDatabase.EXPECT().Get(gomock.Any(), gomock.Any(), gomock.Any(), model.Identifier(1)).DoAndReturn(dummyFn)
 			}
 
-			got, gotErr := instance.Get(context.Background(), tc.args.id, tc.args.forUpdate)
+			got, gotErr := instance.Get(context.Background(), testCase.args.id, testCase.args.forUpdate)
 
 			failed := false
 
-			if tc.wantErr == nil && gotErr != nil {
+			if testCase.wantErr == nil && gotErr != nil {
 				failed = true
-			} else if tc.wantErr != nil && gotErr == nil {
+			} else if testCase.wantErr != nil && gotErr == nil {
 				failed = true
-			} else if tc.wantErr != nil && !strings.Contains(gotErr.Error(), tc.wantErr.Error()) {
+			} else if testCase.wantErr != nil && !strings.Contains(gotErr.Error(), testCase.wantErr.Error()) {
 				failed = true
-			} else if !reflect.DeepEqual(got, tc.want) {
+			} else if !reflect.DeepEqual(got, testCase.want) {
 				failed = true
 			}
 
 			if failed {
-				t.Errorf("Get() = (%#v, `%s`), want (%#v, `%s`)", got, gotErr, tc.want, tc.wantErr)
+				t.Errorf("Get() = (%#v, `%s`), want (%#v, `%s`)", got, gotErr, testCase.want, testCase.wantErr)
 			}
 		})
 	}
 }
 
 func TestCreate(t *testing.T) {
+	t.Parallel()
+
 	type args struct {
 		o model.Repository
 	}
@@ -479,8 +499,12 @@ func TestCreate(t *testing.T) {
 		},
 	}
 
-	for intention, tc := range cases {
+	for intention, testCase := range cases {
+		intention, testCase := intention, testCase
+
 		t.Run(intention, func(t *testing.T) {
+			t.Parallel()
+
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
@@ -535,28 +559,30 @@ func TestCreate(t *testing.T) {
 				mockDatabase.EXPECT().One(gomock.Any(), gomock.Any(), model.Identifier(1), model.DefaultPattern, "1.0.0").Return(nil)
 			}
 
-			got, gotErr := instance.Create(context.Background(), tc.args.o)
+			got, gotErr := instance.Create(context.Background(), testCase.args.o)
 
 			failed := false
 
-			if tc.wantErr == nil && gotErr != nil {
+			if testCase.wantErr == nil && gotErr != nil {
 				failed = true
-			} else if tc.wantErr != nil && gotErr == nil {
+			} else if testCase.wantErr != nil && gotErr == nil {
 				failed = true
-			} else if tc.wantErr != nil && !strings.Contains(gotErr.Error(), tc.wantErr.Error()) {
+			} else if testCase.wantErr != nil && !strings.Contains(gotErr.Error(), testCase.wantErr.Error()) {
 				failed = true
-			} else if got != tc.want {
+			} else if got != testCase.want {
 				failed = true
 			}
 
 			if failed {
-				t.Errorf("Create() = (%d, `%s`), want (%d, `%s`)", got, gotErr, tc.want, tc.wantErr)
+				t.Errorf("Create() = (%d, `%s`), want (%d, `%s`)", got, gotErr, testCase.want, testCase.wantErr)
 			}
 		})
 	}
 }
 
 func TestDeleteUnused(t *testing.T) {
+	t.Parallel()
+
 	cases := map[string]struct {
 		wantErr error
 	}{
@@ -565,8 +591,12 @@ func TestDeleteUnused(t *testing.T) {
 		},
 	}
 
-	for intention, tc := range cases {
+	for intention, testCase := range cases {
+		intention, testCase := intention, testCase
+
 		t.Run(intention, func(t *testing.T) {
+			t.Parallel()
+
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
@@ -583,18 +613,20 @@ func TestDeleteUnused(t *testing.T) {
 
 			failed := false
 
-			if !errors.Is(gotErr, tc.wantErr) {
+			if !errors.Is(gotErr, testCase.wantErr) {
 				failed = true
 			}
 
 			if failed {
-				t.Errorf("DeleteUnused() = `%s`, want `%s`", gotErr, tc.wantErr)
+				t.Errorf("DeleteUnused() = `%s`, want `%s`", gotErr, testCase.wantErr)
 			}
 		})
 	}
 }
 
 func TestDeleteUnusedVersions(t *testing.T) {
+	t.Parallel()
+
 	cases := map[string]struct {
 		wantErr error
 	}{
@@ -603,8 +635,12 @@ func TestDeleteUnusedVersions(t *testing.T) {
 		},
 	}
 
-	for intention, tc := range cases {
+	for intention, testCase := range cases {
+		intention, testCase := intention, testCase
+
 		t.Run(intention, func(t *testing.T) {
+			t.Parallel()
+
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
@@ -621,12 +657,12 @@ func TestDeleteUnusedVersions(t *testing.T) {
 
 			failed := false
 
-			if !errors.Is(gotErr, tc.wantErr) {
+			if !errors.Is(gotErr, testCase.wantErr) {
 				failed = true
 			}
 
 			if failed {
-				t.Errorf("DeleteUnusedVersions() = `%s`, want `%s`", gotErr, tc.wantErr)
+				t.Errorf("DeleteUnusedVersions() = `%s`, want `%s`", gotErr, testCase.wantErr)
 			}
 		})
 	}

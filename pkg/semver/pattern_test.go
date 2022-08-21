@@ -11,6 +11,8 @@ var (
 )
 
 func TestCheck(t *testing.T) {
+	t.Parallel()
+
 	type args struct {
 		version Version
 	}
@@ -162,10 +164,14 @@ func TestCheck(t *testing.T) {
 		},
 	}
 
-	for intention, tc := range cases {
+	for intention, testCase := range cases {
+		intention, testCase := intention, testCase
+
 		t.Run(intention, func(t *testing.T) {
-			if got := tc.instance.Check(tc.args.version); got != tc.want {
-				t.Errorf("Check() = %t, want %t", got, tc.want)
+			t.Parallel()
+
+			if got := testCase.instance.Check(testCase.args.version); got != testCase.want {
+				t.Errorf("Check() = %t, want %t", got, testCase.want)
 			}
 		})
 	}

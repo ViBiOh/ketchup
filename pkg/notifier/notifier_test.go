@@ -33,6 +33,8 @@ func safeParse(version string) semver.Version {
 }
 
 func TestFlags(t *testing.T) {
+	t.Parallel()
+
 	cases := map[string]struct {
 		want string
 	}{
@@ -41,8 +43,12 @@ func TestFlags(t *testing.T) {
 		},
 	}
 
-	for intention, tc := range cases {
+	for intention, testCase := range cases {
+		intention, testCase := intention, testCase
+
 		t.Run(intention, func(t *testing.T) {
+			t.Parallel()
+
 			fs := flag.NewFlagSet(intention, flag.ContinueOnError)
 			Flags(fs, "")
 
@@ -52,14 +58,16 @@ func TestFlags(t *testing.T) {
 
 			result := writer.String()
 
-			if result != tc.want {
-				t.Errorf("Flags() = `%s`, want `%s`", result, tc.want)
+			if result != testCase.want {
+				t.Errorf("Flags() = `%s`, want `%s`", result, testCase.want)
 			}
 		})
 	}
 }
 
 func TestGetNewRepositoryReleases(t *testing.T) {
+	t.Parallel()
+
 	type args struct {
 		repo model.Repository
 	}
@@ -108,14 +116,18 @@ func TestGetNewRepositoryReleases(t *testing.T) {
 		},
 	}
 
-	for intention, tc := range cases {
+	for intention, testCase := range cases {
+		intention, testCase := intention, testCase
+
 		t.Run(intention, func(t *testing.T) {
+			t.Parallel()
+
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
 			mockRepositoryService := mocks.NewRepositoryService(ctrl)
 
-			tc.instance.repositoryService = mockRepositoryService
+			testCase.instance.repositoryService = mockRepositoryService
 
 			switch intention {
 			case "empty":
@@ -138,14 +150,16 @@ func TestGetNewRepositoryReleases(t *testing.T) {
 				}, nil)
 			}
 
-			if got := tc.instance.getNewRepositoryReleases(context.Background(), tc.args.repo); !reflect.DeepEqual(got, tc.want) {
-				t.Errorf("getNewRepositoryReleases() = %+v, want %+v", got, tc.want)
+			if got := testCase.instance.getNewRepositoryReleases(context.Background(), testCase.args.repo); !reflect.DeepEqual(got, testCase.want) {
+				t.Errorf("getNewRepositoryReleases() = %+v, want %+v", got, testCase.want)
 			}
 		})
 	}
 }
 
 func TestGetKetchupToNotify(t *testing.T) {
+	t.Parallel()
+
 	type args struct {
 		ctx      context.Context
 		releases []model.Release
@@ -229,8 +243,12 @@ func TestGetKetchupToNotify(t *testing.T) {
 		},
 	}
 
-	for intention, tc := range cases {
+	for intention, testCase := range cases {
+		intention, testCase := intention, testCase
+
 		t.Run(intention, func(t *testing.T) {
+			t.Parallel()
+
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
@@ -293,28 +311,30 @@ func TestGetKetchupToNotify(t *testing.T) {
 				}, nil)
 			}
 
-			got, gotErr := instance.getKetchupToNotify(tc.args.ctx, tc.args.releases)
+			got, gotErr := instance.getKetchupToNotify(testCase.args.ctx, testCase.args.releases)
 
 			failed := false
 
-			if tc.wantErr == nil && gotErr != nil {
+			if testCase.wantErr == nil && gotErr != nil {
 				failed = true
-			} else if tc.wantErr != nil && gotErr == nil {
+			} else if testCase.wantErr != nil && gotErr == nil {
 				failed = true
-			} else if tc.wantErr != nil && !strings.Contains(gotErr.Error(), tc.wantErr.Error()) {
+			} else if testCase.wantErr != nil && !strings.Contains(gotErr.Error(), testCase.wantErr.Error()) {
 				failed = true
-			} else if !reflect.DeepEqual(got, tc.want) {
+			} else if !reflect.DeepEqual(got, testCase.want) {
 				failed = true
 			}
 
 			if failed {
-				t.Errorf("getKetchupToNotify() = (%+v, `%s`), want (%+v, `%s`)", got, gotErr, tc.want, tc.wantErr)
+				t.Errorf("getKetchupToNotify() = (%+v, `%s`), want (%+v, `%s`)", got, gotErr, testCase.want, testCase.wantErr)
 			}
 		})
 	}
 }
 
 func TestSendNotification(t *testing.T) {
+	t.Parallel()
+
 	type args struct {
 		ctx             context.Context
 		ketchupToNotify map[model.User][]model.Release
@@ -421,17 +441,21 @@ func TestSendNotification(t *testing.T) {
 		},
 	}
 
-	for intention, tc := range cases {
+	for intention, testCase := range cases {
+		intention, testCase := intention, testCase
+
 		t.Run(intention, func(t *testing.T) {
+			t.Parallel()
+
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
 			mailerApp := mocks.NewMailer(ctrl)
-			tc.instance.mailerApp = mailerApp
+			testCase.instance.mailerApp = mailerApp
 
 			switch intention {
 			case "no mailer":
-				tc.instance.mailerApp = nil
+				testCase.instance.mailerApp = nil
 			case "mailer disabled":
 				mailerApp.EXPECT().Enabled().Return(false)
 			case "mailer error":
@@ -441,20 +465,20 @@ func TestSendNotification(t *testing.T) {
 				mailerApp.EXPECT().Enabled().Return(false)
 			}
 
-			gotErr := tc.instance.sendNotification(tc.args.ctx, "ketchup", tc.args.ketchupToNotify)
+			gotErr := testCase.instance.sendNotification(testCase.args.ctx, "ketchup", testCase.args.ketchupToNotify)
 
 			failed := false
 
-			if tc.wantErr == nil && gotErr != nil {
+			if testCase.wantErr == nil && gotErr != nil {
 				failed = true
-			} else if tc.wantErr != nil && gotErr == nil {
+			} else if testCase.wantErr != nil && gotErr == nil {
 				failed = true
-			} else if tc.wantErr != nil && !strings.Contains(gotErr.Error(), tc.wantErr.Error()) {
+			} else if testCase.wantErr != nil && !strings.Contains(gotErr.Error(), testCase.wantErr.Error()) {
 				failed = true
 			}
 
 			if failed {
-				t.Errorf("sendNotification() = `%s`, want `%s`", gotErr, tc.wantErr)
+				t.Errorf("sendNotification() = `%s`, want `%s`", gotErr, testCase.wantErr)
 			}
 		})
 	}

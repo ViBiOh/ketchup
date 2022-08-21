@@ -46,6 +46,7 @@ import (
 	repositoryStore "github.com/ViBiOh/ketchup/pkg/store/repository"
 	userStore "github.com/ViBiOh/ketchup/pkg/store/user"
 	mailer "github.com/ViBiOh/mailer/pkg/client"
+	"go.opentelemetry.io/otel/trace"
 )
 
 const (
@@ -56,11 +57,11 @@ const (
 //go:embed templates static
 var content embed.FS
 
-func initAuth(db db.App, tracerApp tracer.App) (authService.App, authMiddleware.App) {
+func initAuth(db db.App, tracer trace.Tracer) (authService.App, authMiddleware.App) {
 	authProvider := authStore.New(db)
 	identProvider := authIdent.New(authProvider, "ketchup")
 
-	return authService.New(authProvider, authProvider), authMiddleware.New(authProvider, tracerApp, identProvider)
+	return authService.New(authProvider, authProvider), authMiddleware.New(authProvider, tracer, identProvider)
 }
 
 func main() {
@@ -113,7 +114,7 @@ func main() {
 
 	healthApp := health.New(healthConfig, ketchupDb.Ping, redisApp.Ping)
 
-	authServiceApp, authMiddlewareApp := initAuth(ketchupDb, tracerApp)
+	authServiceApp, authMiddlewareApp := initAuth(ketchupDb, tracerApp.GetTracer("auth"))
 
 	userServiceApp := userService.New(userStore.New(ketchupDb), &authServiceApp)
 	githubApp := github.New(githubConfig, redisApp, tracerApp)
@@ -124,7 +125,7 @@ func main() {
 	repositoryServiceApp := repositoryService.New(repositoryStore.New(ketchupDb), githubApp, helmApp, dockerApp, npmApp, pypiApp)
 	ketchupServiceApp := ketchupService.New(ketchupStore.New(ketchupDb), repositoryServiceApp)
 
-	mailerApp, err := mailer.New(mailerConfig, prometheusApp.Registerer())
+	mailerApp, err := mailer.New(mailerConfig, prometheusApp.Registerer(), tracerApp.GetTracer("mailer"))
 	logger.Fatal(err)
 	defer mailerApp.Close()
 
@@ -132,7 +133,7 @@ func main() {
 	logger.Fatal(err)
 
 	notifierApp := notifier.New(notifierConfig, repositoryServiceApp, ketchupServiceApp, userServiceApp, mailerApp, helmApp)
-	schedulerApp := scheduler.New(schedulerConfig, notifierApp, redisApp, tracerApp)
+	schedulerApp := scheduler.New(schedulerConfig, notifierApp, redisApp, tracerApp.GetTracer("scheduler"))
 	ketchupApp := ketchup.New(publicRendererApp, ketchupServiceApp, userServiceApp, repositoryServiceApp, redisApp)
 
 	publicHandler := publicRendererApp.Handler(ketchupApp.PublicTemplateFunc)

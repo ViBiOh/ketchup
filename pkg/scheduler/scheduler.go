@@ -11,7 +11,6 @@ import (
 	"github.com/ViBiOh/httputils/v4/pkg/cron"
 	"github.com/ViBiOh/httputils/v4/pkg/logger"
 	"github.com/ViBiOh/httputils/v4/pkg/redis"
-	"github.com/ViBiOh/httputils/v4/pkg/tracer"
 	"github.com/ViBiOh/ketchup/pkg/notifier"
 	"go.opentelemetry.io/otel/trace"
 )
@@ -46,7 +45,7 @@ func Flags(fs *flag.FlagSet, prefix string) Config {
 }
 
 // New creates new App from Config
-func New(config Config, notifierApp notifier.App, redisApp redis.App, tracerApp tracer.App) App {
+func New(config Config, notifierApp notifier.App, redisApp redis.App, tracer trace.Tracer) App {
 	if !*config.enabled {
 		return nil
 	}
@@ -56,7 +55,7 @@ func New(config Config, notifierApp notifier.App, redisApp redis.App, tracerApp 
 		hour:        strings.TrimSpace(*config.hour),
 		notifierApp: notifierApp,
 		redisApp:    redisApp,
-		tracer:      tracerApp.GetTracer("scheduler"),
+		tracer:      tracer,
 	}
 }
 
