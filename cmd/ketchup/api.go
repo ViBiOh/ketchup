@@ -134,7 +134,7 @@ func main() {
 
 	notifierApp := notifier.New(notifierConfig, repositoryServiceApp, ketchupServiceApp, userServiceApp, mailerApp, helmApp)
 	schedulerApp := scheduler.New(schedulerConfig, notifierApp, redisApp, tracerApp.GetTracer("scheduler"))
-	ketchupApp := ketchup.New(publicRendererApp, ketchupServiceApp, userServiceApp, repositoryServiceApp, redisApp)
+	ketchupApp := ketchup.New(publicRendererApp, ketchupServiceApp, userServiceApp, repositoryServiceApp, redisApp, tracerApp)
 
 	publicHandler := publicRendererApp.Handler(ketchupApp.PublicTemplateFunc)
 	signupHandler := http.StripPrefix(signupPath, ketchupApp.Signup())

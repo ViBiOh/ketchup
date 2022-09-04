@@ -6,7 +6,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/ViBiOh/httputils/v4/pkg/cache"
 	"github.com/ViBiOh/httputils/v4/pkg/logger"
 	httpModel "github.com/ViBiOh/httputils/v4/pkg/model"
 	"github.com/ViBiOh/httputils/v4/pkg/renderer"
@@ -76,7 +75,7 @@ func (a App) handleCreate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := cache.EvictOnSuccess(ctx, a.redisApp, suggestCacheKey(model.ReadUser(ctx)), nil); err != nil {
+	if err := a.cacheApp.EvictOnSuccess(ctx, model.ReadUser(ctx), nil); err != nil {
 		logger.Error("evict suggests cache: %s", err)
 	}
 
@@ -135,7 +134,7 @@ func (a App) handleDelete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := cache.EvictOnSuccess(ctx, a.redisApp, suggestCacheKey(model.ReadUser(ctx)), nil); err != nil {
+	if err := a.cacheApp.EvictOnSuccess(ctx, model.ReadUser(ctx), nil); err != nil {
 		logger.Error("evict suggests cache: %s", err)
 	}
 

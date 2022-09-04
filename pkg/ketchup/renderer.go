@@ -3,9 +3,7 @@ package ketchup
 import (
 	"context"
 	"net/http"
-	"time"
 
-	"github.com/ViBiOh/httputils/v4/pkg/cache"
 	"github.com/ViBiOh/httputils/v4/pkg/logger"
 	"github.com/ViBiOh/httputils/v4/pkg/query"
 	"github.com/ViBiOh/httputils/v4/pkg/renderer"
@@ -74,9 +72,7 @@ func (a App) suggests(ctx context.Context, ignoreIds []model.Identifier, count u
 		ignoreIds = []model.Identifier{0}
 	}
 
-	items, err := cache.Retrieve(ctx, a.redisApp, suggestCacheKey(user), func(ctx context.Context) ([]model.Repository, error) {
-		return a.repositoryService.Suggest(ctx, ignoreIds, count)
-	}, time.Hour*24)
+	items, err := a.cacheApp.Get(countToCtx(ignoresIdsToCtx(ctx, ignoreIds), count), user)
 	if err != nil {
 		logger.Warn("get suggests: %s", err)
 		return nil

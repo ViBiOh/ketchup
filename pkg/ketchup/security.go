@@ -67,7 +67,7 @@ func (a App) validateToken(ctx context.Context, token, answer string) bool {
 		return false
 	}
 
-	questionID, err := strconv.ParseInt(questionIDString, 10, 64)
+	questionID, err := strconv.ParseInt(string(questionIDString), 10, 64)
 	if err != nil {
 		logger.Error("question id is not numerical: %s", err)
 		return false
