@@ -88,5 +88,5 @@ func (a App) cleanToken(ctx context.Context, token string) {
 }
 
 func tokenKey(token string) string {
-	return fmt.Sprintf("%s:token:%s", cachePrefix(), token)
+	return fmt.Sprintf("%s:token:%s", cachePrefix, token)
 }

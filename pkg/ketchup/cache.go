@@ -7,15 +7,15 @@ import (
 	"github.com/ViBiOh/ketchup/pkg/model"
 )
 
-var cacheVersion = sha.New("vibioh/ketchup/1")[:8]
-
-func cachePrefix() string {
-	return "ketchup:" + cacheVersion
-}
+var (
+	cacheVersion     = sha.New("vibioh/ketchup/1")[:8]
+	cachePrefix      = "ketchup:" + cacheVersion
+	cacheSuggestsKey = cachePrefix + ":suggests"
+)
 
 func suggestCacheKey(user model.User) string {
 	if user.IsZero() {
-		return cachePrefix() + ":suggests"
+		return cacheSuggestsKey
 	}
-	return fmt.Sprintf("%s:user:%d:suggests", cachePrefix(), user.ID)
+	return fmt.Sprintf("%s:user:%d:suggests", cachePrefix, user.ID)
 }
