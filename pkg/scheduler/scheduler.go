@@ -17,7 +17,7 @@ import (
 
 // App of package
 type App interface {
-	Start(<-chan struct{})
+	Start(context.Context)
 }
 
 // Config of package
@@ -59,12 +59,12 @@ func New(config Config, notifierApp notifier.App, redisApp redis.App, tracer tra
 	}
 }
 
-func (a app) Start(done <-chan struct{}) {
+func (a app) Start(ctx context.Context) {
 	cron.New().At(a.hour).In(a.timezone).Days().WithTracer(a.tracer).OnError(func(err error) {
 		logger.Error("error while running ketchup notify: %s", err)
-	}).OnSignal(syscall.SIGUSR1).Exclusive(a.redisApp, "ketchup:notify", 10*time.Minute).Start(func(ctx context.Context) error {
+	}).OnSignal(syscall.SIGUSR1).Exclusive(a.redisApp, "ketchup:notify", 10*time.Minute).Start(ctx, func(ctx context.Context) error {
 		logger.Info("Starting ketchup notifier")
 		defer logger.Info("Ending ketchup notifier")
 		return a.notifierApp.Notify(ctx)
-	}, done)
+	})
 }

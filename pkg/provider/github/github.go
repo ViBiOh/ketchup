@@ -12,6 +12,7 @@ import (
 	"github.com/ViBiOh/httputils/v4/pkg/cron"
 	"github.com/ViBiOh/httputils/v4/pkg/httpjson"
 	"github.com/ViBiOh/httputils/v4/pkg/logger"
+	httpModel "github.com/ViBiOh/httputils/v4/pkg/model"
 	"github.com/ViBiOh/httputils/v4/pkg/request"
 	"github.com/ViBiOh/httputils/v4/pkg/tracer"
 	"github.com/ViBiOh/ketchup/pkg/model"
@@ -51,7 +52,7 @@ type RateLimitResponse struct {
 
 // App of package
 type App interface {
-	Start(prometheus.Registerer, <-chan struct{})
+	Start(context.Context)
 	LatestVersions(context.Context, string, []string) (map[string]semver.Version, error)
 }
 
@@ -63,6 +64,7 @@ type Config struct {
 type app struct {
 	tracer   trace.Tracer
 	redisApp redis
+	metrics  prometheus.Gauge
 	token    string
 }
 
@@ -74,13 +76,23 @@ func Flags(fs *flag.FlagSet, prefix string) Config {
 }
 
 // New creates new App from Config
-func New(config Config, redisApp redis, tracerApp tracer.App) App {
+func New(config Config, redisApp redis, registerer prometheus.Registerer, tracerApp tracer.App) App {
 	httpClient = tracer.AddTracerToClient(httpClient, tracerApp.GetProvider())
+
+	var metrics prometheus.Gauge
+	if !httpModel.IsNil(registerer) {
+		metrics := prometheus.NewGauge(prometheus.GaugeOpts{
+			Namespace: "ketchup",
+			Name:      "github_rate_limit_remainings",
+		})
+		registerer.MustRegister(metrics)
+	}
 
 	return app{
 		token:    strings.TrimSpace(*config.token),
 		redisApp: redisApp,
 		tracer:   tracerApp.GetTracer("github"),
+		metrics:  metrics,
 	}
 }
 
@@ -88,24 +100,22 @@ func (a app) newClient() request.Request {
 	return request.New().Header("Authorization", fmt.Sprintf("token %s", a.token)).WithClient(httpClient)
 }
 
-func (a app) Start(registerer prometheus.Registerer, done <-chan struct{}) {
-	metrics := prometheus.NewGauge(prometheus.GaugeOpts{
-		Namespace: "ketchup",
-		Name:      "github_rate_limit_remainings",
-	})
-	registerer.MustRegister(metrics)
+func (a app) Start(ctx context.Context) {
+	if httpModel.IsNil(a.metrics) {
+		return
+	}
 
 	cron.New().Now().Each(time.Minute).WithTracer(a.tracer).OnError(func(err error) {
 		logger.Error("get rate limit metrics: %s", err)
-	}).Exclusive(a.redisApp, "ketchup:github_rate_limit_metrics", 15*time.Second).Start(func(ctx context.Context) error {
+	}).Exclusive(a.redisApp, "ketchup:github_rate_limit_metrics", 15*time.Second).Start(ctx, func(ctx context.Context) error {
 		value, err := a.getRateLimit(ctx)
 		if err != nil {
 			return err
 		}
 
-		metrics.Set(float64(value))
+		a.metrics.Set(float64(value))
 		return nil
-	}, done)
+	})
 }
 
 func (a app) LatestVersions(ctx context.Context, repository string, patterns []string) (map[string]semver.Version, error) {
