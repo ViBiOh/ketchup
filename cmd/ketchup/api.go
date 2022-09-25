@@ -105,19 +105,20 @@ func main() {
 	appServer := server.New(appServerConfig)
 	promServer := server.New(promServerConfig)
 	prometheusApp := prometheus.New(prometheusConfig)
+	prometheusRegisterer := prometheusApp.Registerer()
 
 	ketchupDb, err := db.New(dbConfig, tracerApp.GetTracer("database"))
 	logger.Fatal(err)
 	defer ketchupDb.Close()
 
-	redisApp := redis.New(redisConfig, prometheusApp.Registerer(), tracerApp.GetTracer("redis"))
+	redisApp := redis.New(redisConfig, prometheusRegisterer, tracerApp.GetTracer("redis"))
 
 	healthApp := health.New(healthConfig, ketchupDb.Ping, redisApp.Ping)
 
 	authServiceApp, authMiddlewareApp := initAuth(ketchupDb, tracerApp.GetTracer("auth"))
 
 	userServiceApp := userService.New(userStore.New(ketchupDb), &authServiceApp)
-	githubApp := github.New(githubConfig, redisApp, tracerApp)
+	githubApp := github.New(githubConfig, redisApp, prometheusRegisterer, tracerApp)
 	dockerApp := docker.New(dockerConfig)
 	helmApp := helm.New()
 	npmApp := npm.New()
@@ -125,7 +126,7 @@ func main() {
 	repositoryServiceApp := repositoryService.New(repositoryStore.New(ketchupDb), githubApp, helmApp, dockerApp, npmApp, pypiApp)
 	ketchupServiceApp := ketchupService.New(ketchupStore.New(ketchupDb), repositoryServiceApp)
 
-	mailerApp, err := mailer.New(mailerConfig, prometheusApp.Registerer(), tracerApp.GetTracer("mailer"))
+	mailerApp, err := mailer.New(mailerConfig, prometheusRegisterer, tracerApp.GetTracer("mailer"))
 	logger.Fatal(err)
 	defer mailerApp.Close()
 
@@ -154,9 +155,11 @@ func main() {
 		publicHandler.ServeHTTP(w, r)
 	})
 
-	go githubApp.Start(prometheusApp.Registerer(), healthApp.Done())
+	ctx := healthApp.Context()
+
+	go githubApp.Start(ctx)
 	if schedulerApp != nil {
-		go schedulerApp.Start(healthApp.Done())
+		go schedulerApp.Start(ctx)
 	}
 
 	go promServer.Start("prometheus", healthApp.End(), prometheusApp.Handler())
