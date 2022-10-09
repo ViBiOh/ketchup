@@ -5,7 +5,7 @@ go 1.19
 require (
 	github.com/ViBiOh/auth/v2 v2.14.12
 	github.com/ViBiOh/flags v1.2.0
-	github.com/ViBiOh/httputils/v4 v4.48.2
+	github.com/ViBiOh/httputils/v4 v4.49.2
 	github.com/ViBiOh/mailer v1.30.10
 	github.com/golang/mock v1.6.0
 	github.com/jackc/pgconn v1.13.0
@@ -36,8 +36,8 @@ require (
 	github.com/prometheus/common v0.37.0 // indirect
 	github.com/prometheus/procfs v0.8.0 // indirect
 	github.com/streadway/amqp v1.0.0 // indirect
-	github.com/tdewolff/minify/v2 v2.12.2 // indirect
-	github.com/tdewolff/parse/v2 v2.6.3 // indirect
+	github.com/tdewolff/minify/v2 v2.12.4 // indirect
+	github.com/tdewolff/parse/v2 v2.6.4 // indirect
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.36.1 // indirect
 	go.opentelemetry.io/otel v1.10.0 // indirect
 	go.opentelemetry.io/otel/exporters/jaeger v1.10.0 // indirect
