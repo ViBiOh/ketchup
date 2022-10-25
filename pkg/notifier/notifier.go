@@ -221,6 +221,12 @@ func (a App) handleKetchupNotification(ctx context.Context, usersToNotify map[mo
 	}
 
 	if usersToNotify[ketchup.User] != nil {
+		for _, userRelease := range usersToNotify[ketchup.User] {
+			if userRelease.Repository.ID == release.Repository.ID {
+				return
+			}
+		}
+
 		usersToNotify[ketchup.User] = append(usersToNotify[ketchup.User], release)
 	} else {
 		usersToNotify[ketchup.User] = []model.Release{release}
