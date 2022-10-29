@@ -5,8 +5,8 @@ go 1.19
 require (
 	github.com/ViBiOh/auth/v2 v2.14.17
 	github.com/ViBiOh/flags v1.2.0
-	github.com/ViBiOh/httputils/v4 v4.49.5
-	github.com/ViBiOh/mailer v1.30.15
+	github.com/ViBiOh/httputils/v4 v4.49.6
+	github.com/ViBiOh/mailer v1.30.16
 	github.com/golang/mock v1.6.0
 	github.com/jackc/pgconn v1.13.0
 	github.com/jackc/pgproto3/v2 v2.3.1
