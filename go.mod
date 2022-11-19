@@ -5,7 +5,7 @@ go 1.19
 require (
 	github.com/ViBiOh/auth/v2 v2.14.20
 	github.com/ViBiOh/flags v1.2.0
-	github.com/ViBiOh/httputils/v4 v4.50.2
+	github.com/ViBiOh/httputils/v4 v4.50.3
 	github.com/ViBiOh/mailer v1.30.18
 	github.com/golang/mock v1.6.0
 	github.com/jackc/pgconn v1.13.0
@@ -43,7 +43,7 @@ require (
 	go.opentelemetry.io/otel/exporters/jaeger v1.11.1 // indirect
 	go.opentelemetry.io/otel/metric v0.33.0 // indirect
 	go.opentelemetry.io/otel/sdk v1.11.1 // indirect
-	golang.org/x/crypto v0.2.0 // indirect
+	golang.org/x/crypto v0.3.0 // indirect
 	golang.org/x/sys v0.2.0 // indirect
 	golang.org/x/term v0.2.0 // indirect
 	golang.org/x/text v0.4.0 // indirect
