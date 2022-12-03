@@ -162,12 +162,12 @@ func (a App) getKetchupToNotify(ctx context.Context, releases []model.Release) (
 	return userToNotify, nil
 }
 
-func releaseKey(r model.Release) string {
-	return fmt.Sprintf("%10d|%s", r.Repository.ID, r.Pattern)
+func releaseKey(r model.Release) []byte {
+	return []byte(fmt.Sprintf("%10d|%s", r.Repository.ID, r.Pattern))
 }
 
-func ketchupKey(k model.Ketchup) string {
-	return fmt.Sprintf("%10d|%s", k.Repository.ID, k.Pattern)
+func ketchupKey(k model.Ketchup) []byte {
+	return []byte(fmt.Sprintf("%10d|%s", k.Repository.ID, k.Pattern))
 }
 
 func (a App) syncReleasesByUser(ctx context.Context, releases []model.Release, ketchups []model.Ketchup) map[model.User][]model.Release {
@@ -178,7 +178,7 @@ func (a App) syncReleasesByUser(ctx context.Context, releases []model.Release, k
 
 	err := breaksync.NewSynchronization().
 		AddSources(
-			breaksync.NewSliceSource(releases, releaseKey, breaksync.NewRupture("release", breaksync.Identity)),
+			breaksync.NewSliceSource(releases, releaseKey, breaksync.NewRupture("release", breaksync.RuptureIdentity)),
 			breaksync.NewSliceSource(ketchups, ketchupKey, nil),
 		).
 		Run(func(synchronised uint64, items []any) error {
