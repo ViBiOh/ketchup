@@ -5,6 +5,8 @@ import (
 	"fmt"
 )
 
+var ErrPatternInvalid = errors.New("pattern is invalid")
+
 type operation int
 
 const (
@@ -63,7 +65,7 @@ func (p Pattern) Check(version Version) bool {
 // ParsePattern parse given constraint to extract pattern matcher
 func ParsePattern(pattern string) (Pattern, error) {
 	if len(pattern) < 2 {
-		return Pattern{}, errors.New("pattern is invalid")
+		return Pattern{}, ErrPatternInvalid
 	}
 
 	if pattern == "latest" {

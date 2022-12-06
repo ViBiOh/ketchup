@@ -1,6 +1,7 @@
 package ketchup
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -10,6 +11,7 @@ import (
 	httpModel "github.com/ViBiOh/httputils/v4/pkg/model"
 	"github.com/ViBiOh/httputils/v4/pkg/renderer"
 	"github.com/ViBiOh/ketchup/pkg/model"
+	"github.com/ViBiOh/ketchup/pkg/semver"
 )
 
 func (a App) ketchups() http.Handler {
@@ -71,7 +73,7 @@ func (a App) handleCreate(w http.ResponseWriter, r *http.Request) {
 
 	created, err := a.ketchupService.Create(r.Context(), item)
 	if err != nil {
-		a.rendererApp.Error(w, r, nil, err)
+		a.rendererApp.Error(w, r, nil, toHttpError(err))
 		return
 	}
 
@@ -86,7 +88,7 @@ func (a App) handleUpdate(w http.ResponseWriter, r *http.Request) {
 	rawID := strings.Trim(r.URL.Path, "/")
 	if rawID == "all" {
 		if err := a.ketchupService.UpdateAll(r.Context()); err != nil {
-			a.rendererApp.Error(w, r, nil, err)
+			a.rendererApp.Error(w, r, nil, toHttpError(err))
 		} else {
 			a.rendererApp.Redirect(w, r, fmt.Sprintf("%s/", appPath), renderer.NewSuccessMessage("All ketchups are up-to-date!"))
 		}
@@ -112,7 +114,7 @@ func (a App) handleUpdate(w http.ResponseWriter, r *http.Request) {
 
 	updated, err := a.ketchupService.Update(r.Context(), r.FormValue("old-pattern"), item)
 	if err != nil {
-		a.rendererApp.Error(w, r, nil, err)
+		a.rendererApp.Error(w, r, nil, toHttpError(err))
 		return
 	}
 
@@ -130,7 +132,7 @@ func (a App) handleDelete(w http.ResponseWriter, r *http.Request) {
 	item := model.NewKetchup(r.FormValue("pattern"), "", model.Daily, false, model.NewGithubRepository(model.Identifier(id), "")).WithID()
 
 	if err := a.ketchupService.Delete(ctx, item); err != nil {
-		a.rendererApp.Error(w, r, nil, err)
+		a.rendererApp.Error(w, r, nil, toHttpError(err))
 		return
 	}
 
@@ -139,4 +141,13 @@ func (a App) handleDelete(w http.ResponseWriter, r *http.Request) {
 	}
 
 	a.rendererApp.Redirect(w, r, fmt.Sprintf("%s/", appPath), renderer.NewSuccessMessage("Deleted with success!"))
+}
+
+func toHttpError(err error) error {
+	switch {
+	case errors.Is(err, semver.ErrPatternInvalid):
+		return httpModel.WrapInvalid(err)
+	default:
+		return err
+	}
 }
