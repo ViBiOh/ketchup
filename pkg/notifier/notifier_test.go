@@ -11,7 +11,6 @@ import (
 	"time"
 
 	authModel "github.com/ViBiOh/auth/v2/pkg/model"
-	"github.com/ViBiOh/httputils/v4/pkg/clock"
 	"github.com/ViBiOh/ketchup/pkg/mocks"
 	"github.com/ViBiOh/ketchup/pkg/model"
 	"github.com/ViBiOh/ketchup/pkg/semver"
@@ -256,7 +255,7 @@ func TestGetKetchupToNotify(t *testing.T) {
 
 			instance := App{
 				ketchupService: mockKetchupService,
-				clock:          clock.New(time.Unix(1609459200, 0)),
+				clock:          func() time.Time { return time.Unix(1609459200, 0) },
 			}
 
 			switch intention {

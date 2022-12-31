@@ -65,8 +65,6 @@ func TestGetNewStandardReleases(t *testing.T) {
 		},
 	}
 
-	pageSize = 20
-
 	for intention, testCase := range cases {
 		intention, testCase := intention, testCase
 
