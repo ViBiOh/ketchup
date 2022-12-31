@@ -10,7 +10,6 @@ import (
 
 	"github.com/ViBiOh/flags"
 	"github.com/ViBiOh/httputils/v4/pkg/breaksync"
-	"github.com/ViBiOh/httputils/v4/pkg/clock"
 	"github.com/ViBiOh/httputils/v4/pkg/logger"
 	"github.com/ViBiOh/ketchup/pkg/model"
 	"github.com/ViBiOh/ketchup/pkg/semver"
@@ -19,38 +18,34 @@ import (
 	"github.com/prometheus/client_golang/prometheus/push"
 )
 
+type GetNow func() time.Time
+
 var pageSize = uint(20)
 
-// App of package
 type App struct {
 	repositoryService model.RepositoryService
 	ketchupService    model.KetchupService
 	userService       user.App
 	mailerApp         model.Mailer
 	helmApp           model.HelmProvider
-
-	clock clock.Clock
-
-	pushURL string
+	clock             GetNow
+	pushURL           string
 }
 
-// Config of package
 type Config struct {
 	pushURL *string
 }
 
-// Flags adds flags for configuring package
 func Flags(fs *flag.FlagSet, prefix string) Config {
 	return Config{
 		pushURL: flags.String(fs, prefix, "notifier", "PushUrl", "Pushgateway URL", "", nil),
 	}
 }
 
-// New creates new App from Config
 func New(config Config, repositoryService model.RepositoryService, ketchupService model.KetchupService, userService user.App, mailerApp model.Mailer, helmApp model.HelmProvider) App {
 	return App{
-		pushURL: strings.TrimSpace(*config.pushURL),
-
+		pushURL:           strings.TrimSpace(*config.pushURL),
+		clock:             time.Now,
 		repositoryService: repositoryService,
 		ketchupService:    ketchupService,
 		userService:       userService,
@@ -59,7 +54,6 @@ func New(config Config, repositoryService model.RepositoryService, ketchupServic
 	}
 }
 
-// Notify users for new ketchup
 func (a App) Notify(ctx context.Context) error {
 	if err := a.repositoryService.Clean(ctx); err != nil {
 		return fmt.Errorf("clean repository before starting: %w", err)
@@ -147,7 +141,7 @@ func (a App) getKetchupToNotify(ctx context.Context, releases []model.Release) (
 
 	userToNotify := a.syncReleasesByUser(ctx, releases, ketchups)
 
-	if a.clock.Now().Weekday() == time.Monday {
+	if a.clock().Weekday() == time.Monday {
 		weeklyKetchups, err := a.ketchupService.ListOutdated(ctx)
 		if err != nil {
 			return nil, fmt.Errorf("get weekly ketchups: %w", err)
@@ -283,7 +277,6 @@ func (a App) sendNotification(ctx context.Context, template string, ketchupToNot
 	return nil
 }
 
-// Remind users for new ketchup
 func (a App) Remind(ctx context.Context) error {
 	usersToRemind, err := a.userService.ListReminderUsers(ctx)
 	if err != nil {
