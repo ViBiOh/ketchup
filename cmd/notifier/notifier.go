@@ -44,13 +44,15 @@ func main() {
 	logger.Global(logger.New(loggerConfig))
 	defer logger.Close()
 
-	ketchupDb, err := db.New(dbConfig, nil)
+	ctx := context.Background()
+
+	ketchupDb, err := db.New(ctx, dbConfig, nil)
 	logger.Fatal(err)
 	defer ketchupDb.Close()
 
-	tracerApp, err := tracer.New(tracerConfig)
+	tracerApp, err := tracer.New(ctx, tracerConfig)
 	logger.Fatal(err)
-	defer tracerApp.Close()
+	defer tracerApp.Close(ctx)
 	request.AddTracerToDefaultClient(tracerApp.GetProvider())
 
 	mailerApp, err := mailer.New(mailerConfig, nil, tracerApp.GetTracer("mailer"))
