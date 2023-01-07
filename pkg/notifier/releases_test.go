@@ -30,7 +30,7 @@ func TestGetNewStandardReleases(t *testing.T) {
 		"list error": {
 			App{},
 			args{
-				ctx: context.Background(),
+				ctx: context.TODO(),
 			},
 			nil,
 			errors.New("failed"),
@@ -38,7 +38,7 @@ func TestGetNewStandardReleases(t *testing.T) {
 		"github error": {
 			App{},
 			args{
-				ctx: context.Background(),
+				ctx: context.TODO(),
 			},
 			nil,
 			nil,
@@ -46,7 +46,7 @@ func TestGetNewStandardReleases(t *testing.T) {
 		"same version": {
 			App{},
 			args{
-				ctx: context.Background(),
+				ctx: context.TODO(),
 			},
 			nil,
 			nil,
@@ -54,7 +54,7 @@ func TestGetNewStandardReleases(t *testing.T) {
 		"success": {
 			App{},
 			args{
-				ctx: context.Background(),
+				ctx: context.TODO(),
 			},
 			[]model.Release{model.NewRelease(
 				model.NewGithubRepository(model.Identifier(1), repositoryName).AddVersion(model.DefaultPattern, repositoryVersion),
@@ -238,7 +238,7 @@ func TestGetNewHelmReleases(t *testing.T) {
 				}, nil)
 			}
 
-			got, gotCount, gotErr := testCase.instance.getNewHelmReleases(context.Background())
+			got, gotCount, gotErr := testCase.instance.getNewHelmReleases(context.TODO())
 
 			failed := false
 

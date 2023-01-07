@@ -192,7 +192,7 @@ func TestList(t *testing.T) {
 				mockDatabase.EXPECT().List(gomock.Any(), gomock.Any(), gomock.Any(), uint(20)).DoAndReturn(dummyFn)
 			}
 
-			got, gotCount, gotErr := instance.List(context.Background(), testCase.args.pageSize, testCase.args.last)
+			got, gotCount, gotErr := instance.List(context.TODO(), testCase.args.pageSize, testCase.args.last)
 			failed := false
 
 			if testCase.wantErr == nil && gotErr != nil {
@@ -306,7 +306,7 @@ func TestSuggest(t *testing.T) {
 				mockDatabase.EXPECT().List(gomock.Any(), gomock.Any(), gomock.Any(), []model.Identifier{1, 2}).DoAndReturn(enrichFn)
 			}
 
-			got, gotErr := instance.Suggest(context.Background(), testCase.args.ignoreIds, testCase.args.count)
+			got, gotErr := instance.Suggest(context.TODO(), testCase.args.ignoreIds, testCase.args.count)
 			failed := false
 
 			if testCase.wantErr == nil && gotErr != nil {
@@ -429,7 +429,7 @@ func TestGet(t *testing.T) {
 				mockDatabase.EXPECT().Get(gomock.Any(), gomock.Any(), gomock.Any(), model.Identifier(1)).DoAndReturn(dummyFn)
 			}
 
-			got, gotErr := instance.Get(context.Background(), testCase.args.id, testCase.args.forUpdate)
+			got, gotErr := instance.Get(context.TODO(), testCase.args.id, testCase.args.forUpdate)
 
 			failed := false
 
@@ -559,7 +559,7 @@ func TestCreate(t *testing.T) {
 				mockDatabase.EXPECT().One(gomock.Any(), gomock.Any(), model.Identifier(1), model.DefaultPattern, "1.0.0").Return(nil)
 			}
 
-			got, gotErr := instance.Create(context.Background(), testCase.args.o)
+			got, gotErr := instance.Create(context.TODO(), testCase.args.o)
 
 			failed := false
 
@@ -609,7 +609,7 @@ func TestDeleteUnused(t *testing.T) {
 				mockDatabase.EXPECT().Exec(gomock.Any(), gomock.Any()).Return(nil)
 			}
 
-			gotErr := instance.DeleteUnused(context.Background())
+			gotErr := instance.DeleteUnused(context.TODO())
 
 			failed := false
 
@@ -653,7 +653,7 @@ func TestDeleteUnusedVersions(t *testing.T) {
 				mockDatabase.EXPECT().Exec(gomock.Any(), gomock.Any()).Return(nil)
 			}
 
-			gotErr := instance.DeleteUnusedVersions(context.Background())
+			gotErr := instance.DeleteUnusedVersions(context.TODO())
 
 			failed := false
 

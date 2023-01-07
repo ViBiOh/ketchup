@@ -81,7 +81,7 @@ func TestGetByEmail(t *testing.T) {
 				mockDatabase.EXPECT().Get(gomock.Any(), gomock.Any(), gomock.Any(), testEmail).DoAndReturn(dummyFn)
 			}
 
-			got, gotErr := instance.GetByEmail(context.Background(), testCase.args.email)
+			got, gotErr := instance.GetByEmail(context.TODO(), testCase.args.email)
 
 			failed := false
 
@@ -164,7 +164,7 @@ func TestGetByLoginID(t *testing.T) {
 				mockDatabase.EXPECT().Get(gomock.Any(), gomock.Any(), gomock.Any(), uint64(2)).DoAndReturn(dummyFn)
 			}
 
-			got, gotErr := instance.GetByLoginID(context.Background(), testCase.args.loginID)
+			got, gotErr := instance.GetByLoginID(context.TODO(), testCase.args.loginID)
 
 			failed := false
 
@@ -224,7 +224,7 @@ func TestCreate(t *testing.T) {
 				mockDatabase.EXPECT().Create(gomock.Any(), gomock.Any(), testEmail, uint64(1)).Return(uint64(1), nil)
 			}
 
-			got, gotErr := instance.Create(context.Background(), testCase.args.o)
+			got, gotErr := instance.Create(context.TODO(), testCase.args.o)
 
 			failed := false
 
@@ -281,7 +281,7 @@ func TestCount(t *testing.T) {
 				mockDatabase.EXPECT().Get(gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(dummyFn)
 			}
 
-			got, gotErr := instance.Count(context.Background())
+			got, gotErr := instance.Count(context.TODO())
 
 			failed := false
 

@@ -1,7 +1,6 @@
 package ketchup
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -9,6 +8,7 @@ import (
 	authModel "github.com/ViBiOh/auth/v2/pkg/model"
 	httpModel "github.com/ViBiOh/httputils/v4/pkg/model"
 	"github.com/ViBiOh/httputils/v4/pkg/renderer"
+	"github.com/ViBiOh/httputils/v4/pkg/tracer"
 	"github.com/ViBiOh/ketchup/pkg/model"
 )
 
@@ -41,7 +41,7 @@ func (a App) Signup() http.Handler {
 			return
 		}
 
-		go a.cleanToken(context.Background(), token)
+		go a.cleanToken(tracer.CopyToBackground(r.Context()), token)
 
 		a.rendererApp.Redirect(w, r, fmt.Sprintf("%s/", appPath), renderer.NewSuccessMessage("Welcome to ketchup!"))
 	})

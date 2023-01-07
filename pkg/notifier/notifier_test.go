@@ -149,7 +149,7 @@ func TestGetNewRepositoryReleases(t *testing.T) {
 				}, nil)
 			}
 
-			if got := testCase.instance.getNewRepositoryReleases(context.Background(), testCase.args.repo); !reflect.DeepEqual(got, testCase.want) {
+			if got := testCase.instance.getNewRepositoryReleases(context.TODO(), testCase.args.repo); !reflect.DeepEqual(got, testCase.want) {
 				t.Errorf("getNewRepositoryReleases() = %+v, want %+v", got, testCase.want)
 			}
 		})
@@ -171,21 +171,21 @@ func TestGetKetchupToNotify(t *testing.T) {
 	}{
 		"list error": {
 			args{
-				ctx: context.Background(),
+				ctx: context.TODO(),
 			},
 			nil,
 			errors.New("failed"),
 		},
 		"empty": {
 			args{
-				ctx: context.Background(),
+				ctx: context.TODO(),
 			},
 			make(map[model.User][]model.Release),
 			nil,
 		},
 		"one release, n ketchups": {
 			args{
-				ctx: context.Background(),
+				ctx: context.TODO(),
 				releases: []model.Release{
 					{
 						Pattern: model.DefaultPattern,
@@ -347,7 +347,7 @@ func TestSendNotification(t *testing.T) {
 		"empty": {
 			App{},
 			args{
-				ctx:             context.Background(),
+				ctx:             context.TODO(),
 				ketchupToNotify: nil,
 			},
 			nil,
@@ -355,7 +355,7 @@ func TestSendNotification(t *testing.T) {
 		"no mailer": {
 			App{},
 			args{
-				ctx: context.Background(),
+				ctx: context.TODO(),
 				ketchupToNotify: map[model.User][]model.Release{
 					{
 						ID:    1,
@@ -375,7 +375,7 @@ func TestSendNotification(t *testing.T) {
 		"mailer disabled": {
 			App{},
 			args{
-				ctx: context.Background(),
+				ctx: context.TODO(),
 				ketchupToNotify: map[model.User][]model.Release{
 					{
 						ID:    1,
@@ -415,7 +415,7 @@ func TestSendNotification(t *testing.T) {
 		"multiple releases": {
 			App{},
 			args{
-				ctx: context.Background(),
+				ctx: context.TODO(),
 				ketchupToNotify: map[model.User][]model.Release{
 					{
 						ID:    1,

@@ -15,7 +15,7 @@ import (
 )
 
 var (
-	testCtx = model.StoreUser(context.Background(), model.NewUser(3, testEmail, authModel.NewUser(0, "")))
+	testCtx = model.StoreUser(context.TODO(), model.NewUser(3, testEmail, authModel.NewUser(0, "")))
 
 	testEmail       = "nobody@localhost"
 	repositoryName  = "vibioh/ketchup"

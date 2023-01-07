@@ -35,28 +35,28 @@ func TestStoreInContext(t *testing.T) {
 		"no login user": {
 			App{},
 			args{
-				ctx: context.Background(),
+				ctx: context.TODO(),
 			},
 			model.User{},
 		},
 		"get error": {
 			App{},
 			args{
-				ctx: authModel.StoreUser(context.Background(), authModel.NewUser(1, "")),
+				ctx: authModel.StoreUser(context.TODO(), authModel.NewUser(1, "")),
 			},
 			model.User{},
 		},
 		"not found login": {
 			App{},
 			args{
-				ctx: authModel.StoreUser(context.Background(), authModel.NewUser(1, "")),
+				ctx: authModel.StoreUser(context.TODO(), authModel.NewUser(1, "")),
 			},
 			model.User{},
 		},
 		"valid": {
 			App{},
 			args{
-				ctx: authModel.StoreUser(context.Background(), authModel.NewUser(1, "")),
+				ctx: authModel.StoreUser(context.TODO(), authModel.NewUser(1, "")),
 			},
 			model.NewUser(1, testEmail, authModel.NewUser(0, "")),
 		},
@@ -107,7 +107,7 @@ func TestCreate(t *testing.T) {
 		"invalid user": {
 			App{},
 			args{
-				ctx:  context.Background(),
+				ctx:  context.TODO(),
 				item: model.NewUser(1, "", authModel.NewUser(1, "")),
 			},
 			model.User{},
@@ -116,7 +116,7 @@ func TestCreate(t *testing.T) {
 		"invalid auth": {
 			App{},
 			args{
-				ctx:  context.Background(),
+				ctx:  context.TODO(),
 				item: model.NewUser(0, testEmail, authModel.NewUser(0, "")),
 			},
 			model.User{},
@@ -125,7 +125,7 @@ func TestCreate(t *testing.T) {
 		"start atomic error": {
 			App{},
 			args{
-				ctx:  context.Background(),
+				ctx:  context.TODO(),
 				item: model.NewUser(1, testEmail, authModel.NewUser(1, "")),
 			},
 			model.User{},
@@ -134,7 +134,7 @@ func TestCreate(t *testing.T) {
 		"login create error": {
 			App{},
 			args{
-				ctx:  context.Background(),
+				ctx:  context.TODO(),
 				item: model.NewUser(1, testEmail, authModel.NewUser(1, "")),
 			},
 			model.User{},
@@ -143,7 +143,7 @@ func TestCreate(t *testing.T) {
 		"user create error": {
 			App{},
 			args{
-				ctx:  context.Background(),
+				ctx:  context.TODO(),
 				item: model.NewUser(2, testEmail, authModel.NewUser(2, "")),
 			},
 			model.User{},
@@ -152,7 +152,7 @@ func TestCreate(t *testing.T) {
 		"success": {
 			App{},
 			args{
-				ctx:  context.Background(),
+				ctx:  context.TODO(),
 				item: model.NewUser(2, testEmail, authModel.NewUser(2, "")),
 			},
 			model.NewUser(2, testEmail, authModel.NewUser(2, "admin")),
@@ -239,14 +239,14 @@ func TestCheck(t *testing.T) {
 		"delete": {
 			App{},
 			args{
-				ctx: context.Background(),
+				ctx: context.TODO(),
 			},
 			nil,
 		},
 		"no name": {
 			App{},
 			args{
-				ctx: context.Background(),
+				ctx: context.TODO(),
 				new: model.NewUser(1, "", authModel.NewUser(1, "")),
 			},
 			errors.New("email is required"),
@@ -254,7 +254,7 @@ func TestCheck(t *testing.T) {
 		"get error": {
 			App{},
 			args{
-				ctx: context.Background(),
+				ctx: context.TODO(),
 				new: model.NewUser(1, testEmail, authModel.NewUser(1, "")),
 			},
 			errors.New("check if email already exists"),
@@ -262,7 +262,7 @@ func TestCheck(t *testing.T) {
 		"already used": {
 			App{},
 			args{
-				ctx: context.Background(),
+				ctx: context.TODO(),
 				new: model.NewUser(1, testEmail, authModel.NewUser(1, "")),
 			},
 			errors.New("email already used"),

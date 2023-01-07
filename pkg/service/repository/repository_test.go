@@ -87,7 +87,7 @@ func TestList(t *testing.T) {
 				mockRepositoryStore.EXPECT().List(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, uint64(0), errors.New("failed"))
 			}
 
-			got, gotCount, gotErr := instance.List(context.Background(), testCase.args.pageSize, testCase.args.last)
+			got, gotCount, gotErr := instance.List(context.TODO(), testCase.args.pageSize, testCase.args.last)
 
 			failed := false
 
@@ -122,7 +122,7 @@ func TestSuggest(t *testing.T) {
 	}{
 		"simple": {
 			args{
-				ctx: context.Background(),
+				ctx: context.TODO(),
 			},
 			[]model.Repository{
 				model.NewGithubRepository(model.Identifier(1), ketchupRepository).AddVersion(model.DefaultPattern, "1.2.3"),
@@ -131,7 +131,7 @@ func TestSuggest(t *testing.T) {
 		},
 		"error": {
 			args{
-				ctx: context.Background(),
+				ctx: context.TODO(),
 			},
 			nil,
 			httpModel.ErrInternalError,
@@ -197,7 +197,7 @@ func TestGetOrCreate(t *testing.T) {
 	}{
 		"get error": {
 			args{
-				ctx:            context.Background(),
+				ctx:            context.TODO(),
 				name:           "error",
 				repositoryKind: model.Github,
 				pattern:        model.DefaultPattern,
@@ -207,7 +207,7 @@ func TestGetOrCreate(t *testing.T) {
 		},
 		"exists with pattern": {
 			args{
-				ctx:            context.Background(),
+				ctx:            context.TODO(),
 				name:           "exist",
 				repositoryKind: model.Github,
 				pattern:        model.DefaultPattern,
@@ -217,7 +217,7 @@ func TestGetOrCreate(t *testing.T) {
 		},
 		"exists no pattern error": {
 			args{
-				ctx:            context.Background(),
+				ctx:            context.TODO(),
 				name:           "exist",
 				repositoryKind: model.Github,
 				pattern:        model.DefaultPattern,
@@ -227,7 +227,7 @@ func TestGetOrCreate(t *testing.T) {
 		},
 		"exists pattern not found": {
 			args{
-				ctx:            context.Background(),
+				ctx:            context.TODO(),
 				name:           "exist",
 				repositoryKind: model.Github,
 				pattern:        model.DefaultPattern,
@@ -237,7 +237,7 @@ func TestGetOrCreate(t *testing.T) {
 		},
 		"exists but no pattern": {
 			args{
-				ctx:            context.Background(),
+				ctx:            context.TODO(),
 				name:           "exist",
 				repositoryKind: model.Github,
 				pattern:        model.DefaultPattern,
@@ -247,7 +247,7 @@ func TestGetOrCreate(t *testing.T) {
 		},
 		"update error": {
 			args{
-				ctx:            context.Background(),
+				ctx:            context.TODO(),
 				name:           "exist",
 				repositoryKind: model.Helm,
 				pattern:        model.DefaultPattern,
@@ -257,7 +257,7 @@ func TestGetOrCreate(t *testing.T) {
 		},
 		"create": {
 			args{
-				ctx:            context.Background(),
+				ctx:            context.TODO(),
 				name:           "not found",
 				repositoryKind: model.Github,
 				pattern:        model.DefaultPattern,
@@ -354,7 +354,7 @@ func TestCreate(t *testing.T) {
 	}{
 		"invalid": {
 			args{
-				ctx:  context.Background(),
+				ctx:  context.TODO(),
 				item: model.NewGithubRepository(model.Identifier(1), ""),
 			},
 			model.NewEmptyRepository(),
@@ -362,7 +362,7 @@ func TestCreate(t *testing.T) {
 		},
 		"release error": {
 			args{
-				ctx:  context.Background(),
+				ctx:  context.TODO(),
 				item: model.NewGithubRepository(model.Identifier(1), "invalid"),
 			},
 			model.NewEmptyRepository(),
@@ -370,7 +370,7 @@ func TestCreate(t *testing.T) {
 		},
 		"create error": {
 			args{
-				ctx:  context.Background(),
+				ctx:  context.TODO(),
 				item: model.NewGithubRepository(model.Identifier(1), "vibioh").AddVersion(model.DefaultPattern, "0.0.0"),
 			},
 			model.NewGithubRepository(model.Identifier(1), "vibioh").AddVersion(model.DefaultPattern, "1.0.0"),
@@ -378,7 +378,7 @@ func TestCreate(t *testing.T) {
 		},
 		"success": {
 			args{
-				ctx:  context.Background(),
+				ctx:  context.TODO(),
 				item: model.NewGithubRepository(model.Identifier(1), ketchupRepository).AddVersion(model.DefaultPattern, "0.0.0"),
 			},
 			model.NewGithubRepository(model.Identifier(1), ketchupRepository).AddVersion(model.DefaultPattern, "1.0.0"),
@@ -468,28 +468,28 @@ func TestUpdate(t *testing.T) {
 		},
 		"fetch error": {
 			args{
-				ctx:  context.Background(),
+				ctx:  context.TODO(),
 				item: model.NewGithubRepository(model.Identifier(0), ""),
 			},
 			httpModel.ErrInternalError,
 		},
 		"invalid check": {
 			args{
-				ctx:  context.Background(),
+				ctx:  context.TODO(),
 				item: model.NewGithubRepository(model.Identifier(1), ""),
 			},
 			httpModel.ErrInvalid,
 		},
 		"update error": {
 			args{
-				ctx:  context.Background(),
+				ctx:  context.TODO(),
 				item: model.NewGithubRepository(model.Identifier(1), "").AddVersion(model.DefaultPattern, "1.2.3"),
 			},
 			httpModel.ErrInternalError,
 		},
 		"success": {
 			args{
-				ctx:  context.Background(),
+				ctx:  context.TODO(),
 				item: model.NewGithubRepository(model.Identifier(3), "").AddVersion(model.DefaultPattern, "1.2.3"),
 			},
 			nil,
@@ -573,19 +573,19 @@ func TestClean(t *testing.T) {
 	}{
 		"error": {
 			args{
-				ctx: context.Background(),
+				ctx: context.TODO(),
 			},
 			httpModel.ErrInternalError,
 		},
 		"error versions": {
 			args{
-				ctx: context.Background(),
+				ctx: context.TODO(),
 			},
 			httpModel.ErrInternalError,
 		},
 		"success": {
 			args{
-				ctx: context.Background(),
+				ctx: context.TODO(),
 			},
 			nil,
 		},

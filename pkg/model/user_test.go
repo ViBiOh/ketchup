@@ -18,19 +18,19 @@ func TestReadUser(t *testing.T) {
 	}{
 		"empty": {
 			args{
-				ctx: context.Background(),
+				ctx: context.TODO(),
 			},
 			User{},
 		},
 		"with User": {
 			args{
-				ctx: StoreUser(context.Background(), User{ID: 8000, Email: "nobody@localhost"}),
+				ctx: StoreUser(context.TODO(), User{ID: 8000, Email: "nobody@localhost"}),
 			},
 			User{ID: 8000, Email: "nobody@localhost"},
 		},
 		"not an User": {
 			args{
-				ctx: context.WithValue(context.Background(), ctxUserKey, args{}),
+				ctx: context.WithValue(context.TODO(), ctxUserKey, args{}),
 			},
 			User{},
 		},

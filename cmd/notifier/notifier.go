@@ -70,7 +70,7 @@ func main() {
 
 	logger.Info("Starting notifier...")
 
-	ctx, end := tracer.StartSpan(context.Background(), tracerApp.GetTracer("notifier"), "notifier")
+	ctx, end := tracer.StartSpan(ctx, tracerApp.GetTracer("notifier"), "notifier")
 	defer end()
 
 	switch *notificationType {

@@ -162,7 +162,7 @@ func TestUpdateVersions(t *testing.T) {
 				mockDatabase.EXPECT().One(gomock.Any(), gomock.Any(), model.Identifier(0), model.DefaultPattern).Return(nil)
 			}
 
-			gotErr := instance.UpdateVersions(context.Background(), testCase.args.o)
+			gotErr := instance.UpdateVersions(context.TODO(), testCase.args.o)
 
 			failed := false
 
