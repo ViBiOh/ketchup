@@ -31,7 +31,7 @@ var (
 )
 
 type redis interface {
-	Ping() error
+	Ping(context.Context) error
 	Exclusive(context.Context, string, time.Duration, func(context.Context) error) (bool, error)
 }
 

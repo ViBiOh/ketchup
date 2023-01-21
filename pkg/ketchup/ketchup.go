@@ -42,12 +42,12 @@ type App struct {
 	ketchupService    ketchup.App
 	repositoryService repository.App
 	cacheApp          cache.App[model.User, []model.Repository]
-	redisApp          redis.App
+	redisApp          redis.Client
 	rendererApp       renderer.App
 }
 
 // New creates new App from Config
-func New(rendererApp renderer.App, ketchupService ketchup.App, userService user.App, repositoryService repository.App, redisApp redis.App, tracerApp tracer.App) App {
+func New(rendererApp renderer.App, ketchupService ketchup.App, userService user.App, repositoryService repository.App, redisApp redis.Client, tracerApp tracer.App) App {
 	app := App{
 		rendererApp:       rendererApp,
 		ketchupService:    ketchupService,

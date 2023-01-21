@@ -31,7 +31,7 @@ type app struct {
 	tracer      trace.Tracer
 	timezone    string
 	hour        string
-	redisApp    redis.App
+	redisApp    redis.Client
 	notifierApp notifier.App
 }
 
@@ -45,7 +45,7 @@ func Flags(fs *flag.FlagSet, prefix string) Config {
 }
 
 // New creates new App from Config
-func New(config Config, notifierApp notifier.App, redisApp redis.App, tracer trace.Tracer) App {
+func New(config Config, notifierApp notifier.App, redisApp redis.Client, tracer trace.Tracer) App {
 	if !*config.enabled {
 		return nil
 	}
