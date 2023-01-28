@@ -4,8 +4,8 @@ github.com/ViBiOh/auth/v2 v2.14.20 h1:xCTQrnTOFLiyFLIV0CMXlCPrHEbimganZsbTbdHUh5
 github.com/ViBiOh/auth/v2 v2.14.20/go.mod h1:lL4rXpvS0Gtui4CSy0J/AK1pq59XVXaR4Qz1ELsQ3eY=
 github.com/ViBiOh/flags v1.2.0 h1:DaujjNXzD29KxKyp4eZdn7c9+uBN5DokWgDAe7DcUmc=
 github.com/ViBiOh/flags v1.2.0/go.mod h1:UyMB5zeD/aId7Xw3x7577ZNU298JmukzOcV8p/H2W1s=
-github.com/ViBiOh/httputils/v4 v4.53.0 h1:PnmS7o+DjPeE7LER8iCHmxG5VkYZFapK1kLXYoslRws=
-github.com/ViBiOh/httputils/v4 v4.53.0/go.mod h1:YA+JJC5yrILqjk+OI9L0emleE2rXD3Q/z6gcS22IZlE=
+github.com/ViBiOh/httputils/v4 v4.53.1 h1:qZ+uQVQs/YDiPaS46+2TYRU7kEmhwEVKt0aItTc18m8=
+github.com/ViBiOh/httputils/v4 v4.53.1/go.mod h1:3GniJxg5pa87dENNVZJ0M2hGyvrWdp/uZmCTswSS2wU=
 github.com/ViBiOh/mailer v1.30.18 h1:56WqAM8RewgkCXYP+jtBnQKjdTobnkappxU7gIErV0E=
 github.com/ViBiOh/mailer v1.30.18/go.mod h1:F4YM+ANIsVzXcYqjA3I6JfJCJqC9QB+jirML+XPg4RY=
 github.com/beorn7/perks v1.0.1 h1:VlbKKnNfV8bJzeqoa4cOKqO6bYr3WgKZxO8Z16+hsOM=
@@ -80,8 +80,9 @@ github.com/jackc/pgproto3/v2 v2.0.6/go.mod h1:WfJCnwN3HIg9Ish/j3sgWXnAfK8A9Y0bwX
 github.com/jackc/pgproto3/v2 v2.1.1/go.mod h1:WfJCnwN3HIg9Ish/j3sgWXnAfK8A9Y0bwXYU5xKaEdA=
 github.com/jackc/pgproto3/v2 v2.3.1 h1:nwj7qwf0S+Q7ISFfBndqeLwSwxs+4DPsbRFjECT1Y4Y=
 github.com/jackc/pgproto3/v2 v2.3.1/go.mod h1:WfJCnwN3HIg9Ish/j3sgWXnAfK8A9Y0bwXYU5xKaEdA=
-github.com/jackc/pgservicefile v0.0.0-20200714003250-2b9c44734f2b h1:C8S2+VttkHFdOOCXJe+YGfa4vHYwlt4Zx+IVXQ97jYg=
 github.com/jackc/pgservicefile v0.0.0-20200714003250-2b9c44734f2b/go.mod h1:vsD4gTJCa9TptPL8sPkXrLZ+hDuNrZCnj29CQpr4X1E=
+github.com/jackc/pgservicefile v0.0.0-20221227161230-091c0ba34f0a h1:bbPeKD0xmW/Y25WS6cokEszi5g+S0QxI/d45PkRi7Nk=
+github.com/jackc/pgservicefile v0.0.0-20221227161230-091c0ba34f0a/go.mod h1:5TJZWKEWniPve33vlWYSoGYefn3gLQRzjfDlhSJ9ZKM=
 github.com/jackc/pgtype v0.0.0-20190421001408-4ed0de4755e0/go.mod h1:hdSHsc1V01CGwFsrv11mJRHWJ6aifDLfdV3aVjFF0zg=
 github.com/jackc/pgtype v0.0.0-20190824184912-ab885b375b90/go.mod h1:KcahbBH1nCMSo2DXpzsoWOAfFkdEtEJpPbVLq8eE+mc=
 github.com/jackc/pgtype v0.0.0-20190828014616-a8802b16cc59/go.mod h1:MWlu30kVJrUS8lot6TQqcg7mtthZ9T0EoIBFiJcmcyw=
