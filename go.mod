@@ -1,6 +1,6 @@
 module github.com/ViBiOh/ketchup
 
-go 1.19
+go 1.20
 
 require (
 	github.com/ViBiOh/auth/v2 v2.14.20
