@@ -3,7 +3,7 @@ package model
 import (
 	"context"
 
-	"github.com/jackc/pgx/v4"
+	"github.com/jackc/pgx/v5"
 )
 
 //go:generate mockgen -source database.go -destination ../mocks/database.go -mock_names Database=Database -package mocks

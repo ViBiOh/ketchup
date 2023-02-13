@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	"github.com/ViBiOh/ketchup/pkg/model"
-	"github.com/jackc/pgx/v4"
+	"github.com/jackc/pgx/v5"
 )
 
 // App of package
