@@ -5,7 +5,7 @@ go 1.20
 require (
 	github.com/ViBiOh/auth/v2 v2.14.22
 	github.com/ViBiOh/flags v1.2.0
-	github.com/ViBiOh/httputils/v4 v4.53.5
+	github.com/ViBiOh/httputils/v4 v4.53.6
 	github.com/ViBiOh/mailer v1.30.19
 	github.com/golang/mock v1.6.0
 	github.com/jackc/pgx/v5 v5.3.0
