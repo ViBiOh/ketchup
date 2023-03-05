@@ -71,15 +71,15 @@ func main() {
 	logger.Info("Starting notifier...")
 
 	ctx, end := tracer.StartSpan(ctx, tracerApp.GetTracer("notifier"), "notifier")
-	defer end()
+	defer end(&err)
 
 	switch *notificationType {
 	case "daily":
-		if err := notifierApp.Notify(ctx); err != nil {
+		if err = notifierApp.Notify(ctx); err != nil {
 			logger.Fatal(err)
 		}
 	case "reminder":
-		if err := notifierApp.Remind(ctx); err != nil {
+		if err = notifierApp.Remind(ctx); err != nil {
 			logger.Fatal(err)
 		}
 	default:

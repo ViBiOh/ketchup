@@ -114,7 +114,7 @@ func main() {
 	logger.Fatal(err)
 	defer ketchupDb.Close()
 
-	redisApp := redis.New(redisConfig, prometheusRegisterer, tracerApp.GetTracer("redis"))
+	redisApp := redis.New(redisConfig, tracerApp.GetTracer("redis"))
 
 	healthApp := health.New(healthConfig, ketchupDb.Ping, redisApp.Ping)
 
