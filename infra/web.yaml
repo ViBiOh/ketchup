@@ -33,7 +33,8 @@ spec:
       KETCHUP_DB_NAME: ketchup
       KETCHUP_DB_USER: ketchup
       KETCHUP_SCHEDULER_ENABLED: "false"
-      KETCHUP_REDIS_ADDRESS: redis:80/2
+      KETCHUP_REDIS_ADDRESS: redis:80
+      KETCHUP_REDIS_DATABASE: "2"
       KETCHUP_DOCKER_USERNAME: vibioh
       KETCHUP_TRACER_URL: otel-collector.monitoring:4317
       OTEL_SERVICE_NAME: ketchup
