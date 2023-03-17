@@ -98,6 +98,11 @@ build:
 	CGO_ENABLED=0 go build -ldflags="-s -w" -installsuffix nocgo -o bin/$(APP_NAME) $(MAIN_SOURCE)
 	CGO_ENABLED=0 go build -ldflags="-s -w" -installsuffix nocgo -o bin/$(NOTIFIER_NAME) $(NOTIFIER_SOURCE)
 
+## config: Create .env configuration
+.PHONY: config
+config:
+	cp .env.example .env
+
 ## run: Locally run the application, e.g. node index.js, python -m myapp, go run myapp etc ...
 .PHONY: run
 run:
@@ -111,7 +116,9 @@ run-notifier:
 .PHONY: sidecars
 sidecars:
 	docker run --detach --name "ketchup-pg" --publish "127.0.0.1:$(KETCHUP_DB_PORT):5432" --env "POSTGRES_USER=$(KETCHUP_DB_USER)" --env "POSTGRES_PASSWORD=$(KETCHUP_DB_PASS)" --env "POSTGRES_DB=$(KETCHUP_DB_NAME)" "postgres"
+	docker run --detach --name "ketchup-redis" --publish "127.0.0.1:6379:6379" "redis"
 
 .PHONY: sidecars-off
 sidecars-off:
 	docker rm --force --volumes "ketchup-pg"
+	docker rm --force --volumes "ketchup-redis"
