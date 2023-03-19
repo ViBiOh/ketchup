@@ -5,8 +5,8 @@ go 1.20
 require (
 	github.com/ViBiOh/auth/v2 v2.14.23
 	github.com/ViBiOh/flags v1.2.0
-	github.com/ViBiOh/httputils/v4 v4.54.4
-	github.com/ViBiOh/mailer v1.30.20
+	github.com/ViBiOh/httputils/v4 v4.55.0
+	github.com/ViBiOh/mailer v1.31.0
 	github.com/golang/mock v1.6.0
 	github.com/jackc/pgx/v5 v5.3.1
 	github.com/prometheus/client_golang v1.14.0
@@ -31,9 +31,11 @@ require (
 	github.com/prometheus/client_model v0.3.0 // indirect
 	github.com/prometheus/common v0.42.0 // indirect
 	github.com/prometheus/procfs v0.8.0 // indirect
+	github.com/rabbitmq/amqp091-go v1.7.0 // indirect
+	github.com/redis/go-redis/extra/rediscmd/v9 v9.0.2 // indirect
+	github.com/redis/go-redis/extra/redisotel/v9 v9.0.2 // indirect
 	github.com/redis/go-redis/v9 v9.0.2 // indirect
 	github.com/rogpeppe/go-internal v1.9.0 // indirect
-	github.com/streadway/amqp v1.0.0 // indirect
 	github.com/tdewolff/minify/v2 v2.12.5 // indirect
 	github.com/tdewolff/parse/v2 v2.6.5 // indirect
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.40.0 // indirect

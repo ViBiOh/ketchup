@@ -114,7 +114,9 @@ func main() {
 	logger.Fatal(err)
 	defer ketchupDb.Close()
 
-	redisApp := redis.New(redisConfig, tracerApp.GetTracer("redis"))
+	redisApp, err := redis.New(redisConfig, tracerApp.GetProvider())
+	logger.Fatal(err)
+	defer redisApp.Close()
 
 	healthApp := health.New(healthConfig, ketchupDb.Ping, redisApp.Ping)
 
