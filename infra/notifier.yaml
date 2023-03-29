@@ -31,13 +31,14 @@ spec:
       name: vibioh/ketchup
       tag: "202303191306" # {"$imagepolicy": "default:flux-ketchup-web:tag"}
     config:
+      GOMAXPROCS: "1"
       KETCHUP_DB_HOST: postgres
       KETCHUP_DB_NAME: ketchup
       KETCHUP_DB_PORT: "80"
       KETCHUP_DB_USER: ketchup
+      KETCHUP_DOCKER_USERNAME: vibioh
       KETCHUP_LOGGER_JSON: "true"
       KETCHUP_NOTIFIER_PUSH_URL: http://pushgateway.monitoring
-      KETCHUP_DOCKER_USERNAME: vibioh
       KETCHUP_TRACER_URL: otel-collector.monitoring:4317
       OTEL_SERVICE_NAME: ketchup-notifier
     secrets:

@@ -27,6 +27,7 @@ spec:
       name: vibioh/ketchup
       tag: "202303191306" # {"$imagepolicy": "default:flux-ketchup-web:tag"}
     config:
+      GOMAXPROCS: "1"
       KETCHUP_LOGGER_JSON: "true"
       KETCHUP_DB_HOST: postgres
       KETCHUP_DB_PORT: "80"
