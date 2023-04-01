@@ -8,7 +8,7 @@ spec:
   chart:
     spec:
       chart: cron
-      version: "0.0.27"
+      version: "0.0.28"
       sourceRef:
         kind: HelmRepository
         name: vibioh
@@ -26,7 +26,8 @@ spec:
     nameOverride: ketchup-notifier
     jobLabels:
       k8s-cleaner: "true"
-    schedule: "0 7 * * *" # manager is in UTC
+    schedule: "0 8 * * *"
+    timeZone: "Europe/Paris"
     image:
       name: vibioh/ketchup
       tag: "202303191306" # {"$imagepolicy": "default:flux-ketchup-web:tag"}
