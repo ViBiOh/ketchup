@@ -38,9 +38,9 @@ type app struct {
 // Flags adds flags for configuring package
 func Flags(fs *flag.FlagSet, prefix string) Config {
 	return Config{
-		enabled:  flags.Bool(fs, prefix, "scheduler", "Enabled", "Enable cron job", true, nil),
-		timezone: flags.String(fs, prefix, "scheduler", "Timezone", "Timezone", "Europe/Paris", nil),
-		hour:     flags.String(fs, prefix, "scheduler", "Hour", "Hour of cron, 24-hour format", "08:00", nil),
+		enabled:  flags.New("Enabled", "Enable cron job").Prefix(prefix).DocPrefix("scheduler").Bool(fs, true, nil),
+		timezone: flags.New("Timezone", "Timezone").Prefix(prefix).DocPrefix("scheduler").String(fs, "Europe/Paris", nil),
+		hour:     flags.New("Hour", "Hour of cron, 24-hour format").Prefix(prefix).DocPrefix("scheduler").String(fs, "08:00", nil),
 	}
 }
 

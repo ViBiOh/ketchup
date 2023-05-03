@@ -38,7 +38,7 @@ type Config struct {
 
 func Flags(fs *flag.FlagSet, prefix string) Config {
 	return Config{
-		pushURL: flags.String(fs, prefix, "notifier", "PushUrl", "Pushgateway URL", "", nil),
+		pushURL: flags.New("PushUrl", "Pushgateway URL").Prefix(prefix).DocPrefix("notifier").String(fs, "", nil),
 	}
 }
 

@@ -13,7 +13,7 @@ func TestFlags(t *testing.T) {
 		want string
 	}{
 		"simple": {
-			"Usage of simple:\n  -token string\n    \t[github] OAuth Token {SIMPLE_TOKEN}\n",
+			"Usage of simple:\n  -token string\n    \t[github] OAuth Token ${SIMPLE_TOKEN}\n",
 		},
 	}
 

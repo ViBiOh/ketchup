@@ -71,7 +71,7 @@ type app struct {
 // Flags adds flags for configuring package
 func Flags(fs *flag.FlagSet, prefix string) Config {
 	return Config{
-		token: flags.String(fs, prefix, "github", "Token", "OAuth Token", "", nil),
+		token: flags.New("Token", "OAuth Token").Prefix(prefix).DocPrefix("github").String(fs, "", nil),
 	}
 }
 
