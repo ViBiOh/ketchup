@@ -31,9 +31,9 @@ I do it mostly for myself, but if you want to support me, you can [!["Buy Me A T
 
 You need a [GitHub OAuth Token](https://github.com/settings/tokens), with no particular permission, for having a decent rate-limiting when querying GitHub. Configuration is done by passing `-githubToken` arg or setting equivalent environment variable (cf. [Usage](#usage) section)
 
-You need a Postgres database for storing your datas. I personnaly use free tier of [ElephantSQL](https://www.elephantsql.com). Once setup, you _have to_ to create schema with [Auth DDL](https://github.com/ViBiOh/auth/blob/main/ddl.sql) and [Ketchup DDL](sql/ddl.sql). Configuration is done by passing `-dbHost`, `-dbName`, `-dbUser`, `-dbPass` args or setting equivalent environment variables (cf. [Usage](#usage) section).
+You need a Postgres database for storing your data. I personally use free tier of [ElephantSQL](https://www.elephantsql.com). Once setup, you _have to_ to create schema with [Auth DDL](https://github.com/ViBiOh/auth/blob/main/ddl.sql) and [Ketchup DDL](sql/ddl.sql). Configuration is done by passing `-dbHost`, `-dbName`, `-dbUser`, `-dbPass` args or setting equivalent environment variables (cf. [Usage](#usage) section).
 
-You need a Redis instance for storing captcha token and distributed locks accross multiples instances. Configuration is done by passing `-redisAddress`, `-redisPassword`, `-redisDatabase` args or setting equivalent environment variables (cf. [Usage](#usage) section).
+You need a Redis instance for storing captcha token and distributed locks across multiples instances. Configuration is done by passing `-redisAddress`, `-redisPassword`, `-redisDatabase` args or setting equivalent environment variables (cf. [Usage](#usage) section).
 
 In order to send email, you must configure a [mailer](https://github.com/ViBiOh/mailer#getting-started). Configuration is done by passing `-mailerURL` arg or setting equivalent environment variable (cf. [Usage](#usage) section).
 
@@ -45,7 +45,7 @@ A Docker image is available for `amd64`, `arm` and `arm64` platforms on Docker H
 
 You can configure app by passing CLI args or environment variables (cf. [Usage](#usage) section). CLI override environment variables.
 
-You'll find a Kubernetes exemple in the [`infra/`](infra) folder, using my [`app chart`](https://github.com/ViBiOh/charts/tree/main/app)
+You'll find a Kubernetes example in the [`infra/`](infra) folder, using my [`app chart`](https://github.com/ViBiOh/charts/tree/main/app)
 
 ## Endpoints
 
