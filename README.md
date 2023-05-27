@@ -12,8 +12,6 @@ Thanks to [FontAwesome](https://fontawesome.com) for icons.
 
 ![](ketchup.png)
 
-I do it mostly for myself, but if you want to support me, you can [!["Buy Me A Tea"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/vibioh)
-
 ## Features
 
 - Timezone aware cron
