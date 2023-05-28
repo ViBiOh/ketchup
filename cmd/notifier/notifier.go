@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/ViBiOh/flags"
 	"github.com/ViBiOh/httputils/v4/pkg/db"
 	"github.com/ViBiOh/httputils/v4/pkg/logger"
 	"github.com/ViBiOh/httputils/v4/pkg/request"
@@ -27,6 +28,7 @@ import (
 
 func main() {
 	fs := flag.NewFlagSet("ketchup", flag.ExitOnError)
+	fs.Usage = flags.Usage(fs)
 
 	loggerConfig := logger.Flags(fs, "logger")
 	tracerConfig := tracer.Flags(fs, "tracer")

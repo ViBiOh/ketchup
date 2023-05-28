@@ -67,6 +67,7 @@ func initAuth(db db.App, tracer trace.Tracer) (authService.App, authMiddleware.A
 
 func main() {
 	fs := flag.NewFlagSet("ketchup", flag.ExitOnError)
+	fs.Usage = flags.Usage(fs)
 
 	appServerConfig := server.Flags(fs, "")
 	promServerConfig := server.Flags(fs, "prometheus", flags.NewOverride("Port", uint(9090)), flags.NewOverride("IdleTimeout", 10*time.Second), flags.NewOverride("ShutdownTimeout", 5*time.Second))
