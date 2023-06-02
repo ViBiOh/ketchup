@@ -7,19 +7,16 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
-// App of the package
 type App struct {
 	db model.Database
 }
 
-// New creates new App from Config
 func New(db model.Database) App {
 	return App{
 		db: db,
 	}
 }
 
-// DoAtomic does an atomic operation
 func (a App) DoAtomic(ctx context.Context, action func(context.Context) error) error {
 	return a.db.DoAtomic(ctx, action)
 }
@@ -35,7 +32,6 @@ WHERE
   email = $1
 `
 
-// GetByEmail retrieve user by email
 func (a App) GetByEmail(ctx context.Context, email string) (model.User, error) {
 	var item model.User
 	scanner := func(row pgx.Row) (err error) {
@@ -61,7 +57,6 @@ WHERE
   login_id = $1
 `
 
-// GetByLoginID retrieves user by id
 func (a App) GetByLoginID(ctx context.Context, loginID uint64) (model.User, error) {
 	var item model.User
 	scanner := func(row pgx.Row) (err error) {
@@ -87,7 +82,6 @@ WHERE
   reminder IS TRUE
 `
 
-// ListReminderUsers retrieve user with reminders
 func (a App) ListReminderUsers(ctx context.Context) ([]model.User, error) {
 	var list []model.User
 
@@ -117,7 +111,6 @@ INSERT INTO
 ) RETURNING id
 `
 
-// Create user
 func (a App) Create(ctx context.Context, o model.User) (model.Identifier, error) {
 	id, err := a.db.Create(ctx, insertQuery, o.Email, o.Login.ID)
 
@@ -131,7 +124,6 @@ FROM
   ketchup.user
 `
 
-// Count users
 func (a App) Count(ctx context.Context) (uint64, error) {
 	var count uint64
 

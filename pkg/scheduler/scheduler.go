@@ -15,12 +15,10 @@ import (
 	"go.opentelemetry.io/otel/trace"
 )
 
-// App of package
 type App interface {
 	Start(context.Context)
 }
 
-// Config of package
 type Config struct {
 	enabled  *bool
 	timezone *string
@@ -35,7 +33,6 @@ type app struct {
 	notifierApp notifier.App
 }
 
-// Flags adds flags for configuring package
 func Flags(fs *flag.FlagSet, prefix string) Config {
 	return Config{
 		enabled:  flags.New("Enabled", "Enable cron job").Prefix(prefix).DocPrefix("scheduler").Bool(fs, true, nil),
@@ -44,7 +41,6 @@ func Flags(fs *flag.FlagSet, prefix string) Config {
 	}
 }
 
-// New creates new App from Config
 func New(config Config, notifierApp notifier.App, redisApp redis.Client, tracer trace.Tracer) App {
 	if !*config.enabled {
 		return nil

@@ -14,7 +14,6 @@ const (
 	suggestThresold = uint64(5)
 )
 
-// PublicTemplateFunc rendering public GUI
 func (a App) PublicTemplateFunc(_ http.ResponseWriter, r *http.Request) (renderer.Page, error) {
 	securityPayload, err := a.generateToken(r.Context())
 	if err != nil {
@@ -35,7 +34,6 @@ func min(a, b uint64) uint64 {
 	return b
 }
 
-// AppTemplateFunc rendering private GUI
 func (a App) AppTemplateFunc(_ http.ResponseWriter, r *http.Request) (renderer.Page, error) {
 	pagination, err := query.ParsePagination(r, 100, 100)
 	if err != nil {

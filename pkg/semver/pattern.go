@@ -26,13 +26,11 @@ func newConstraint(version Version, comparator operation) constraint {
 	}
 }
 
-// Pattern describe a pattern constraint
 type Pattern struct {
 	Name        string
 	constraints []constraint
 }
 
-// NewPattern creates new pattern instance
 func NewPattern(name string, constraints ...constraint) Pattern {
 	return Pattern{
 		Name:        name,
@@ -40,7 +38,6 @@ func NewPattern(name string, constraints ...constraint) Pattern {
 	}
 }
 
-// Check verifies is given version match Pattern
 func (p Pattern) Check(version Version) bool {
 	for _, constraint := range p.constraints {
 		if constraint.version.suffix == -1 && version.suffix != -1 {
@@ -62,7 +59,6 @@ func (p Pattern) Check(version Version) bool {
 	return true
 }
 
-// ParsePattern parse given constraint to extract pattern matcher
 func ParsePattern(pattern string) (Pattern, error) {
 	if len(pattern) < 2 {
 		return Pattern{}, ErrPatternInvalid

@@ -8,32 +8,23 @@ import (
 )
 
 const (
-	// DefaultPattern is the latest but non-beta version
 	DefaultPattern = "stable"
 
 	githubURL = "https://github.com"
 )
 
-// RepositoryKind defines constant for repository types
 type RepositoryKind int
 
 const (
-	// Github repository kind
 	Github RepositoryKind = iota
-	// Helm repository kind
 	Helm
-	// Docker repository kind
 	Docker
-	// NPM repository kind
 	NPM
-	// Pypi repository kind
 	Pypi
 )
 
-// RepositoryKindValues string values
 var RepositoryKindValues = []string{"github", "helm", "docker", "npm", "pypi"}
 
-// ParseRepositoryKind parse raw string into a RepositoryKind
 func ParseRepositoryKind(value string) (RepositoryKind, error) {
 	for i, short := range RepositoryKindValues {
 		if strings.EqualFold(short, value) {
@@ -48,7 +39,6 @@ func (r RepositoryKind) String() string {
 	return RepositoryKindValues[r]
 }
 
-// MarshalJSON marshals the enum as a quoted json string
 func (r RepositoryKind) MarshalJSON() ([]byte, error) {
 	buffer := bytes.NewBufferString(`"`)
 	buffer.WriteString(r.String())
@@ -56,7 +46,6 @@ func (r RepositoryKind) MarshalJSON() ([]byte, error) {
 	return buffer.Bytes(), nil
 }
 
-// UnmarshalJSON unmarshal JSOn
 func (r *RepositoryKind) UnmarshalJSON(b []byte) error {
 	var strValue string
 	err := json.Unmarshal(b, &strValue)
@@ -73,7 +62,6 @@ func (r *RepositoryKind) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
-// Repository of app
 type Repository struct {
 	Versions map[string]string `json:"versions"`
 	Name     string            `json:"name"`
@@ -82,7 +70,6 @@ type Repository struct {
 	Kind     RepositoryKind    `json:"kind"`
 }
 
-// NewRepository create new Repository with initialized values
 func NewRepository(id Identifier, kind RepositoryKind, name, part string) Repository {
 	return Repository{
 		ID:       id,
@@ -93,36 +80,30 @@ func NewRepository(id Identifier, kind RepositoryKind, name, part string) Reposi
 	}
 }
 
-// NewEmptyRepository create an empty Repository
 func NewEmptyRepository() Repository {
 	return Repository{
 		Versions: make(map[string]string),
 	}
 }
 
-// NewGithubRepository create new Repository with initialized values
 func NewGithubRepository(id Identifier, name string) Repository {
 	return NewRepository(id, Github, name, "")
 }
 
-// NewHelmRepository create new Repository with initialized values
 func NewHelmRepository(id Identifier, name, part string) Repository {
 	return NewRepository(id, Helm, name, part)
 }
 
-// AddVersion adds given pattern to versions map
 func (r Repository) AddVersion(pattern, version string) Repository {
 	r.Versions[pattern] = version
 
 	return r
 }
 
-// IsZero return false if instance is not initialized
 func (r Repository) IsZero() bool {
 	return r.ID.IsZero()
 }
 
-// URL format the URL of given repository with current version
 func (r Repository) String() string {
 	switch r.Kind {
 	case Helm:
@@ -132,12 +113,10 @@ func (r Repository) String() string {
 	}
 }
 
-// URL format the URL of given repository with pattern version
 func (r Repository) URL(pattern string) string {
 	return r.VersionURL(r.Versions[pattern])
 }
 
-// VersionURL format the URL of given repository with given version
 func (r Repository) VersionURL(version string) string {
 	switch r.Kind {
 	case Github:
@@ -166,7 +145,6 @@ func (r Repository) VersionURL(version string) string {
 	}
 }
 
-// CompareURL format the URL of given repository compared against given version
 func (r Repository) CompareURL(version string, pattern string) string {
 	switch r.Kind {
 	case Github:

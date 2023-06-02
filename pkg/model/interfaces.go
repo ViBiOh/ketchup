@@ -16,24 +16,20 @@ func (i Identifier) IsZero() bool {
 
 //go:generate mockgen -source interfaces.go -destination ../mocks/interfaces.go -package mocks -mock_names Mailer=Mailer,AuthService=AuthService,UserService=UserService,UserStore=UserStore,GenericProvider=GenericProvider,HelmProvider=HelmProvider,RepositoryService=RepositoryService,RepositoryStore=RepositoryStore,KetchupService=KetchupService,KetchupStore=KetchupStore
 
-// Mailer interface client
 type Mailer interface {
 	Enabled() bool
 	Send(context.Context, mailerModel.MailRequest) error
 }
 
-// AuthService defines interactions with underlying User provider
 type AuthService interface {
 	Create(context.Context, authModel.User) (authModel.User, error)
 	Check(context.Context, authModel.User, authModel.User) error
 }
 
-// UserService for storing user in context
 type UserService interface {
 	StoreInContext(context.Context) context.Context
 }
 
-// UserStore defines interactions with User storage
 type UserStore interface {
 	DoAtomic(context.Context, func(context.Context) error) error
 	ListReminderUsers(ctx context.Context) ([]User, error)
@@ -43,18 +39,15 @@ type UserStore interface {
 	Count(context.Context) (uint64, error)
 }
 
-// GenericProvider defines interactions with common providers
 type GenericProvider interface {
 	LatestVersions(context.Context, string, []string) (map[string]semver.Version, error)
 }
 
-// HelmProvider defines interactions with helm
 type HelmProvider interface {
 	FetchIndex(context.Context, string, map[string][]string) (map[string]map[string]semver.Version, error)
 	LatestVersions(context.Context, string, string, []string) (map[string]semver.Version, error)
 }
 
-// RepositoryService defines interactions with repository
 type RepositoryService interface {
 	List(context.Context, uint, string) ([]Repository, uint64, error)
 	ListByKinds(context.Context, uint, string, ...RepositoryKind) ([]Repository, uint64, error)
@@ -65,7 +58,6 @@ type RepositoryService interface {
 	LatestVersions(context.Context, Repository) (map[string]semver.Version, error)
 }
 
-// RepositoryStore defines interactions with repository storage
 type RepositoryStore interface {
 	DoAtomic(ctx context.Context, action func(context.Context) error) error
 	List(ctx context.Context, pageSize uint, last string) ([]Repository, uint64, error)
@@ -79,7 +71,6 @@ type RepositoryStore interface {
 	DeleteUnusedVersions(ctx context.Context) error
 }
 
-// KetchupService defines interactions with ketchup
 type KetchupService interface {
 	List(ctx context.Context, pageSize uint, last string) ([]Ketchup, uint64, error)
 	ListForRepositories(ctx context.Context, repositories []Repository, frequencies ...KetchupFrequency) ([]Ketchup, error)
@@ -91,7 +82,6 @@ type KetchupService interface {
 	Delete(ctx context.Context, item Ketchup) error
 }
 
-// KetchupStore defines interactions with ketchup storage
 type KetchupStore interface {
 	DoAtomic(ctx context.Context, action func(context.Context) error) error
 	List(ctx context.Context, page uint, last string) ([]Ketchup, uint64, error)

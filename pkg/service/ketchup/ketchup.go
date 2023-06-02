@@ -12,13 +12,11 @@ import (
 	"github.com/ViBiOh/ketchup/pkg/semver"
 )
 
-// App of package
 type App struct {
 	ketchupStore      model.KetchupStore
 	repositoryService model.RepositoryService
 }
 
-// New creates new App from Config
 func New(ketchupStore model.KetchupStore, repositoryService model.RepositoryService) App {
 	return App{
 		ketchupStore:      ketchupStore,
@@ -26,7 +24,6 @@ func New(ketchupStore model.KetchupStore, repositoryService model.RepositoryServ
 	}
 }
 
-// List ketchups
 func (a App) List(ctx context.Context, pageSize uint, last string) ([]model.Ketchup, uint64, error) {
 	list, total, err := a.ketchupStore.List(ctx, pageSize, last)
 	if err != nil {
@@ -39,7 +36,6 @@ func (a App) List(ctx context.Context, pageSize uint, last string) ([]model.Ketc
 	return enrichedList, total, nil
 }
 
-// ListForRepositories of ketchups
 func (a App) ListForRepositories(ctx context.Context, repositories []model.Repository, frequencies ...model.KetchupFrequency) ([]model.Ketchup, error) {
 	ids := make([]model.Identifier, len(repositories))
 	for index, repo := range repositories {
@@ -54,7 +50,6 @@ func (a App) ListForRepositories(ctx context.Context, repositories []model.Repos
 	return enrichKetchupsWithSemver(list), nil
 }
 
-// ListOutdated ketchups outdated
 func (a App) ListOutdated(ctx context.Context, users ...model.User) ([]model.Ketchup, error) {
 	usersIds := make([]model.Identifier, len(users))
 	for i, user := range users {
@@ -69,7 +64,6 @@ func (a App) ListOutdated(ctx context.Context, users ...model.User) ([]model.Ket
 	return list, nil
 }
 
-// Create ketchup
 func (a App) Create(ctx context.Context, item model.Ketchup) (model.Ketchup, error) {
 	var output model.Ketchup
 
@@ -96,7 +90,6 @@ func (a App) Create(ctx context.Context, item model.Ketchup) (model.Ketchup, err
 	return output, err
 }
 
-// UpdateAll ketchups
 func (a App) UpdateAll(ctx context.Context) error {
 	err := a.ketchupStore.DoAtomic(ctx, func(ctx context.Context) error {
 		return a.ketchupStore.UpdateAll(ctx)
@@ -108,7 +101,6 @@ func (a App) UpdateAll(ctx context.Context) error {
 	return nil
 }
 
-// Update ketchup
 func (a App) Update(ctx context.Context, oldPattern string, item model.Ketchup) (model.Ketchup, error) {
 	var output model.Ketchup
 
@@ -155,7 +147,6 @@ func (a App) Update(ctx context.Context, oldPattern string, item model.Ketchup) 
 	return output, err
 }
 
-// UpdateVersion of a ketchup
 func (a App) UpdateVersion(ctx context.Context, userID, repositoryID model.Identifier, pattern, version string) error {
 	if len(pattern) == 0 {
 		return errors.New("pattern is required")
@@ -170,7 +161,6 @@ func (a App) UpdateVersion(ctx context.Context, userID, repositoryID model.Ident
 	})
 }
 
-// Delete ketchup
 func (a App) Delete(ctx context.Context, item model.Ketchup) (err error) {
 	return a.ketchupStore.DoAtomic(ctx, func(ctx context.Context) error {
 		old, err := a.ketchupStore.GetByRepository(ctx, item.Repository.ID, item.Pattern, true)

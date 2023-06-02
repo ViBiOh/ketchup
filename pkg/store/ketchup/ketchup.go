@@ -11,19 +11,16 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
-// App of package
 type App struct {
 	db model.Database
 }
 
-// New creates new App from Config
 func New(db model.Database) App {
 	return App{
 		db: db,
 	}
 }
 
-// DoAtomic does an atomic operation
 func (a App) DoAtomic(ctx context.Context, action func(context.Context) error) error {
 	return a.db.DoAtomic(ctx, action)
 }
@@ -62,7 +59,6 @@ const listQueryRestart = `
   )
 `
 
-// List ketchups
 func (a App) List(ctx context.Context, pageSize uint, last string) ([]model.Ketchup, uint64, error) {
 	user := model.ReadUser(ctx)
 
@@ -146,7 +142,6 @@ WHERE
   AND k.frequency = ANY ($2)
 `
 
-// ListByRepositoriesIDAndFrequencies lists ketchup by repositories id and given frequencies
 func (a App) ListByRepositoriesIDAndFrequencies(ctx context.Context, ids []model.Identifier, frequencies ...model.KetchupFrequency) ([]model.Ketchup, error) {
 	var list []model.Ketchup
 
@@ -201,7 +196,6 @@ WHERE
   k.version <> rv.version
 `
 
-// ListOutdated lists outdated ketchup by frequency id
 func (a App) ListOutdated(ctx context.Context, userIds ...model.Identifier) ([]model.Ketchup, error) {
 	var list []model.Ketchup
 
@@ -259,7 +253,6 @@ WHERE
   AND k.update_when_notify IS TRUE
 `
 
-// ListSilentForRepositories retrieves ketchup with no notification and auto-update
 func (a App) ListSilentForRepositories(ctx context.Context, ids []uint64) ([]model.Ketchup, error) {
 	var list []model.Ketchup
 
@@ -306,7 +299,6 @@ WHERE
   AND k.repository_id = r.id
 `
 
-// GetByRepository retrieves ketchup for a repository and patern
 func (a App) GetByRepository(ctx context.Context, id model.Identifier, pattern string, forUpdate bool) (model.Ketchup, error) {
 	query := getQuery
 	if forUpdate {
@@ -366,7 +358,6 @@ INSERT INTO
 ) RETURNING 1
 `
 
-// Create a ketchup
 func (a App) Create(ctx context.Context, o model.Ketchup) (model.Identifier, error) {
 	id, err := a.db.Create(ctx, insertQuery, o.Pattern, o.Version, strings.ToLower(o.Frequency.String()), o.UpdateWhenNotify, o.Repository.ID, model.ReadUser(ctx).ID)
 
@@ -387,7 +378,6 @@ WHERE
   AND pattern = $3
 `
 
-// Update a ketchup
 func (a App) Update(ctx context.Context, o model.Ketchup, oldPattern string) error {
 	return a.db.One(ctx, updateQuery, o.Repository.ID, model.ReadUser(ctx).ID, oldPattern, o.Pattern, o.Version, strings.ToLower(o.Frequency.String()), o.UpdateWhenNotify)
 }
@@ -408,7 +398,6 @@ WHERE
   AND k.user_id = $1
 `
 
-// UpdateAll ketchups
 func (a App) UpdateAll(ctx context.Context) error {
 	return a.db.Exec(ctx, updateAllQuery, model.ReadUser(ctx).ID)
 }
@@ -424,7 +413,6 @@ WHERE
   AND pattern = $3
 `
 
-// UpdateVersion of a ketchup
 func (a App) UpdateVersion(ctx context.Context, userID, repositoryID model.Identifier, pattern, version string) error {
 	return a.db.One(ctx, updateVersionQuery, repositoryID, userID, pattern, version)
 }
@@ -438,7 +426,6 @@ WHERE
   AND pattern = $3
 `
 
-// Delete a ketchup
 func (a App) Delete(ctx context.Context, o model.Ketchup) error {
 	return a.db.One(ctx, deleteQuery, o.Repository.ID, model.ReadUser(ctx).ID, o.Pattern)
 }

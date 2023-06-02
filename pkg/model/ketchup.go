@@ -8,22 +8,16 @@ import (
 	"github.com/ViBiOh/ketchup/pkg/semver"
 )
 
-// KetchupFrequency defines constant for ketchup frequency
 type KetchupFrequency int
 
 const (
-	// None frequency
 	None KetchupFrequency = iota
-	// Daily frequency
 	Daily
-	// Weekly frequency (on Monday)
 	Weekly
 )
 
-// KetchupFrequencyValues string values
 var KetchupFrequencyValues = []string{"None", "Daily", "Weekly"}
 
-// ParseKetchupFrequency parse raw string into a KetchupFrequency
 func ParseKetchupFrequency(value string) (KetchupFrequency, error) {
 	for i, short := range KetchupFrequencyValues {
 		if strings.EqualFold(short, value) {
@@ -38,7 +32,6 @@ func (r KetchupFrequency) String() string {
 	return KetchupFrequencyValues[r]
 }
 
-// Ketchup of app
 type Ketchup struct {
 	ID               string
 	Semver           string
@@ -50,7 +43,6 @@ type Ketchup struct {
 	UpdateWhenNotify bool
 }
 
-// NewKetchup creates new instance
 func NewKetchup(pattern, version string, frequency KetchupFrequency, updateWhenNotify bool, repo Repository) Ketchup {
 	return Ketchup{
 		Pattern:          pattern,
@@ -61,14 +53,12 @@ func NewKetchup(pattern, version string, frequency KetchupFrequency, updateWhenN
 	}
 }
 
-// WithID generate ID of the ketchup
 func (k Ketchup) WithID() Ketchup {
 	k.ID = sha.New(k)[:8]
 
 	return k
 }
 
-// KetchupByRepositoryIDAndPattern sort ketchup by repository ID
 type KetchupByRepositoryIDAndPattern []Ketchup
 
 func (a KetchupByRepositoryIDAndPattern) Len() int      { return len(a) }
@@ -80,7 +70,6 @@ func (a KetchupByRepositoryIDAndPattern) Less(i, j int) bool {
 	return a[i].Repository.ID < a[j].Repository.ID
 }
 
-// KetchupByPriority sort ketchup by priority (outdated first, name then)
 type KetchupByPriority []Ketchup
 
 func (a KetchupByPriority) Len() int { return len(a) }
@@ -111,7 +100,6 @@ func (a KetchupByPriority) Less(i, j int) bool {
 }
 func (a KetchupByPriority) Swap(i, j int) { a[i], a[j] = a[j], a[i] }
 
-// Release is when new version is out
 type Release struct {
 	Pattern    string         `json:"pattern"`
 	URL        string         `json:"url"`
@@ -120,7 +108,6 @@ type Release struct {
 	Updated    uint           `json:"updated"`
 }
 
-// NewRelease creates a new version from its objects
 func NewRelease(repository Repository, pattern string, version semver.Version) Release {
 	return Release{
 		Repository: repository,
@@ -130,14 +117,12 @@ func NewRelease(repository Repository, pattern string, version semver.Version) R
 	}
 }
 
-// SetUpdated marks released as auto updated
 func (r Release) SetUpdated(status uint) Release {
 	r.Updated = status
 
 	return r
 }
 
-// ReleaseByRepositoryIDAndPattern sort release by repository ID
 type ReleaseByRepositoryIDAndPattern []Release
 
 func (a ReleaseByRepositoryIDAndPattern) Len() int      { return len(a) }
@@ -149,7 +134,6 @@ func (a ReleaseByRepositoryIDAndPattern) Less(i, j int) bool {
 	return a[i].Repository.ID < a[j].Repository.ID
 }
 
-// ReleaseByKindAndName sort release by repository kind and repository name
 type ReleaseByKindAndName []Release
 
 func (a ReleaseByKindAndName) Len() int      { return len(a) }

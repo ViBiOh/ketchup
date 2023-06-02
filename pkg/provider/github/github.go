@@ -35,28 +35,23 @@ type redis interface {
 	Exclusive(context.Context, string, time.Duration, func(context.Context) error) (bool, error)
 }
 
-// Tag describes a GitHub Tag
 type Tag struct {
 	Name string `json:"name"`
 }
 
-// RateLimit describes a rate limit on given ressource
 type RateLimit struct {
 	Remaining uint64 `json:"remaining"`
 }
 
-// RateLimitResponse describes the rate_limit response
 type RateLimitResponse struct {
 	Resources map[string]RateLimit `json:"resources"`
 }
 
-// App of package
 type App interface {
 	Start(context.Context)
 	LatestVersions(context.Context, string, []string) (map[string]semver.Version, error)
 }
 
-// Config of package
 type Config struct {
 	token *string
 }
@@ -68,14 +63,12 @@ type app struct {
 	token    string
 }
 
-// Flags adds flags for configuring package
 func Flags(fs *flag.FlagSet, prefix string) Config {
 	return Config{
 		token: flags.New("Token", "OAuth Token").Prefix(prefix).DocPrefix("github").String(fs, "", nil),
 	}
 }
 
-// New creates new App from Config
 func New(config Config, redisApp redis, registerer prometheus.Registerer, tracerApp tracer.App) App {
 	httpClient = tracer.AddTracerToClient(httpClient, tracerApp.GetProvider())
 

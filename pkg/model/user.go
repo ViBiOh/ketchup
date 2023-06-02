@@ -13,14 +13,12 @@ const (
 	ctxUserKey key = iota
 )
 
-// User of app
 type User struct {
 	Email string         `json:"email"`
 	Login authModel.User `json:"login"`
 	ID    Identifier     `json:"id"`
 }
 
-// String implements stringer
 func (u User) String() string {
 	output := fmt.Sprintf("id=%d", u.ID)
 
@@ -33,12 +31,10 @@ func (u User) String() string {
 	return output
 }
 
-// IsZero check if instance is valued or not
 func (u User) IsZero() bool {
 	return u.ID.IsZero() && u.Login.ID == 0
 }
 
-// NewUser creates new User instance
 func NewUser(id Identifier, email string, login authModel.User) User {
 	return User{
 		ID:    id,
@@ -47,12 +43,10 @@ func NewUser(id Identifier, email string, login authModel.User) User {
 	}
 }
 
-// StoreUser stores given User in context
 func StoreUser(ctx context.Context, user User) context.Context {
 	return context.WithValue(ctx, ctxUserKey, user)
 }
 
-// ReadUser retrieves user from context
 func ReadUser(ctx context.Context) User {
 	rawUser := ctx.Value(ctxUserKey)
 	if rawUser == nil {

@@ -14,7 +14,6 @@ import (
 
 var nameMatcher = regexp.MustCompile(`(?i)(?:github\.com/)?([^/\n]+/[^/\n]+)`)
 
-// App of package
 type App struct {
 	repositoryStore model.RepositoryStore
 	githubApp       model.GenericProvider
@@ -24,7 +23,6 @@ type App struct {
 	pypiApp         model.GenericProvider
 }
 
-// New creates new App from Config
 func New(repositoryStore model.RepositoryStore, githubApp model.GenericProvider, helmApp model.HelmProvider, dockerApp model.GenericProvider, npmApp model.GenericProvider, pypiApp model.GenericProvider) App {
 	return App{
 		repositoryStore: repositoryStore,
@@ -36,7 +34,6 @@ func New(repositoryStore model.RepositoryStore, githubApp model.GenericProvider,
 	}
 }
 
-// List repositories
 func (a App) List(ctx context.Context, pageSize uint, last string) ([]model.Repository, uint64, error) {
 	list, total, err := a.repositoryStore.List(ctx, pageSize, last)
 	if err != nil {
@@ -46,7 +43,6 @@ func (a App) List(ctx context.Context, pageSize uint, last string) ([]model.Repo
 	return list, total, nil
 }
 
-// ListByKinds repositories by kind
 func (a App) ListByKinds(ctx context.Context, pageSize uint, last string, kinds ...model.RepositoryKind) ([]model.Repository, uint64, error) {
 	list, total, err := a.repositoryStore.ListByKinds(ctx, pageSize, last, kinds...)
 	if err != nil {
@@ -56,7 +52,6 @@ func (a App) ListByKinds(ctx context.Context, pageSize uint, last string, kinds 
 	return list, total, nil
 }
 
-// Suggest repositories
 func (a App) Suggest(ctx context.Context, ignoreIds []model.Identifier, count uint64) ([]model.Repository, error) {
 	list, err := a.repositoryStore.Suggest(ctx, ignoreIds, count)
 	if err != nil {
@@ -66,7 +61,6 @@ func (a App) Suggest(ctx context.Context, ignoreIds []model.Identifier, count ui
 	return list, nil
 }
 
-// GetOrCreate repository
 func (a App) GetOrCreate(ctx context.Context, kind model.RepositoryKind, name, part, pattern string) (model.Repository, error) {
 	sanitizedName := name
 	if kind == model.Github {
@@ -132,7 +126,6 @@ func (a App) create(ctx context.Context, item model.Repository) (model.Repositor
 	return item, err
 }
 
-// Update repository
 func (a App) Update(ctx context.Context, item model.Repository) error {
 	return a.repositoryStore.DoAtomic(ctx, func(ctx context.Context) error {
 		old, err := a.repositoryStore.Get(ctx, item.ID, true)
@@ -159,7 +152,6 @@ func (a App) Update(ctx context.Context, item model.Repository) error {
 	})
 }
 
-// Clean unused
 func (a App) Clean(ctx context.Context) error {
 	return a.repositoryStore.DoAtomic(ctx, func(ctx context.Context) error {
 		if err := a.repositoryStore.DeleteUnused(ctx); err != nil {
@@ -203,7 +195,6 @@ func (a App) check(ctx context.Context, old, new model.Repository) error {
 	return httpModel.ConcatError(output)
 }
 
-// LatestVersions of a repository
 func (a App) LatestVersions(ctx context.Context, repo model.Repository) (map[string]semver.Version, error) {
 	if len(repo.Versions) == 0 {
 		return nil, errors.New("no pattern for fetching latest versions")

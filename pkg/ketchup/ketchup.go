@@ -22,7 +22,6 @@ const (
 	appPath      = "/app"
 )
 
-// FuncMap for template rendering
 var FuncMap = template.FuncMap{
 	"frequencyImage": func(frequency model.KetchupFrequency) string {
 		switch frequency {
@@ -36,7 +35,6 @@ var FuncMap = template.FuncMap{
 	},
 }
 
-// App of package
 type App struct {
 	userService       user.App
 	ketchupService    ketchup.App
@@ -46,7 +44,6 @@ type App struct {
 	rendererApp       *renderer.App
 }
 
-// New creates new App from Config
 func New(rendererApp *renderer.App, ketchupService ketchup.App, userService user.App, repositoryService repository.App, redisApp redis.Client, tracerApp tracer.App) App {
 	app := App{
 		rendererApp:       rendererApp,
@@ -63,7 +60,6 @@ func New(rendererApp *renderer.App, ketchupService ketchup.App, userService user
 	return app
 }
 
-// Handler for request. Should be use with net/http
 func (a App) Handler() http.Handler {
 	rendererHandler := a.rendererApp.Handler(a.AppTemplateFunc)
 	ketchupHandler := http.StripPrefix(ketchupsPath, a.ketchups())

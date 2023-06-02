@@ -11,19 +11,16 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
-// App of package
 type App struct {
 	db model.Database
 }
 
-// New creates new App from Config
 func New(db model.Database) App {
 	return App{
 		db: db,
 	}
 }
 
-// DoAtomic does an atomic operation
 func (a App) DoAtomic(ctx context.Context, action func(context.Context) error) error {
 	return a.db.DoAtomic(ctx, action)
 }
@@ -101,7 +98,6 @@ WHERE
   TRUE
 `
 
-// List repositories
 func (a App) List(ctx context.Context, pageSize uint, last string) ([]model.Repository, uint64, error) {
 	var query strings.Builder
 	query.WriteString(listQuery)
@@ -148,7 +144,6 @@ const listByKindRestartQuery = `
   )
 `
 
-// ListByKinds repositories by kind
 func (a App) ListByKinds(ctx context.Context, pageSize uint, last string, kinds ...model.RepositoryKind) ([]model.Repository, uint64, error) {
 	var query strings.Builder
 	query.WriteString(listByKindsQuery)
@@ -206,7 +201,6 @@ ORDER BY
 LIMIT $1
 `
 
-// Suggest repositories
 func (a App) Suggest(ctx context.Context, ignoreIds []model.Identifier, count uint64) ([]model.Repository, error) {
 	list, _, err := a.list(ctx, suggestQuery, count, ignoreIds)
 	return list, err
@@ -224,7 +218,6 @@ WHERE
   id = $1
 `
 
-// Get repository by id
 func (a App) Get(ctx context.Context, id model.Identifier, forUpdate bool) (model.Repository, error) {
 	query := getQuery
 	if forUpdate {
@@ -248,7 +241,6 @@ WHERE
   AND part = $3
 `
 
-// GetByName repository by name
 func (a App) GetByName(ctx context.Context, repositoryKind model.RepositoryKind, name, part string) (model.Repository, error) {
 	return a.get(ctx, getByNameQuery, repositoryKind.String(), strings.ToLower(name), strings.ToLower(part))
 }
@@ -271,7 +263,6 @@ INSERT INTO
 ) RETURNING id
 `
 
-// Create a repository
 func (a App) Create(ctx context.Context, o model.Repository) (model.Identifier, error) {
 	if err := a.db.Exec(ctx, insertLock); err != nil {
 		return 0, err
@@ -307,7 +298,6 @@ WHERE
   )
 `
 
-// DeleteUnused repositories
 func (a App) DeleteUnused(ctx context.Context) error {
 	return a.db.Exec(ctx, deleteQuery)
 }
@@ -325,7 +315,6 @@ WHERE NOT EXISTS (
   )
 `
 
-// DeleteUnusedVersions repositories versions
 func (a App) DeleteUnusedVersions(ctx context.Context) error {
 	return a.db.Exec(ctx, deleteVersionsQuery)
 }

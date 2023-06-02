@@ -12,7 +12,6 @@ import (
 	"github.com/ViBiOh/ketchup/pkg/model"
 )
 
-// Signup handler
 func (a App) Signup() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodPost {

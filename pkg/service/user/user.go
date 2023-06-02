@@ -12,13 +12,11 @@ import (
 	"github.com/ViBiOh/ketchup/pkg/model"
 )
 
-// App of package
 type App struct {
 	userStore model.UserStore
 	authApp   model.AuthService
 }
 
-// New creates new App from Config
 func New(userStore model.UserStore, authApp model.AuthService) App {
 	return App{
 		userStore: userStore,
@@ -26,7 +24,6 @@ func New(userStore model.UserStore, authApp model.AuthService) App {
 	}
 }
 
-// StoreInContext read login user from context and store app user in context
 func (a App) StoreInContext(ctx context.Context) context.Context {
 	id := authModel.ReadUser(ctx).ID
 	if id == 0 {
@@ -43,12 +40,10 @@ func (a App) StoreInContext(ctx context.Context) context.Context {
 	return model.StoreUser(ctx, item)
 }
 
-// ListReminderUsers list users that need a reminder
 func (a App) ListReminderUsers(ctx context.Context) ([]model.User, error) {
 	return a.userStore.ListReminderUsers(ctx)
 }
 
-// Create user
 func (a App) Create(ctx context.Context, item model.User) (model.User, error) {
 	if err := a.check(ctx, model.User{}, item); err != nil {
 		return model.User{}, httpModel.WrapInvalid(err)
@@ -102,7 +97,6 @@ func (a App) check(ctx context.Context, _, new model.User) error {
 	return httpModel.ConcatError(output)
 }
 
-// Count users
 func (a App) Count(ctx context.Context) (uint64, error) {
 	return a.userStore.Count(ctx)
 }

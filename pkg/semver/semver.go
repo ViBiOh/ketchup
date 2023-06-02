@@ -14,7 +14,6 @@ const (
 // NonFinalVersion is a detail for temporary version
 type NonFinalVersion int
 
-// Version describe a semantic version
 type Version struct {
 	Name   string `json:"name"`
 	major  uint64
@@ -23,7 +22,6 @@ type Version struct {
 	suffix NonFinalVersion
 }
 
-// IsZero check that instance is valued
 func (v Version) IsZero() bool {
 	return len(v.Name) == 0
 }
@@ -43,12 +41,10 @@ var (
 	nonFinalVersions = []string{"alpha", "beta", "canary", "rc", "test"}
 )
 
-// Equals check if two versions are equivalent
 func (v Version) Equals(other Version) bool {
 	return v.major == other.major && v.minor == other.minor && v.patch == other.patch && v.suffix == other.suffix
 }
 
-// IsGreater check if current version is greater than other
 func (v Version) IsGreater(other Version) bool {
 	if v.major != other.major {
 		return v.major > other.major
@@ -73,7 +69,6 @@ func (v Version) IsGreater(other Version) bool {
 	return v.Name > other.Name
 }
 
-// Compare return version diff in semver nomenclture
 func (v Version) Compare(other Version) string {
 	if v.major != other.major {
 		return "Major"
@@ -94,7 +89,6 @@ func (v Version) Compare(other Version) string {
 	return ""
 }
 
-// Parse given version string into a version
 func Parse(version string) (Version, error) {
 	matches := semverMatcher.FindStringSubmatch(version)
 	if len(matches) == 0 {
