@@ -39,7 +39,7 @@ spec:
       KETCHUP_DB_USER: ketchup
       KETCHUP_DOCKER_USERNAME: vibioh
       KETCHUP_LOGGER_JSON: "true"
-      KETCHUP_NOTIFIER_PUSH_URL: http://pushgateway.monitoring
+      KETCHUP_NOTIFIER_PUSH_URL: http://pushgateway.observability
       KETCHUP_TRACER_URL: otel-collector.observability:4317
       OTEL_SERVICE_NAME: ketchup-notifier
     secrets:
