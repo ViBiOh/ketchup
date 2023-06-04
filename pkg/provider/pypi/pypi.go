@@ -18,15 +18,12 @@ type packageResp struct {
 	Versions map[string]any `json:"releases"`
 }
 
-// App of package
 type App struct{}
 
-// New creates new App
 func New() App {
 	return App{}
 }
 
-// LatestVersions retrieves latest version for package name on given patterns
 func (a App) LatestVersions(ctx context.Context, name string, patterns []string) (map[string]semver.Version, error) {
 	versions, compiledPatterns, err := model.PreparePatternMatching(patterns)
 	if err != nil {

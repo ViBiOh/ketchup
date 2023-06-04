@@ -96,7 +96,6 @@ WHERE
   AND pattern = $2
 `
 
-// UpdateVersions of a repository
 func (a App) UpdateVersions(ctx context.Context, o model.Repository) error {
 	patterns, err := a.getRepositoryVersions(ctx, o)
 	if err != nil {

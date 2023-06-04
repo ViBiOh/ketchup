@@ -24,15 +24,12 @@ type chart struct {
 	Version string `yaml:"version"`
 }
 
-// App of package
 type App struct{}
 
-// New creates new App from Config
 func New() App {
 	return App{}
 }
 
-// FetchIndex of given URL for given charts patterns
 func (a App) FetchIndex(ctx context.Context, url string, chartsPatterns map[string][]string) (map[string]map[string]semver.Version, error) {
 	resp, err := request.Get(fmt.Sprintf("%s/%s", url, indexName)).Send(ctx, nil)
 	if err != nil {
@@ -77,7 +74,6 @@ func (a App) FetchIndex(ctx context.Context, url string, chartsPatterns map[stri
 	return output, nil
 }
 
-// LatestVersions for repo and name, on given patterns
 func (a App) LatestVersions(ctx context.Context, name, part string, patterns []string) (map[string]semver.Version, error) {
 	index, err := a.FetchIndex(ctx, name, map[string][]string{part: patterns})
 	if err != nil {

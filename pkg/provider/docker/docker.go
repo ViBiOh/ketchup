@@ -27,19 +27,16 @@ type authResponse struct {
 	AccessToken string `json:"access_token"`
 }
 
-// App of package
 type App struct {
 	username string
 	password string
 }
 
-// Config of package
 type Config struct {
 	username *string
 	password *string
 }
 
-// Flags adds flags for configuring package
 func Flags(fs *flag.FlagSet, prefix string, overrides ...flags.Override) Config {
 	return Config{
 		username: flags.New("Username", "Registry Username").Prefix(prefix).DocPrefix("docker").String(fs, "", overrides),
@@ -47,7 +44,6 @@ func Flags(fs *flag.FlagSet, prefix string, overrides ...flags.Override) Config 
 	}
 }
 
-// New creates new App from Config
 func New(config Config) App {
 	return App{
 		username: strings.TrimSpace(*config.username),
@@ -55,7 +51,6 @@ func New(config Config) App {
 	}
 }
 
-// LatestVersions retrieve latest version of repository for given patterns
 func (a App) LatestVersions(ctx context.Context, repository string, patterns []string) (map[string]semver.Version, error) {
 	versions, compiledPatterns, err := model.PreparePatternMatching(patterns)
 	if err != nil {
