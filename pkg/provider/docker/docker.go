@@ -9,6 +9,7 @@ import (
 	"net/url"
 	"runtime"
 	"strings"
+	"time"
 
 	"github.com/ViBiOh/flags"
 	"github.com/ViBiOh/httputils/v4/pkg/httpjson"
@@ -65,7 +66,7 @@ func (a App) LatestVersions(ctx context.Context, repository string, patterns []s
 	tagsURL := fmt.Sprintf("%s/v2/%s/tags/list", registry, repository)
 
 	for len(tagsURL) != 0 {
-		req := request.Get(tagsURL)
+		req := request.Get(tagsURL).WithClient(request.CreateClient(15*time.Second, nil))
 
 		if len(auth) != 0 {
 			req = req.Header("Authorization", auth)
