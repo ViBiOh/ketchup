@@ -25,7 +25,7 @@ spec:
     nameOverride: ketchup
     image:
       name: vibioh/ketchup
-      tag: "202306240935" # {"$imagepolicy": "default:flux-ketchup-web:tag"}
+      tag: "202306251023" # {"$imagepolicy": "default:flux-ketchup-web:tag"}
     config:
       GOMAXPROCS: "1"
       KETCHUP_LOGGER_JSON: "true"
