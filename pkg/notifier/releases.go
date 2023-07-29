@@ -46,7 +46,7 @@ func (a App) getNewStandardReleases(ctx context.Context) ([]model.Release, uint6
 	var count uint64
 	var last string
 
-	workerCount := uint64(4)
+	workerCount := 4
 	done := make(chan struct{})
 	wg := concurrent.NewLimited(workerCount)
 
