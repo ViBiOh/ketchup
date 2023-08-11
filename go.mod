@@ -11,6 +11,7 @@ require (
 	github.com/jackc/pgx/v5 v5.4.3
 	github.com/prometheus/client_golang v1.16.0
 	go.opentelemetry.io/otel/trace v1.16.0
+	go.uber.org/mock v0.2.0
 	gopkg.in/yaml.v3 v3.0.1
 )
 

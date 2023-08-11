@@ -10,7 +10,7 @@ import (
 	"github.com/ViBiOh/httputils/v4/pkg/request"
 	"github.com/ViBiOh/ketchup/pkg/mocks"
 	"github.com/ViBiOh/ketchup/pkg/model"
-	"github.com/golang/mock/gomock"
+	"go.uber.org/mock/gomock"
 )
 
 func TestMiddleware(t *testing.T) {

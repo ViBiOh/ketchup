@@ -11,7 +11,7 @@ import (
 	"github.com/ViBiOh/ketchup/pkg/mocks"
 	"github.com/ViBiOh/ketchup/pkg/model"
 	"github.com/ViBiOh/ketchup/pkg/semver"
-	"github.com/golang/mock/gomock"
+	"go.uber.org/mock/gomock"
 )
 
 func TestGetNewStandardReleases(t *testing.T) {

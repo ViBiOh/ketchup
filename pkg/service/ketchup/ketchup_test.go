@@ -11,7 +11,7 @@ import (
 	httpModel "github.com/ViBiOh/httputils/v4/pkg/model"
 	"github.com/ViBiOh/ketchup/pkg/mocks"
 	"github.com/ViBiOh/ketchup/pkg/model"
-	"github.com/golang/mock/gomock"
+	"go.uber.org/mock/gomock"
 )
 
 var (

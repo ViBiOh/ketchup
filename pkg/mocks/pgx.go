@@ -7,9 +7,9 @@ package mocks
 import (
 	reflect "reflect"
 
-	gomock "github.com/golang/mock/gomock"
 	pgx "github.com/jackc/pgx/v5"
 	pgconn "github.com/jackc/pgx/v5/pgconn"
+	gomock "go.uber.org/mock/gomock"
 )
 
 // Row is a mock of Row interface.

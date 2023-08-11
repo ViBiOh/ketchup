@@ -9,8 +9,8 @@ import (
 	authModel "github.com/ViBiOh/auth/v2/pkg/model"
 	"github.com/ViBiOh/ketchup/pkg/mocks"
 	"github.com/ViBiOh/ketchup/pkg/model"
-	"github.com/golang/mock/gomock"
 	"github.com/jackc/pgx/v5"
+	"go.uber.org/mock/gomock"
 )
 
 var testEmail = "nobody@localhost"

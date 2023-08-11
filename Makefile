@@ -55,7 +55,6 @@ dev: format style test build
 .PHONY: init
 init:
 	@curl --disable --silent --show-error --location --max-time 30 "https://raw.githubusercontent.com/ViBiOh/scripts/main/bootstrap" | bash -s -- "-c" "git_hooks" "coverage" "release"
-	go install "github.com/golang/mock/mockgen@v1.6.0"
 	go install "github.com/golangci/golangci-lint/cmd/golangci-lint@latest"
 	go install "golang.org/x/tools/cmd/goimports@latest"
 	go install "golang.org/x/tools/go/analysis/passes/fieldalignment/cmd/fieldalignment@master"
@@ -77,6 +76,7 @@ style:
 ## mocks: Generate mocks
 .PHONY: mocks
 mocks:
+	go install "go.uber.org/mock/mockgen@latest"
 	find . -name "mocks" -type d -exec rm -r "{}" \+
 	go generate -run mockgen $(PACKAGES)
 	mockgen -destination pkg/mocks/pgx.go -package mocks -mock_names Row=Row,Rows=Rows github.com/jackc/pgx/v5 Row,Rows

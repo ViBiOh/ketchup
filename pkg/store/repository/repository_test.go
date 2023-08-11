@@ -9,8 +9,8 @@ import (
 
 	"github.com/ViBiOh/ketchup/pkg/mocks"
 	"github.com/ViBiOh/ketchup/pkg/model"
-	"github.com/golang/mock/gomock"
 	"github.com/jackc/pgx/v5"
+	"go.uber.org/mock/gomock"
 )
 
 var (

@@ -12,7 +12,7 @@ import (
 	model0 "github.com/ViBiOh/ketchup/pkg/model"
 	semver "github.com/ViBiOh/ketchup/pkg/semver"
 	model1 "github.com/ViBiOh/mailer/pkg/model"
-	gomock "github.com/golang/mock/gomock"
+	gomock "go.uber.org/mock/gomock"
 )
 
 // Mailer is a mock of Mailer interface.
