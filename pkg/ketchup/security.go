@@ -9,8 +9,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/ViBiOh/httputils/v4/pkg/id"
 	"github.com/ViBiOh/httputils/v4/pkg/logger"
-	"github.com/ViBiOh/httputils/v4/pkg/uuid"
 )
 
 type securityQuestion struct {
@@ -19,7 +19,7 @@ type securityQuestion struct {
 }
 
 type securityPayload struct {
-	UUID     string `json:"uuid"`
+	Token    string `json:"token"`
 	Question string `json:"question"`
 }
 
@@ -43,10 +43,7 @@ func (a App) generateToken(ctx context.Context) (securityPayload, error) {
 		return securityPayload{}, fmt.Errorf("generate random int: %w", err)
 	}
 
-	token, err := uuid.New()
-	if err != nil {
-		return securityPayload{}, fmt.Errorf("generate uuid: %w", err)
-	}
+	token := id.New()
 
 	id := questionID.Int64()
 
@@ -55,7 +52,7 @@ func (a App) generateToken(ctx context.Context) (securityPayload, error) {
 	}
 
 	return securityPayload{
-		UUID:     token,
+		Token:    token,
 		Question: colors[id].Question,
 	}, nil
 }

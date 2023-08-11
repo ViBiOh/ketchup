@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/ViBiOh/httputils/v4/pkg/sha"
+	"github.com/ViBiOh/httputils/v4/pkg/hash"
 	"github.com/ViBiOh/ketchup/pkg/semver"
 )
 
@@ -54,7 +54,7 @@ func NewKetchup(pattern, version string, frequency KetchupFrequency, updateWhenN
 }
 
 func (k Ketchup) WithID() Ketchup {
-	k.ID = sha.New(k)[:8]
+	k.ID = hash.Hash(k)[:8]
 
 	return k
 }

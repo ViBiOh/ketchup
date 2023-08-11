@@ -43,7 +43,7 @@ func TestList(t *testing.T) {
 			},
 			[]model.Ketchup{
 				{
-					ID:         "fe72f0a4",
+					ID:         "cad120aa",
 					Pattern:    model.DefaultPattern,
 					Version:    "0.9.0",
 					Frequency:  model.Daily,
@@ -51,7 +51,7 @@ func TestList(t *testing.T) {
 					User:       model.NewUser(3, testEmail, authModel.NewUser(0, "")),
 				},
 				{
-					ID:         "a55de4e0",
+					ID:         "5ec6147c",
 					Pattern:    model.DefaultPattern,
 					Version:    repositoryVersion,
 					Frequency:  model.Daily,

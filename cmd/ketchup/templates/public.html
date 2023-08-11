@@ -71,7 +71,7 @@
     <legend>Signup</legend>
 
     <form method="POST" action="/signup">
-      <input type="hidden" name="token" value="{{ .Security.UUID }}">
+      <input type="hidden" name="token" value="{{ .Security.Token }}">
 
       <p class="padding no-margin">
         <label for="email" class="block">Email: <span class="danger">*</span></label>

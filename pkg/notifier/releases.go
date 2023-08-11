@@ -15,7 +15,7 @@ func (a App) getNewReleases(ctx context.Context) ([]model.Release, uint64, error
 	var releases, helmReleases []model.Release
 	var releasesCount, helmCount uint64
 
-	wg := concurrent.NewLimited(2)
+	wg := concurrent.NewLimiter(2)
 
 	wg.Go(func() {
 		var err error
@@ -48,7 +48,7 @@ func (a App) getNewStandardReleases(ctx context.Context) ([]model.Release, uint6
 
 	workerCount := 4
 	done := make(chan struct{})
-	wg := concurrent.NewLimited(workerCount)
+	wg := concurrent.NewLimiter(workerCount)
 
 	workerOutput := make(chan []model.Release, workerCount)
 	closeWorker := func() {
