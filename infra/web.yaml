@@ -30,7 +30,7 @@ spec:
       GOMAXPROCS: "1"
       KETCHUP_LOGGER_JSON: "true"
       KETCHUP_DB_HOST: postgres
-      KETCHUP_DB_PORT: "80"
+      KETCHUP_DB_PORT: "5432"
       KETCHUP_DB_NAME: ketchup
       KETCHUP_DB_USER: ketchup
       KETCHUP_SCHEDULER_ENABLED: "false"
