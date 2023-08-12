@@ -3,10 +3,10 @@ module github.com/ViBiOh/ketchup
 go 1.21
 
 require (
-	github.com/ViBiOh/auth/v2 v2.14.24
+	github.com/ViBiOh/auth/v2 v2.14.25
 	github.com/ViBiOh/flags v1.3.1
 	github.com/ViBiOh/httputils/v4 v4.62.0
-	github.com/ViBiOh/mailer v1.31.1
+	github.com/ViBiOh/mailer v1.31.2
 	github.com/jackc/pgx/v5 v5.4.3
 	github.com/prometheus/client_golang v1.16.0
 	go.opentelemetry.io/otel/trace v1.16.0
