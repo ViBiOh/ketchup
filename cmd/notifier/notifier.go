@@ -4,6 +4,7 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	"log"
 	"os"
 
 	"github.com/ViBiOh/flags"
@@ -41,7 +42,9 @@ func main() {
 
 	notificationType := fs.String("notification", "daily", "Notification type. \"daily\" or \"reminder\"")
 
-	logger.Fatal(fs.Parse(os.Args[1:]))
+	if err := fs.Parse(os.Args[1:]); err != nil {
+		log.Fatal(err)
+	}
 
 	logger.Global(logger.New(loggerConfig))
 	defer logger.Close()
