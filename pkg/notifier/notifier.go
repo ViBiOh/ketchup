@@ -4,13 +4,13 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	"log/slog"
 	"sort"
 	"strings"
 	"time"
 
 	"github.com/ViBiOh/flags"
 	"github.com/ViBiOh/httputils/v4/pkg/breaksync"
-	"github.com/ViBiOh/httputils/v4/pkg/logger"
 	"github.com/ViBiOh/ketchup/pkg/model"
 	"github.com/ViBiOh/ketchup/pkg/semver"
 	"github.com/ViBiOh/ketchup/pkg/service/user"
@@ -83,7 +83,7 @@ func (a App) Notify(ctx context.Context) error {
 
 		userCount, err := a.userService.Count(ctx)
 		if err != nil {
-			logger.Error("get users count: %s", err)
+			slog.Error("get users count", "err", err)
 		} else {
 			metrics.WithLabelValues("users").Set(float64(userCount))
 		}
@@ -93,7 +93,7 @@ func (a App) Notify(ctx context.Context) error {
 		metrics.WithLabelValues("notifications").Set(float64(len(ketchupsToNotify)))
 
 		if err := push.New(a.pushURL, "ketchup").Gatherer(registry).Push(); err != nil {
-			logger.Error("push metrics: %s", err)
+			slog.Error("push metrics", "err", err)
 		}
 	}
 
@@ -137,7 +137,7 @@ func (a App) getKetchupToNotify(ctx context.Context, releases []model.Release) (
 		return nil, fmt.Errorf("get ketchups for repositories: %w", err)
 	}
 
-	logger.Info("%d daily ketchups updates", len(ketchups))
+	slog.Info("Daily ketchups updates", "count", len(ketchups))
 
 	userToNotify := a.syncReleasesByUser(ctx, releases, ketchups)
 
@@ -147,11 +147,11 @@ func (a App) getKetchupToNotify(ctx context.Context, releases []model.Release) (
 			return nil, fmt.Errorf("get weekly ketchups: %w", err)
 		}
 
-		logger.Info("%d weekly ketchups updates", len(weeklyKetchups))
+		slog.Info("Weekly ketchups updates", "count", len(weeklyKetchups))
 		a.appendKetchupsToUser(ctx, userToNotify, weeklyKetchups)
 	}
 
-	logger.Info("%d users to notify", len(userToNotify))
+	slog.Info("Users to notify", "count", len(userToNotify))
 
 	return userToNotify, nil
 }
@@ -189,7 +189,7 @@ func (a App) syncReleasesByUser(ctx context.Context, releases []model.Release, k
 			return nil
 		})
 	if err != nil {
-		logger.Error("synchronise releases and ketchups: %s", err)
+		slog.Error("synchronise releases and ketchups", "err", err)
 	}
 
 	return usersToNotify
@@ -199,7 +199,7 @@ func (a App) appendKetchupsToUser(ctx context.Context, usersToNotify map[model.U
 	for _, ketchup := range ketchups {
 		ketchupVersion, err := semver.Parse(ketchup.Version)
 		if err != nil {
-			logger.WithField("version", ketchup.Version).Error("parse version of ketchup: %s", err)
+			slog.Error("parse version of ketchup", "err", err, "version", ketchup.Version)
 			continue
 		}
 
@@ -232,11 +232,11 @@ func (a App) handleUpdateWhenNotify(ctx context.Context, ketchup model.Ketchup, 
 		return release
 	}
 
-	log := logger.WithField("repository", ketchup.Repository.ID).WithField("user", ketchup.User.ID).WithField("pattern", ketchup.Pattern)
+	log := slog.With("repository", ketchup.Repository.ID).With("user", ketchup.User.ID).With("pattern", ketchup.Pattern)
 
-	log.Info("Auto-updating ketchup to %s", release.Version.Name)
+	log.Info("Auto-updating ketchup", "version", release.Version.Name)
 	if err := a.ketchupService.UpdateVersion(ctx, ketchup.User.ID, ketchup.Repository.ID, ketchup.Pattern, release.Version.Name); err != nil {
-		log.Error("update ketchup: %s", err)
+		log.Error("update ketchup", "err", err)
 		return release.SetUpdated(1)
 	}
 
@@ -249,12 +249,12 @@ func (a App) sendNotification(ctx context.Context, template string, ketchupToNot
 	}
 
 	if a.mailerApp == nil || !a.mailerApp.Enabled() {
-		logger.Warn("mailer is not configured")
+		slog.Warn("mailer is not configured")
 		return nil
 	}
 
 	for ketchupUser, releases := range ketchupToNotify {
-		logger.Info("Sending email to %s for %d releases", ketchupUser.Email, len(releases))
+		slog.Info("Sending email", "to", ketchupUser.Email, "count", len(releases))
 
 		sort.Sort(model.ReleaseByKindAndName(releases))
 

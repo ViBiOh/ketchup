@@ -4,20 +4,21 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/ViBiOh/flags"
 	"github.com/ViBiOh/httputils/v4/pkg/cron"
 	"github.com/ViBiOh/httputils/v4/pkg/httpjson"
-	"github.com/ViBiOh/httputils/v4/pkg/logger"
 	httpModel "github.com/ViBiOh/httputils/v4/pkg/model"
 	"github.com/ViBiOh/httputils/v4/pkg/request"
-	"github.com/ViBiOh/httputils/v4/pkg/tracer"
+	"github.com/ViBiOh/httputils/v4/pkg/telemetry"
 	"github.com/ViBiOh/ketchup/pkg/model"
 	"github.com/ViBiOh/ketchup/pkg/semver"
-	"github.com/prometheus/client_golang/prometheus"
+	"go.opentelemetry.io/otel/metric"
 	"go.opentelemetry.io/otel/trace"
 )
 
@@ -25,7 +26,7 @@ var (
 	apiURL = "https://api.github.com"
 
 	httpClient = request.CreateClient(30*time.Second, func(r *http.Request, via []*http.Request) error {
-		logger.Warn("Redirect from %s to %s", via[len(via)-1].URL.Path, r.URL.Path)
+		slog.Warn("Redirect", "from", via[len(via)-1].URL.Path, "to", r.URL.Path)
 		return nil
 	})
 )
@@ -57,10 +58,11 @@ type Config struct {
 }
 
 type app struct {
-	tracer   trace.Tracer
-	redisApp redis
-	metrics  prometheus.Gauge
-	token    string
+	tracer         trace.Tracer
+	redisApp       redis
+	token          string
+	rateLimitValue uint64
+	mutex          sync.RWMutex
 }
 
 func Flags(fs *flag.FlagSet, prefix string) Config {
@@ -69,49 +71,56 @@ func Flags(fs *flag.FlagSet, prefix string) Config {
 	}
 }
 
-func New(config Config, redisApp redis, registerer prometheus.Registerer, tracerApp tracer.App) App {
-	httpClient = tracer.AddTracerToClient(httpClient, tracerApp.GetProvider())
+func New(config Config, redisApp redis, meterProvider metric.MeterProvider, traceProvider trace.TracerProvider) App {
+	httpClient = telemetry.AddOpenTelemetryToClient(httpClient, meterProvider, traceProvider)
 
-	var metrics prometheus.Gauge
-	if !httpModel.IsNil(registerer) {
-		metrics := prometheus.NewGauge(prometheus.GaugeOpts{
-			Namespace: "ketchup",
-			Name:      "github_rate_limit_remainings",
-		})
-		registerer.MustRegister(metrics)
-	}
-
-	return app{
+	app := &app{
 		token:    strings.TrimSpace(*config.token),
 		redisApp: redisApp,
-		tracer:   tracerApp.GetTracer("github"),
-		metrics:  metrics,
+		tracer:   traceProvider.Tracer("github"),
 	}
+
+	if !httpModel.IsNil(meterProvider) {
+		_, err := meterProvider.Meter("github.com/ViBiOh/ketchup/pkg/provider/github").
+			Int64ObservableGauge("github_rate_limit_remainings",
+				metric.WithInt64Callback(func(ctx context.Context, io metric.Int64Observer) error {
+					app.mutex.RLock()
+					defer app.mutex.RUnlock()
+
+					io.Observe(int64(app.rateLimitValue))
+					return nil
+				}))
+		if err != nil {
+			slog.Error("create observable gauge", "err", err)
+		}
+	}
+
+	return app
 }
 
-func (a app) newClient() request.Request {
+func (a *app) newClient() request.Request {
 	return request.New().Header("Authorization", fmt.Sprintf("token %s", a.token)).WithClient(httpClient)
 }
 
-func (a app) Start(ctx context.Context) {
-	if httpModel.IsNil(a.metrics) {
-		return
-	}
-
+func (a *app) Start(ctx context.Context) {
 	cron.New().Now().Each(time.Minute).WithTracer(a.tracer).OnError(func(err error) {
-		logger.Error("get rate limit metrics: %s", err)
+		slog.Error("get rate limit metrics", "err", err)
 	}).Exclusive(a.redisApp, "ketchup:github_rate_limit_metrics", 15*time.Second).Start(ctx, func(ctx context.Context) error {
 		value, err := a.getRateLimit(ctx)
 		if err != nil {
 			return err
 		}
 
-		a.metrics.Set(float64(value))
+		a.mutex.Lock()
+		defer a.mutex.Unlock()
+
+		a.rateLimitValue = value
+
 		return nil
 	})
 }
 
-func (a app) LatestVersions(ctx context.Context, repository string, patterns []string) (map[string]semver.Version, error) {
+func (a *app) LatestVersions(ctx context.Context, repository string, patterns []string) (map[string]semver.Version, error) {
 	versions, compiledPatterns, err := model.PreparePatternMatching(patterns)
 	if err != nil {
 		return nil, fmt.Errorf("prepare pattern matching: %w", err)
@@ -149,7 +158,7 @@ func (a app) LatestVersions(ctx context.Context, repository string, patterns []s
 	return versions, nil
 }
 
-func (a app) getRateLimit(ctx context.Context) (uint64, error) {
+func (a *app) getRateLimit(ctx context.Context) (uint64, error) {
 	resp, err := a.newClient().Get(fmt.Sprintf("%s/rate_limit", apiURL)).Send(ctx, nil)
 	if err != nil {
 		return 0, fmt.Errorf("get rate limit: %w", err)

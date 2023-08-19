@@ -3,10 +3,10 @@ package notifier
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"sync"
 
 	"github.com/ViBiOh/httputils/v4/pkg/concurrent"
-	"github.com/ViBiOh/httputils/v4/pkg/logger"
 	"github.com/ViBiOh/ketchup/pkg/model"
 	"github.com/ViBiOh/ketchup/pkg/semver"
 )
@@ -22,7 +22,7 @@ func (a App) getNewReleases(ctx context.Context) ([]model.Release, uint64, error
 
 		releases, releasesCount, err = a.getNewStandardReleases(ctx)
 		if err != nil {
-			logger.Error("fetch standard releases: %s", err)
+			slog.Error("fetch standard releases", "err", err)
 		}
 	})
 
@@ -32,7 +32,7 @@ func (a App) getNewReleases(ctx context.Context) ([]model.Release, uint64, error
 		helmReleases, helmCount, err = a.getNewHelmReleases(ctx)
 
 		if err != nil {
-			logger.Error("fetch helm releases: %s", err)
+			slog.Error("fetch helm releases", "err", err)
 		}
 	})
 
@@ -98,14 +98,14 @@ func (a App) getNewStandardReleases(ctx context.Context) ([]model.Release, uint6
 	end.Do(closeWorker)
 	<-done
 
-	logger.Info("%d standard repositories checked, %d new releases", count, len(newReleases))
+	slog.Info("Standard repositories checked", "count", count, "new", len(newReleases))
 	return newReleases, count, nil
 }
 
 func (a App) getNewRepositoryReleases(ctx context.Context, repo model.Repository) []model.Release {
 	versions, err := a.repositoryService.LatestVersions(ctx, repo)
 	if err != nil {
-		logger.Error("get latest versions of %s `%s`: %s", repo.Kind, repo.Name, err)
+		slog.Error("get latest versions", "err", err, "name", repo.Name, "kind", repo.Kind)
 		return nil
 	}
 
@@ -160,7 +160,7 @@ func (a App) getNewHelmReleases(ctx context.Context) ([]model.Release, uint64, e
 		last = fmt.Sprintf("%s|%s", lastRepo.Name, lastRepo.Part)
 	}
 
-	logger.Info("%d Helm repositories checked, %d new releases", count, len(newReleases))
+	slog.Info("Helm repositories checked", "count", count, "new", len(newReleases))
 	return newReleases, count, nil
 }
 
@@ -189,7 +189,7 @@ func (a App) getFetchHelmSources(ctx context.Context, repos map[string]model.Rep
 
 	values, err := a.helmApp.FetchIndex(ctx, url, charts)
 	if err != nil {
-		logger.WithField("url", url).Error("fetch helm index: %s", err)
+		slog.Error("fetch helm index", "err", err, "url", url)
 		return nil
 	}
 
@@ -213,13 +213,13 @@ func appendVersion(releases []model.Release, upstreamVersion semver.Version, rep
 
 	compiledPattern, err := semver.ParsePattern(repoPattern)
 	if err != nil {
-		logger.Error("parse pattern: %s", err)
+		slog.Error("parse pattern", "err", err)
 		return releases
 	}
 
 	repositoryVersion, err := semver.Parse(repoVersionName)
 	if err != nil {
-		logger.Error("parse version: %s", err)
+		slog.Error("parse version", "err", err)
 		return releases
 	}
 
@@ -227,7 +227,7 @@ func appendVersion(releases []model.Release, upstreamVersion semver.Version, rep
 		return releases
 	}
 
-	logger.Info("New `%s` version available for `%s`: %s", repoPattern, repo.String(), upstreamVersion.Name)
+	slog.Info("Newversion available", "pattern", repoPattern, "repo", repo.String(), "version", upstreamVersion.Name)
 
 	return append(releases, model.NewRelease(repo, repoPattern, upstreamVersion))
 }

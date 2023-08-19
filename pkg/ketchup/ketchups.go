@@ -3,11 +3,11 @@ package ketchup
 import (
 	"errors"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"strconv"
 	"strings"
 
-	"github.com/ViBiOh/httputils/v4/pkg/logger"
 	httpModel "github.com/ViBiOh/httputils/v4/pkg/model"
 	"github.com/ViBiOh/httputils/v4/pkg/renderer"
 	"github.com/ViBiOh/ketchup/pkg/model"
@@ -78,7 +78,7 @@ func (a App) handleCreate(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := a.cacheApp.EvictOnSuccess(ctx, model.ReadUser(ctx), nil); err != nil {
-		logger.Error("evict suggests cache: %s", err)
+		slog.Error("evict suggests cache", "err", err)
 	}
 
 	a.rendererApp.Redirect(w, r, fmt.Sprintf("%s/", appPath), renderer.NewSuccessMessage(fmt.Sprintf("%s created with success!", created.Repository.Name)))
@@ -137,7 +137,7 @@ func (a App) handleDelete(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := a.cacheApp.EvictOnSuccess(ctx, model.ReadUser(ctx), nil); err != nil {
-		logger.Error("evict suggests cache: %s", err)
+		slog.Error("evict suggests cache", "err", err)
 	}
 
 	a.rendererApp.Redirect(w, r, fmt.Sprintf("%s/", appPath), renderer.NewSuccessMessage("Deleted with success!"))
