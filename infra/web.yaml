@@ -28,16 +28,16 @@ spec:
       tag: "202308151735" # {"$imagepolicy": "default:flux-ketchup-web:tag"}
     config:
       GOMAXPROCS: "1"
-      KETCHUP_LOGGER_JSON: "true"
       KETCHUP_DB_HOST: postgres
-      KETCHUP_DB_PORT: "5432"
       KETCHUP_DB_NAME: ketchup
+      KETCHUP_DB_PORT: "5432"
       KETCHUP_DB_USER: ketchup
-      KETCHUP_SCHEDULER_ENABLED: "false"
+      KETCHUP_DOCKER_USERNAME: vibioh
+      KETCHUP_LOGGER_JSON: "true"
       KETCHUP_REDIS_ADDRESS: redis:6379
       KETCHUP_REDIS_DATABASE: "2"
-      KETCHUP_DOCKER_USERNAME: vibioh
-      KETCHUP_TRACER_URL: otel-collector.observability:4317
+      KETCHUP_SCHEDULER_ENABLED: "false"
+      KETCHUP_TELEMETRY_URL: otel-collector.observability:4317
       OTEL_SERVICE_NAME: ketchup
     secrets:
       KETCHUP_DB_PASS: AgA8XVcbAEVRIr5XWgMxBm0zBmtwQwlh26g0suNF7/udGUdmbV/KYZ7tPCzrwvKb4RwASD0M2KaqzSmQ0LuW4m5l4b8TjDIL4Bya2Airn09sUCIgREncGBdSxtx2MYCMRgacXDJdA0QKB8J6PnJ7WSPr9DMX5OhWL54B3ZiFk8+yAog0l12vMbnNHkkLsyv+kRRIGiZVDc8zJzBnDdd3ERT72XqrR/U+5i5d39OLMCxrZ6/FML3/R9ddwZT2QrcDj2ESwhcGYyEzEloP8dZwKAxPkm4P2ze0nZs76O1T5/5WSL5ujQX0H/23Z7A2ecAZb4ESi0UJ9j40G/wdIubP4sWDpizwZC1+3Jq28bnBRKvhDMRlKTTGbR+TWfo4my/x8PV5paXTG8Lm9pnzQi8ATm3caR6NCpdW/zFbZfvwODfbZGmrU7TFLKHr182jWdEv/uZ07q+7Gjr+RamIWRWZs5UGg5wPerYjBDhYlgcUngHFf+Hk1MAidNYc7/ijWllfTSsHVGpqx2KCk8lwCbu/kHgfhVFwCA4A7R9YLyCQuHejDU+87Psf3kRW126W1lj/CfDdj/ZUM/JvLNpE5E0vKTlwwf6Q8SNz7j3cgIUMB5/O02jY2goTWGw3VjPlMc0fRCL6DWBUYz6nWNc6YNA+R7+iBzxUMdO/xUiELx+k8pADFowHwqT3mh3AmE6ZnSWlZb7duek/dVlr3S3GnhJnemGlAszE63hk/64ZukJ89i9VozJGw4fc63FctGwDKoQXczc15jo4ZoJ/dkpFpC8=
@@ -49,17 +49,5 @@ spec:
       compress: true
       hosts:
         - ketchup.vibioh.fr
-    affinity:
-      podAffinity:
-        preferredDuringSchedulingIgnoredDuringExecution:
-          - weight: 100
-            podAffinityTerm:
-              labelSelector:
-                matchExpressions:
-                  - key: app.kubernetes.io/instance
-                    operator: In
-                    values:
-                      - postgres
-              topologyKey: "kubernetes.io/hostname"
     pprof:
       enabled: true

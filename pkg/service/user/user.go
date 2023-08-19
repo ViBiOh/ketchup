@@ -4,10 +4,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log/slog"
 	"strings"
 
 	authModel "github.com/ViBiOh/auth/v2/pkg/model"
-	"github.com/ViBiOh/httputils/v4/pkg/logger"
 	httpModel "github.com/ViBiOh/httputils/v4/pkg/model"
 	"github.com/ViBiOh/ketchup/pkg/model"
 )
@@ -27,13 +27,13 @@ func New(userStore model.UserStore, authApp model.AuthService) App {
 func (a App) StoreInContext(ctx context.Context) context.Context {
 	id := authModel.ReadUser(ctx).ID
 	if id == 0 {
-		logger.Warn("no login user in context")
+		slog.Warn("no login user in context")
 		return ctx
 	}
 
 	item, err := a.userStore.GetByLoginID(ctx, id)
 	if err != nil || item.IsZero() {
-		logger.Error("get user with login %d: %s", id, err)
+		slog.Error("get user with login", "err", err, "id", id)
 		return ctx
 	}
 

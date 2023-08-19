@@ -10,11 +10,11 @@ import (
 	"github.com/ViBiOh/httputils/v4/pkg/cache"
 	"github.com/ViBiOh/httputils/v4/pkg/redis"
 	"github.com/ViBiOh/httputils/v4/pkg/renderer"
-	"github.com/ViBiOh/httputils/v4/pkg/tracer"
 	"github.com/ViBiOh/ketchup/pkg/model"
 	"github.com/ViBiOh/ketchup/pkg/service/ketchup"
 	"github.com/ViBiOh/ketchup/pkg/service/repository"
 	"github.com/ViBiOh/ketchup/pkg/service/user"
+	"go.opentelemetry.io/otel/trace"
 )
 
 const (
@@ -44,7 +44,7 @@ type App struct {
 	rendererApp       *renderer.App
 }
 
-func New(rendererApp *renderer.App, ketchupService ketchup.App, userService user.App, repositoryService repository.App, redisApp redis.Client, tracerApp tracer.App) App {
+func New(rendererApp *renderer.App, ketchupService ketchup.App, userService user.App, repositoryService repository.App, redisApp redis.Client, traceProvider trace.TracerProvider) App {
 	app := App{
 		rendererApp:       rendererApp,
 		ketchupService:    ketchupService,
@@ -55,7 +55,7 @@ func New(rendererApp *renderer.App, ketchupService ketchup.App, userService user
 
 	app.cacheApp = cache.New(redisApp, suggestCacheKey, func(ctx context.Context, user model.User) ([]model.Repository, error) {
 		return app.repositoryService.Suggest(ctx, ignoresIdsFromCtx(ctx), countFromCtx(ctx))
-	}, time.Hour*24, 6, tracerApp.GetTracer("suggest_cache"))
+	}, traceProvider.Tracer("suggest_cache")).WithTTL(time.Hour * 24).WithMaxConcurrency(6)
 
 	return app
 }

@@ -4,13 +4,13 @@ import (
 	"context"
 	"crypto/rand"
 	"fmt"
+	"log/slog"
 	"math/big"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/ViBiOh/httputils/v4/pkg/id"
-	"github.com/ViBiOh/httputils/v4/pkg/logger"
 )
 
 type securityQuestion struct {
@@ -60,18 +60,18 @@ func (a App) generateToken(ctx context.Context) (securityPayload, error) {
 func (a App) validateToken(ctx context.Context, token, answer string) bool {
 	questionIDString, err := a.redisApp.Load(ctx, tokenKey(token))
 	if err != nil {
-		logger.Warn("retrieve captcha token: %s", err)
+		slog.Warn("retrieve captcha token", "err", err)
 		return false
 	}
 
 	questionID, err := strconv.ParseInt(string(questionIDString), 10, 64)
 	if err != nil {
-		logger.Error("question id is not numerical: %s", err)
+		slog.Error("question id is not numerical", "err", err)
 		return false
 	}
 
 	if colors[questionID].Answer != strings.TrimSpace(answer) {
-		logger.WithField("answer", answer).Warn("invalid question answer")
+		slog.Warn("invalid question answer", "answer", answer)
 		return false
 	}
 
@@ -80,7 +80,7 @@ func (a App) validateToken(ctx context.Context, token, answer string) bool {
 
 func (a App) cleanToken(ctx context.Context, token string) {
 	if err := a.redisApp.Delete(ctx, tokenKey(token)); err != nil {
-		logger.WithField("token", token).Error("delete token: %s", err)
+		slog.Error("delete token", "err", err, "token", token)
 	}
 }
 

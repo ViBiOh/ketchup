@@ -2,9 +2,9 @@ package ketchup
 
 import (
 	"context"
+	"log/slog"
 	"net/http"
 
-	"github.com/ViBiOh/httputils/v4/pkg/logger"
 	"github.com/ViBiOh/httputils/v4/pkg/query"
 	"github.com/ViBiOh/httputils/v4/pkg/renderer"
 	"github.com/ViBiOh/ketchup/pkg/model"
@@ -72,7 +72,7 @@ func (a App) suggests(ctx context.Context, ignoreIds []model.Identifier, count u
 
 	items, err := a.cacheApp.Get(countToCtx(ignoresIdsToCtx(ctx, ignoreIds), count), user)
 	if err != nil {
-		logger.Warn("get suggests: %s", err)
+		slog.Warn("get suggests", "err", err)
 		return nil
 	}
 

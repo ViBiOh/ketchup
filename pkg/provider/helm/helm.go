@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"log/slog"
 
-	"github.com/ViBiOh/httputils/v4/pkg/logger"
 	"github.com/ViBiOh/httputils/v4/pkg/request"
 	"github.com/ViBiOh/ketchup/pkg/model"
 	"github.com/ViBiOh/ketchup/pkg/semver"
@@ -38,7 +38,7 @@ func (a App) FetchIndex(ctx context.Context, url string, chartsPatterns map[stri
 
 	defer func() {
 		if err := resp.Body.Close(); err != nil {
-			logger.Error("close response body: %s", err)
+			slog.Error("close response body", "err", err)
 		}
 	}()
 

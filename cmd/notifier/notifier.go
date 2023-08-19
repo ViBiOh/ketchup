@@ -3,15 +3,15 @@ package main
 import (
 	"context"
 	"flag"
-	"fmt"
 	"log"
+	"log/slog"
 	"os"
 
 	"github.com/ViBiOh/flags"
 	"github.com/ViBiOh/httputils/v4/pkg/db"
 	"github.com/ViBiOh/httputils/v4/pkg/logger"
 	"github.com/ViBiOh/httputils/v4/pkg/request"
-	"github.com/ViBiOh/httputils/v4/pkg/tracer"
+	"github.com/ViBiOh/httputils/v4/pkg/telemetry"
 	"github.com/ViBiOh/ketchup/pkg/notifier"
 	"github.com/ViBiOh/ketchup/pkg/provider/docker"
 	"github.com/ViBiOh/ketchup/pkg/provider/github"
@@ -32,7 +32,7 @@ func main() {
 	fs.Usage = flags.Usage(fs)
 
 	loggerConfig := logger.Flags(fs, "logger")
-	tracerConfig := tracer.Flags(fs, "tracer")
+	tracerConfig := telemetry.Flags(fs, "telemetry")
 
 	dbConfig := db.Flags(fs, "db")
 	mailerConfig := mailer.Flags(fs, "mailer")
@@ -46,50 +46,64 @@ func main() {
 		log.Fatal(err)
 	}
 
-	logger.Global(logger.New(loggerConfig))
-	defer logger.Close()
+	logger.Init(loggerConfig)
 
 	ctx := context.Background()
 
-	ketchupDb, err := db.New(ctx, dbConfig, nil)
-	logger.Fatal(err)
+	telemetryApp, err := telemetry.New(ctx, tracerConfig)
+	if err != nil {
+		slog.Error("create telemetry", "err", err)
+		os.Exit(1)
+	}
+
+	defer telemetryApp.Close(ctx)
+	request.AddOpenTelemetryToDefaultClient(telemetryApp.GetMeterProvider(), telemetryApp.GetTraceProvider())
+
+	ketchupDb, err := db.New(ctx, dbConfig, telemetryApp.GetTracer("database"))
+	if err != nil {
+		slog.Error("create database", "err", err)
+		os.Exit(1)
+	}
+
 	defer ketchupDb.Close()
 
-	tracerApp, err := tracer.New(ctx, tracerConfig)
-	logger.Fatal(err)
-	defer tracerApp.Close(ctx)
-	request.AddTracerToDefaultClient(tracerApp.GetProvider())
+	mailerApp, err := mailer.New(mailerConfig, nil, telemetryApp.GetTracer("mailer"))
+	if err != nil {
+		slog.Error("create mailer", "err", err)
+		os.Exit(1)
+	}
 
-	mailerApp, err := mailer.New(mailerConfig, nil, tracerApp.GetTracer("mailer"))
-	logger.Fatal(err)
 	defer mailerApp.Close()
 
 	helmApp := helm.New()
 	npmApp := npm.New()
 	pypiApp := pypi.New()
-	repositoryServiceApp := repositoryService.New(repositoryStore.New(ketchupDb), github.New(githubConfig, nil, nil, tracerApp), helmApp, docker.New(dockerConfig), npmApp, pypiApp)
+	repositoryServiceApp := repositoryService.New(repositoryStore.New(ketchupDb), github.New(githubConfig, nil, nil, telemetryApp.GetTraceProvider()), helmApp, docker.New(dockerConfig), npmApp, pypiApp)
 	ketchupServiceApp := ketchupService.New(ketchupStore.New(ketchupDb), repositoryServiceApp)
 	userServiceApp := userService.New(userStore.New(ketchupDb), nil)
 
 	notifierApp := notifier.New(notifierConfig, repositoryServiceApp, ketchupServiceApp, userServiceApp, mailerApp, helmApp)
 
-	logger.Info("Starting notifier...")
+	slog.Info("Starting notifier...")
 
-	ctx, end := tracer.StartSpan(ctx, tracerApp.GetTracer("notifier"), "notifier")
+	ctx, end := telemetry.StartSpan(ctx, telemetryApp.GetTracer("notifier"), "notifier")
 	defer end(&err)
 
 	switch *notificationType {
 	case "daily":
 		if err = notifierApp.Notify(ctx); err != nil {
-			logger.Fatal(err)
+			slog.Error("notify", "err", err)
+			os.Exit(1)
 		}
 	case "reminder":
 		if err = notifierApp.Remind(ctx); err != nil {
-			logger.Fatal(err)
+			slog.Error("remind", "err", err)
+			os.Exit(1)
 		}
 	default:
-		logger.Fatal(fmt.Errorf("unknown notification type `%s`", *notificationType))
+		slog.Error("unknown notification type", "type", *notificationType)
+		os.Exit(1)
 	}
 
-	logger.Info("Notifier ended!")
+	slog.Info("Notifier ended!")
 }
