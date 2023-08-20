@@ -82,7 +82,7 @@ func New(config Config, redisApp redis, meterProvider metric.MeterProvider, trac
 
 	if !httpModel.IsNil(meterProvider) {
 		_, err := meterProvider.Meter("github.com/ViBiOh/ketchup/pkg/provider/github").
-			Int64ObservableGauge("github_rate_limit_remainings",
+			Int64ObservableGauge("github.rate_limit.remainings",
 				metric.WithInt64Callback(func(ctx context.Context, io metric.Int64Observer) error {
 					app.mutex.RLock()
 					defer app.mutex.RUnlock()

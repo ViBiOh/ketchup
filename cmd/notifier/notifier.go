@@ -32,7 +32,7 @@ func main() {
 	fs.Usage = flags.Usage(fs)
 
 	loggerConfig := logger.Flags(fs, "logger")
-	tracerConfig := telemetry.Flags(fs, "telemetry")
+	telemetryConfig := telemetry.Flags(fs, "telemetry")
 
 	dbConfig := db.Flags(fs, "db")
 	mailerConfig := mailer.Flags(fs, "mailer")
@@ -50,7 +50,7 @@ func main() {
 
 	ctx := context.Background()
 
-	telemetryApp, err := telemetry.New(ctx, tracerConfig)
+	telemetryApp, err := telemetry.New(ctx, telemetryConfig)
 	if err != nil {
 		slog.Error("create telemetry", "err", err)
 		os.Exit(1)
