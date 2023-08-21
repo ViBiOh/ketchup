@@ -12,6 +12,7 @@ import (
 	"github.com/ViBiOh/httputils/v4/pkg/cron"
 	"github.com/ViBiOh/httputils/v4/pkg/redis"
 	"github.com/ViBiOh/ketchup/pkg/notifier"
+	"go.opentelemetry.io/otel/metric"
 	"go.opentelemetry.io/otel/trace"
 )
 
@@ -27,6 +28,7 @@ type Config struct {
 
 type app struct {
 	tracerProvider trace.TracerProvider
+	meterProvider  metric.MeterProvider
 	timezone       string
 	hour           string
 	redisApp       redis.Client
@@ -41,7 +43,7 @@ func Flags(fs *flag.FlagSet, prefix string) Config {
 	}
 }
 
-func New(config Config, notifierApp notifier.App, redisApp redis.Client, tracerProvider trace.TracerProvider) App {
+func New(config Config, notifierApp notifier.App, redisApp redis.Client, meterProvider metric.MeterProvider, tracerProvider trace.TracerProvider) App {
 	if !*config.enabled {
 		return nil
 	}
@@ -52,6 +54,7 @@ func New(config Config, notifierApp notifier.App, redisApp redis.Client, tracerP
 		notifierApp:    notifierApp,
 		redisApp:       redisApp,
 		tracerProvider: tracerProvider,
+		meterProvider:  meterProvider,
 	}
 }
 
@@ -61,6 +64,6 @@ func (a app) Start(ctx context.Context) {
 	}).OnSignal(syscall.SIGUSR1).Exclusive(a.redisApp, "ketchup:notify", 10*time.Minute).Start(ctx, func(ctx context.Context) error {
 		slog.Info("Starting ketchup notifier")
 		defer slog.Info("Ending ketchup notifier")
-		return a.notifierApp.Notify(ctx)
+		return a.notifierApp.Notify(ctx, a.meterProvider)
 	})
 }

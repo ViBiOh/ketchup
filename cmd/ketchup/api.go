@@ -156,7 +156,7 @@ func main() {
 	}
 
 	notifierApp := notifier.New(notifierConfig, repositoryServiceApp, ketchupServiceApp, userServiceApp, mailerApp, helmApp)
-	schedulerApp := scheduler.New(schedulerConfig, notifierApp, redisApp, telemetryApp.TracerProvider())
+	schedulerApp := scheduler.New(schedulerConfig, notifierApp, redisApp, telemetryApp.MeterProvider(), telemetryApp.TracerProvider())
 	ketchupApp := ketchup.New(publicRendererApp, ketchupServiceApp, userServiceApp, repositoryServiceApp, redisApp, telemetryApp.TracerProvider())
 
 	publicHandler := publicRendererApp.Handler(ketchupApp.PublicTemplateFunc)

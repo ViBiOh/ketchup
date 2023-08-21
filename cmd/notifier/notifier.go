@@ -25,6 +25,7 @@ import (
 	repositoryStore "github.com/ViBiOh/ketchup/pkg/store/repository"
 	userStore "github.com/ViBiOh/ketchup/pkg/store/user"
 	mailer "github.com/ViBiOh/mailer/pkg/client"
+	"go.opentelemetry.io/otel/sdk/metric"
 )
 
 func main() {
@@ -91,7 +92,7 @@ func main() {
 
 	switch *notificationType {
 	case "daily":
-		if err = notifierApp.Notify(ctx); err != nil {
+		if err = notifierApp.Notify(ctx, telemetryApp.MeterProvider()); err != nil {
 			slog.Error("notify", "err", err)
 			os.Exit(1)
 		}
@@ -103,6 +104,13 @@ func main() {
 	default:
 		slog.Error("unknown notification type", "type", *notificationType)
 		os.Exit(1)
+	}
+
+	meterProvider := telemetryApp.MeterProvider()
+	if flushableProvider, ok := meterProvider.(*metric.MeterProvider); ok {
+		if err := flushableProvider.ForceFlush(ctx); err != nil {
+			slog.Error("flush meter provider", "err", err)
+		}
 	}
 
 	slog.Info("Notifier ended!")

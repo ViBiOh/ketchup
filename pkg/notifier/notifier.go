@@ -15,7 +15,8 @@ import (
 	"github.com/ViBiOh/ketchup/pkg/semver"
 	"github.com/ViBiOh/ketchup/pkg/service/user"
 	mailerModel "github.com/ViBiOh/mailer/pkg/model"
-	"github.com/prometheus/client_golang/prometheus/push"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/metric"
 )
 
 type GetNow func() time.Time
@@ -54,7 +55,7 @@ func New(config Config, repositoryService model.RepositoryService, ketchupServic
 	}
 }
 
-func (a App) Notify(ctx context.Context) error {
+func (a App) Notify(ctx context.Context, meterProvider metric.MeterProvider) error {
 	if err := a.repositoryService.Clean(ctx); err != nil {
 		return fmt.Errorf("clean repository before starting: %w", err)
 	}
@@ -78,22 +79,24 @@ func (a App) Notify(ctx context.Context) error {
 		return fmt.Errorf("send notification: %w", err)
 	}
 
-	if len(a.pushURL) != 0 {
-		registry, metrics := configurePrometheus()
+	if meterProvider != nil {
+		meter := meterProvider.Meter("github.com/ViBiOh/ketchup/pkg/notifier")
 
-		userCount, err := a.userService.Count(ctx)
+		_, err := meter.Int64ObservableGauge("ketchup_metrics", metric.WithInt64Callback(func(ctx context.Context, io metric.Int64Observer) error {
+			userCount, err := a.userService.Count(ctx)
+			if err != nil {
+				return fmt.Errorf("get users count: %w", err)
+			}
+
+			io.Observe(int64(userCount), metric.WithAttributes(attribute.String("type", "users")))
+			io.Observe(int64(repoCount), metric.WithAttributes(attribute.String("type", "repositories")))
+			io.Observe(int64(len(newReleases)), metric.WithAttributes(attribute.String("type", "releases")))
+			io.Observe(int64(len(ketchupsToNotify)), metric.WithAttributes(attribute.String("type", "notifications")))
+
+			return nil
+		}))
 		if err != nil {
-			slog.Error("get users count", "err", err)
-		} else {
-			metrics.WithLabelValues("users").Set(float64(userCount))
-		}
-
-		metrics.WithLabelValues("repositories").Set(float64(repoCount))
-		metrics.WithLabelValues("releases").Set(float64(len(newReleases)))
-		metrics.WithLabelValues("notifications").Set(float64(len(ketchupsToNotify)))
-
-		if err := push.New(a.pushURL, "ketchup").Gatherer(registry).Push(); err != nil {
-			slog.Error("push metrics", "err", err)
+			slog.Error("create ketchup counter", "err", err)
 		}
 	}
 
