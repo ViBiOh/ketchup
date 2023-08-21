@@ -57,9 +57,9 @@ func main() {
 	}
 
 	defer telemetryApp.Close(ctx)
-	request.AddOpenTelemetryToDefaultClient(telemetryApp.GetMeterProvider(), telemetryApp.GetTraceProvider())
+	request.AddOpenTelemetryToDefaultClient(telemetryApp.MeterProvider(), telemetryApp.TracerProvider())
 
-	ketchupDb, err := db.New(ctx, dbConfig, telemetryApp.GetTracer("database"))
+	ketchupDb, err := db.New(ctx, dbConfig, telemetryApp.TracerProvider())
 	if err != nil {
 		slog.Error("create database", "err", err)
 		os.Exit(1)
@@ -67,7 +67,7 @@ func main() {
 
 	defer ketchupDb.Close()
 
-	mailerApp, err := mailer.New(mailerConfig, nil, telemetryApp.GetTracer("mailer"))
+	mailerApp, err := mailer.New(mailerConfig, telemetryApp.MeterProvider(), telemetryApp.TracerProvider())
 	if err != nil {
 		slog.Error("create mailer", "err", err)
 		os.Exit(1)
@@ -78,7 +78,7 @@ func main() {
 	helmApp := helm.New()
 	npmApp := npm.New()
 	pypiApp := pypi.New()
-	repositoryServiceApp := repositoryService.New(repositoryStore.New(ketchupDb), github.New(githubConfig, nil, nil, telemetryApp.GetTraceProvider()), helmApp, docker.New(dockerConfig), npmApp, pypiApp)
+	repositoryServiceApp := repositoryService.New(repositoryStore.New(ketchupDb), github.New(githubConfig, nil, nil, telemetryApp.TracerProvider()), helmApp, docker.New(dockerConfig), npmApp, pypiApp)
 	ketchupServiceApp := ketchupService.New(ketchupStore.New(ketchupDb), repositoryServiceApp)
 	userServiceApp := userService.New(userStore.New(ketchupDb), nil)
 
@@ -86,7 +86,7 @@ func main() {
 
 	slog.Info("Starting notifier...")
 
-	ctx, end := telemetry.StartSpan(ctx, telemetryApp.GetTracer("notifier"), "notifier")
+	ctx, end := telemetry.StartSpan(ctx, telemetryApp.TracerProvider().Tracer("notifier"), "notifier")
 	defer end(&err)
 
 	switch *notificationType {

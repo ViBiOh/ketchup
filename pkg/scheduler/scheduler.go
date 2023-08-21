@@ -26,11 +26,11 @@ type Config struct {
 }
 
 type app struct {
-	tracer      trace.Tracer
-	timezone    string
-	hour        string
-	redisApp    redis.Client
-	notifierApp notifier.App
+	tracerProvider trace.TracerProvider
+	timezone       string
+	hour           string
+	redisApp       redis.Client
+	notifierApp    notifier.App
 }
 
 func Flags(fs *flag.FlagSet, prefix string) Config {
@@ -41,22 +41,22 @@ func Flags(fs *flag.FlagSet, prefix string) Config {
 	}
 }
 
-func New(config Config, notifierApp notifier.App, redisApp redis.Client, tracer trace.Tracer) App {
+func New(config Config, notifierApp notifier.App, redisApp redis.Client, tracerProvider trace.TracerProvider) App {
 	if !*config.enabled {
 		return nil
 	}
 
 	return app{
-		timezone:    strings.TrimSpace(*config.timezone),
-		hour:        strings.TrimSpace(*config.hour),
-		notifierApp: notifierApp,
-		redisApp:    redisApp,
-		tracer:      tracer,
+		timezone:       strings.TrimSpace(*config.timezone),
+		hour:           strings.TrimSpace(*config.hour),
+		notifierApp:    notifierApp,
+		redisApp:       redisApp,
+		tracerProvider: tracerProvider,
 	}
 }
 
 func (a app) Start(ctx context.Context) {
-	cron.New().At(a.hour).In(a.timezone).Days().WithTracer(a.tracer).OnError(func(err error) {
+	cron.New().At(a.hour).In(a.timezone).Days().WithTracerProvider(a.tracerProvider).OnError(func(err error) {
 		slog.Error("error while running ketchup notify", "err", err)
 	}).OnSignal(syscall.SIGUSR1).Exclusive(a.redisApp, "ketchup:notify", 10*time.Minute).Start(ctx, func(ctx context.Context) error {
 		slog.Info("Starting ketchup notifier")

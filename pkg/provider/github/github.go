@@ -58,7 +58,7 @@ type Config struct {
 }
 
 type app struct {
-	tracer         trace.Tracer
+	traceProvider  trace.TracerProvider
 	redisApp       redis
 	token          string
 	rateLimitValue uint64
@@ -75,9 +75,9 @@ func New(config Config, redisApp redis, meterProvider metric.MeterProvider, trac
 	httpClient = telemetry.AddOpenTelemetryToClient(httpClient, meterProvider, traceProvider)
 
 	app := &app{
-		token:    strings.TrimSpace(*config.token),
-		redisApp: redisApp,
-		tracer:   traceProvider.Tracer("github"),
+		token:         strings.TrimSpace(*config.token),
+		redisApp:      redisApp,
+		traceProvider: traceProvider,
 	}
 
 	if !httpModel.IsNil(meterProvider) {
@@ -103,7 +103,7 @@ func (a *app) newClient() request.Request {
 }
 
 func (a *app) Start(ctx context.Context) {
-	cron.New().Now().Each(time.Minute).WithTracer(a.tracer).OnError(func(err error) {
+	cron.New().Now().Each(time.Minute).WithTracerProvider(a.traceProvider).OnError(func(err error) {
 		slog.Error("get rate limit metrics", "err", err)
 	}).Exclusive(a.redisApp, "ketchup:github_rate_limit_metrics", 15*time.Second).Start(ctx, func(ctx context.Context) error {
 		value, err := a.getRateLimit(ctx)

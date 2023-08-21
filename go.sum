@@ -1,11 +1,11 @@
-github.com/ViBiOh/auth/v2 v2.15.0 h1:3ujsmQ7E7LeAc9rNMPxyaZmrE3xHjWcagzPeo2/pi1E=
-github.com/ViBiOh/auth/v2 v2.15.0/go.mod h1:UahWPt2RNUiPLMtX3L4Awc2bbMRPpA/facD2Dqw+5uA=
+github.com/ViBiOh/auth/v2 v2.15.2 h1:VA7IvD/wuZaVPo0BNftp8wEBS+2NmF+3+xmdM3X01Fw=
+github.com/ViBiOh/auth/v2 v2.15.2/go.mod h1:NdDMEVvcQ1Eptw4mPz/iyQt+RiyrCnxDce9nafr28Nk=
 github.com/ViBiOh/flags v1.3.1 h1:OHkGtVBPb6CpgWUST1VS9heKvHWBgwpyM8fXnuJRRVU=
 github.com/ViBiOh/flags v1.3.1/go.mod h1:yQAIBf4HTymJDCF0Bl8QQHvQTr5uiUMQBa/A/ao1oM4=
-github.com/ViBiOh/httputils/v4 v4.63.1 h1:EtOuKYU67L/080QLl6IjE4ShxECDcICpIwJNBBry0Dc=
-github.com/ViBiOh/httputils/v4 v4.63.1/go.mod h1:Kx0R7H2NGQ7wUDGnSg5idi2D3TDDIJB6GiTOMERO1C8=
-github.com/ViBiOh/mailer v1.32.1 h1:BxIlb0dbLo7i1vKsMdg8NAEhtPreoCrG4Uu7EFFAC8Q=
-github.com/ViBiOh/mailer v1.32.1/go.mod h1:b8wgT7koNQ147dUqRFSMqLlR3FRBjqYbauc2a/2BXaw=
+github.com/ViBiOh/httputils/v4 v4.63.4 h1:FJ+hpWFgmhcdYCvAHLdc54pPQbhgKq7asZaGfPPlHSw=
+github.com/ViBiOh/httputils/v4 v4.63.4/go.mod h1:Kx0R7H2NGQ7wUDGnSg5idi2D3TDDIJB6GiTOMERO1C8=
+github.com/ViBiOh/mailer v1.32.3 h1:J4dJAekiPLlM48bSeRtgdnXhQ65g2E5XVTk60wM/dyI=
+github.com/ViBiOh/mailer v1.32.3/go.mod h1:DR0eZOlooUvQgOYfr4CGh2AK0FCl6xHmPRqPLcVaafo=
 github.com/beorn7/perks v1.0.1 h1:VlbKKnNfV8bJzeqoa4cOKqO6bYr3WgKZxO8Z16+hsOM=
 github.com/beorn7/perks v1.0.1/go.mod h1:G2ZrVWU2WbWT9wwq4/hrbKbnv/1ERSJQ0ibhJ6rlkpw=
 github.com/bsm/ginkgo/v2 v2.7.0/go.mod h1:AiKlXPm7ItEHNc/2+OkrNG4E0ITzojb9/xWzvQ9XZ9w=

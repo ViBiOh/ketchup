@@ -55,7 +55,7 @@ func New(rendererApp *renderer.App, ketchupService ketchup.App, userService user
 
 	app.cacheApp = cache.New(redisApp, suggestCacheKey, func(ctx context.Context, user model.User) ([]model.Repository, error) {
 		return app.repositoryService.Suggest(ctx, ignoresIdsFromCtx(ctx), countFromCtx(ctx))
-	}, traceProvider.Tracer("suggest_cache")).WithTTL(time.Hour * 24).WithMaxConcurrency(6)
+	}, traceProvider).WithTTL(time.Hour * 24).WithMaxConcurrency(6)
 
 	return app
 }

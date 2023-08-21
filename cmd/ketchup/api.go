@@ -58,11 +58,11 @@ const (
 //go:embed templates static
 var content embed.FS
 
-func initAuth(db db.App, tracer trace.Tracer) (authService.App, authMiddleware.App) {
+func initAuth(db db.App, tracerProvider trace.TracerProvider) (authService.App, authMiddleware.App) {
 	authProvider := authStore.New(db)
 	identProvider := authIdent.New(authProvider, "ketchup")
 
-	return authService.New(authProvider, authProvider), authMiddleware.New(authProvider, tracer, identProvider)
+	return authService.New(authProvider, authProvider), authMiddleware.New(authProvider, tracerProvider, identProvider)
 }
 
 func main() {
@@ -104,7 +104,7 @@ func main() {
 	}
 
 	defer telemetryApp.Close(ctx)
-	request.AddOpenTelemetryToDefaultClient(telemetryApp.GetMeterProvider(), telemetryApp.GetTraceProvider())
+	request.AddOpenTelemetryToDefaultClient(telemetryApp.MeterProvider(), telemetryApp.TracerProvider())
 
 	go func() {
 		fmt.Println(http.ListenAndServe("localhost:9999", http.DefaultServeMux))
@@ -112,7 +112,7 @@ func main() {
 
 	appServer := server.New(appServerConfig)
 
-	ketchupDb, err := db.New(ctx, dbConfig, telemetryApp.GetTracer("database"))
+	ketchupDb, err := db.New(ctx, dbConfig, telemetryApp.TracerProvider())
 	if err != nil {
 		slog.Error("create database", "err", err)
 		os.Exit(1)
@@ -120,7 +120,7 @@ func main() {
 
 	defer ketchupDb.Close()
 
-	redisApp, err := redis.New(redisConfig, telemetryApp.GetMeterProvider(), telemetryApp.GetTraceProvider())
+	redisApp, err := redis.New(redisConfig, telemetryApp.MeterProvider(), telemetryApp.TracerProvider())
 	if err != nil {
 		slog.Error("create redis", "err", err)
 		os.Exit(1)
@@ -130,10 +130,10 @@ func main() {
 
 	healthApp := health.New(healthConfig, ketchupDb.Ping, redisApp.Ping)
 
-	authServiceApp, authMiddlewareApp := initAuth(ketchupDb, telemetryApp.GetTracer("auth"))
+	authServiceApp, authMiddlewareApp := initAuth(ketchupDb, telemetryApp.TracerProvider())
 
 	userServiceApp := userService.New(userStore.New(ketchupDb), &authServiceApp)
-	githubApp := github.New(githubConfig, redisApp, telemetryApp.GetMeterProvider(), telemetryApp.GetTraceProvider())
+	githubApp := github.New(githubConfig, redisApp, telemetryApp.MeterProvider(), telemetryApp.TracerProvider())
 	dockerApp := docker.New(dockerConfig)
 	helmApp := helm.New()
 	npmApp := npm.New()
@@ -141,7 +141,7 @@ func main() {
 	repositoryServiceApp := repositoryService.New(repositoryStore.New(ketchupDb), githubApp, helmApp, dockerApp, npmApp, pypiApp)
 	ketchupServiceApp := ketchupService.New(ketchupStore.New(ketchupDb), repositoryServiceApp)
 
-	mailerApp, err := mailer.New(mailerConfig, telemetryApp.GetMeter("mailer"), telemetryApp.GetTracer("mailer"))
+	mailerApp, err := mailer.New(mailerConfig, telemetryApp.MeterProvider(), telemetryApp.TracerProvider())
 	if err != nil {
 		slog.Error("create mailer", "err", err)
 		os.Exit(1)
@@ -149,15 +149,15 @@ func main() {
 
 	defer mailerApp.Close()
 
-	publicRendererApp, err := renderer.New(rendererConfig, content, ketchup.FuncMap, telemetryApp.GetMeter("renderer"), telemetryApp.GetTracer("renderer"))
+	publicRendererApp, err := renderer.New(rendererConfig, content, ketchup.FuncMap, telemetryApp.MeterProvider(), telemetryApp.TracerProvider())
 	if err != nil {
 		slog.Error("create renderer", "err", err)
 		os.Exit(1)
 	}
 
 	notifierApp := notifier.New(notifierConfig, repositoryServiceApp, ketchupServiceApp, userServiceApp, mailerApp, helmApp)
-	schedulerApp := scheduler.New(schedulerConfig, notifierApp, redisApp, telemetryApp.GetTracer("scheduler"))
-	ketchupApp := ketchup.New(publicRendererApp, ketchupServiceApp, userServiceApp, repositoryServiceApp, redisApp, telemetryApp.GetTraceProvider())
+	schedulerApp := scheduler.New(schedulerConfig, notifierApp, redisApp, telemetryApp.TracerProvider())
+	ketchupApp := ketchup.New(publicRendererApp, ketchupServiceApp, userServiceApp, repositoryServiceApp, redisApp, telemetryApp.TracerProvider())
 
 	publicHandler := publicRendererApp.Handler(ketchupApp.PublicTemplateFunc)
 	signupHandler := http.StripPrefix(signupPath, ketchupApp.Signup())
