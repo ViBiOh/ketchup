@@ -82,7 +82,7 @@ func (a App) Notify(ctx context.Context, meterProvider metric.MeterProvider) err
 	if meterProvider != nil {
 		meter := meterProvider.Meter("github.com/ViBiOh/ketchup/pkg/notifier")
 
-		_, err := meter.Int64ObservableGauge("ketchup_metrics", metric.WithInt64Callback(func(ctx context.Context, io metric.Int64Observer) error {
+		_, err := meter.Int64ObservableGauge("ketchup.metrics", metric.WithInt64Callback(func(ctx context.Context, io metric.Int64Observer) error {
 			userCount, err := a.userService.Count(ctx)
 			if err != nil {
 				return fmt.Errorf("get users count: %w", err)
