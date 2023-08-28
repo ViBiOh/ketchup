@@ -12,21 +12,21 @@ import (
 	"github.com/ViBiOh/ketchup/pkg/model"
 )
 
-func (a App) Signup() http.Handler {
+func (s Service) Signup() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodPost {
-			a.rendererApp.Error(w, r, nil, httpModel.WrapMethodNotAllowed(fmt.Errorf("invalid method %s", r.Method)))
+			s.renderer.Error(w, r, nil, httpModel.WrapMethodNotAllowed(fmt.Errorf("invalid method %s", r.Method)))
 			return
 		}
 
 		if err := r.ParseForm(); err != nil {
-			a.rendererApp.Error(w, r, nil, httpModel.WrapInvalid(err))
+			s.renderer.Error(w, r, nil, httpModel.WrapInvalid(err))
 			return
 		}
 
 		token := r.FormValue("token")
-		if !a.validateToken(r.Context(), token, r.FormValue("answer")) {
-			a.rendererApp.Error(w, r, nil, httpModel.WrapInvalid(errors.New("validate security question")))
+		if !s.validateToken(r.Context(), token, r.FormValue("answer")) {
+			s.renderer.Error(w, r, nil, httpModel.WrapInvalid(errors.New("validate security question")))
 			return
 		}
 
@@ -35,13 +35,13 @@ func (a App) Signup() http.Handler {
 			Password: r.FormValue("password"),
 		})
 
-		if _, err := a.userService.Create(r.Context(), user); err != nil {
-			a.rendererApp.Error(w, r, nil, err)
+		if _, err := s.user.Create(r.Context(), user); err != nil {
+			s.renderer.Error(w, r, nil, err)
 			return
 		}
 
-		go a.cleanToken(cntxt.WithoutDeadline(r.Context()), token)
+		go s.cleanToken(cntxt.WithoutDeadline(r.Context()), token)
 
-		a.rendererApp.Redirect(w, r, fmt.Sprintf("%s/", appPath), renderer.NewSuccessMessage("Welcome to ketchup!"))
+		s.renderer.Redirect(w, r, fmt.Sprintf("%s/", appPath), renderer.NewSuccessMessage("Welcome to ketchup!"))
 	})
 }

@@ -35,34 +35,34 @@ var FuncMap = template.FuncMap{
 	},
 }
 
-type App struct {
-	userService       user.App
-	ketchupService    ketchup.App
-	repositoryService repository.App
-	cacheApp          *cache.App[model.User, []model.Repository]
-	redisApp          redis.Client
-	rendererApp       *renderer.App
+type Service struct {
+	user       user.Service
+	ketchup    ketchup.Service
+	repository repository.Service
+	cache      *cache.Cache[model.User, []model.Repository]
+	redis      redis.Client
+	renderer   *renderer.Service
 }
 
-func New(rendererApp *renderer.App, ketchupService ketchup.App, userService user.App, repositoryService repository.App, redisApp redis.Client, traceProvider trace.TracerProvider) App {
-	app := App{
-		rendererApp:       rendererApp,
-		ketchupService:    ketchupService,
-		userService:       userService,
-		repositoryService: repositoryService,
-		redisApp:          redisApp,
+func New(rendererService *renderer.Service, ketchupService ketchup.Service, userService user.Service, repositoryService repository.Service, redisClient redis.Client, traceProvider trace.TracerProvider) Service {
+	service := Service{
+		renderer:   rendererService,
+		ketchup:    ketchupService,
+		user:       userService,
+		repository: repositoryService,
+		redis:      redisClient,
 	}
 
-	app.cacheApp = cache.New(redisApp, suggestCacheKey, func(ctx context.Context, user model.User) ([]model.Repository, error) {
-		return app.repositoryService.Suggest(ctx, ignoresIdsFromCtx(ctx), countFromCtx(ctx))
+	service.cache = cache.New(redisClient, suggestCacheKey, func(ctx context.Context, user model.User) ([]model.Repository, error) {
+		return service.repository.Suggest(ctx, ignoresIdsFromCtx(ctx), countFromCtx(ctx))
 	}, traceProvider).WithTTL(time.Hour * 24).WithMaxConcurrency(6)
 
-	return app
+	return service
 }
 
-func (a App) Handler() http.Handler {
-	rendererHandler := a.rendererApp.Handler(a.AppTemplateFunc)
-	ketchupHandler := http.StripPrefix(ketchupsPath, a.ketchups())
+func (s Service) Handler() http.Handler {
+	rendererHandler := s.renderer.Handler(s.TemplateFunc)
+	ketchupHandler := http.StripPrefix(ketchupsPath, s.ketchups())
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if strings.HasPrefix(r.URL.Path, ketchupsPath) {

@@ -22,7 +22,7 @@ ORDER BY
   pattern ASC
 `
 
-func (a App) enrichRepositoriesVersions(ctx context.Context, repositories []model.Repository) error {
+func (s Service) enrichRepositoriesVersions(ctx context.Context, repositories []model.Repository) error {
 	if len(repositories) == 0 {
 		return nil
 	}
@@ -51,7 +51,7 @@ func (a App) enrichRepositoriesVersions(ctx context.Context, repositories []mode
 		return nil
 	}
 
-	return a.db.List(ctx, scanner, listRepositoryVersionsForIDsQuery, ids)
+	return s.db.List(ctx, scanner, listRepositoryVersionsForIDsQuery, ids)
 }
 
 func findRepository(repositories []model.Repository, id model.Identifier) model.Repository {
@@ -96,8 +96,8 @@ WHERE
   AND pattern = $2
 `
 
-func (a App) UpdateVersions(ctx context.Context, o model.Repository) error {
-	patterns, err := a.getRepositoryVersions(ctx, o)
+func (s Service) UpdateVersions(ctx context.Context, o model.Repository) error {
+	patterns, err := s.getRepositoryVersions(ctx, o)
 	if err != nil {
 		return fmt.Errorf("fetch repository versions: %w", err)
 	}
@@ -105,7 +105,7 @@ func (a App) UpdateVersions(ctx context.Context, o model.Repository) error {
 	for pattern, version := range patterns {
 		repositoryVersion, ok := o.Versions[pattern]
 		if !ok {
-			if err := a.db.One(ctx, deleteRepositoryVersionQuery, o.ID, pattern); err != nil {
+			if err := s.db.One(ctx, deleteRepositoryVersionQuery, o.ID, pattern); err != nil {
 				return fmt.Errorf("delete repository version: %w", err)
 			}
 			continue
@@ -115,7 +115,7 @@ func (a App) UpdateVersions(ctx context.Context, o model.Repository) error {
 			continue
 		}
 
-		if err := a.db.One(ctx, updateRepositoryVersionQuery, o.ID, pattern, repositoryVersion); err != nil {
+		if err := s.db.One(ctx, updateRepositoryVersionQuery, o.ID, pattern, repositoryVersion); err != nil {
 			return fmt.Errorf("update repository version: %w", err)
 		}
 	}
@@ -125,7 +125,7 @@ func (a App) UpdateVersions(ctx context.Context, o model.Repository) error {
 			continue
 		}
 
-		if err := a.db.One(ctx, createRepositoryVersionQuery, o.ID, pattern, version); err != nil {
+		if err := s.db.One(ctx, createRepositoryVersionQuery, o.ID, pattern, version); err != nil {
 			return fmt.Errorf("create repository version: %w", err)
 		}
 	}
@@ -143,7 +143,7 @@ WHERE
   repository_id = $1
 `
 
-func (a App) getRepositoryVersions(ctx context.Context, o model.Repository) (map[string]string, error) {
+func (s Service) getRepositoryVersions(ctx context.Context, o model.Repository) (map[string]string, error) {
 	patterns := make(map[string]string)
 
 	scanner := func(rows pgx.Rows) error {
@@ -158,7 +158,7 @@ func (a App) getRepositoryVersions(ctx context.Context, o model.Repository) (map
 		return nil
 	}
 
-	err := a.db.List(ctx, scanner, listRepositoryVersionQuery, o.ID)
+	err := s.db.List(ctx, scanner, listRepositoryVersionQuery, o.ID)
 	if err != nil {
 		return nil, fmt.Errorf("list repository version: %w", err)
 	}

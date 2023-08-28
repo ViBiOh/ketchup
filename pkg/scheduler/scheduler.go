@@ -4,7 +4,6 @@ import (
 	"context"
 	"flag"
 	"log/slog"
-	"strings"
 	"syscall"
 	"time"
 
@@ -16,54 +15,56 @@ import (
 	"go.opentelemetry.io/otel/trace"
 )
 
-type App interface {
+type Service interface {
 	Start(context.Context)
 }
 
 type Config struct {
-	enabled  *bool
-	timezone *string
-	hour     *string
+	timezone string
+	hour     string
+	enabled  bool
 }
 
-type app struct {
+type service struct {
 	tracerProvider trace.TracerProvider
 	meterProvider  metric.MeterProvider
 	timezone       string
 	hour           string
-	redisApp       redis.Client
-	notifierApp    notifier.App
+	redis          redis.Client
+	notifier       notifier.Service
 }
 
 func Flags(fs *flag.FlagSet, prefix string) Config {
-	return Config{
-		enabled:  flags.New("Enabled", "Enable cron job").Prefix(prefix).DocPrefix("scheduler").Bool(fs, true, nil),
-		timezone: flags.New("Timezone", "Timezone").Prefix(prefix).DocPrefix("scheduler").String(fs, "Europe/Paris", nil),
-		hour:     flags.New("Hour", "Hour of cron, 24-hour format").Prefix(prefix).DocPrefix("scheduler").String(fs, "08:00", nil),
-	}
+	var config Config
+
+	flags.New("Enabled", "Enable cron job").Prefix(prefix).DocPrefix("scheduler").BoolVar(fs, &config.enabled, true, nil)
+	flags.New("Timezone", "Timezone").Prefix(prefix).DocPrefix("scheduler").StringVar(fs, &config.timezone, "Europe/Paris", nil)
+	flags.New("Hour", "Hour of cron, 24-hour format").Prefix(prefix).DocPrefix("scheduler").StringVar(fs, &config.hour, "08:00", nil)
+
+	return config
 }
 
-func New(config Config, notifierApp notifier.App, redisApp redis.Client, meterProvider metric.MeterProvider, tracerProvider trace.TracerProvider) App {
-	if !*config.enabled {
+func New(config Config, notifierService notifier.Service, redisClient redis.Client, meterProvider metric.MeterProvider, tracerProvider trace.TracerProvider) Service {
+	if !config.enabled {
 		return nil
 	}
 
-	return app{
-		timezone:       strings.TrimSpace(*config.timezone),
-		hour:           strings.TrimSpace(*config.hour),
-		notifierApp:    notifierApp,
-		redisApp:       redisApp,
+	return service{
+		timezone:       config.timezone,
+		hour:           config.hour,
+		notifier:       notifierService,
+		redis:          redisClient,
 		tracerProvider: tracerProvider,
 		meterProvider:  meterProvider,
 	}
 }
 
-func (a app) Start(ctx context.Context) {
-	cron.New().At(a.hour).In(a.timezone).Days().WithTracerProvider(a.tracerProvider).OnError(func(err error) {
+func (s service) Start(ctx context.Context) {
+	cron.New().At(s.hour).In(s.timezone).Days().WithTracerProvider(s.tracerProvider).OnError(func(err error) {
 		slog.Error("error while running ketchup notify", "err", err)
-	}).OnSignal(syscall.SIGUSR1).Exclusive(a.redisApp, "ketchup:notify", 10*time.Minute).Start(ctx, func(ctx context.Context) error {
+	}).OnSignal(syscall.SIGUSR1).Exclusive(s.redis, "ketchup:notify", 10*time.Minute).Start(ctx, func(ctx context.Context) error {
 		slog.Info("Starting ketchup notifier")
 		defer slog.Info("Ending ketchup notifier")
-		return a.notifierApp.Notify(ctx, a.meterProvider)
+		return s.notifier.Notify(ctx, s.meterProvider)
 	})
 }

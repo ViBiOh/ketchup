@@ -28,33 +28,33 @@ func TestStoreInContext(t *testing.T) {
 	}
 
 	cases := map[string]struct {
-		instance App
+		instance Service
 		args     args
 		want     model.User
 	}{
 		"no login user": {
-			App{},
+			Service{},
 			args{
 				ctx: context.TODO(),
 			},
 			model.User{},
 		},
 		"get error": {
-			App{},
+			Service{},
 			args{
 				ctx: authModel.StoreUser(context.TODO(), authModel.NewUser(1, "")),
 			},
 			model.User{},
 		},
 		"not found login": {
-			App{},
+			Service{},
 			args{
 				ctx: authModel.StoreUser(context.TODO(), authModel.NewUser(1, "")),
 			},
 			model.User{},
 		},
 		"valid": {
-			App{},
+			Service{},
 			args{
 				ctx: authModel.StoreUser(context.TODO(), authModel.NewUser(1, "")),
 			},
@@ -72,7 +72,7 @@ func TestStoreInContext(t *testing.T) {
 			defer ctrl.Finish()
 
 			mockUserStore := mocks.NewUserStore(ctrl)
-			testCase.instance.userStore = mockUserStore
+			testCase.instance.store = mockUserStore
 
 			switch intention {
 			case "get error":
@@ -99,13 +99,13 @@ func TestCreate(t *testing.T) {
 	}
 
 	cases := map[string]struct {
-		instance App
+		instance Service
 		args     args
 		want     model.User
 		wantErr  error
 	}{
 		"invalid user": {
-			App{},
+			Service{},
 			args{
 				ctx:  context.TODO(),
 				item: model.NewUser(1, "", authModel.NewUser(1, "")),
@@ -114,7 +114,7 @@ func TestCreate(t *testing.T) {
 			httpModel.ErrInvalid,
 		},
 		"invalid auth": {
-			App{},
+			Service{},
 			args{
 				ctx:  context.TODO(),
 				item: model.NewUser(0, testEmail, authModel.NewUser(0, "")),
@@ -123,7 +123,7 @@ func TestCreate(t *testing.T) {
 			httpModel.ErrInvalid,
 		},
 		"start atomic error": {
-			App{},
+			Service{},
 			args{
 				ctx:  context.TODO(),
 				item: model.NewUser(1, testEmail, authModel.NewUser(1, "")),
@@ -132,7 +132,7 @@ func TestCreate(t *testing.T) {
 			errAtomicStart,
 		},
 		"login create error": {
-			App{},
+			Service{},
 			args{
 				ctx:  context.TODO(),
 				item: model.NewUser(1, testEmail, authModel.NewUser(1, "")),
@@ -141,7 +141,7 @@ func TestCreate(t *testing.T) {
 			httpModel.ErrInternalError,
 		},
 		"user create error": {
-			App{},
+			Service{},
 			args{
 				ctx:  context.TODO(),
 				item: model.NewUser(2, testEmail, authModel.NewUser(2, "")),
@@ -150,7 +150,7 @@ func TestCreate(t *testing.T) {
 			httpModel.ErrInternalError,
 		},
 		"success": {
-			App{},
+			Service{},
 			args{
 				ctx:  context.TODO(),
 				item: model.NewUser(2, testEmail, authModel.NewUser(2, "")),
@@ -169,10 +169,10 @@ func TestCreate(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			authApp := mocks.NewAuthService(ctrl)
+			authService := mocks.NewAuthService(ctrl)
 			mockUserStore := mocks.NewUserStore(ctrl)
-			testCase.instance.authApp = authApp
-			testCase.instance.userStore = mockUserStore
+			testCase.instance.auth = authService
+			testCase.instance.store = mockUserStore
 
 			realDoAtomic := func(ctx context.Context, action func(context.Context) error) error {
 				return action(ctx)
@@ -182,27 +182,27 @@ func TestCreate(t *testing.T) {
 			case "invalid user":
 				mockUserStore.EXPECT().GetByEmail(gomock.Any(), gomock.Any()).Return(model.User{}, nil)
 			case "invalid auth":
-				authApp.EXPECT().Check(gomock.Any(), gomock.Any(), gomock.Any()).Return(errors.New("failed"))
+				authService.EXPECT().Check(gomock.Any(), gomock.Any(), gomock.Any()).Return(errors.New("failed"))
 			case "start atomic error":
-				authApp.EXPECT().Check(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+				authService.EXPECT().Check(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 				mockUserStore.EXPECT().GetByEmail(gomock.Any(), gomock.Any()).Return(model.User{}, nil)
 				mockUserStore.EXPECT().DoAtomic(gomock.Any(), gomock.Any()).Return(errAtomicStart)
 			case "login create error":
 				mockUserStore.EXPECT().DoAtomic(gomock.Any(), gomock.Any()).DoAndReturn(realDoAtomic)
 				mockUserStore.EXPECT().GetByEmail(gomock.Any(), gomock.Any()).Return(model.User{}, nil)
-				authApp.EXPECT().Check(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
-				authApp.EXPECT().Create(gomock.Any(), gomock.Any()).Return(authModel.User{}, errors.New("failed"))
+				authService.EXPECT().Check(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+				authService.EXPECT().Create(gomock.Any(), gomock.Any()).Return(authModel.User{}, errors.New("failed"))
 			case "user create error":
 				mockUserStore.EXPECT().DoAtomic(gomock.Any(), gomock.Any()).DoAndReturn(realDoAtomic)
 				mockUserStore.EXPECT().GetByEmail(gomock.Any(), gomock.Any()).Return(model.User{}, nil)
-				authApp.EXPECT().Check(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
-				authApp.EXPECT().Create(gomock.Any(), gomock.Any()).Return(authModel.User{}, errors.New("failed"))
+				authService.EXPECT().Check(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+				authService.EXPECT().Create(gomock.Any(), gomock.Any()).Return(authModel.User{}, errors.New("failed"))
 			case "success":
 				mockUserStore.EXPECT().DoAtomic(gomock.Any(), gomock.Any()).DoAndReturn(realDoAtomic)
 				mockUserStore.EXPECT().GetByEmail(gomock.Any(), gomock.Any()).Return(model.User{}, nil)
 				mockUserStore.EXPECT().Create(gomock.Any(), gomock.Any()).Return(model.Identifier(2), nil)
-				authApp.EXPECT().Check(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
-				authApp.EXPECT().Create(gomock.Any(), gomock.Any()).Return(authModel.NewUser(2, "admin"), nil)
+				authService.EXPECT().Check(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+				authService.EXPECT().Create(gomock.Any(), gomock.Any()).Return(authModel.NewUser(2, "admin"), nil)
 			}
 
 			got, gotErr := testCase.instance.Create(testCase.args.ctx, testCase.args.item)
@@ -232,19 +232,19 @@ func TestCheck(t *testing.T) {
 	}
 
 	cases := map[string]struct {
-		instance App
+		instance Service
 		args     args
 		wantErr  error
 	}{
 		"delete": {
-			App{},
+			Service{},
 			args{
 				ctx: context.TODO(),
 			},
 			nil,
 		},
 		"no name": {
-			App{},
+			Service{},
 			args{
 				ctx: context.TODO(),
 				new: model.NewUser(1, "", authModel.NewUser(1, "")),
@@ -252,7 +252,7 @@ func TestCheck(t *testing.T) {
 			errors.New("email is required"),
 		},
 		"get error": {
-			App{},
+			Service{},
 			args{
 				ctx: context.TODO(),
 				new: model.NewUser(1, testEmail, authModel.NewUser(1, "")),
@@ -260,7 +260,7 @@ func TestCheck(t *testing.T) {
 			errors.New("check if email already exists"),
 		},
 		"already used": {
-			App{},
+			Service{},
 			args{
 				ctx: context.TODO(),
 				new: model.NewUser(1, testEmail, authModel.NewUser(1, "")),
@@ -280,7 +280,7 @@ func TestCheck(t *testing.T) {
 
 			mockUserStore := mocks.NewUserStore(ctrl)
 
-			testCase.instance.userStore = mockUserStore
+			testCase.instance.store = mockUserStore
 
 			switch intention {
 			case "no name":

@@ -10,9 +10,7 @@ import (
 	"github.com/ViBiOh/ketchup/pkg/semver"
 )
 
-const (
-	registryURL = "https://registry.npmjs.org/"
-)
+const registryURL = "https://registry.npmjs.org/"
 
 type packageResp struct {
 	Versions map[string]versionResp `json:"versions"`
@@ -22,13 +20,13 @@ type versionResp struct {
 	Version string `json:"version"`
 }
 
-type App struct{}
+type Service struct{}
 
-func New() App {
-	return App{}
+func New() Service {
+	return Service{}
 }
 
-func (a App) LatestVersions(ctx context.Context, name string, patterns []string) (map[string]semver.Version, error) {
+func (s Service) LatestVersions(ctx context.Context, name string, patterns []string) (map[string]semver.Version, error) {
 	versions, compiledPatterns, err := model.PreparePatternMatching(patterns)
 	if err != nil {
 		return nil, fmt.Errorf("prepare pattern matching: %w", err)

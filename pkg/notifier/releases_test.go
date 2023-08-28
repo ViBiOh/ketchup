@@ -22,13 +22,13 @@ func TestGetNewStandardReleases(t *testing.T) {
 	}
 
 	cases := map[string]struct {
-		instance App
+		instance Service
 		args     args
 		want     []model.Release
 		wantErr  error
 	}{
 		"list error": {
-			App{},
+			Service{},
 			args{
 				ctx: context.TODO(),
 			},
@@ -36,7 +36,7 @@ func TestGetNewStandardReleases(t *testing.T) {
 			errors.New("failed"),
 		},
 		"github error": {
-			App{},
+			Service{},
 			args{
 				ctx: context.TODO(),
 			},
@@ -44,7 +44,7 @@ func TestGetNewStandardReleases(t *testing.T) {
 			nil,
 		},
 		"same version": {
-			App{},
+			Service{},
 			args{
 				ctx: context.TODO(),
 			},
@@ -52,7 +52,7 @@ func TestGetNewStandardReleases(t *testing.T) {
 			nil,
 		},
 		"success": {
-			App{},
+			Service{},
 			args{
 				ctx: context.TODO(),
 			},
@@ -76,7 +76,7 @@ func TestGetNewStandardReleases(t *testing.T) {
 
 			mockRepositoryService := mocks.NewRepositoryService(ctrl)
 
-			testCase.instance.repositoryService = mockRepositoryService
+			testCase.instance.repository = mockRepositoryService
 
 			switch intention {
 			case "list error":
@@ -139,14 +139,14 @@ func TestGetNewHelmReleases(t *testing.T) {
 	}
 
 	cases := map[string]struct {
-		instance  App
+		instance  Service
 		args      args
 		want      []model.Release
 		wantCount uint64
 		wantErr   error
 	}{
 		"fetch error": {
-			App{},
+			Service{},
 			args{
 				content: "test",
 			},
@@ -155,7 +155,7 @@ func TestGetNewHelmReleases(t *testing.T) {
 			errors.New("db error"),
 		},
 		"no repository": {
-			App{},
+			Service{},
 			args{
 				content: "test",
 			},
@@ -164,7 +164,7 @@ func TestGetNewHelmReleases(t *testing.T) {
 			nil,
 		},
 		"helm error": {
-			App{},
+			Service{},
 			args{
 				content: "test",
 			},
@@ -173,7 +173,7 @@ func TestGetNewHelmReleases(t *testing.T) {
 			nil,
 		},
 		"helm": {
-			App{},
+			Service{},
 			args{
 				content: "test",
 			},
@@ -199,8 +199,8 @@ func TestGetNewHelmReleases(t *testing.T) {
 			mockRepositoryService := mocks.NewRepositoryService(ctrl)
 			mockHelmProvider := mocks.NewHelmProvider(ctrl)
 
-			testCase.instance.repositoryService = mockRepositoryService
-			testCase.instance.helmApp = mockHelmProvider
+			testCase.instance.repository = mockRepositoryService
+			testCase.instance.helm = mockHelmProvider
 
 			switch intention {
 			case "fetch error":

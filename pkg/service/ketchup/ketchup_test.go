@@ -63,7 +63,7 @@ func TestList(t *testing.T) {
 
 			mockKetchupStore := mocks.NewKetchupStore(ctrl)
 
-			instance := App{
+			instance := Service{
 				ketchupStore: mockKetchupStore,
 			}
 
@@ -139,7 +139,7 @@ func TestListForRepositories(t *testing.T) {
 
 			mockKetchupStore := mocks.NewKetchupStore(ctrl)
 
-			instance := App{
+			instance := Service{
 				ketchupStore: mockKetchupStore,
 			}
 
@@ -237,9 +237,9 @@ func TestCreate(t *testing.T) {
 			mockKetchupStore := mocks.NewKetchupStore(ctrl)
 			mockRepositoryService := mocks.NewRepositoryService(ctrl)
 
-			instance := App{
-				ketchupStore:      mockKetchupStore,
-				repositoryService: mockRepositoryService,
+			instance := Service{
+				ketchupStore: mockKetchupStore,
+				repository:   mockRepositoryService,
 			}
 
 			switch intention {
@@ -384,9 +384,9 @@ func TestUpdate(t *testing.T) {
 			mockKetchupStore := mocks.NewKetchupStore(ctrl)
 			mockRepositoryService := mocks.NewRepositoryService(ctrl)
 
-			instance := App{
-				ketchupStore:      mockKetchupStore,
-				repositoryService: mockRepositoryService,
+			instance := Service{
+				ketchupStore: mockKetchupStore,
+				repository:   mockRepositoryService,
 			}
 
 			switch intention {
@@ -524,7 +524,7 @@ func TestDelete(t *testing.T) {
 
 			mockKetchupStore := mocks.NewKetchupStore(ctrl)
 
-			instance := App{
+			instance := Service{
 				ketchupStore: mockKetchupStore,
 			}
 
@@ -652,7 +652,7 @@ func TestCheck(t *testing.T) {
 
 			mockKetchupStore := mocks.NewKetchupStore(ctrl)
 
-			instance := App{
+			instance := Service{
 				ketchupStore: mockKetchupStore,
 			}
 

@@ -7,18 +7,18 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
-type App struct {
+type Service struct {
 	db model.Database
 }
 
-func New(db model.Database) App {
-	return App{
+func New(db model.Database) Service {
+	return Service{
 		db: db,
 	}
 }
 
-func (a App) DoAtomic(ctx context.Context, action func(context.Context) error) error {
-	return a.db.DoAtomic(ctx, action)
+func (s Service) DoAtomic(ctx context.Context, action func(context.Context) error) error {
+	return s.db.DoAtomic(ctx, action)
 }
 
 const getByEmailQuery = `
@@ -32,7 +32,7 @@ WHERE
   email = $1
 `
 
-func (a App) GetByEmail(ctx context.Context, email string) (model.User, error) {
+func (s Service) GetByEmail(ctx context.Context, email string) (model.User, error) {
 	var item model.User
 	scanner := func(row pgx.Row) (err error) {
 		switch err = row.Scan(&item.ID, &item.Email, &item.Login.ID); err {
@@ -43,7 +43,7 @@ func (a App) GetByEmail(ctx context.Context, email string) (model.User, error) {
 		return err
 	}
 
-	return item, a.db.Get(ctx, scanner, getByEmailQuery, email)
+	return item, s.db.Get(ctx, scanner, getByEmailQuery, email)
 }
 
 const getByLoginIDQuery = `
@@ -57,7 +57,7 @@ WHERE
   login_id = $1
 `
 
-func (a App) GetByLoginID(ctx context.Context, loginID uint64) (model.User, error) {
+func (s Service) GetByLoginID(ctx context.Context, loginID uint64) (model.User, error) {
 	var item model.User
 	scanner := func(row pgx.Row) (err error) {
 		switch err = row.Scan(&item.ID, &item.Email, &item.Login.ID); err {
@@ -68,7 +68,7 @@ func (a App) GetByLoginID(ctx context.Context, loginID uint64) (model.User, erro
 		return err
 	}
 
-	return item, a.db.Get(ctx, scanner, getByLoginIDQuery, loginID)
+	return item, s.db.Get(ctx, scanner, getByLoginIDQuery, loginID)
 }
 
 const listReminderUsers = `
@@ -82,7 +82,7 @@ WHERE
   reminder IS TRUE
 `
 
-func (a App) ListReminderUsers(ctx context.Context) ([]model.User, error) {
+func (s Service) ListReminderUsers(ctx context.Context) ([]model.User, error) {
 	var list []model.User
 
 	scanner := func(rows pgx.Rows) error {
@@ -96,7 +96,7 @@ func (a App) ListReminderUsers(ctx context.Context) ([]model.User, error) {
 		return nil
 	}
 
-	return list, a.db.List(ctx, scanner, listReminderUsers)
+	return list, s.db.List(ctx, scanner, listReminderUsers)
 }
 
 const insertQuery = `
@@ -111,8 +111,8 @@ INSERT INTO
 ) RETURNING id
 `
 
-func (a App) Create(ctx context.Context, o model.User) (model.Identifier, error) {
-	id, err := a.db.Create(ctx, insertQuery, o.Email, o.Login.ID)
+func (s Service) Create(ctx context.Context, o model.User) (model.Identifier, error) {
+	id, err := s.db.Create(ctx, insertQuery, o.Email, o.Login.ID)
 
 	return model.Identifier(id), err
 }
@@ -124,10 +124,10 @@ FROM
   ketchup.user
 `
 
-func (a App) Count(ctx context.Context) (uint64, error) {
+func (s Service) Count(ctx context.Context) (uint64, error) {
 	var count uint64
 
-	return count, a.db.Get(ctx, func(row pgx.Row) error {
+	return count, s.db.Get(ctx, func(row pgx.Row) error {
 		return row.Scan(&count)
 	}, countQuery)
 }

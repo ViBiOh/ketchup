@@ -31,7 +31,7 @@ var (
 	})
 )
 
-type redis interface {
+type Redis interface {
 	Ping(context.Context) error
 	Exclusive(context.Context, string, time.Duration, func(context.Context) error) (bool, error)
 }
@@ -48,35 +48,37 @@ type RateLimitResponse struct {
 	Resources map[string]RateLimit `json:"resources"`
 }
 
-type App interface {
+type Service interface {
 	Start(context.Context)
 	LatestVersions(context.Context, string, []string) (map[string]semver.Version, error)
 }
 
 type Config struct {
-	token *string
+	Token string
 }
 
-type app struct {
+type service struct {
 	traceProvider  trace.TracerProvider
-	redisApp       redis
+	redis          Redis
 	token          string
 	rateLimitValue uint64
 	mutex          sync.RWMutex
 }
 
 func Flags(fs *flag.FlagSet, prefix string) Config {
-	return Config{
-		token: flags.New("Token", "OAuth Token").Prefix(prefix).DocPrefix("github").String(fs, "", nil),
-	}
+	var config Config
+
+	flags.New("Token", "OAuth Token").Prefix(prefix).DocPrefix("github").StringVar(fs, &config.Token, "", nil)
+
+	return config
 }
 
-func New(config Config, redisApp redis, meterProvider metric.MeterProvider, traceProvider trace.TracerProvider) App {
+func New(config Config, redisClient Redis, meterProvider metric.MeterProvider, traceProvider trace.TracerProvider) Service {
 	httpClient = telemetry.AddOpenTelemetryToClient(httpClient, meterProvider, traceProvider)
 
-	app := &app{
-		token:         strings.TrimSpace(*config.token),
-		redisApp:      redisApp,
+	service := &service{
+		token:         config.Token,
+		redis:         redisClient,
 		traceProvider: traceProvider,
 	}
 
@@ -84,10 +86,10 @@ func New(config Config, redisApp redis, meterProvider metric.MeterProvider, trac
 		_, err := meterProvider.Meter("github.com/ViBiOh/ketchup/pkg/provider/github").
 			Int64ObservableGauge("github.rate_limit.remainings",
 				metric.WithInt64Callback(func(ctx context.Context, io metric.Int64Observer) error {
-					app.mutex.RLock()
-					defer app.mutex.RUnlock()
+					service.mutex.RLock()
+					defer service.mutex.RUnlock()
 
-					io.Observe(int64(app.rateLimitValue))
+					io.Observe(int64(service.rateLimitValue))
 					return nil
 				}))
 		if err != nil {
@@ -95,39 +97,39 @@ func New(config Config, redisApp redis, meterProvider metric.MeterProvider, trac
 		}
 	}
 
-	return app
+	return service
 }
 
-func (a *app) newClient() request.Request {
-	return request.New().Header("Authorization", fmt.Sprintf("token %s", a.token)).WithClient(httpClient)
+func (s *service) newClient() request.Request {
+	return request.New().Header("Authorization", fmt.Sprintf("token %s", s.token)).WithClient(httpClient)
 }
 
-func (a *app) Start(ctx context.Context) {
-	cron.New().Now().Each(time.Minute).WithTracerProvider(a.traceProvider).OnError(func(err error) {
+func (s *service) Start(ctx context.Context) {
+	cron.New().Now().Each(time.Minute).WithTracerProvider(s.traceProvider).OnError(func(err error) {
 		slog.Error("get rate limit metrics", "err", err)
-	}).Exclusive(a.redisApp, "ketchup:github_rate_limit_metrics", 15*time.Second).Start(ctx, func(ctx context.Context) error {
-		value, err := a.getRateLimit(ctx)
+	}).Exclusive(s.redis, "ketchup:github_rate_limit_metrics", 15*time.Second).Start(ctx, func(ctx context.Context) error {
+		value, err := s.getRateLimit(ctx)
 		if err != nil {
 			return err
 		}
 
-		a.mutex.Lock()
-		defer a.mutex.Unlock()
+		s.mutex.Lock()
+		defer s.mutex.Unlock()
 
-		a.rateLimitValue = value
+		s.rateLimitValue = value
 
 		return nil
 	})
 }
 
-func (a *app) LatestVersions(ctx context.Context, repository string, patterns []string) (map[string]semver.Version, error) {
+func (s *service) LatestVersions(ctx context.Context, repository string, patterns []string) (map[string]semver.Version, error) {
 	versions, compiledPatterns, err := model.PreparePatternMatching(patterns)
 	if err != nil {
 		return nil, fmt.Errorf("prepare pattern matching: %w", err)
 	}
 
 	page := 1
-	req := a.newClient()
+	req := s.newClient()
 	for {
 		resp, err := req.Get(fmt.Sprintf("%s/repos/%s/tags?per_page=100&page=%d", apiURL, repository, page)).Send(ctx, nil)
 		if err != nil {
@@ -158,8 +160,8 @@ func (a *app) LatestVersions(ctx context.Context, repository string, patterns []
 	return versions, nil
 }
 
-func (a *app) getRateLimit(ctx context.Context) (uint64, error) {
-	resp, err := a.newClient().Get(fmt.Sprintf("%s/rate_limit", apiURL)).Send(ctx, nil)
+func (s *service) getRateLimit(ctx context.Context) (uint64, error) {
+	resp, err := s.newClient().Get(fmt.Sprintf("%s/rate_limit", apiURL)).Send(ctx, nil)
 	if err != nil {
 		return 0, fmt.Errorf("get rate limit: %w", err)
 	}

@@ -58,7 +58,7 @@ const (
 //go:embed templates static
 var content embed.FS
 
-func initAuth(db db.App, tracerProvider trace.TracerProvider) (authService.App, authMiddleware.App) {
+func initAuth(db db.Service, tracerProvider trace.TracerProvider) (authService.Service, authMiddleware.Service) {
 	authProvider := authStore.New(db)
 	identProvider := authIdent.New(authProvider, "ketchup")
 
@@ -97,14 +97,14 @@ func main() {
 
 	ctx := context.Background()
 
-	telemetryApp, err := telemetry.New(ctx, telemetryConfig)
+	telemetryService, err := telemetry.New(ctx, telemetryConfig)
 	if err != nil {
 		slog.Error("create telemetry", "err", err)
 		os.Exit(1)
 	}
 
-	defer telemetryApp.Close(ctx)
-	request.AddOpenTelemetryToDefaultClient(telemetryApp.MeterProvider(), telemetryApp.TracerProvider())
+	defer telemetryService.Close(ctx)
+	request.AddOpenTelemetryToDefaultClient(telemetryService.MeterProvider(), telemetryService.TracerProvider())
 
 	go func() {
 		fmt.Println(http.ListenAndServe("localhost:9999", http.DefaultServeMux))
@@ -112,7 +112,7 @@ func main() {
 
 	appServer := server.New(appServerConfig)
 
-	ketchupDb, err := db.New(ctx, dbConfig, telemetryApp.TracerProvider())
+	ketchupDb, err := db.New(ctx, dbConfig, telemetryService.TracerProvider())
 	if err != nil {
 		slog.Error("create database", "err", err)
 		os.Exit(1)
@@ -120,48 +120,48 @@ func main() {
 
 	defer ketchupDb.Close()
 
-	redisApp, err := redis.New(redisConfig, telemetryApp.MeterProvider(), telemetryApp.TracerProvider())
+	redisClient, err := redis.New(redisConfig, telemetryService.MeterProvider(), telemetryService.TracerProvider())
 	if err != nil {
 		slog.Error("create redis", "err", err)
 		os.Exit(1)
 	}
 
-	defer redisApp.Close()
+	defer redisClient.Close()
 
-	healthApp := health.New(healthConfig, ketchupDb.Ping, redisApp.Ping)
+	healthService := health.New(healthConfig, ketchupDb.Ping, redisClient.Ping)
 
-	authServiceApp, authMiddlewareApp := initAuth(ketchupDb, telemetryApp.TracerProvider())
+	authServiceService, authMiddlewareApp := initAuth(ketchupDb, telemetryService.TracerProvider())
 
-	userServiceApp := userService.New(userStore.New(ketchupDb), &authServiceApp)
-	githubApp := github.New(githubConfig, redisApp, telemetryApp.MeterProvider(), telemetryApp.TracerProvider())
-	dockerApp := docker.New(dockerConfig)
-	helmApp := helm.New()
-	npmApp := npm.New()
-	pypiApp := pypi.New()
-	repositoryServiceApp := repositoryService.New(repositoryStore.New(ketchupDb), githubApp, helmApp, dockerApp, npmApp, pypiApp)
-	ketchupServiceApp := ketchupService.New(ketchupStore.New(ketchupDb), repositoryServiceApp)
+	userServiceService := userService.New(userStore.New(ketchupDb), &authServiceService)
+	githubService := github.New(githubConfig, redisClient, telemetryService.MeterProvider(), telemetryService.TracerProvider())
+	dockerService := docker.New(dockerConfig)
+	helmService := helm.New()
+	npmService := npm.New()
+	pypiService := pypi.New()
+	repositoryServiceService := repositoryService.New(repositoryStore.New(ketchupDb), githubService, helmService, dockerService, npmService, pypiService)
+	ketchupServiceService := ketchupService.New(ketchupStore.New(ketchupDb), repositoryServiceService)
 
-	mailerApp, err := mailer.New(mailerConfig, telemetryApp.MeterProvider(), telemetryApp.TracerProvider())
+	mailerService, err := mailer.New(mailerConfig, telemetryService.MeterProvider(), telemetryService.TracerProvider())
 	if err != nil {
 		slog.Error("create mailer", "err", err)
 		os.Exit(1)
 	}
 
-	defer mailerApp.Close()
+	defer mailerService.Close()
 
-	publicRendererApp, err := renderer.New(rendererConfig, content, ketchup.FuncMap, telemetryApp.MeterProvider(), telemetryApp.TracerProvider())
+	publicRendererService, err := renderer.New(rendererConfig, content, ketchup.FuncMap, telemetryService.MeterProvider(), telemetryService.TracerProvider())
 	if err != nil {
 		slog.Error("create renderer", "err", err)
 		os.Exit(1)
 	}
 
-	notifierApp := notifier.New(notifierConfig, repositoryServiceApp, ketchupServiceApp, userServiceApp, mailerApp, helmApp)
-	schedulerApp := scheduler.New(schedulerConfig, notifierApp, redisApp, telemetryApp.MeterProvider(), telemetryApp.TracerProvider())
-	ketchupApp := ketchup.New(publicRendererApp, ketchupServiceApp, userServiceApp, repositoryServiceApp, redisApp, telemetryApp.TracerProvider())
+	notifierService := notifier.New(notifierConfig, repositoryServiceService, ketchupServiceService, userServiceService, mailerService, helmService)
+	schedulerService := scheduler.New(schedulerConfig, notifierService, redisClient, telemetryService.MeterProvider(), telemetryService.TracerProvider())
+	ketchupService := ketchup.New(publicRendererService, ketchupServiceService, userServiceService, repositoryServiceService, redisClient, telemetryService.TracerProvider())
 
-	publicHandler := publicRendererApp.Handler(ketchupApp.PublicTemplateFunc)
-	signupHandler := http.StripPrefix(signupPath, ketchupApp.Signup())
-	protectedhandler := authMiddlewareApp.Middleware(middleware.New(userServiceApp).Middleware(http.StripPrefix(appPath, ketchupApp.Handler())))
+	publicHandler := publicRendererService.Handler(ketchupService.PublicTemplateFunc)
+	signupHandler := http.StripPrefix(signupPath, ketchupService.Signup())
+	protectedhandler := authMiddlewareApp.Middleware(middleware.New(userServiceService).Middleware(http.StripPrefix(appPath, ketchupService.Handler())))
 
 	appHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if strings.HasPrefix(r.URL.Path, appPath) {
@@ -177,17 +177,17 @@ func main() {
 		publicHandler.ServeHTTP(w, r)
 	})
 
-	doneCtx := healthApp.Done(ctx)
+	doneCtx := healthService.Done(ctx)
 
-	go githubApp.Start(doneCtx)
-	if schedulerApp != nil {
-		go schedulerApp.Start(doneCtx)
+	go githubService.Start(doneCtx)
+	if schedulerService != nil {
+		go schedulerService.Start(doneCtx)
 	}
 
-	endCtx := healthApp.End(ctx)
+	endCtx := healthService.End(ctx)
 
-	go appServer.Start(endCtx, "http", httputils.Handler(appHandler, healthApp, recoverer.Middleware, telemetryApp.Middleware("http"), owasp.New(owaspConfig).Middleware, cors.New(corsConfig).Middleware))
+	go appServer.Start(endCtx, "http", httputils.Handler(appHandler, healthService, recoverer.Middleware, telemetryService.Middleware("http"), owasp.New(owaspConfig).Middleware, cors.New(corsConfig).Middleware))
 
-	healthApp.WaitForTermination(appServer.Done())
+	healthService.WaitForTermination(appServer.Done())
 	server.GracefulWait(appServer.Done())
 }

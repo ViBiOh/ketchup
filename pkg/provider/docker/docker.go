@@ -28,37 +28,39 @@ type authResponse struct {
 	AccessToken string `json:"access_token"`
 }
 
-type App struct {
+type Service struct {
 	username string
 	password string
 }
 
 type Config struct {
-	username *string
-	password *string
+	Username string
+	Password string
 }
 
 func Flags(fs *flag.FlagSet, prefix string, overrides ...flags.Override) Config {
-	return Config{
-		username: flags.New("Username", "Registry Username").Prefix(prefix).DocPrefix("docker").String(fs, "", overrides),
-		password: flags.New("Password", "Registry Password").Prefix(prefix).DocPrefix("docker").String(fs, "", overrides),
+	var config Config
+
+	flags.New("Username", "Registry Username").Prefix(prefix).DocPrefix("docker").StringVar(fs, &config.Username, "", overrides)
+	flags.New("Password", "Registry Password").Prefix(prefix).DocPrefix("docker").StringVar(fs, &config.Password, "", overrides)
+
+	return config
+}
+
+func New(config Config) Service {
+	return Service{
+		username: config.Username,
+		password: config.Password,
 	}
 }
 
-func New(config Config) App {
-	return App{
-		username: strings.TrimSpace(*config.username),
-		password: strings.TrimSpace(*config.password),
-	}
-}
-
-func (a App) LatestVersions(ctx context.Context, repository string, patterns []string) (map[string]semver.Version, error) {
+func (s Service) LatestVersions(ctx context.Context, repository string, patterns []string) (map[string]semver.Version, error) {
 	versions, compiledPatterns, err := model.PreparePatternMatching(patterns)
 	if err != nil {
 		return nil, fmt.Errorf("prepare pattern matching: %w", err)
 	}
 
-	registry, repository, auth, err := a.getImageDetails(ctx, repository)
+	registry, repository, auth, err := s.getImageDetails(ctx, repository)
 	if err != nil {
 		return nil, fmt.Errorf("compute image details: %w", err)
 	}
@@ -87,7 +89,7 @@ func (a App) LatestVersions(ctx context.Context, repository string, patterns []s
 	return versions, nil
 }
 
-func (a App) getImageDetails(ctx context.Context, repository string) (string, string, string, error) {
+func (s Service) getImageDetails(ctx context.Context, repository string) (string, string, string, error) {
 	parts := strings.Split(repository, "/")
 	if len(parts) > 2 {
 		var token string
@@ -103,7 +105,7 @@ func (a App) getImageDetails(ctx context.Context, repository string) (string, st
 		repository = fmt.Sprintf("library/%s", repository)
 	}
 
-	bearerToken, err := a.login(ctx, repository)
+	bearerToken, err := s.login(ctx, repository)
 	if err != nil {
 		return "", "", "", fmt.Errorf("authenticate to docker hub: %w", err)
 	}
@@ -111,14 +113,14 @@ func (a App) getImageDetails(ctx context.Context, repository string) (string, st
 	return registryURL, repository, fmt.Sprintf("Bearer %s", bearerToken), nil
 }
 
-func (a App) login(ctx context.Context, repository string) (string, error) {
+func (s Service) login(ctx context.Context, repository string) (string, error) {
 	values := url.Values{}
 	values.Add("grant_type", "password")
 	values.Add("service", "registry.docker.io")
 	values.Add("client_id", "ketchup")
 	values.Add("scope", fmt.Sprintf("repository:%s:pull", repository))
-	values.Add("username", a.username)
-	values.Add("password", a.password)
+	values.Add("username", s.username)
+	values.Add("password", s.password)
 
 	resp, err := request.Post(authURL).Form(ctx, values)
 	if err != nil {

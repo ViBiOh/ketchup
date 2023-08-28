@@ -91,7 +91,7 @@ func TestList(t *testing.T) {
 
 			mockDatabase := mocks.NewDatabase(ctrl)
 
-			instance := App{db: mockDatabase}
+			instance := Service{db: mockDatabase}
 
 			switch intention {
 			case "simple":
@@ -237,7 +237,7 @@ func TestListByRepositoriesIDAndFrequencies(t *testing.T) {
 
 			mockDatabase := mocks.NewDatabase(ctrl)
 
-			instance := App{db: mockDatabase}
+			instance := Service{db: mockDatabase}
 
 			switch intention {
 			case "simple":
@@ -345,7 +345,7 @@ func TestGetByRepository(t *testing.T) {
 
 			mockDatabase := mocks.NewDatabase(ctrl)
 
-			instance := App{db: mockDatabase}
+			instance := Service{db: mockDatabase}
 
 			switch intention {
 			case "simple":
@@ -434,7 +434,7 @@ func TestCreate(t *testing.T) {
 
 			mockDatabase := mocks.NewDatabase(ctrl)
 
-			instance := App{db: mockDatabase}
+			instance := Service{db: mockDatabase}
 
 			switch intention {
 			case "simple":
@@ -495,7 +495,7 @@ func TestUpdate(t *testing.T) {
 
 			mockDatabase := mocks.NewDatabase(ctrl)
 
-			instance := App{db: mockDatabase}
+			instance := Service{db: mockDatabase}
 
 			switch intention {
 			case "simple":
@@ -550,7 +550,7 @@ func TestDelete(t *testing.T) {
 
 			mockDatabase := mocks.NewDatabase(ctrl)
 
-			instance := App{db: mockDatabase}
+			instance := Service{db: mockDatabase}
 
 			switch intention {
 			case "simple":

@@ -12,26 +12,26 @@ import (
 	"github.com/ViBiOh/ketchup/pkg/model"
 )
 
-type App struct {
-	userStore model.UserStore
-	authApp   model.AuthService
+type Service struct {
+	store model.UserStore
+	auth  model.AuthService
 }
 
-func New(userStore model.UserStore, authApp model.AuthService) App {
-	return App{
-		userStore: userStore,
-		authApp:   authApp,
+func New(userStore model.UserStore, authApp model.AuthService) Service {
+	return Service{
+		store: userStore,
+		auth:  authApp,
 	}
 }
 
-func (a App) StoreInContext(ctx context.Context) context.Context {
+func (s Service) StoreInContext(ctx context.Context) context.Context {
 	id := authModel.ReadUser(ctx).ID
 	if id == 0 {
 		slog.Warn("no login user in context")
 		return ctx
 	}
 
-	item, err := a.userStore.GetByLoginID(ctx, id)
+	item, err := s.store.GetByLoginID(ctx, id)
 	if err != nil || item.IsZero() {
 		slog.Error("get user with login", "err", err, "id", id)
 		return ctx
@@ -40,30 +40,30 @@ func (a App) StoreInContext(ctx context.Context) context.Context {
 	return model.StoreUser(ctx, item)
 }
 
-func (a App) ListReminderUsers(ctx context.Context) ([]model.User, error) {
-	return a.userStore.ListReminderUsers(ctx)
+func (s Service) ListReminderUsers(ctx context.Context) ([]model.User, error) {
+	return s.store.ListReminderUsers(ctx)
 }
 
-func (a App) Create(ctx context.Context, item model.User) (model.User, error) {
-	if err := a.check(ctx, model.User{}, item); err != nil {
+func (s Service) Create(ctx context.Context, item model.User) (model.User, error) {
+	if err := s.check(ctx, model.User{}, item); err != nil {
 		return model.User{}, httpModel.WrapInvalid(err)
 	}
 
-	if err := a.authApp.Check(ctx, authModel.User{}, item.Login); err != nil {
+	if err := s.auth.Check(ctx, authModel.User{}, item.Login); err != nil {
 		return model.User{}, httpModel.WrapInvalid(err)
 	}
 
 	var output model.User
 
-	err := a.userStore.DoAtomic(ctx, func(ctx context.Context) error {
-		loginUser, err := a.authApp.Create(ctx, item.Login)
+	err := s.store.DoAtomic(ctx, func(ctx context.Context) error {
+		loginUser, err := s.auth.Create(ctx, item.Login)
 		if err != nil {
 			return httpModel.WrapInternal(fmt.Errorf("create login: %w", err))
 		}
 
 		item.Login = loginUser
 
-		id, err := a.userStore.Create(ctx, item)
+		id, err := s.store.Create(ctx, item)
 		if err != nil {
 			return httpModel.WrapInternal(fmt.Errorf("create: %w", err))
 		}
@@ -77,7 +77,7 @@ func (a App) Create(ctx context.Context, item model.User) (model.User, error) {
 	return output, err
 }
 
-func (a App) check(ctx context.Context, _, new model.User) error {
+func (s Service) check(ctx context.Context, _, new model.User) error {
 	if new.IsZero() {
 		return nil
 	}
@@ -88,7 +88,7 @@ func (a App) check(ctx context.Context, _, new model.User) error {
 		output = append(output, errors.New("email is required"))
 	}
 
-	if userWithEmail, err := a.userStore.GetByEmail(ctx, new.Email); err != nil {
+	if userWithEmail, err := s.store.GetByEmail(ctx, new.Email); err != nil {
 		output = append(output, errors.New("check if email already exists"))
 	} else if !userWithEmail.ID.IsZero() {
 		output = append(output, errors.New("email already used"))
@@ -97,6 +97,6 @@ func (a App) check(ctx context.Context, _, new model.User) error {
 	return httpModel.ConcatError(output)
 }
 
-func (a App) Count(ctx context.Context) (uint64, error) {
-	return a.userStore.Count(ctx)
+func (s Service) Count(ctx context.Context) (uint64, error) {
+	return s.store.Count(ctx)
 }

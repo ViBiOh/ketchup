@@ -11,18 +11,18 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
-type App struct {
+type Service struct {
 	db model.Database
 }
 
-func New(db model.Database) App {
-	return App{
+func New(db model.Database) Service {
+	return Service{
 		db: db,
 	}
 }
 
-func (a App) DoAtomic(ctx context.Context, action func(context.Context) error) error {
-	return a.db.DoAtomic(ctx, action)
+func (s Service) DoAtomic(ctx context.Context, action func(context.Context) error) error {
+	return s.db.DoAtomic(ctx, action)
 }
 
 const listQuery = `
@@ -59,7 +59,7 @@ const listQueryRestart = `
   )
 `
 
-func (a App) List(ctx context.Context, pageSize uint, last string) ([]model.Ketchup, uint64, error) {
+func (s Service) List(ctx context.Context, pageSize uint, last string) ([]model.Ketchup, uint64, error) {
 	user := model.ReadUser(ctx)
 
 	var totalCount uint64
@@ -121,7 +121,7 @@ func (a App) List(ctx context.Context, pageSize uint, last string) ([]model.Ketc
 	queryArgs = append(queryArgs, pageSize)
 	query.WriteString(fmt.Sprintf(" LIMIT $%d", len(queryArgs)))
 
-	return list, totalCount, a.db.List(ctx, scanner, query.String(), queryArgs...)
+	return list, totalCount, s.db.List(ctx, scanner, query.String(), queryArgs...)
 }
 
 const listByRepositoriesIDQuery = `
@@ -142,7 +142,7 @@ WHERE
   AND k.frequency = ANY ($2)
 `
 
-func (a App) ListByRepositoriesIDAndFrequencies(ctx context.Context, ids []model.Identifier, frequencies ...model.KetchupFrequency) ([]model.Ketchup, error) {
+func (s Service) ListByRepositoriesIDAndFrequencies(ctx context.Context, ids []model.Identifier, frequencies ...model.KetchupFrequency) ([]model.Ketchup, error) {
 	var list []model.Ketchup
 
 	scanner := func(rows pgx.Rows) error {
@@ -169,7 +169,7 @@ func (a App) ListByRepositoriesIDAndFrequencies(ctx context.Context, ids []model
 		frequenciesStr[i] = strings.ToLower(frequency.String())
 	}
 
-	return list, a.db.List(ctx, scanner, listByRepositoriesIDQuery, ids, frequenciesStr)
+	return list, s.db.List(ctx, scanner, listByRepositoriesIDQuery, ids, frequenciesStr)
 }
 
 const listOutdatedByFrequencyQuery = `
@@ -196,7 +196,7 @@ WHERE
   k.version <> rv.version
 `
 
-func (a App) ListOutdated(ctx context.Context, userIds ...model.Identifier) ([]model.Ketchup, error) {
+func (s Service) ListOutdated(ctx context.Context, userIds ...model.Identifier) ([]model.Ketchup, error) {
 	var list []model.Ketchup
 
 	scanner := func(rows pgx.Rows) error {
@@ -232,7 +232,7 @@ func (a App) ListOutdated(ctx context.Context, userIds ...model.Identifier) ([]m
 		params = append(params, userIds)
 	}
 
-	return list, a.db.List(ctx, scanner, query, params...)
+	return list, s.db.List(ctx, scanner, query, params...)
 }
 
 const listSilentForRepositoriesQuery = `
@@ -253,7 +253,7 @@ WHERE
   AND k.update_when_notify IS TRUE
 `
 
-func (a App) ListSilentForRepositories(ctx context.Context, ids []uint64) ([]model.Ketchup, error) {
+func (s Service) ListSilentForRepositories(ctx context.Context, ids []uint64) ([]model.Ketchup, error) {
 	var list []model.Ketchup
 
 	scanner := func(rows pgx.Rows) error {
@@ -275,7 +275,7 @@ func (a App) ListSilentForRepositories(ctx context.Context, ids []uint64) ([]mod
 		return nil
 	}
 
-	return list, a.db.List(ctx, scanner, listSilentForRepositoriesQuery, ids, model.None)
+	return list, s.db.List(ctx, scanner, listSilentForRepositoriesQuery, ids, model.None)
 }
 
 const getQuery = `
@@ -299,7 +299,7 @@ WHERE
   AND k.repository_id = r.id
 `
 
-func (a App) GetByRepository(ctx context.Context, id model.Identifier, pattern string, forUpdate bool) (model.Ketchup, error) {
+func (s Service) GetByRepository(ctx context.Context, id model.Identifier, pattern string, forUpdate bool) (model.Ketchup, error) {
 	query := getQuery
 	if forUpdate {
 		query += " FOR UPDATE"
@@ -335,7 +335,7 @@ func (a App) GetByRepository(ctx context.Context, id model.Identifier, pattern s
 		return err
 	}
 
-	return item, a.db.Get(ctx, scanner, query, id, user.ID, pattern)
+	return item, s.db.Get(ctx, scanner, query, id, user.ID, pattern)
 }
 
 const insertQuery = `
@@ -358,8 +358,8 @@ INSERT INTO
 ) RETURNING 1
 `
 
-func (a App) Create(ctx context.Context, o model.Ketchup) (model.Identifier, error) {
-	id, err := a.db.Create(ctx, insertQuery, o.Pattern, o.Version, strings.ToLower(o.Frequency.String()), o.UpdateWhenNotify, o.Repository.ID, model.ReadUser(ctx).ID)
+func (s Service) Create(ctx context.Context, o model.Ketchup) (model.Identifier, error) {
+	id, err := s.db.Create(ctx, insertQuery, o.Pattern, o.Version, strings.ToLower(o.Frequency.String()), o.UpdateWhenNotify, o.Repository.ID, model.ReadUser(ctx).ID)
 
 	return model.Identifier(id), err
 }
@@ -378,8 +378,8 @@ WHERE
   AND pattern = $3
 `
 
-func (a App) Update(ctx context.Context, o model.Ketchup, oldPattern string) error {
-	return a.db.One(ctx, updateQuery, o.Repository.ID, model.ReadUser(ctx).ID, oldPattern, o.Pattern, o.Version, strings.ToLower(o.Frequency.String()), o.UpdateWhenNotify)
+func (s Service) Update(ctx context.Context, o model.Ketchup, oldPattern string) error {
+	return s.db.One(ctx, updateQuery, o.Repository.ID, model.ReadUser(ctx).ID, oldPattern, o.Pattern, o.Version, strings.ToLower(o.Frequency.String()), o.UpdateWhenNotify)
 }
 
 const updateAllQuery = `
@@ -398,8 +398,8 @@ WHERE
   AND k.user_id = $1
 `
 
-func (a App) UpdateAll(ctx context.Context) error {
-	return a.db.Exec(ctx, updateAllQuery, model.ReadUser(ctx).ID)
+func (s Service) UpdateAll(ctx context.Context) error {
+	return s.db.Exec(ctx, updateAllQuery, model.ReadUser(ctx).ID)
 }
 
 const updateVersionQuery = `
@@ -413,8 +413,8 @@ WHERE
   AND pattern = $3
 `
 
-func (a App) UpdateVersion(ctx context.Context, userID, repositoryID model.Identifier, pattern, version string) error {
-	return a.db.One(ctx, updateVersionQuery, repositoryID, userID, pattern, version)
+func (s Service) UpdateVersion(ctx context.Context, userID, repositoryID model.Identifier, pattern, version string) error {
+	return s.db.One(ctx, updateVersionQuery, repositoryID, userID, pattern, version)
 }
 
 const deleteQuery = `
@@ -426,6 +426,6 @@ WHERE
   AND pattern = $3
 `
 
-func (a App) Delete(ctx context.Context, o model.Ketchup) error {
-	return a.db.One(ctx, deleteQuery, o.Repository.ID, model.ReadUser(ctx).ID, o.Pattern)
+func (s Service) Delete(ctx context.Context, o model.Ketchup) error {
+	return s.db.One(ctx, deleteQuery, o.Repository.ID, model.ReadUser(ctx).ID, o.Pattern)
 }

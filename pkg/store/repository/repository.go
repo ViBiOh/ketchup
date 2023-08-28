@@ -11,21 +11,21 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
-type App struct {
+type Service struct {
 	db model.Database
 }
 
-func New(db model.Database) App {
-	return App{
+func New(db model.Database) Service {
+	return Service{
 		db: db,
 	}
 }
 
-func (a App) DoAtomic(ctx context.Context, action func(context.Context) error) error {
-	return a.db.DoAtomic(ctx, action)
+func (s Service) DoAtomic(ctx context.Context, action func(context.Context) error) error {
+	return s.db.DoAtomic(ctx, action)
 }
 
-func (a App) list(ctx context.Context, query string, args ...any) ([]model.Repository, uint64, error) {
+func (s Service) list(ctx context.Context, query string, args ...any) ([]model.Repository, uint64, error) {
 	var count uint64
 	var list []model.Repository
 
@@ -47,15 +47,15 @@ func (a App) list(ctx context.Context, query string, args ...any) ([]model.Repos
 		return nil
 	}
 
-	err := a.db.List(ctx, scanner, query, args...)
+	err := s.db.List(ctx, scanner, query, args...)
 	if err != nil {
 		return list, 0, err
 	}
 
-	return list, count, a.enrichRepositoriesVersions(ctx, list)
+	return list, count, s.enrichRepositoriesVersions(ctx, list)
 }
 
-func (a App) get(ctx context.Context, query string, args ...any) (model.Repository, error) {
+func (s Service) get(ctx context.Context, query string, args ...any) (model.Repository, error) {
 	var rawRepositoryKind string
 	item := model.NewEmptyRepository()
 
@@ -74,7 +74,7 @@ func (a App) get(ctx context.Context, query string, args ...any) (model.Reposito
 		return err
 	}
 
-	if err := a.db.Get(ctx, scanner, query, args...); err != nil {
+	if err := s.db.Get(ctx, scanner, query, args...); err != nil {
 		return item, err
 	}
 
@@ -82,7 +82,7 @@ func (a App) get(ctx context.Context, query string, args ...any) (model.Reposito
 		return item, nil
 	}
 
-	return item, a.enrichRepositoriesVersions(ctx, []model.Repository{item})
+	return item, s.enrichRepositoriesVersions(ctx, []model.Repository{item})
 }
 
 const listQuery = `
@@ -98,7 +98,7 @@ WHERE
   TRUE
 `
 
-func (a App) List(ctx context.Context, pageSize uint, last string) ([]model.Repository, uint64, error) {
+func (s Service) List(ctx context.Context, pageSize uint, last string) ([]model.Repository, uint64, error) {
 	var query strings.Builder
 	query.WriteString(listQuery)
 	var queryArgs []any
@@ -118,7 +118,7 @@ func (a App) List(ctx context.Context, pageSize uint, last string) ([]model.Repo
 	queryArgs = append(queryArgs, pageSize)
 	query.WriteString(fmt.Sprintf(" LIMIT $%d", len(queryArgs)))
 
-	return a.list(ctx, query.String(), queryArgs...)
+	return s.list(ctx, query.String(), queryArgs...)
 }
 
 const listByKindsQuery = `
@@ -144,7 +144,7 @@ const listByKindRestartQuery = `
   )
 `
 
-func (a App) ListByKinds(ctx context.Context, pageSize uint, last string, kinds ...model.RepositoryKind) ([]model.Repository, uint64, error) {
+func (s Service) ListByKinds(ctx context.Context, pageSize uint, last string, kinds ...model.RepositoryKind) ([]model.Repository, uint64, error) {
 	var query strings.Builder
 	query.WriteString(listByKindsQuery)
 	var queryArgs []any
@@ -172,7 +172,7 @@ func (a App) ListByKinds(ctx context.Context, pageSize uint, last string, kinds 
 	queryArgs = append(queryArgs, pageSize)
 	query.WriteString(fmt.Sprintf(" LIMIT $%d", len(queryArgs)))
 
-	list, count, err := a.list(ctx, query.String(), queryArgs...)
+	list, count, err := s.list(ctx, query.String(), queryArgs...)
 
 	return list, count, err
 }
@@ -201,8 +201,8 @@ ORDER BY
 LIMIT $1
 `
 
-func (a App) Suggest(ctx context.Context, ignoreIds []model.Identifier, count uint64) ([]model.Repository, error) {
-	list, _, err := a.list(ctx, suggestQuery, count, ignoreIds)
+func (s Service) Suggest(ctx context.Context, ignoreIds []model.Identifier, count uint64) ([]model.Repository, error) {
+	list, _, err := s.list(ctx, suggestQuery, count, ignoreIds)
 	return list, err
 }
 
@@ -218,13 +218,13 @@ WHERE
   id = $1
 `
 
-func (a App) Get(ctx context.Context, id model.Identifier, forUpdate bool) (model.Repository, error) {
+func (s Service) Get(ctx context.Context, id model.Identifier, forUpdate bool) (model.Repository, error) {
 	query := getQuery
 	if forUpdate {
 		query += " FOR UPDATE"
 	}
 
-	return a.get(ctx, query, id)
+	return s.get(ctx, query, id)
 }
 
 const getByNameQuery = `
@@ -241,8 +241,8 @@ WHERE
   AND part = $3
 `
 
-func (a App) GetByName(ctx context.Context, repositoryKind model.RepositoryKind, name, part string) (model.Repository, error) {
-	return a.get(ctx, getByNameQuery, repositoryKind.String(), strings.ToLower(name), strings.ToLower(part))
+func (s Service) GetByName(ctx context.Context, repositoryKind model.RepositoryKind, name, part string) (model.Repository, error) {
+	return s.get(ctx, getByNameQuery, repositoryKind.String(), strings.ToLower(name), strings.ToLower(part))
 }
 
 const insertLock = `
@@ -263,12 +263,12 @@ INSERT INTO
 ) RETURNING id
 `
 
-func (a App) Create(ctx context.Context, o model.Repository) (model.Identifier, error) {
-	if err := a.db.Exec(ctx, insertLock); err != nil {
+func (s Service) Create(ctx context.Context, o model.Repository) (model.Identifier, error) {
+	if err := s.db.Exec(ctx, insertLock); err != nil {
 		return 0, err
 	}
 
-	item, err := a.GetByName(ctx, o.Kind, o.Name, o.Part)
+	item, err := s.GetByName(ctx, o.Kind, o.Name, o.Part)
 	if err != nil {
 		return 0, err
 	}
@@ -277,13 +277,13 @@ func (a App) Create(ctx context.Context, o model.Repository) (model.Identifier, 
 		return 0, fmt.Errorf("%s repository already exists with name=%s part=%s", o.Kind.String(), o.Name, o.Part)
 	}
 
-	id, err := a.db.Create(ctx, insertQuery, o.Kind.String(), strings.ToLower(o.Name), strings.ToLower(o.Part))
+	id, err := s.db.Create(ctx, insertQuery, o.Kind.String(), strings.ToLower(o.Name), strings.ToLower(o.Part))
 	if err != nil {
 		return 0, err
 	}
 
 	o.ID = model.Identifier(id)
-	return o.ID, a.UpdateVersions(ctx, o)
+	return o.ID, s.UpdateVersions(ctx, o)
 }
 
 const deleteQuery = `
@@ -298,8 +298,8 @@ WHERE
   )
 `
 
-func (a App) DeleteUnused(ctx context.Context) error {
-	return a.db.Exec(ctx, deleteQuery)
+func (s Service) DeleteUnused(ctx context.Context) error {
+	return s.db.Exec(ctx, deleteQuery)
 }
 
 const deleteVersionsQuery = `
@@ -315,6 +315,6 @@ WHERE NOT EXISTS (
   )
 `
 
-func (a App) DeleteUnusedVersions(ctx context.Context) error {
-	return a.db.Exec(ctx, deleteVersionsQuery)
+func (s Service) DeleteUnusedVersions(ctx context.Context) error {
+	return s.db.Exec(ctx, deleteVersionsQuery)
 }

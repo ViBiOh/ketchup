@@ -14,28 +14,28 @@ import (
 
 var nameMatcher = regexp.MustCompile(`(?i)(?:github\.com/)?([^/\n]+/[^/\n]+)`)
 
-type App struct {
-	repositoryStore model.RepositoryStore
-	githubApp       model.GenericProvider
-	helmApp         model.HelmProvider
-	dockerApp       model.GenericProvider
-	npmApp          model.GenericProvider
-	pypiApp         model.GenericProvider
+type Service struct {
+	repository model.RepositoryStore
+	github     model.GenericProvider
+	helm       model.HelmProvider
+	docker     model.GenericProvider
+	npm        model.GenericProvider
+	pypi       model.GenericProvider
 }
 
-func New(repositoryStore model.RepositoryStore, githubApp model.GenericProvider, helmApp model.HelmProvider, dockerApp model.GenericProvider, npmApp model.GenericProvider, pypiApp model.GenericProvider) App {
-	return App{
-		repositoryStore: repositoryStore,
-		githubApp:       githubApp,
-		helmApp:         helmApp,
-		dockerApp:       dockerApp,
-		npmApp:          npmApp,
-		pypiApp:         pypiApp,
+func New(repositoryStore model.RepositoryStore, githubService model.GenericProvider, helmService model.HelmProvider, dockerService model.GenericProvider, npmService model.GenericProvider, pypiService model.GenericProvider) Service {
+	return Service{
+		repository: repositoryStore,
+		github:     githubService,
+		helm:       helmService,
+		docker:     dockerService,
+		npm:        npmService,
+		pypi:       pypiService,
 	}
 }
 
-func (a App) List(ctx context.Context, pageSize uint, last string) ([]model.Repository, uint64, error) {
-	list, total, err := a.repositoryStore.List(ctx, pageSize, last)
+func (s Service) List(ctx context.Context, pageSize uint, last string) ([]model.Repository, uint64, error) {
+	list, total, err := s.repository.List(ctx, pageSize, last)
 	if err != nil {
 		return nil, 0, httpModel.WrapInternal(fmt.Errorf("list: %w", err))
 	}
@@ -43,8 +43,8 @@ func (a App) List(ctx context.Context, pageSize uint, last string) ([]model.Repo
 	return list, total, nil
 }
 
-func (a App) ListByKinds(ctx context.Context, pageSize uint, last string, kinds ...model.RepositoryKind) ([]model.Repository, uint64, error) {
-	list, total, err := a.repositoryStore.ListByKinds(ctx, pageSize, last, kinds...)
+func (s Service) ListByKinds(ctx context.Context, pageSize uint, last string, kinds ...model.RepositoryKind) ([]model.Repository, uint64, error) {
+	list, total, err := s.repository.ListByKinds(ctx, pageSize, last, kinds...)
 	if err != nil {
 		return nil, 0, httpModel.WrapInternal(fmt.Errorf("list by kind: %w", err))
 	}
@@ -52,8 +52,8 @@ func (a App) ListByKinds(ctx context.Context, pageSize uint, last string, kinds 
 	return list, total, nil
 }
 
-func (a App) Suggest(ctx context.Context, ignoreIds []model.Identifier, count uint64) ([]model.Repository, error) {
-	list, err := a.repositoryStore.Suggest(ctx, ignoreIds, count)
+func (s Service) Suggest(ctx context.Context, ignoreIds []model.Identifier, count uint64) ([]model.Repository, error) {
+	list, err := s.repository.Suggest(ctx, ignoreIds, count)
 	if err != nil {
 		return nil, httpModel.WrapInternal(fmt.Errorf("suggest: %w", err))
 	}
@@ -61,19 +61,19 @@ func (a App) Suggest(ctx context.Context, ignoreIds []model.Identifier, count ui
 	return list, nil
 }
 
-func (a App) GetOrCreate(ctx context.Context, kind model.RepositoryKind, name, part, pattern string) (model.Repository, error) {
+func (s Service) GetOrCreate(ctx context.Context, kind model.RepositoryKind, name, part, pattern string) (model.Repository, error) {
 	sanitizedName := name
 	if kind == model.Github {
 		sanitizedName = sanitizeName(name)
 	}
 
-	repo, err := a.repositoryStore.GetByName(ctx, kind, sanitizedName, part)
+	repo, err := s.repository.GetByName(ctx, kind, sanitizedName, part)
 	if err != nil {
 		return model.NewEmptyRepository(), httpModel.WrapInternal(err)
 	}
 
 	if repo.IsZero() {
-		return a.create(ctx, model.NewRepository(0, kind, sanitizedName, part).AddVersion(pattern, ""))
+		return s.create(ctx, model.NewRepository(0, kind, sanitizedName, part).AddVersion(pattern, ""))
 	}
 
 	if repo.Versions[pattern] != "" {
@@ -81,7 +81,7 @@ func (a App) GetOrCreate(ctx context.Context, kind model.RepositoryKind, name, p
 	}
 
 	repo.Versions[pattern] = ""
-	versions, err := a.LatestVersions(ctx, repo)
+	versions, err := s.LatestVersions(ctx, repo)
 	if err != nil {
 		return model.NewEmptyRepository(), httpModel.WrapInternal(fmt.Errorf("get releases for `%s`: %w", repo.Name, err))
 	}
@@ -92,19 +92,19 @@ func (a App) GetOrCreate(ctx context.Context, kind model.RepositoryKind, name, p
 	}
 
 	repo.Versions[pattern] = version.Name
-	if err := a.repositoryStore.UpdateVersions(ctx, repo); err != nil {
+	if err := s.repository.UpdateVersions(ctx, repo); err != nil {
 		return model.NewEmptyRepository(), httpModel.WrapInternal(fmt.Errorf("update repository versions `%s`: %w", repo.Name, err))
 	}
 
 	return repo, nil
 }
 
-func (a App) create(ctx context.Context, item model.Repository) (model.Repository, error) {
-	if err := a.check(ctx, model.NewEmptyRepository(), item); err != nil {
+func (s Service) create(ctx context.Context, item model.Repository) (model.Repository, error) {
+	if err := s.check(ctx, model.NewEmptyRepository(), item); err != nil {
 		return model.NewEmptyRepository(), httpModel.WrapInvalid(err)
 	}
 
-	versions, err := a.LatestVersions(ctx, item)
+	versions, err := s.LatestVersions(ctx, item)
 	if err != nil {
 		return model.NewEmptyRepository(), httpModel.WrapNotFound(fmt.Errorf("get releases for `%s`: %w", item.Name, err))
 	}
@@ -113,8 +113,8 @@ func (a App) create(ctx context.Context, item model.Repository) (model.Repositor
 		item.Versions[pattern] = version.Name
 	}
 
-	err = a.repositoryStore.DoAtomic(ctx, func(ctx context.Context) error {
-		id, err := a.repositoryStore.Create(ctx, item)
+	err = s.repository.DoAtomic(ctx, func(ctx context.Context) error {
+		id, err := s.repository.Create(ctx, item)
 		if err != nil {
 			return httpModel.WrapInternal(fmt.Errorf("create: %w", err))
 		}
@@ -126,9 +126,9 @@ func (a App) create(ctx context.Context, item model.Repository) (model.Repositor
 	return item, err
 }
 
-func (a App) Update(ctx context.Context, item model.Repository) error {
-	return a.repositoryStore.DoAtomic(ctx, func(ctx context.Context) error {
-		old, err := a.repositoryStore.Get(ctx, item.ID, true)
+func (s Service) Update(ctx context.Context, item model.Repository) error {
+	return s.repository.DoAtomic(ctx, func(ctx context.Context) error {
+		old, err := s.repository.Get(ctx, item.ID, true)
 		if err != nil {
 			return httpModel.WrapInternal(fmt.Errorf("fetch: %w", err))
 		}
@@ -140,11 +140,11 @@ func (a App) Update(ctx context.Context, item model.Repository) error {
 			Versions: item.Versions,
 		}
 
-		if err := a.check(ctx, old, current); err != nil {
+		if err := s.check(ctx, old, current); err != nil {
 			return httpModel.WrapInvalid(err)
 		}
 
-		if err := a.repositoryStore.UpdateVersions(ctx, current); err != nil {
+		if err := s.repository.UpdateVersions(ctx, current); err != nil {
 			return httpModel.WrapInternal(fmt.Errorf("update: %w", err))
 		}
 
@@ -152,13 +152,13 @@ func (a App) Update(ctx context.Context, item model.Repository) error {
 	})
 }
 
-func (a App) Clean(ctx context.Context) error {
-	return a.repositoryStore.DoAtomic(ctx, func(ctx context.Context) error {
-		if err := a.repositoryStore.DeleteUnused(ctx); err != nil {
+func (s Service) Clean(ctx context.Context) error {
+	return s.repository.DoAtomic(ctx, func(ctx context.Context) error {
+		if err := s.repository.DeleteUnused(ctx); err != nil {
 			return httpModel.WrapInternal(fmt.Errorf("delete unused repository: %w", err))
 		}
 
-		if err := a.repositoryStore.DeleteUnusedVersions(ctx); err != nil {
+		if err := s.repository.DeleteUnusedVersions(ctx); err != nil {
 			return httpModel.WrapInternal(fmt.Errorf("delete unused repository versions: %w", err))
 		}
 
@@ -166,7 +166,7 @@ func (a App) Clean(ctx context.Context) error {
 	})
 }
 
-func (a App) check(ctx context.Context, old, new model.Repository) error {
+func (s Service) check(ctx context.Context, old, new model.Repository) error {
 	if new.IsZero() && new.Kind == 0 && len(new.Name) == 0 {
 		return nil
 	}
@@ -185,7 +185,7 @@ func (a App) check(ctx context.Context, old, new model.Repository) error {
 		output = append(output, errors.New("version is required"))
 	}
 
-	repositoryWithName, err := a.repositoryStore.GetByName(ctx, new.Kind, new.Name, new.Part)
+	repositoryWithName, err := s.repository.GetByName(ctx, new.Kind, new.Name, new.Part)
 	if err != nil {
 		output = append(output, errors.New("check if name already exists"))
 	} else if !repositoryWithName.IsZero() && repositoryWithName.ID != new.ID {
@@ -195,7 +195,7 @@ func (a App) check(ctx context.Context, old, new model.Repository) error {
 	return httpModel.ConcatError(output)
 }
 
-func (a App) LatestVersions(ctx context.Context, repo model.Repository) (map[string]semver.Version, error) {
+func (s Service) LatestVersions(ctx context.Context, repo model.Repository) (map[string]semver.Version, error) {
 	if len(repo.Versions) == 0 {
 		return nil, errors.New("no pattern for fetching latest versions")
 	}
@@ -209,15 +209,15 @@ func (a App) LatestVersions(ctx context.Context, repo model.Repository) (map[str
 
 	switch repo.Kind {
 	case model.Github:
-		return a.githubApp.LatestVersions(ctx, repo.Name, patterns)
+		return s.github.LatestVersions(ctx, repo.Name, patterns)
 	case model.Helm:
-		return a.helmApp.LatestVersions(ctx, repo.Name, repo.Part, patterns)
+		return s.helm.LatestVersions(ctx, repo.Name, repo.Part, patterns)
 	case model.Docker:
-		return a.dockerApp.LatestVersions(ctx, repo.Name, patterns)
+		return s.docker.LatestVersions(ctx, repo.Name, patterns)
 	case model.NPM:
-		return a.npmApp.LatestVersions(ctx, repo.Name, patterns)
+		return s.npm.LatestVersions(ctx, repo.Name, patterns)
 	case model.Pypi:
-		return a.pypiApp.LatestVersions(ctx, repo.Name, patterns)
+		return s.pypi.LatestVersions(ctx, repo.Name, patterns)
 	default:
 		return nil, fmt.Errorf("unknown repository kind %d", repo.Kind)
 	}

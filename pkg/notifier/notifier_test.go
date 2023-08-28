@@ -72,40 +72,40 @@ func TestGetNewRepositoryReleases(t *testing.T) {
 	}
 
 	cases := map[string]struct {
-		instance App
+		instance Service
 		args     args
 		want     []model.Release
 	}{
 		"empty": {
-			App{},
+			Service{},
 			args{
 				repo: model.NewGithubRepository(model.Identifier(0), ""),
 			},
 			nil,
 		},
 		"no new": {
-			App{},
+			Service{},
 			args{
 				repo: model.NewGithubRepository(model.Identifier(1), repositoryName).AddVersion(model.DefaultPattern, repositoryVersion),
 			},
 			nil,
 		},
 		"invalid version": {
-			App{},
+			Service{},
 			args{
 				repo: model.NewGithubRepository(model.Identifier(1), repositoryName).AddVersion(model.DefaultPattern, "abcde"),
 			},
 			nil,
 		},
 		"not greater": {
-			App{},
+			Service{},
 			args{
 				repo: model.NewGithubRepository(model.Identifier(1), repositoryName).AddVersion(model.DefaultPattern, "1.1.0"),
 			},
 			nil,
 		},
 		"greater": {
-			App{},
+			Service{},
 			args{
 				repo: model.NewGithubRepository(model.Identifier(1), repositoryName).AddVersion(model.DefaultPattern, repositoryVersion),
 			},
@@ -126,7 +126,7 @@ func TestGetNewRepositoryReleases(t *testing.T) {
 
 			mockRepositoryService := mocks.NewRepositoryService(ctrl)
 
-			testCase.instance.repositoryService = mockRepositoryService
+			testCase.instance.repository = mockRepositoryService
 
 			switch intention {
 			case "empty":
@@ -253,9 +253,9 @@ func TestGetKetchupToNotify(t *testing.T) {
 
 			mockKetchupService := mocks.NewKetchupService(ctrl)
 
-			instance := App{
-				ketchupService: mockKetchupService,
-				clock:          func() time.Time { return time.Unix(1609459200, 0) },
+			instance := Service{
+				ketchup: mockKetchupService,
+				clock:   func() time.Time { return time.Unix(1609459200, 0) },
 			}
 
 			switch intention {
@@ -340,12 +340,12 @@ func TestSendNotification(t *testing.T) {
 	}
 
 	cases := map[string]struct {
-		instance App
+		instance Service
 		args     args
 		wantErr  error
 	}{
 		"empty": {
-			App{},
+			Service{},
 			args{
 				ctx:             context.TODO(),
 				ketchupToNotify: nil,
@@ -353,7 +353,7 @@ func TestSendNotification(t *testing.T) {
 			nil,
 		},
 		"no mailer": {
-			App{},
+			Service{},
 			args{
 				ctx: context.TODO(),
 				ketchupToNotify: map[model.User][]model.Release{
@@ -373,7 +373,7 @@ func TestSendNotification(t *testing.T) {
 			nil,
 		},
 		"mailer disabled": {
-			App{},
+			Service{},
 			args{
 				ctx: context.TODO(),
 				ketchupToNotify: map[model.User][]model.Release{
@@ -393,7 +393,7 @@ func TestSendNotification(t *testing.T) {
 			nil,
 		},
 		"mailer error": {
-			App{},
+			Service{},
 			args{
 				ctx: context.TODO(),
 				ketchupToNotify: map[model.User][]model.Release{
@@ -413,7 +413,7 @@ func TestSendNotification(t *testing.T) {
 			errors.New("send email to nobody@localhost: invalid context"),
 		},
 		"multiple releases": {
-			App{},
+			Service{},
 			args{
 				ctx: context.TODO(),
 				ketchupToNotify: map[model.User][]model.Release{
@@ -449,19 +449,19 @@ func TestSendNotification(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			mailerApp := mocks.NewMailer(ctrl)
-			testCase.instance.mailerApp = mailerApp
+			mailerService := mocks.NewMailer(ctrl)
+			testCase.instance.mailer = mailerService
 
 			switch intention {
 			case "no mailer":
-				testCase.instance.mailerApp = nil
+				testCase.instance.mailer = nil
 			case "mailer disabled":
-				mailerApp.EXPECT().Enabled().Return(false)
+				mailerService.EXPECT().Enabled().Return(false)
 			case "mailer error":
-				mailerApp.EXPECT().Enabled().Return(true)
-				mailerApp.EXPECT().Send(gomock.Any(), gomock.Any()).Return(errors.New("invalid context"))
+				mailerService.EXPECT().Enabled().Return(true)
+				mailerService.EXPECT().Send(gomock.Any(), gomock.Any()).Return(errors.New("invalid context"))
 			case "multiple releases":
-				mailerApp.EXPECT().Enabled().Return(false)
+				mailerService.EXPECT().Enabled().Return(false)
 			}
 
 			gotErr := testCase.instance.sendNotification(testCase.args.ctx, "ketchup", testCase.args.ketchupToNotify)

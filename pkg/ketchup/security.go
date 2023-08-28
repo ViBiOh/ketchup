@@ -37,7 +37,7 @@ var colors = map[int64]securityQuestion{
 	10: {"🟦 mixed with 🟨 give?", "green"},
 }
 
-func (a App) generateToken(ctx context.Context) (securityPayload, error) {
+func (s Service) generateToken(ctx context.Context) (securityPayload, error) {
 	questionID, err := rand.Int(rand.Reader, big.NewInt(int64(len(colors))))
 	if err != nil {
 		return securityPayload{}, fmt.Errorf("generate random int: %w", err)
@@ -47,7 +47,7 @@ func (a App) generateToken(ctx context.Context) (securityPayload, error) {
 
 	id := questionID.Int64()
 
-	if err := a.redisApp.Store(ctx, tokenKey(token), fmt.Sprintf("%d", id), time.Minute*5); err != nil {
+	if err := s.redis.Store(ctx, tokenKey(token), fmt.Sprintf("%d", id), time.Minute*5); err != nil {
 		return securityPayload{}, fmt.Errorf("store token: %w", err)
 	}
 
@@ -57,8 +57,8 @@ func (a App) generateToken(ctx context.Context) (securityPayload, error) {
 	}, nil
 }
 
-func (a App) validateToken(ctx context.Context, token, answer string) bool {
-	questionIDString, err := a.redisApp.Load(ctx, tokenKey(token))
+func (s Service) validateToken(ctx context.Context, token, answer string) bool {
+	questionIDString, err := s.redis.Load(ctx, tokenKey(token))
 	if err != nil {
 		slog.Warn("retrieve captcha token", "err", err)
 		return false
@@ -78,8 +78,8 @@ func (a App) validateToken(ctx context.Context, token, answer string) bool {
 	return true
 }
 
-func (a App) cleanToken(ctx context.Context, token string) {
-	if err := a.redisApp.Delete(ctx, tokenKey(token)); err != nil {
+func (s Service) cleanToken(ctx context.Context, token string) {
+	if err := s.redis.Delete(ctx, tokenKey(token)); err != nil {
 		slog.Error("delete token", "err", err, "token", token)
 	}
 }

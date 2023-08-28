@@ -6,20 +6,20 @@ import (
 	"github.com/ViBiOh/ketchup/pkg/model"
 )
 
-type App struct {
-	userService model.UserService
+type Service struct {
+	user model.UserService
 }
 
-func New(userService model.UserService) App {
-	return App{
-		userService: userService,
+func New(userService model.UserService) Service {
+	return Service{
+		user: userService,
 	}
 }
 
-func (a App) Middleware(next http.Handler) http.Handler {
+func (s Service) Middleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if next != nil {
-			next.ServeHTTP(w, r.WithContext(a.userService.StoreInContext(r.Context())))
+			next.ServeHTTP(w, r.WithContext(s.user.StoreInContext(r.Context())))
 		}
 	})
 }

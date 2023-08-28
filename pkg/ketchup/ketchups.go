@@ -14,15 +14,15 @@ import (
 	"github.com/ViBiOh/ketchup/pkg/semver"
 )
 
-func (a App) ketchups() http.Handler {
+func (s Service) ketchups() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodPost {
-			a.rendererApp.Error(w, r, nil, httpModel.WrapMethodNotAllowed(fmt.Errorf("invalid method %s", r.Method)))
+			s.renderer.Error(w, r, nil, httpModel.WrapMethodNotAllowed(fmt.Errorf("invalid method %s", r.Method)))
 			return
 		}
 
 		if err := r.ParseForm(); err != nil {
-			a.rendererApp.Error(w, r, nil, httpModel.WrapInvalid(err))
+			s.renderer.Error(w, r, nil, httpModel.WrapInvalid(err))
 			return
 		}
 
@@ -30,27 +30,27 @@ func (a App) ketchups() http.Handler {
 
 		switch method {
 		case http.MethodPost:
-			a.handleCreate(w, r)
+			s.handleCreate(w, r)
 		case http.MethodPut:
-			a.handleUpdate(w, r)
+			s.handleUpdate(w, r)
 		case http.MethodDelete:
-			a.handleDelete(w, r)
+			s.handleDelete(w, r)
 		default:
-			a.rendererApp.Error(w, r, nil, httpModel.WrapInvalid(fmt.Errorf("invalid method %s", method)))
+			s.renderer.Error(w, r, nil, httpModel.WrapInvalid(fmt.Errorf("invalid method %s", method)))
 		}
 	})
 }
 
-func (a App) handleCreate(w http.ResponseWriter, r *http.Request) {
+func (s Service) handleCreate(w http.ResponseWriter, r *http.Request) {
 	repositoryKind, err := model.ParseRepositoryKind(r.FormValue("kind"))
 	if err != nil {
-		a.rendererApp.Error(w, r, nil, httpModel.WrapInvalid(err))
+		s.renderer.Error(w, r, nil, httpModel.WrapInvalid(err))
 		return
 	}
 
 	ketchupFrequency, err := model.ParseKetchupFrequency(r.FormValue("frequency"))
 	if err != nil {
-		a.rendererApp.Error(w, r, nil, httpModel.WrapInvalid(err))
+		s.renderer.Error(w, r, nil, httpModel.WrapInvalid(err))
 		return
 	}
 
@@ -71,26 +71,26 @@ func (a App) handleCreate(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	item := model.NewKetchup(r.FormValue("pattern"), r.FormValue("version"), ketchupFrequency, updateWhenNotify, repository).WithID()
 
-	created, err := a.ketchupService.Create(r.Context(), item)
+	created, err := s.ketchup.Create(r.Context(), item)
 	if err != nil {
-		a.rendererApp.Error(w, r, nil, toHttpError(err))
+		s.renderer.Error(w, r, nil, toHttpError(err))
 		return
 	}
 
-	if err := a.cacheApp.EvictOnSuccess(ctx, model.ReadUser(ctx), nil); err != nil {
+	if err := s.cache.EvictOnSuccess(ctx, model.ReadUser(ctx), nil); err != nil {
 		slog.Error("evict suggests cache", "err", err)
 	}
 
-	a.rendererApp.Redirect(w, r, fmt.Sprintf("%s/", appPath), renderer.NewSuccessMessage(fmt.Sprintf("%s created with success!", created.Repository.Name)))
+	s.renderer.Redirect(w, r, fmt.Sprintf("%s/", appPath), renderer.NewSuccessMessage(fmt.Sprintf("%s created with success!", created.Repository.Name)))
 }
 
-func (a App) handleUpdate(w http.ResponseWriter, r *http.Request) {
+func (s Service) handleUpdate(w http.ResponseWriter, r *http.Request) {
 	rawID := strings.Trim(r.URL.Path, "/")
 	if rawID == "all" {
-		if err := a.ketchupService.UpdateAll(r.Context()); err != nil {
-			a.rendererApp.Error(w, r, nil, toHttpError(err))
+		if err := s.ketchup.UpdateAll(r.Context()); err != nil {
+			s.renderer.Error(w, r, nil, toHttpError(err))
 		} else {
-			a.rendererApp.Redirect(w, r, fmt.Sprintf("%s/", appPath), renderer.NewSuccessMessage("All ketchups are up-to-date!"))
+			s.renderer.Redirect(w, r, fmt.Sprintf("%s/", appPath), renderer.NewSuccessMessage("All ketchups are up-to-date!"))
 		}
 
 		return
@@ -98,13 +98,13 @@ func (a App) handleUpdate(w http.ResponseWriter, r *http.Request) {
 
 	id, err := strconv.ParseUint(strings.Trim(r.URL.Path, "/"), 10, 64)
 	if err != nil {
-		a.rendererApp.Error(w, r, nil, httpModel.WrapInvalid(err))
+		s.renderer.Error(w, r, nil, httpModel.WrapInvalid(err))
 		return
 	}
 
 	ketchupFrequency, err := model.ParseKetchupFrequency(r.FormValue("frequency"))
 	if err != nil {
-		a.rendererApp.Error(w, r, nil, httpModel.WrapInvalid(err))
+		s.renderer.Error(w, r, nil, httpModel.WrapInvalid(err))
 		return
 	}
 
@@ -112,35 +112,35 @@ func (a App) handleUpdate(w http.ResponseWriter, r *http.Request) {
 
 	item := model.NewKetchup(r.FormValue("pattern"), r.FormValue("version"), ketchupFrequency, updateWhenNotify, model.NewGithubRepository(model.Identifier(id), "")).WithID()
 
-	updated, err := a.ketchupService.Update(r.Context(), r.FormValue("old-pattern"), item)
+	updated, err := s.ketchup.Update(r.Context(), r.FormValue("old-pattern"), item)
 	if err != nil {
-		a.rendererApp.Error(w, r, nil, toHttpError(err))
+		s.renderer.Error(w, r, nil, toHttpError(err))
 		return
 	}
 
-	a.rendererApp.Redirect(w, r, fmt.Sprintf("%s/", appPath), renderer.NewSuccessMessage(fmt.Sprintf("Updated %s with success!", updated.Version)))
+	s.renderer.Redirect(w, r, fmt.Sprintf("%s/", appPath), renderer.NewSuccessMessage(fmt.Sprintf("Updated %s with success!", updated.Version)))
 }
 
-func (a App) handleDelete(w http.ResponseWriter, r *http.Request) {
+func (s Service) handleDelete(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.ParseUint(strings.Trim(r.URL.Path, "/"), 10, 64)
 	if err != nil {
-		a.rendererApp.Error(w, r, nil, httpModel.WrapInvalid(err))
+		s.renderer.Error(w, r, nil, httpModel.WrapInvalid(err))
 		return
 	}
 
 	ctx := r.Context()
 	item := model.NewKetchup(r.FormValue("pattern"), "", model.Daily, false, model.NewGithubRepository(model.Identifier(id), "")).WithID()
 
-	if err := a.ketchupService.Delete(ctx, item); err != nil {
-		a.rendererApp.Error(w, r, nil, toHttpError(err))
+	if err := s.ketchup.Delete(ctx, item); err != nil {
+		s.renderer.Error(w, r, nil, toHttpError(err))
 		return
 	}
 
-	if err := a.cacheApp.EvictOnSuccess(ctx, model.ReadUser(ctx), nil); err != nil {
+	if err := s.cache.EvictOnSuccess(ctx, model.ReadUser(ctx), nil); err != nil {
 		slog.Error("evict suggests cache", "err", err)
 	}
 
-	a.rendererApp.Redirect(w, r, fmt.Sprintf("%s/", appPath), renderer.NewSuccessMessage("Deleted with success!"))
+	s.renderer.Redirect(w, r, fmt.Sprintf("%s/", appPath), renderer.NewSuccessMessage("Deleted with success!"))
 }
 
 func toHttpError(err error) error {

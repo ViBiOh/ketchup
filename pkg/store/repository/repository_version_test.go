@@ -85,7 +85,7 @@ func TestUpdateVersions(t *testing.T) {
 
 			mockDatabase := mocks.NewDatabase(ctrl)
 
-			instance := App{db: mockDatabase}
+			instance := Service{db: mockDatabase}
 
 			switch intention {
 			case "no version":

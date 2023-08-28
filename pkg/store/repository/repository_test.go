@@ -99,7 +99,7 @@ func TestList(t *testing.T) {
 
 			mockDatabase := mocks.NewDatabase(ctrl)
 
-			instance := App{db: mockDatabase}
+			instance := Service{db: mockDatabase}
 
 			switch intention {
 			case "success":
@@ -251,7 +251,7 @@ func TestSuggest(t *testing.T) {
 
 			mockDatabase := mocks.NewDatabase(ctrl)
 
-			instance := App{db: mockDatabase}
+			instance := Service{db: mockDatabase}
 
 			switch intention {
 			case "simple":
@@ -379,7 +379,7 @@ func TestGet(t *testing.T) {
 
 			mockDatabase := mocks.NewDatabase(ctrl)
 
-			instance := App{db: mockDatabase}
+			instance := Service{db: mockDatabase}
 
 			switch intention {
 			case "simple":
@@ -510,7 +510,7 @@ func TestCreate(t *testing.T) {
 
 			mockDatabase := mocks.NewDatabase(ctrl)
 
-			instance := App{db: mockDatabase}
+			instance := Service{db: mockDatabase}
 
 			switch intention {
 			case "error lock":
@@ -602,7 +602,7 @@ func TestDeleteUnused(t *testing.T) {
 
 			mockDatabase := mocks.NewDatabase(ctrl)
 
-			instance := App{db: mockDatabase}
+			instance := Service{db: mockDatabase}
 
 			switch intention {
 			case "simple":
@@ -646,7 +646,7 @@ func TestDeleteUnusedVersions(t *testing.T) {
 
 			mockDatabase := mocks.NewDatabase(ctrl)
 
-			instance := App{db: mockDatabase}
+			instance := Service{db: mockDatabase}
 
 			switch intention {
 			case "simple":

@@ -11,7 +11,7 @@ import (
 	"github.com/ViBiOh/ketchup/pkg/semver"
 )
 
-func (a App) getNewReleases(ctx context.Context) ([]model.Release, uint64, error) {
+func (s Service) getNewReleases(ctx context.Context) ([]model.Release, uint64, error) {
 	var releases, helmReleases []model.Release
 	var releasesCount, helmCount uint64
 
@@ -20,7 +20,7 @@ func (a App) getNewReleases(ctx context.Context) ([]model.Release, uint64, error
 	wg.Go(func() {
 		var err error
 
-		releases, releasesCount, err = a.getNewStandardReleases(ctx)
+		releases, releasesCount, err = s.getNewStandardReleases(ctx)
 		if err != nil {
 			slog.Error("fetch standard releases", "err", err)
 		}
@@ -29,7 +29,7 @@ func (a App) getNewReleases(ctx context.Context) ([]model.Release, uint64, error
 	wg.Go(func() {
 		var err error
 
-		helmReleases, helmCount, err = a.getNewHelmReleases(ctx)
+		helmReleases, helmCount, err = s.getNewHelmReleases(ctx)
 
 		if err != nil {
 			slog.Error("fetch helm releases", "err", err)
@@ -41,7 +41,7 @@ func (a App) getNewReleases(ctx context.Context) ([]model.Release, uint64, error
 	return append(releases, helmReleases...), releasesCount + helmCount, nil
 }
 
-func (a App) getNewStandardReleases(ctx context.Context) ([]model.Release, uint64, error) {
+func (s Service) getNewStandardReleases(ctx context.Context) ([]model.Release, uint64, error) {
 	var newReleases []model.Release
 	var count uint64
 	var last string
@@ -67,7 +67,7 @@ func (a App) getNewStandardReleases(ctx context.Context) ([]model.Release, uint6
 	}()
 
 	for {
-		repositories, _, err := a.repositoryService.ListByKinds(ctx, pageSize, last, model.Github, model.Docker, model.NPM, model.Pypi)
+		repositories, _, err := s.repository.ListByKinds(ctx, pageSize, last, model.Github, model.Docker, model.NPM, model.Pypi)
 		if err != nil {
 			return nil, count, fmt.Errorf("fetch standard repositories: %w", err)
 		}
@@ -82,7 +82,7 @@ func (a App) getNewStandardReleases(ctx context.Context) ([]model.Release, uint6
 			count++
 
 			wg.Go(func() {
-				workerOutput <- a.getNewRepositoryReleases(ctx, repo)
+				workerOutput <- s.getNewRepositoryReleases(ctx, repo)
 			})
 		}
 
@@ -102,8 +102,8 @@ func (a App) getNewStandardReleases(ctx context.Context) ([]model.Release, uint6
 	return newReleases, count, nil
 }
 
-func (a App) getNewRepositoryReleases(ctx context.Context, repo model.Repository) []model.Release {
-	versions, err := a.repositoryService.LatestVersions(ctx, repo)
+func (s Service) getNewRepositoryReleases(ctx context.Context, repo model.Repository) []model.Release {
+	versions, err := s.repository.LatestVersions(ctx, repo)
 	if err != nil {
 		slog.Error("get latest versions", "err", err, "name", repo.Name, "kind", repo.Kind)
 		return nil
@@ -118,13 +118,13 @@ func (a App) getNewRepositoryReleases(ctx context.Context, repo model.Repository
 	return releases
 }
 
-func (a App) getNewHelmReleases(ctx context.Context) ([]model.Release, uint64, error) {
+func (s Service) getNewHelmReleases(ctx context.Context) ([]model.Release, uint64, error) {
 	var newReleases []model.Release
 	var count uint64
 	var last string
 
 	for {
-		repositories, _, err := a.repositoryService.ListByKinds(ctx, pageSize, last, model.Helm)
+		repositories, _, err := s.repository.ListByKinds(ctx, pageSize, last, model.Helm)
 		if err != nil {
 			return nil, count, fmt.Errorf("fetch Helm repositories: %w", err)
 		}
@@ -141,7 +141,7 @@ func (a App) getNewHelmReleases(ctx context.Context) ([]model.Release, uint64, e
 			count++
 
 			if repo.Name != repoName {
-				newReleases = append(newReleases, a.getFetchHelmSources(ctx, repoWithNames)...)
+				newReleases = append(newReleases, s.getFetchHelmSources(ctx, repoWithNames)...)
 
 				repoName = repo.Name
 				repoWithNames = make(map[string]model.Repository)
@@ -150,7 +150,7 @@ func (a App) getNewHelmReleases(ctx context.Context) ([]model.Release, uint64, e
 			repoWithNames[repo.Part] = repo
 		}
 
-		newReleases = append(newReleases, a.getFetchHelmSources(ctx, repoWithNames)...)
+		newReleases = append(newReleases, s.getFetchHelmSources(ctx, repoWithNames)...)
 
 		if repoCount < int(pageSize) {
 			break
@@ -164,7 +164,7 @@ func (a App) getNewHelmReleases(ctx context.Context) ([]model.Release, uint64, e
 	return newReleases, count, nil
 }
 
-func (a App) getFetchHelmSources(ctx context.Context, repos map[string]model.Repository) []model.Release {
+func (s Service) getFetchHelmSources(ctx context.Context, repos map[string]model.Repository) []model.Release {
 	if len(repos) == 0 {
 		return nil
 	}
@@ -187,7 +187,7 @@ func (a App) getFetchHelmSources(ctx context.Context, repos map[string]model.Rep
 		charts[repo.Part] = patterns
 	}
 
-	values, err := a.helmApp.FetchIndex(ctx, url, charts)
+	values, err := s.helm.FetchIndex(ctx, url, charts)
 	if err != nil {
 		slog.Error("fetch helm index", "err", err, "url", url)
 		return nil

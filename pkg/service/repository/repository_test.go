@@ -73,8 +73,8 @@ func TestList(t *testing.T) {
 
 			mockRepositoryStore := mocks.NewRepositoryStore(ctrl)
 
-			instance := App{
-				repositoryStore: mockRepositoryStore,
+			instance := Service{
+				repository: mockRepositoryStore,
 			}
 
 			switch intention {
@@ -149,8 +149,8 @@ func TestSuggest(t *testing.T) {
 
 			mockRepositoryStore := mocks.NewRepositoryStore(ctrl)
 
-			instance := App{
-				repositoryStore: mockRepositoryStore,
+			instance := Service{
+				repository: mockRepositoryStore,
 			}
 
 			switch intention {
@@ -279,9 +279,9 @@ func TestGetOrCreate(t *testing.T) {
 			mockRepositoryStore := mocks.NewRepositoryStore(ctrl)
 			mockGithub := mocks.NewGenericProvider(ctrl)
 
-			instance := App{
-				repositoryStore: mockRepositoryStore,
-				githubApp:       mockGithub,
+			instance := Service{
+				repository: mockRepositoryStore,
+				github:     mockGithub,
 			}
 
 			switch intention {
@@ -398,9 +398,9 @@ func TestCreate(t *testing.T) {
 			mockRepositoryStore := mocks.NewRepositoryStore(ctrl)
 			mockGithub := mocks.NewGenericProvider(ctrl)
 
-			instance := App{
-				repositoryStore: mockRepositoryStore,
-				githubApp:       mockGithub,
+			instance := Service{
+				repository: mockRepositoryStore,
+				github:     mockGithub,
 			}
 
 			switch intention {
@@ -507,8 +507,8 @@ func TestUpdate(t *testing.T) {
 
 			mockRepositoryStore := mocks.NewRepositoryStore(ctrl)
 
-			instance := App{
-				repositoryStore: mockRepositoryStore,
+			instance := Service{
+				repository: mockRepositoryStore,
 			}
 
 			switch intention {
@@ -602,8 +602,8 @@ func TestClean(t *testing.T) {
 
 			mockRepositoryStore := mocks.NewRepositoryStore(ctrl)
 
-			instance := App{
-				repositoryStore: mockRepositoryStore,
+			instance := Service{
+				repository: mockRepositoryStore,
 			}
 
 			switch intention {
@@ -708,8 +708,8 @@ func TestCheck(t *testing.T) {
 
 			mockRepositoryStore := mocks.NewRepositoryStore(ctrl)
 
-			instance := App{
-				repositoryStore: mockRepositoryStore,
+			instance := Service{
+				repository: mockRepositoryStore,
 			}
 
 			switch intention {

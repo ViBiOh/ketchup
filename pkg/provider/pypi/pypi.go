@@ -10,21 +10,19 @@ import (
 	"github.com/ViBiOh/ketchup/pkg/semver"
 )
 
-const (
-	registryURL = "https://pypi.org/pypi"
-)
+const registryURL = "https://pypi.org/pypi"
 
 type packageResp struct {
 	Versions map[string]any `json:"releases"`
 }
 
-type App struct{}
+type Service struct{}
 
-func New() App {
-	return App{}
+func New() Service {
+	return Service{}
 }
 
-func (a App) LatestVersions(ctx context.Context, name string, patterns []string) (map[string]semver.Version, error) {
+func (s Service) LatestVersions(ctx context.Context, name string, patterns []string) (map[string]semver.Version, error) {
 	versions, compiledPatterns, err := model.PreparePatternMatching(patterns)
 	if err != nil {
 		return nil, fmt.Errorf("prepare pattern matching: %w", err)
