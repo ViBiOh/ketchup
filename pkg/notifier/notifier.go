@@ -36,15 +36,15 @@ type Config struct {
 	PushURL string
 }
 
-func Flags(fs *flag.FlagSet, prefix string) Config {
+func Flags(fs *flag.FlagSet, prefix string) *Config {
 	var config Config
 
 	flags.New("PushUrl", "Pushgateway URL").Prefix(prefix).DocPrefix("notifier").StringVar(fs, &config.PushURL, "", nil)
 
-	return config
+	return &config
 }
 
-func New(config Config, repositoryService model.RepositoryService, ketchupService model.KetchupService, userService user.Service, mailerService model.Mailer, helmService model.HelmProvider) Service {
+func New(config *Config, repositoryService model.RepositoryService, ketchupService model.KetchupService, userService user.Service, mailerService model.Mailer, helmService model.HelmProvider) Service {
 	return Service{
 		pushURL:    config.PushURL,
 		clock:      time.Now,

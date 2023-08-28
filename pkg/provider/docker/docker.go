@@ -38,16 +38,16 @@ type Config struct {
 	Password string
 }
 
-func Flags(fs *flag.FlagSet, prefix string, overrides ...flags.Override) Config {
+func Flags(fs *flag.FlagSet, prefix string, overrides ...flags.Override) *Config {
 	var config Config
 
 	flags.New("Username", "Registry Username").Prefix(prefix).DocPrefix("docker").StringVar(fs, &config.Username, "", overrides)
 	flags.New("Password", "Registry Password").Prefix(prefix).DocPrefix("docker").StringVar(fs, &config.Password, "", overrides)
 
-	return config
+	return &config
 }
 
-func New(config Config) Service {
+func New(config *Config) Service {
 	return Service{
 		username: config.Username,
 		password: config.Password,

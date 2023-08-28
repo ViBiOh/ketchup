@@ -65,15 +65,15 @@ type service struct {
 	mutex          sync.RWMutex
 }
 
-func Flags(fs *flag.FlagSet, prefix string) Config {
+func Flags(fs *flag.FlagSet, prefix string) *Config {
 	var config Config
 
 	flags.New("Token", "OAuth Token").Prefix(prefix).DocPrefix("github").StringVar(fs, &config.Token, "", nil)
 
-	return config
+	return &config
 }
 
-func New(config Config, redisClient Redis, meterProvider metric.MeterProvider, traceProvider trace.TracerProvider) Service {
+func New(config *Config, redisClient Redis, meterProvider metric.MeterProvider, traceProvider trace.TracerProvider) Service {
 	httpClient = telemetry.AddOpenTelemetryToClient(httpClient, meterProvider, traceProvider)
 
 	service := &service{

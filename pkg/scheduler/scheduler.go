@@ -34,17 +34,17 @@ type service struct {
 	notifier       notifier.Service
 }
 
-func Flags(fs *flag.FlagSet, prefix string) Config {
+func Flags(fs *flag.FlagSet, prefix string) *Config {
 	var config Config
 
 	flags.New("Enabled", "Enable cron job").Prefix(prefix).DocPrefix("scheduler").BoolVar(fs, &config.enabled, true, nil)
 	flags.New("Timezone", "Timezone").Prefix(prefix).DocPrefix("scheduler").StringVar(fs, &config.timezone, "Europe/Paris", nil)
 	flags.New("Hour", "Hour of cron, 24-hour format").Prefix(prefix).DocPrefix("scheduler").StringVar(fs, &config.hour, "08:00", nil)
 
-	return config
+	return &config
 }
 
-func New(config Config, notifierService notifier.Service, redisClient redis.Client, meterProvider metric.MeterProvider, tracerProvider trace.TracerProvider) Service {
+func New(config *Config, notifierService notifier.Service, redisClient redis.Client, meterProvider metric.MeterProvider, tracerProvider trace.TracerProvider) Service {
 	if !config.enabled {
 		return nil
 	}
