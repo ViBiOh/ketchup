@@ -48,7 +48,7 @@ You'll find a Kubernetes example in the [`infra/`](infra) folder, using my [`app
 ## Endpoints
 
 - `GET /health`: healthcheck of server, always respond [`okStatus (default 204)`](#usage)
-- `GET /ready`: checks external dependencies availability and then respond [`okStatus (default 204)`](#usage) or `503` during [`graceDuration`](#usage) when `SIGTERM` is received
+- `GET /ready`: checks external dependencies availability and then respond [`okStatus (default 204)`](#usage) or `503` during [`graceDuration`](#usage) when close signal is received
 - `GET /version`: value of `VERSION` environment variable
 
 ## Usage
