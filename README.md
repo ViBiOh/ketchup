@@ -79,7 +79,7 @@ Usage of ketchup:
   --dockerUsername     string        [docker] Registry Username ${KETCHUP_DOCKER_USERNAME}
   --frameOptions       string        [owasp] X-Frame-Options ${KETCHUP_FRAME_OPTIONS} (default "deny")
   --githubToken        string        [github] OAuth Token ${KETCHUP_GITHUB_TOKEN}
-  --graceDuration      duration      [http] Grace duration when SIGTERM received ${KETCHUP_GRACE_DURATION} (default 30s)
+  --graceDuration      duration      [http] Grace duration when signal received ${KETCHUP_GRACE_DURATION} (default 30s)
   --hsts                             [owasp] Indicate Strict Transport Security ${KETCHUP_HSTS} (default true)
   --idleTimeout        duration      [server] Idle Timeout ${KETCHUP_IDLE_TIMEOUT} (default 2m0s)
   --key                string        [server] Key file ${KETCHUP_KEY}
@@ -99,7 +99,6 @@ Usage of ketchup:
   --publicURL          string        Public URL ${KETCHUP_PUBLIC_URL} (default "https://ketchup.vibioh.fr")
   --readTimeout        duration      [server] Read Timeout ${KETCHUP_READ_TIMEOUT} (default 5s)
   --redisAddress       string slice  [redis] Redis Address host:port (blank to disable) ${KETCHUP_REDIS_ADDRESS}, as a string slice, environment variable separated by "," (default [127.0.0.1:6379])
-  --redisAlias         string        [redis] Connection alias, for metric ${KETCHUP_REDIS_ALIAS}
   --redisDatabase      int           [redis] Redis Database ${KETCHUP_REDIS_DATABASE} (default 0)
   --redisMinIdleConn   int           [redis] Redis Minimum Idle Connections ${KETCHUP_REDIS_MIN_IDLE_CONN} (default 0)
   --redisPassword      string        [redis] Redis Password, if any ${KETCHUP_REDIS_PASSWORD}

@@ -10,7 +10,6 @@ import (
 	"net/http"
 	"os"
 	"strings"
-	"syscall"
 
 	_ "net/http/pprof"
 
@@ -189,6 +188,6 @@ func main() {
 
 	go appServer.Start(endCtx, "http", httputils.Handler(appHandler, healthService, recoverer.Middleware, telemetryService.Middleware("http"), owasp.New(owaspConfig).Middleware, cors.New(corsConfig).Middleware))
 
-	healthService.WaitForTermination(appServer.Done(), syscall.SIGTERM)
+	healthService.WaitForTermination(appServer.Done())
 	server.GracefulWait(appServer.Done())
 }
