@@ -25,13 +25,6 @@ func (s Service) PublicTemplateFunc(_ http.ResponseWriter, r *http.Request) (ren
 	}), nil
 }
 
-func min(a, b uint64) uint64 {
-	if a < b {
-		return a
-	}
-	return b
-}
-
 func (s Service) TemplateFunc(_ http.ResponseWriter, r *http.Request) (renderer.Page, error) {
 	pagination, err := query.ParsePagination(r, 100, 100)
 	if err != nil {
