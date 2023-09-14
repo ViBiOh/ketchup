@@ -104,10 +104,12 @@ INSERT INTO
   ketchup.user
 (
   email,
-  login_id
+  login_id,
+  reminder
 ) VALUES (
   $1,
-  $2
+  $2,
+  FALSE
 ) RETURNING id
 `
 
