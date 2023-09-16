@@ -10,10 +10,10 @@ require (
 	github.com/ViBiOh/httputils/v4 v4.64.5
 	github.com/ViBiOh/mailer v1.32.4
 	github.com/jackc/pgx/v5 v5.4.3
-	go.opentelemetry.io/otel v1.17.0
-	go.opentelemetry.io/otel/metric v1.17.0
+	go.opentelemetry.io/otel v1.18.0
+	go.opentelemetry.io/otel/metric v1.18.0
 	go.opentelemetry.io/otel/sdk/metric v0.40.0
-	go.opentelemetry.io/otel/trace v1.17.0
+	go.opentelemetry.io/otel/trace v1.18.0
 	go.uber.org/mock v0.2.0
 	gopkg.in/yaml.v3 v3.0.1
 )
