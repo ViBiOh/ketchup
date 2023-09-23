@@ -14,7 +14,7 @@ require (
 	go.opentelemetry.io/otel/metric v1.18.0
 	go.opentelemetry.io/otel/sdk/metric v0.41.0
 	go.opentelemetry.io/otel/trace v1.18.0
-	go.uber.org/mock v0.2.0
+	go.uber.org/mock v0.3.0
 	gopkg.in/yaml.v3 v3.0.1
 )
 
