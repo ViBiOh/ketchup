@@ -44,7 +44,7 @@ type Service struct {
 	renderer   *renderer.Service
 }
 
-func New(rendererService *renderer.Service, ketchupService ketchup.Service, userService user.Service, repositoryService repository.Service, redisClient redis.Client, traceProvider trace.TracerProvider) Service {
+func New(ctx context.Context, rendererService *renderer.Service, ketchupService ketchup.Service, userService user.Service, repositoryService repository.Service, redisClient redis.Client, traceProvider trace.TracerProvider) Service {
 	service := Service{
 		renderer:   rendererService,
 		ketchup:    ketchupService,
@@ -55,7 +55,10 @@ func New(rendererService *renderer.Service, ketchupService ketchup.Service, user
 
 	service.cache = cache.New(redisClient, suggestCacheKey, func(ctx context.Context, user model.User) ([]model.Repository, error) {
 		return service.repository.Suggest(ctx, ignoresIdsFromCtx(ctx), countFromCtx(ctx))
-	}, traceProvider).WithTTL(time.Hour * 24).WithMaxConcurrency(6)
+	}, traceProvider).
+		WithTTL(time.Hour*24).
+		WithMaxConcurrency(6).
+		WithClientSideCaching(ctx, "ketchup_suggests")
 
 	return service
 }

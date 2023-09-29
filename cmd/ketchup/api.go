@@ -155,9 +155,11 @@ func main() {
 		os.Exit(1)
 	}
 
+	endCtx := healthService.End(ctx)
+
 	notifierService := notifier.New(notifierConfig, repositoryServiceService, ketchupServiceService, userServiceService, mailerService, helmService)
 	schedulerService := scheduler.New(schedulerConfig, notifierService, redisClient, telemetryService.MeterProvider(), telemetryService.TracerProvider())
-	ketchupService := ketchup.New(publicRendererService, ketchupServiceService, userServiceService, repositoryServiceService, redisClient, telemetryService.TracerProvider())
+	ketchupService := ketchup.New(endCtx, publicRendererService, ketchupServiceService, userServiceService, repositoryServiceService, redisClient, telemetryService.TracerProvider())
 
 	publicHandler := publicRendererService.Handler(ketchupService.PublicTemplateFunc)
 	signupHandler := http.StripPrefix(signupPath, ketchupService.Signup())
@@ -183,8 +185,6 @@ func main() {
 	if schedulerService != nil {
 		go schedulerService.Start(doneCtx)
 	}
-
-	endCtx := healthService.End(ctx)
 
 	go appServer.Start(endCtx, "http", httputils.Handler(appHandler, healthService, recoverer.Middleware, telemetryService.Middleware("http"), owasp.New(owaspConfig).Middleware, cors.New(corsConfig).Middleware))
 

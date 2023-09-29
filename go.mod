@@ -7,13 +7,13 @@ toolchain go1.21.0
 require (
 	github.com/ViBiOh/auth/v2 v2.16.1
 	github.com/ViBiOh/flags v1.4.1
-	github.com/ViBiOh/httputils/v4 v4.65.1
+	github.com/ViBiOh/httputils/v4 v4.66.0
 	github.com/ViBiOh/mailer v1.32.4
 	github.com/jackc/pgx/v5 v5.4.3
-	go.opentelemetry.io/otel v1.18.0
-	go.opentelemetry.io/otel/metric v1.18.0
-	go.opentelemetry.io/otel/sdk/metric v0.41.0
-	go.opentelemetry.io/otel/trace v1.18.0
+	go.opentelemetry.io/otel v1.19.0
+	go.opentelemetry.io/otel/metric v1.19.0
+	go.opentelemetry.io/otel/sdk/metric v1.19.0
+	go.opentelemetry.io/otel/trace v1.19.0
 	go.uber.org/mock v0.3.0
 	gopkg.in/yaml.v3 v3.0.1
 )
@@ -34,7 +34,7 @@ require (
 	github.com/rabbitmq/amqp091-go v1.8.1 // indirect
 	github.com/redis/go-redis/extra/rediscmd/v9 v9.0.5 // indirect
 	github.com/redis/go-redis/extra/redisotel/v9 v9.0.5 // indirect
-	github.com/redis/go-redis/v9 v9.2.0 // indirect
+	github.com/redis/go-redis/v9 v9.2.1 // indirect
 	github.com/rs/xid v1.5.0 // indirect
 	github.com/tdewolff/minify/v2 v2.12.9 // indirect
 	github.com/tdewolff/parse/v2 v2.6.8 // indirect
@@ -45,7 +45,7 @@ require (
 	go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetricgrpc v0.41.0 // indirect
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace v1.18.0 // indirect
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc v1.18.0 // indirect
-	go.opentelemetry.io/otel/sdk v1.18.0 // indirect
+	go.opentelemetry.io/otel/sdk v1.19.0 // indirect
 	go.opentelemetry.io/proto/otlp v1.0.0 // indirect
 	golang.org/x/crypto v0.13.0 // indirect
 	golang.org/x/net v0.15.0 // indirect
