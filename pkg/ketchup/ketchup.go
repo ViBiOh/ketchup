@@ -58,7 +58,7 @@ func New(ctx context.Context, rendererService *renderer.Service, ketchupService 
 	}, traceProvider).
 		WithTTL(time.Hour*24).
 		WithMaxConcurrency(6).
-		WithClientSideCaching(ctx, "ketchup_suggests")
+		WithClientSideCaching(ctx, "ketchup_suggests", 10)
 
 	return service
 }
