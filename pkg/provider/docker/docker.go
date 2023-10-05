@@ -29,8 +29,9 @@ type authResponse struct {
 }
 
 type Service struct {
-	username string
-	password string
+	username    string
+	password    string
+	githubToken string
 }
 
 type Config struct {
@@ -47,10 +48,11 @@ func Flags(fs *flag.FlagSet, prefix string, overrides ...flags.Override) *Config
 	return &config
 }
 
-func New(config *Config) Service {
+func New(config *Config, githubToken string) Service {
 	return Service{
-		username: config.Username,
-		password: config.Password,
+		username:    config.Username,
+		password:    config.Password,
+		githubToken: githubToken,
 	}
 }
 
@@ -95,7 +97,7 @@ func (s Service) getImageDetails(ctx context.Context, repository string) (string
 		var token string
 
 		if parts[0] == "ghcr.io" {
-			token = "token"
+			token = "token " + s.githubToken
 		}
 
 		return fmt.Sprintf("https://%s", parts[0]), strings.Join(parts[1:], "/"), token, nil
