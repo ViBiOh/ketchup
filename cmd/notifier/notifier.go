@@ -79,7 +79,7 @@ func main() {
 	helmService := helm.New()
 	npmService := npm.New()
 	pypiService := pypi.New()
-	repositoryServiceService := repositoryService.New(repositoryStore.New(ketchupDb), github.New(githubConfig, nil, nil, telemetryService.TracerProvider()), helmService, docker.New(dockerConfig, githubConfig.Token), npmService, pypiService)
+	repositoryServiceService := repositoryService.New(repositoryStore.New(ketchupDb), github.New(githubConfig, nil, nil, telemetryService.TracerProvider()), helmService, docker.New(dockerConfig), npmService, pypiService)
 	ketchupServiceService := ketchupService.New(ketchupStore.New(ketchupDb), repositoryServiceService)
 	userServiceService := userService.New(userStore.New(ketchupDb), nil)
 

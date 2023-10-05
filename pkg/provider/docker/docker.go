@@ -19,19 +19,20 @@ import (
 )
 
 const (
-	registryURL = "https://index.docker.io"
-	authURL     = "https://auth.docker.io/token"
-	nextLink    = `rel="next"`
+	registryURL  = "https://index.docker.io"
+	authURL      = "https://auth.docker.io/token"
+	ghcrLoginURL = "https://ghcr.io/token"
+	nextLink     = `rel="next"`
 )
 
 type authResponse struct {
 	AccessToken string `json:"access_token"`
+	Token       string `json:"token"`
 }
 
 type Service struct {
-	username    string
-	password    string
-	githubToken string
+	username string
+	password string
 }
 
 type Config struct {
@@ -48,11 +49,10 @@ func Flags(fs *flag.FlagSet, prefix string, overrides ...flags.Override) *Config
 	return &config
 }
 
-func New(config *Config, githubToken string) Service {
+func New(config *Config) Service {
 	return Service{
-		username:    config.Username,
-		password:    config.Password,
-		githubToken: githubToken,
+		username: config.Username,
+		password: config.Password,
 	}
 }
 
@@ -95,12 +95,13 @@ func (s Service) getImageDetails(ctx context.Context, repository string) (string
 	parts := strings.Split(repository, "/")
 	if len(parts) > 2 {
 		var token string
+		var err error
 
 		if parts[0] == "ghcr.io" {
-			token = "token " + s.githubToken
+			token, err = s.ghcr(ctx, strings.Join(parts[1:], "/"))
 		}
 
-		return fmt.Sprintf("https://%s", parts[0]), strings.Join(parts[1:], "/"), token, nil
+		return fmt.Sprintf("https://%s", parts[0]), strings.Join(parts[1:], "/"), token, err
 	}
 
 	if len(parts) == 1 {
@@ -135,6 +136,23 @@ func (s Service) login(ctx context.Context, repository string) (string, error) {
 	}
 
 	return authContent.AccessToken, nil
+}
+
+func (s Service) ghcr(ctx context.Context, repository string) (string, error) {
+	values := url.Values{}
+	values.Add("scope", fmt.Sprintf("repository:%s:pull", repository))
+
+	resp, err := request.Get(fmt.Sprintf("%s?%s", ghcrLoginURL, values.Encode())).Send(ctx, nil)
+	if err != nil {
+		return "", fmt.Errorf("authenticate to `%s`: %w", ghcrLoginURL, err)
+	}
+
+	var authContent authResponse
+	if err := httpjson.Read(resp, &authContent); err != nil {
+		return "", fmt.Errorf("read auth token: %w", err)
+	}
+
+	return fmt.Sprintf("Bearer %s", authContent.Token), nil
 }
 
 func browseRegistryTagsList(body io.ReadCloser, versions map[string]semver.Version, patterns map[string]semver.Pattern) error {

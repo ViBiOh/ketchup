@@ -134,7 +134,7 @@ func main() {
 
 	userServiceService := userService.New(userStore.New(ketchupDb), &authServiceService)
 	githubService := github.New(githubConfig, redisClient, telemetryService.MeterProvider(), telemetryService.TracerProvider())
-	dockerService := docker.New(dockerConfig, githubConfig.Token)
+	dockerService := docker.New(dockerConfig)
 	helmService := helm.New()
 	npmService := npm.New()
 	pypiService := pypi.New()
