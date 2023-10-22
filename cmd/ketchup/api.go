@@ -186,9 +186,9 @@ func main() {
 		go schedulerService.Start(doneCtx)
 	}
 
-	go appServer.Start(endCtx, "http", httputils.Handler(appHandler, healthService, recoverer.Middleware, telemetryService.Middleware("http"), owasp.New(owaspConfig).Middleware, cors.New(corsConfig).Middleware))
+	go appServer.Start(endCtx, httputils.Handler(appHandler, healthService, recoverer.Middleware, telemetryService.Middleware("http"), owasp.New(owaspConfig).Middleware, cors.New(corsConfig).Middleware))
 
 	healthService.WaitForTermination(appServer.Done())
 
-	appServer.Stop(ctx)
+	server.GracefulWait(appServer.Done())
 }
