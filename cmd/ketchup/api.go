@@ -128,7 +128,7 @@ func main() {
 
 	defer redisClient.Close()
 
-	healthService := health.New(healthConfig, ketchupDb.Ping, redisClient.Ping)
+	healthService := health.New(ctx, healthConfig, ketchupDb.Ping, redisClient.Ping)
 
 	authServiceService, authMiddlewareApp := initAuth(ketchupDb, telemetryService.TracerProvider())
 
@@ -155,7 +155,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	endCtx := healthService.End(ctx)
+	endCtx := healthService.EndCtx()
 
 	notifierService := notifier.New(notifierConfig, repositoryServiceService, ketchupServiceService, userServiceService, mailerService, helmService)
 	schedulerService := scheduler.New(schedulerConfig, notifierService, redisClient, telemetryService.MeterProvider(), telemetryService.TracerProvider())
@@ -179,7 +179,7 @@ func main() {
 		publicHandler.ServeHTTP(w, r)
 	})
 
-	doneCtx := healthService.Done(ctx)
+	doneCtx := healthService.DoneCtx()
 
 	go githubService.Start(doneCtx)
 	if schedulerService != nil {
@@ -189,5 +189,6 @@ func main() {
 	go appServer.Start(endCtx, "http", httputils.Handler(appHandler, healthService, recoverer.Middleware, telemetryService.Middleware("http"), owasp.New(owaspConfig).Middleware, cors.New(corsConfig).Middleware))
 
 	healthService.WaitForTermination(appServer.Done())
-	server.GracefulWait(appServer.Done())
+
+	appServer.Stop(ctx)
 }
