@@ -2,8 +2,8 @@ github.com/ViBiOh/auth/v2 v2.16.1 h1:june68lfZ7gZJ3AX/AzMDN5506s1QR6LTZyj0xjjOpc
 github.com/ViBiOh/auth/v2 v2.16.1/go.mod h1:t93zD/GbHiFcqV+cqidCzulnq67iLYGe/aVrP/NHq5E=
 github.com/ViBiOh/flags v1.4.1 h1:qEAO70rWTYcVlU9BgCuz0SgMjth12oi502cq3SHDudg=
 github.com/ViBiOh/flags v1.4.1/go.mod h1:Ocgx/QhY7WYNfGokFT3kw5C05pDooQyLbI/9ZWwylI4=
-github.com/ViBiOh/httputils/v4 v4.68.0 h1:0HweaVvKdx6igccek1v4k9MIPBqArUgzdBtaHzsyTKE=
-github.com/ViBiOh/httputils/v4 v4.68.0/go.mod h1:7KTWHkVw50L+UG7XHK9mtPQpTHMPdDyWV0MY+cCNpqw=
+github.com/ViBiOh/httputils/v4 v4.68.1 h1:hz/XEBqYcrv/+eomAFbde/Ph2KPibEZ8UPCuuWZksu8=
+github.com/ViBiOh/httputils/v4 v4.68.1/go.mod h1:gHAIBbkHFKYIi72ZfoLmtW4GsGW7Gndi/mWALuFNki8=
 github.com/ViBiOh/mailer v1.32.4 h1:hNuOGVB9WP8kC11lBEpWc+50+1KSUovKYi6pVpox32E=
 github.com/ViBiOh/mailer v1.32.4/go.mod h1:/EShKNb3ZLDmlr8s9Cel8q87+jUcI92t/3Xpp7nw3wY=
 github.com/bsm/ginkgo/v2 v2.7.0/go.mod h1:AiKlXPm7ItEHNc/2+OkrNG4E0ITzojb9/xWzvQ9XZ9w=
@@ -24,8 +24,8 @@ github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f/go.mod h1:cu
 github.com/felixge/httpsnoop v1.0.3 h1:s/nj+GCswXYzN5v2DpNMuMQYe+0DDwt5WVCU6CWBdXk=
 github.com/felixge/httpsnoop v1.0.3/go.mod h1:m8KPJKqk1gH5J9DgRY2ASl2lWCfGKXixSwevea8zH2U=
 github.com/go-logr/logr v1.2.2/go.mod h1:jdQByPbusPIv2/zmleS9BjJVeZ6kBagPoEUsqbVz/1A=
-github.com/go-logr/logr v1.2.4 h1:g01GSCwiDw2xSZfjJ2/T9M+S6pFdcNtFYsp+Y43HYDQ=
-github.com/go-logr/logr v1.2.4/go.mod h1:jdQByPbusPIv2/zmleS9BjJVeZ6kBagPoEUsqbVz/1A=
+github.com/go-logr/logr v1.3.0 h1:2y3SDp0ZXuc6/cjLSZ+Q3ir+QB9T/iG5yYRXqsagWSY=
+github.com/go-logr/logr v1.3.0/go.mod h1:9T104GzyrTigFIr8wt5mBrctHMim0Nb2HLGrmQ40KvY=
 github.com/go-logr/stdr v1.2.2 h1:hSWxHoqTgW2S2qGc0LTAI563KZ5YKYRhT3MFKZMbjag=
 github.com/go-logr/stdr v1.2.2/go.mod h1:mMo/vtBO5dYbehREoey6XUKy/eSumjCCveDpRre4VKE=
 github.com/golang/glog v1.1.2 h1:DVjP2PbBOzHyzA+dn3WhHIq4NdVu3Q+pvivFICf/7fo=
