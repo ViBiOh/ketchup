@@ -9,7 +9,7 @@ require (
 	github.com/ViBiOh/flags v1.4.1
 	github.com/ViBiOh/httputils/v4 v4.68.1
 	github.com/ViBiOh/mailer v1.32.4
-	github.com/jackc/pgx/v5 v5.4.3
+	github.com/jackc/pgx/v5 v5.5.0
 	go.opentelemetry.io/otel v1.19.0
 	go.opentelemetry.io/otel/metric v1.19.0
 	go.opentelemetry.io/otel/sdk/metric v1.19.0
