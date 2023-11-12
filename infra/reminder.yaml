@@ -30,7 +30,7 @@ spec:
     timeZone: "Europe/Paris"
     image:
       name: vibioh/ketchup
-      tag: "202311111030" # {"$imagepolicy": "default:flux-ketchup-web:tag"}
+      tag: "202311121047" # {"$imagepolicy": "default:flux-ketchup-web:tag"}
     config:
       GOMAXPROCS: "1"
       KETCHUP_DB_HOST: postgres
