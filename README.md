@@ -92,6 +92,7 @@ Usage of ketchup:
   --mailerPassword     string        [mailer] HTTP Pass ${KETCHUP_MAILER_PASSWORD}
   --mailerURL          string        [mailer] URL (https?:// or amqps?://) ${KETCHUP_MAILER_URL}
   --minify                           Minify HTML ${KETCHUP_MINIFY} (default true)
+  --name               string        [server] Name ${KETCHUP_NAME} (default "http")
   --notifierPushUrl    string        [notifier] Pushgateway URL ${KETCHUP_NOTIFIER_PUSH_URL}
   --okStatus           int           [http] Healthy HTTP Status code ${KETCHUP_OK_STATUS} (default 204)
   --pathPrefix         string        Root Path Prefix ${KETCHUP_PATH_PREFIX}
