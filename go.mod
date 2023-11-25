@@ -7,7 +7,7 @@ toolchain go1.21.0
 require (
 	github.com/ViBiOh/auth/v2 v2.16.1
 	github.com/ViBiOh/flags v1.4.1
-	github.com/ViBiOh/httputils/v4 v4.68.3
+	github.com/ViBiOh/httputils/v4 v4.68.4
 	github.com/ViBiOh/mailer v1.32.4
 	github.com/jackc/pgx/v5 v5.5.0
 	go.opentelemetry.io/otel v1.21.0
@@ -36,14 +36,14 @@ require (
 	github.com/redis/go-redis/extra/redisotel/v9 v9.0.5 // indirect
 	github.com/redis/go-redis/v9 v9.3.0 // indirect
 	github.com/rs/xid v1.5.0 // indirect
-	github.com/tdewolff/minify/v2 v2.20.6 // indirect
-	github.com/tdewolff/parse/v2 v2.7.4 // indirect
+	github.com/tdewolff/minify/v2 v2.20.7 // indirect
+	github.com/tdewolff/parse/v2 v2.7.5 // indirect
 	github.com/zeebo/xxh3 v1.0.2 // indirect
-	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.46.0 // indirect
-	go.opentelemetry.io/contrib/instrumentation/runtime v0.46.0 // indirect
-	go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetricgrpc v0.43.0 // indirect
-	go.opentelemetry.io/otel/exporters/otlp/otlptrace v1.20.0 // indirect
-	go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc v1.20.0 // indirect
+	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.46.1 // indirect
+	go.opentelemetry.io/contrib/instrumentation/runtime v0.46.1 // indirect
+	go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetricgrpc v0.44.0 // indirect
+	go.opentelemetry.io/otel/exporters/otlp/otlptrace v1.21.0 // indirect
+	go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc v1.21.0 // indirect
 	go.opentelemetry.io/otel/sdk v1.21.0 // indirect
 	go.opentelemetry.io/proto/otlp v1.0.0 // indirect
 	golang.org/x/crypto v0.15.0 // indirect
