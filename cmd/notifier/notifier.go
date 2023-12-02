@@ -59,7 +59,7 @@ func main() {
 
 	defer telemetryService.Close(ctx)
 
-	logger.AddOpenTelemetryToDefaultLogger()
+	logger.AddOpenTelemetryToDefaultLogger(telemetryService)
 	request.AddOpenTelemetryToDefaultClient(telemetryService.MeterProvider(), telemetryService.TracerProvider())
 
 	ketchupDb, err := db.New(ctx, dbConfig, telemetryService.TracerProvider())
