@@ -27,13 +27,13 @@ func New(userStore model.UserStore, authApp model.AuthService) Service {
 func (s Service) StoreInContext(ctx context.Context) context.Context {
 	id := authModel.ReadUser(ctx).ID
 	if id == 0 {
-		slog.Warn("no login user in context")
+		slog.WarnContext(ctx, "no login user in context")
 		return ctx
 	}
 
 	item, err := s.store.GetByLoginID(ctx, id)
 	if err != nil || item.IsZero() {
-		slog.Error("get user with login", "err", err, "id", id)
+		slog.ErrorContext(ctx, "get user with login", "err", err, "id", id)
 		return ctx
 	}
 

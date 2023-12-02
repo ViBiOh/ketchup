@@ -26,7 +26,7 @@ var (
 	apiURL = "https://api.github.com"
 
 	httpClient = request.CreateClient(30*time.Second, func(r *http.Request, via []*http.Request) error {
-		slog.Warn("Redirect", "from", via[len(via)-1].URL.Path, "to", r.URL.Path)
+		slog.WarnContext(r.Context(), "Redirect", "from", via[len(via)-1].URL.Path, "to", r.URL.Path)
 		return nil
 	})
 )
@@ -105,8 +105,8 @@ func (s *service) newClient() request.Request {
 }
 
 func (s *service) Start(ctx context.Context) {
-	cron.New().Now().Each(time.Minute).WithTracerProvider(s.traceProvider).OnError(func(err error) {
-		slog.Error("get rate limit metrics", "err", err)
+	cron.New().Now().Each(time.Minute).WithTracerProvider(s.traceProvider).OnError(func(ctx context.Context, err error) {
+		slog.ErrorContext(ctx, "get rate limit metrics", "err", err)
 	}).Exclusive(s.redis, "ketchup:github_rate_limit_metrics", 15*time.Second).Start(ctx, func(ctx context.Context) error {
 		value, err := s.getRateLimit(ctx)
 		if err != nil {

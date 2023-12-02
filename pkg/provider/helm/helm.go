@@ -38,7 +38,7 @@ func (s Service) FetchIndex(ctx context.Context, url string, chartsPatterns map[
 
 	defer func() {
 		if err := resp.Body.Close(); err != nil {
-			slog.Error("close response body", "err", err)
+			slog.ErrorContext(ctx, "close response body", "err", err)
 		}
 	}()
 

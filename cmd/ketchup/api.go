@@ -99,11 +99,13 @@ func main() {
 
 	telemetryService, err := telemetry.New(ctx, telemetryConfig)
 	if err != nil {
-		slog.Error("create telemetry", "err", err)
+		slog.ErrorContext(ctx, "create telemetry", "err", err)
 		os.Exit(1)
 	}
 
 	defer telemetryService.Close(ctx)
+
+	logger.AddOpenTelemetryToDefaultLogger()
 	request.AddOpenTelemetryToDefaultClient(telemetryService.MeterProvider(), telemetryService.TracerProvider())
 
 	go func() {
@@ -114,7 +116,7 @@ func main() {
 
 	ketchupDb, err := db.New(ctx, dbConfig, telemetryService.TracerProvider())
 	if err != nil {
-		slog.Error("create database", "err", err)
+		slog.ErrorContext(ctx, "create database", "err", err)
 		os.Exit(1)
 	}
 
@@ -122,7 +124,7 @@ func main() {
 
 	redisClient, err := redis.New(redisConfig, telemetryService.MeterProvider(), telemetryService.TracerProvider())
 	if err != nil {
-		slog.Error("create redis", "err", err)
+		slog.ErrorContext(ctx, "create redis", "err", err)
 		os.Exit(1)
 	}
 
@@ -143,7 +145,7 @@ func main() {
 
 	mailerService, err := mailer.New(mailerConfig, telemetryService.MeterProvider(), telemetryService.TracerProvider())
 	if err != nil {
-		slog.Error("create mailer", "err", err)
+		slog.ErrorContext(ctx, "create mailer", "err", err)
 		os.Exit(1)
 	}
 
@@ -151,7 +153,7 @@ func main() {
 
 	publicRendererService, err := renderer.New(rendererConfig, content, ketchup.FuncMap, telemetryService.MeterProvider(), telemetryService.TracerProvider())
 	if err != nil {
-		slog.Error("create renderer", "err", err)
+		slog.ErrorContext(ctx, "create renderer", "err", err)
 		os.Exit(1)
 	}
 

@@ -22,7 +22,7 @@ func (s Service) getNewReleases(ctx context.Context) ([]model.Release, uint64, e
 
 		releases, releasesCount, err = s.getNewStandardReleases(ctx)
 		if err != nil {
-			slog.Error("fetch standard releases", "err", err)
+			slog.ErrorContext(ctx, "fetch standard releases", "err", err)
 		}
 	})
 
@@ -32,7 +32,7 @@ func (s Service) getNewReleases(ctx context.Context) ([]model.Release, uint64, e
 		helmReleases, helmCount, err = s.getNewHelmReleases(ctx)
 
 		if err != nil {
-			slog.Error("fetch helm releases", "err", err)
+			slog.ErrorContext(ctx, "fetch helm releases", "err", err)
 		}
 	})
 
@@ -98,21 +98,21 @@ func (s Service) getNewStandardReleases(ctx context.Context) ([]model.Release, u
 	end.Do(closeWorker)
 	<-done
 
-	slog.Info("Standard repositories checked", "count", count, "new", len(newReleases))
+	slog.InfoContext(ctx, "Standard repositories checked", "count", count, "new", len(newReleases))
 	return newReleases, count, nil
 }
 
 func (s Service) getNewRepositoryReleases(ctx context.Context, repo model.Repository) []model.Release {
 	versions, err := s.repository.LatestVersions(ctx, repo)
 	if err != nil {
-		slog.Error("get latest versions", "err", err, "name", repo.Name, "kind", repo.Kind)
+		slog.ErrorContext(ctx, "get latest versions", "err", err, "name", repo.Name, "kind", repo.Kind)
 		return nil
 	}
 
 	var releases []model.Release
 
 	for pattern, version := range versions {
-		releases = appendVersion(releases, version, repo, pattern, repo.Versions[pattern])
+		releases = appendVersion(ctx, releases, version, repo, pattern, repo.Versions[pattern])
 	}
 
 	return releases
@@ -160,7 +160,7 @@ func (s Service) getNewHelmReleases(ctx context.Context) ([]model.Release, uint6
 		last = fmt.Sprintf("%s|%s", lastRepo.Name, lastRepo.Part)
 	}
 
-	slog.Info("Helm repositories checked", "count", count, "new", len(newReleases))
+	slog.InfoContext(ctx, "Helm repositories checked", "count", count, "new", len(newReleases))
 	return newReleases, count, nil
 }
 
@@ -189,7 +189,7 @@ func (s Service) getFetchHelmSources(ctx context.Context, repos map[string]model
 
 	values, err := s.helm.FetchIndex(ctx, url, charts)
 	if err != nil {
-		slog.Error("fetch helm index", "err", err, "url", url)
+		slog.ErrorContext(ctx, "fetch helm index", "err", err, "url", url)
 		return nil
 	}
 
@@ -199,27 +199,27 @@ func (s Service) getFetchHelmSources(ctx context.Context, repos map[string]model
 		repo := repos[chartName]
 
 		for repoPattern, repoVersionName := range repo.Versions {
-			releases = appendVersion(releases, patterns[repoPattern], repo, repoPattern, repoVersionName)
+			releases = appendVersion(ctx, releases, patterns[repoPattern], repo, repoPattern, repoVersionName)
 		}
 	}
 
 	return releases
 }
 
-func appendVersion(releases []model.Release, upstreamVersion semver.Version, repo model.Repository, repoPattern, repoVersionName string) []model.Release {
+func appendVersion(ctx context.Context, releases []model.Release, upstreamVersion semver.Version, repo model.Repository, repoPattern, repoVersionName string) []model.Release {
 	if upstreamVersion.Name == repoVersionName {
 		return releases
 	}
 
 	compiledPattern, err := semver.ParsePattern(repoPattern)
 	if err != nil {
-		slog.Error("parse pattern", "err", err)
+		slog.ErrorContext(ctx, "parse pattern", "err", err)
 		return releases
 	}
 
 	repositoryVersion, err := semver.Parse(repoVersionName)
 	if err != nil {
-		slog.Error("parse version", "err", err)
+		slog.ErrorContext(ctx, "parse version", "err", err)
 		return releases
 	}
 
@@ -227,7 +227,7 @@ func appendVersion(releases []model.Release, upstreamVersion semver.Version, rep
 		return releases
 	}
 
-	slog.Info("Newversion available", "pattern", repoPattern, "repo", repo.String(), "version", upstreamVersion.Name)
+	slog.InfoContext(ctx, "Newversion available", "pattern", repoPattern, "repo", repo.String(), "version", upstreamVersion.Name)
 
 	return append(releases, model.NewRelease(repo, repoPattern, upstreamVersion))
 }

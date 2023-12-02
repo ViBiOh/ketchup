@@ -53,16 +53,18 @@ func main() {
 
 	telemetryService, err := telemetry.New(ctx, telemetryConfig)
 	if err != nil {
-		slog.Error("create telemetry", "err", err)
+		slog.ErrorContext(ctx, "create telemetry", "err", err)
 		os.Exit(1)
 	}
 
 	defer telemetryService.Close(ctx)
+
+	logger.AddOpenTelemetryToDefaultLogger()
 	request.AddOpenTelemetryToDefaultClient(telemetryService.MeterProvider(), telemetryService.TracerProvider())
 
 	ketchupDb, err := db.New(ctx, dbConfig, telemetryService.TracerProvider())
 	if err != nil {
-		slog.Error("create database", "err", err)
+		slog.ErrorContext(ctx, "create database", "err", err)
 		os.Exit(1)
 	}
 
@@ -70,7 +72,7 @@ func main() {
 
 	mailerService, err := mailer.New(mailerConfig, telemetryService.MeterProvider(), telemetryService.TracerProvider())
 	if err != nil {
-		slog.Error("create mailer", "err", err)
+		slog.ErrorContext(ctx, "create mailer", "err", err)
 		os.Exit(1)
 	}
 
@@ -85,7 +87,7 @@ func main() {
 
 	notifierService := notifier.New(notifierConfig, repositoryServiceService, ketchupServiceService, userServiceService, mailerService, helmService)
 
-	slog.Info("Starting notifier...")
+	slog.InfoContext(ctx, "Starting notifier...")
 
 	ctx, end := telemetry.StartSpan(ctx, telemetryService.TracerProvider().Tracer("notifier"), "notifier")
 	defer end(&err)
@@ -93,25 +95,25 @@ func main() {
 	switch *notificationType {
 	case "daily":
 		if err = notifierService.Notify(ctx, telemetryService.MeterProvider()); err != nil {
-			slog.Error("notify", "err", err)
+			slog.ErrorContext(ctx, "notify", "err", err)
 			os.Exit(1)
 		}
 	case "reminder":
 		if err = notifierService.Remind(ctx); err != nil {
-			slog.Error("remind", "err", err)
+			slog.ErrorContext(ctx, "remind", "err", err)
 			os.Exit(1)
 		}
 	default:
-		slog.Error("unknown notification type", "type", *notificationType)
+		slog.ErrorContext(ctx, "unknown notification type", "type", *notificationType)
 		os.Exit(1)
 	}
 
 	meterProvider := telemetryService.MeterProvider()
 	if flushableProvider, ok := meterProvider.(*metric.MeterProvider); ok {
 		if err := flushableProvider.ForceFlush(ctx); err != nil {
-			slog.Error("flush meter provider", "err", err)
+			slog.ErrorContext(ctx, "flush meter provider", "err", err)
 		}
 	}
 
-	slog.Info("Notifier ended!")
+	slog.InfoContext(ctx, "Notifier ended!")
 }

@@ -60,18 +60,18 @@ func (s Service) generateToken(ctx context.Context) (securityPayload, error) {
 func (s Service) validateToken(ctx context.Context, token, answer string) bool {
 	questionIDString, err := s.redis.Load(ctx, tokenKey(token))
 	if err != nil {
-		slog.Warn("retrieve captcha token", "err", err)
+		slog.WarnContext(ctx, "retrieve captcha token", "err", err)
 		return false
 	}
 
 	questionID, err := strconv.ParseInt(string(questionIDString), 10, 64)
 	if err != nil {
-		slog.Error("question id is not numerical", "err", err)
+		slog.ErrorContext(ctx, "question id is not numerical", "err", err)
 		return false
 	}
 
 	if colors[questionID].Answer != strings.TrimSpace(answer) {
-		slog.Warn("invalid question answer", "answer", answer)
+		slog.WarnContext(ctx, "invalid question answer", "answer", answer)
 		return false
 	}
 
@@ -80,7 +80,7 @@ func (s Service) validateToken(ctx context.Context, token, answer string) bool {
 
 func (s Service) cleanToken(ctx context.Context, token string) {
 	if err := s.redis.Delete(ctx, tokenKey(token)); err != nil {
-		slog.Error("delete token", "err", err, "token", token)
+		slog.ErrorContext(ctx, "delete token", "err", err, "token", token)
 	}
 }
 
