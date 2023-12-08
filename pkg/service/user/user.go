@@ -33,7 +33,7 @@ func (s Service) StoreInContext(ctx context.Context) context.Context {
 
 	item, err := s.store.GetByLoginID(ctx, id)
 	if err != nil || item.IsZero() {
-		slog.ErrorContext(ctx, "get user with login", "err", err, "id", id)
+		slog.ErrorContext(ctx, "get user with login", "error", err, "id", id)
 		return ctx
 	}
 

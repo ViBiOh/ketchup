@@ -93,7 +93,7 @@ func New(config *Config, redisClient Redis, meterProvider metric.MeterProvider, 
 					return nil
 				}))
 		if err != nil {
-			slog.Error("create observable gauge", "err", err)
+			slog.Error("create observable gauge", "error", err)
 		}
 	}
 
@@ -106,7 +106,7 @@ func (s *service) newClient() request.Request {
 
 func (s *service) Start(ctx context.Context) {
 	cron.New().Now().Each(time.Minute).WithTracerProvider(s.traceProvider).OnError(func(ctx context.Context, err error) {
-		slog.ErrorContext(ctx, "get rate limit metrics", "err", err)
+		slog.ErrorContext(ctx, "get rate limit metrics", "error", err)
 	}).Exclusive(s.redis, "ketchup:github_rate_limit_metrics", 15*time.Second).Start(ctx, func(ctx context.Context) error {
 		value, err := s.getRateLimit(ctx)
 		if err != nil {

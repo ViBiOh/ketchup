@@ -61,7 +61,7 @@ func New(config *Config, notifierService notifier.Service, redisClient redis.Cli
 
 func (s service) Start(ctx context.Context) {
 	cron.New().At(s.hour).In(s.timezone).Days().WithTracerProvider(s.tracerProvider).OnError(func(ctx context.Context, err error) {
-		slog.ErrorContext(ctx, "error while running ketchup notify", "err", err)
+		slog.ErrorContext(ctx, "error while running ketchup notify", "error", err)
 	}).OnSignal(syscall.SIGUSR1).Exclusive(s.redis, "ketchup:notify", 10*time.Minute).Start(ctx, func(ctx context.Context) error {
 		slog.InfoContext(ctx, "Starting ketchup notifier")
 		defer slog.InfoContext(ctx, "Ending ketchup notifier")

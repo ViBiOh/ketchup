@@ -97,7 +97,7 @@ func (s Service) Notify(ctx context.Context, meterProvider metric.MeterProvider)
 			return nil
 		}))
 		if err != nil {
-			slog.ErrorContext(ctx, "create ketchup counter", "err", err)
+			slog.ErrorContext(ctx, "create ketchup counter", "error", err)
 		}
 	}
 
@@ -193,7 +193,7 @@ func (s Service) syncReleasesByUser(ctx context.Context, releases []model.Releas
 			return nil
 		})
 	if err != nil {
-		slog.ErrorContext(ctx, "synchronise releases and ketchups", "err", err)
+		slog.ErrorContext(ctx, "synchronise releases and ketchups", "error", err)
 	}
 
 	return usersToNotify
@@ -203,7 +203,7 @@ func (s Service) appendKetchupsToUser(ctx context.Context, usersToNotify map[mod
 	for _, ketchup := range ketchups {
 		ketchupVersion, err := semver.Parse(ketchup.Version)
 		if err != nil {
-			slog.ErrorContext(ctx, "parse version of ketchup", "err", err, "version", ketchup.Version)
+			slog.ErrorContext(ctx, "parse version of ketchup", "error", err, "version", ketchup.Version)
 			continue
 		}
 
@@ -240,7 +240,7 @@ func (s Service) handleUpdateWhenNotify(ctx context.Context, ketchup model.Ketch
 
 	log.InfoContext(ctx, "Auto-updating ketchup", "version", release.Version.Name)
 	if err := s.ketchup.UpdateVersion(ctx, ketchup.User.ID, ketchup.Repository.ID, ketchup.Pattern, release.Version.Name); err != nil {
-		log.ErrorContext(ctx, "update ketchup", "err", err)
+		log.ErrorContext(ctx, "update ketchup", "error", err)
 		return release.SetUpdated(1)
 	}
 

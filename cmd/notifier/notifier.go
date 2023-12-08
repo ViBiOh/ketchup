@@ -53,7 +53,7 @@ func main() {
 
 	telemetryService, err := telemetry.New(ctx, telemetryConfig)
 	if err != nil {
-		slog.ErrorContext(ctx, "create telemetry", "err", err)
+		slog.ErrorContext(ctx, "create telemetry", "error", err)
 		os.Exit(1)
 	}
 
@@ -64,7 +64,7 @@ func main() {
 
 	ketchupDb, err := db.New(ctx, dbConfig, telemetryService.TracerProvider())
 	if err != nil {
-		slog.ErrorContext(ctx, "create database", "err", err)
+		slog.ErrorContext(ctx, "create database", "error", err)
 		os.Exit(1)
 	}
 
@@ -72,7 +72,7 @@ func main() {
 
 	mailerService, err := mailer.New(mailerConfig, telemetryService.MeterProvider(), telemetryService.TracerProvider())
 	if err != nil {
-		slog.ErrorContext(ctx, "create mailer", "err", err)
+		slog.ErrorContext(ctx, "create mailer", "error", err)
 		os.Exit(1)
 	}
 
@@ -95,12 +95,12 @@ func main() {
 	switch *notificationType {
 	case "daily":
 		if err = notifierService.Notify(ctx, telemetryService.MeterProvider()); err != nil {
-			slog.ErrorContext(ctx, "notify", "err", err)
+			slog.ErrorContext(ctx, "notify", "error", err)
 			os.Exit(1)
 		}
 	case "reminder":
 		if err = notifierService.Remind(ctx); err != nil {
-			slog.ErrorContext(ctx, "remind", "err", err)
+			slog.ErrorContext(ctx, "remind", "error", err)
 			os.Exit(1)
 		}
 	default:
@@ -111,7 +111,7 @@ func main() {
 	meterProvider := telemetryService.MeterProvider()
 	if flushableProvider, ok := meterProvider.(*metric.MeterProvider); ok {
 		if err := flushableProvider.ForceFlush(ctx); err != nil {
-			slog.ErrorContext(ctx, "flush meter provider", "err", err)
+			slog.ErrorContext(ctx, "flush meter provider", "error", err)
 		}
 	}
 

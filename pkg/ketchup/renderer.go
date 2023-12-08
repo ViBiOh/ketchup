@@ -63,7 +63,7 @@ func (s Service) suggests(ctx context.Context, ignoreIds []model.Identifier, cou
 
 	items, err := s.cache.Get(countToCtx(ignoresIdsToCtx(ctx, ignoreIds), count), user)
 	if err != nil {
-		slog.WarnContext(ctx, "get suggests", "err", err)
+		slog.WarnContext(ctx, "get suggests", "error", err)
 		return nil
 	}
 

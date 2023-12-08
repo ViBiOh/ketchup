@@ -7,7 +7,7 @@ toolchain go1.21.0
 require (
 	github.com/ViBiOh/auth/v2 v2.17.0
 	github.com/ViBiOh/flags v1.4.1
-	github.com/ViBiOh/httputils/v4 v4.69.4
+	github.com/ViBiOh/httputils/v4 v4.69.5
 	github.com/ViBiOh/mailer v1.33.0
 	github.com/jackc/pgx/v5 v5.5.0
 	go.opentelemetry.io/otel v1.21.0
@@ -36,7 +36,7 @@ require (
 	github.com/redis/go-redis/extra/redisotel/v9 v9.0.5 // indirect
 	github.com/redis/go-redis/v9 v9.3.0 // indirect
 	github.com/rs/xid v1.5.0 // indirect
-	github.com/tdewolff/minify/v2 v2.20.8 // indirect
+	github.com/tdewolff/minify/v2 v2.20.9 // indirect
 	github.com/tdewolff/parse/v2 v2.7.6 // indirect
 	github.com/zeebo/xxh3 v1.0.2 // indirect
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.46.1 // indirect

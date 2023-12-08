@@ -22,7 +22,7 @@ func (s Service) getNewReleases(ctx context.Context) ([]model.Release, uint64, e
 
 		releases, releasesCount, err = s.getNewStandardReleases(ctx)
 		if err != nil {
-			slog.ErrorContext(ctx, "fetch standard releases", "err", err)
+			slog.ErrorContext(ctx, "fetch standard releases", "error", err)
 		}
 	})
 
@@ -32,7 +32,7 @@ func (s Service) getNewReleases(ctx context.Context) ([]model.Release, uint64, e
 		helmReleases, helmCount, err = s.getNewHelmReleases(ctx)
 
 		if err != nil {
-			slog.ErrorContext(ctx, "fetch helm releases", "err", err)
+			slog.ErrorContext(ctx, "fetch helm releases", "error", err)
 		}
 	})
 
@@ -105,7 +105,7 @@ func (s Service) getNewStandardReleases(ctx context.Context) ([]model.Release, u
 func (s Service) getNewRepositoryReleases(ctx context.Context, repo model.Repository) []model.Release {
 	versions, err := s.repository.LatestVersions(ctx, repo)
 	if err != nil {
-		slog.ErrorContext(ctx, "get latest versions", "err", err, "name", repo.Name, "kind", repo.Kind)
+		slog.ErrorContext(ctx, "get latest versions", "error", err, "name", repo.Name, "kind", repo.Kind)
 		return nil
 	}
 
@@ -189,7 +189,7 @@ func (s Service) getFetchHelmSources(ctx context.Context, repos map[string]model
 
 	values, err := s.helm.FetchIndex(ctx, url, charts)
 	if err != nil {
-		slog.ErrorContext(ctx, "fetch helm index", "err", err, "url", url)
+		slog.ErrorContext(ctx, "fetch helm index", "error", err, "url", url)
 		return nil
 	}
 
@@ -213,13 +213,13 @@ func appendVersion(ctx context.Context, releases []model.Release, upstreamVersio
 
 	compiledPattern, err := semver.ParsePattern(repoPattern)
 	if err != nil {
-		slog.ErrorContext(ctx, "parse pattern", "err", err)
+		slog.ErrorContext(ctx, "parse pattern", "error", err)
 		return releases
 	}
 
 	repositoryVersion, err := semver.Parse(repoVersionName)
 	if err != nil {
-		slog.ErrorContext(ctx, "parse version", "err", err)
+		slog.ErrorContext(ctx, "parse version", "error", err)
 		return releases
 	}
 
