@@ -30,15 +30,17 @@ const (
 	alpha NonFinalVersion = iota + 1
 	beta
 	canary
+	edge
 	rc
 	test
 )
 
 var (
 	// According to https://semver.org/#spec-item-11
-	semverMatcher = regexp.MustCompile(`(?i)^[a-zA-Z]*([0-9]+)(?:\.([0-9]+))?(?:\.([0-9]+))?(-[a-zA-Z0-9.]+)?(?:\+[a-zA-Z0-9.]+)?$`)
+	semverMatcher    = regexp.MustCompile(`(?i)^(?P<prefix>[a-zA-Z-]*)(?P<major>[0-9]+)(?:\.(?P<minor>[0-9]+))?(?:\.(?P<patch>[0-9]+))?(?P<prerelease>-[a-zA-Z0-9.]+)?(?P<build>\+[a-zA-Z0-9.]+)?$`)
+	semverMatchNames = semverMatcher.SubexpNames()
 
-	nonFinalVersions = []string{"alpha", "beta", "canary", "rc", "test"}
+	nonFinalVersions = []string{"alpha", "beta", "canary", "edge", "rc", "test"}
 )
 
 func (v Version) Equals(other Version) bool {
@@ -89,23 +91,38 @@ func (v Version) Compare(other Version) string {
 	return ""
 }
 
-func Parse(version string) (Version, error) {
+func parseSemver(version string) (map[string]string, error) {
 	matches := semverMatcher.FindStringSubmatch(version)
 	if len(matches) == 0 {
-		return Version{}, fmt.Errorf("parse version: %s", version)
+		return nil, fmt.Errorf("parse version: %s", version)
+	}
+
+	output := make(map[string]string)
+	for index, name := range semverMatchNames {
+		if index != 0 {
+			output[name] = matches[index]
+		}
+	}
+
+	return output, nil
+}
+
+func Parse(version string) (Version, error) {
+	matches, err := parseSemver(version)
+	if err != nil {
+		return Version{}, err
 	}
 
 	semver := Version{
 		Name:   version,
 		suffix: parseNonFinalVersion(matches),
 	}
-	var err error
 
-	if len(matches[1]) >= 8 {
+	if len(matches["major"]) >= 8 {
 		return Version{}, fmt.Errorf("version major looks like a date: %s", version)
 	}
 
-	semver.major, err = strconv.ParseUint(matches[1], 10, 64)
+	semver.major, err = strconv.ParseUint(matches["major"], 10, 64)
 	if err != nil {
 		return Version{}, fmt.Errorf("version major is not numeric")
 	}
@@ -114,15 +131,15 @@ func Parse(version string) (Version, error) {
 		return Version{}, fmt.Errorf("version major seems a bit high")
 	}
 
-	if len(matches[2]) != 0 {
-		semver.minor, err = strconv.ParseUint(matches[2], 10, 64)
+	if len(matches["minor"]) != 0 {
+		semver.minor, err = strconv.ParseUint(matches["minor"], 10, 64)
 		if err != nil {
 			return Version{}, fmt.Errorf("version minor is not numeric")
 		}
 	}
 
-	if len(matches[3]) != 0 {
-		semver.patch, err = strconv.ParseUint(matches[3], 10, 64)
+	if len(matches["patch"]) != 0 {
+		semver.patch, err = strconv.ParseUint(matches["patch"], 10, 64)
 		if err != nil {
 			return Version{}, fmt.Errorf("version patch is not numeric")
 		}
@@ -131,18 +148,30 @@ func Parse(version string) (Version, error) {
 	return semver, nil
 }
 
-func parseNonFinalVersion(matches []string) NonFinalVersion {
-	if len(matches[4]) == 0 {
-		return -1
+func parseNonFinalVersion(matches map[string]string) NonFinalVersion {
+	if len(matches["build"]) > 0 {
+		return 0
 	}
 
-	for index, nonFinalVersion := range nonFinalVersions {
-		if strings.Contains(matches[4], nonFinalVersion) {
-			return NonFinalVersion(index + 1)
+	if len(matches["prefix"]) != 0 {
+		for index, nonFinalVersion := range nonFinalVersions {
+			if strings.Contains(matches["prefix"], nonFinalVersion) {
+				return NonFinalVersion(index + 1)
+			}
 		}
 	}
 
-	return 0
+	if len(matches["prerelease"]) != 0 {
+		for index, nonFinalVersion := range nonFinalVersions {
+			if strings.Contains(matches["prerelease"], nonFinalVersion) {
+				return NonFinalVersion(index + 1)
+			}
+		}
+
+		return 0
+	}
+
+	return -1
 }
 
 func safeParse(version string) Version {

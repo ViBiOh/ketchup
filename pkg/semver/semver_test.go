@@ -184,12 +184,26 @@ func TestParse(t *testing.T) {
 			Version{},
 			errors.New("parse version"),
 		},
-		"prefixed version": {
+		"linkerd": {
 			args{
-				version: "stable-2.10.1",
+				version: "stable-2.14.6",
 			},
-			Version{},
-			errors.New("parse version"),
+			Version{"stable-2.14.6", 2, 14, 6, -1},
+			nil,
+		},
+		"linkerd2": {
+			args{
+				version: "edge-23.12.1",
+			},
+			Version{"edge-23.12.1", 23, 12, 1, edge},
+			nil,
+		},
+		"cassandra": {
+			args{
+				version: "cassandra-4.1.3",
+			},
+			Version{"cassandra-4.1.3", 4, 1, 3, -1},
+			nil,
 		},
 		"flag rc version": {
 			args{
@@ -237,7 +251,7 @@ func TestParse(t *testing.T) {
 			args{
 				version: "v1.25+xyz",
 			},
-			Version{"v1.25+xyz", 1, 25, 0, -1},
+			Version{"v1.25+xyz", 1, 25, 0, 0},
 			nil,
 		},
 		"full": {
