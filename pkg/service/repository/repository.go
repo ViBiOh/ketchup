@@ -83,7 +83,7 @@ func (s Service) GetOrCreate(ctx context.Context, kind model.RepositoryKind, nam
 	repo.Versions[pattern] = ""
 	versions, err := s.LatestVersions(ctx, repo)
 	if err != nil {
-		return model.NewEmptyRepository(), httpModel.WrapInternal(fmt.Errorf("get releases for `%s`: %w", repo.Name, err))
+		return model.NewEmptyRepository(), fmt.Errorf("get releases for `%s`: %w", repo.Name, err)
 	}
 
 	version, ok := versions[pattern]
@@ -93,7 +93,7 @@ func (s Service) GetOrCreate(ctx context.Context, kind model.RepositoryKind, nam
 
 	repo.Versions[pattern] = version.Name
 	if err := s.repository.UpdateVersions(ctx, repo); err != nil {
-		return model.NewEmptyRepository(), httpModel.WrapInternal(fmt.Errorf("update repository versions `%s`: %w", repo.Name, err))
+		return model.NewEmptyRepository(), fmt.Errorf("update repository versions `%s`: %w", repo.Name, err)
 	}
 
 	return repo, nil

@@ -145,7 +145,7 @@ func (s Service) handleDelete(w http.ResponseWriter, r *http.Request) {
 
 func toHttpError(err error) error {
 	switch {
-	case errors.Is(err, semver.ErrPatternInvalid):
+	case errors.Is(err, semver.ErrPatternInvalid) || errors.Is(err, semver.ErrPrefixInvalid):
 		return httpModel.WrapInvalid(err)
 	default:
 		return err

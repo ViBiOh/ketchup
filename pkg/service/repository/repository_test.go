@@ -21,6 +21,7 @@ var (
 	chartRepository   = "https://charts.vibioh.fr"
 
 	errAtomicStart = errors.New("invalid context")
+	errFailed      = errors.New("failed")
 )
 
 func safeParse(version string) semver.Version {
@@ -223,7 +224,7 @@ func TestGetOrCreate(t *testing.T) {
 				pattern:        model.DefaultPattern,
 			},
 			model.NewEmptyRepository(),
-			httpModel.ErrInternalError,
+			errFailed,
 		},
 		"exists pattern not found": {
 			args{
@@ -253,7 +254,7 @@ func TestGetOrCreate(t *testing.T) {
 				pattern:        model.DefaultPattern,
 			},
 			model.NewEmptyRepository(),
-			httpModel.ErrInternalError,
+			errFailed,
 		},
 		"create": {
 			args{
@@ -286,12 +287,12 @@ func TestGetOrCreate(t *testing.T) {
 
 			switch intention {
 			case "get error":
-				mockRepositoryStore.EXPECT().GetByName(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(model.NewEmptyRepository(), errors.New("failed"))
+				mockRepositoryStore.EXPECT().GetByName(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(model.NewEmptyRepository(), errFailed)
 			case "exists with pattern":
 				mockRepositoryStore.EXPECT().GetByName(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(model.NewGithubRepository(model.Identifier(1), ketchupRepository).AddVersion(model.DefaultPattern, "1.0.0"), nil)
 			case "exists no pattern error":
 				mockRepositoryStore.EXPECT().GetByName(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(model.NewGithubRepository(model.Identifier(1), ketchupRepository), nil)
-				mockGithub.EXPECT().LatestVersions(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, errors.New("failed"))
+				mockGithub.EXPECT().LatestVersions(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, errFailed)
 			case "exists pattern not found":
 				mockRepositoryStore.EXPECT().GetByName(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(model.NewGithubRepository(model.Identifier(1), ketchupRepository), nil)
 				mockGithub.EXPECT().LatestVersions(gomock.Any(), gomock.Any(), gomock.Any()).Return(map[string]semver.Version{
@@ -305,7 +306,7 @@ func TestGetOrCreate(t *testing.T) {
 				}, nil)
 			case "update error":
 				mockRepositoryStore.EXPECT().GetByName(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(model.NewGithubRepository(model.Identifier(1), ketchupRepository), nil)
-				mockRepositoryStore.EXPECT().UpdateVersions(gomock.Any(), gomock.Any()).Return(errors.New("failed"))
+				mockRepositoryStore.EXPECT().UpdateVersions(gomock.Any(), gomock.Any()).Return(errFailed)
 				mockGithub.EXPECT().LatestVersions(gomock.Any(), gomock.Any(), gomock.Any()).Return(map[string]semver.Version{
 					model.DefaultPattern: safeParse("1.0.0"),
 				}, nil)
