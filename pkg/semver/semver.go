@@ -1,15 +1,14 @@
 package semver
 
 import (
+	"errors"
 	"fmt"
 	"regexp"
 	"strconv"
 	"strings"
 )
 
-const (
-	maxVersionNumber = 1 << 16
-)
+const maxVersionNumber = 1 << 16
 
 // NonFinalVersion is a detail for temporary version
 type NonFinalVersion int
@@ -41,6 +40,11 @@ var (
 	semverMatchNames = semverMatcher.SubexpNames()
 
 	nonFinalVersions = []string{"alpha", "beta", "canary", "edge", "rc", "test"}
+
+	allowedPrefixes = []string{"v", "stable-"}
+	ignoredPrefixes = []string{"sealed-secrets-"} // manually ignore historic stuff
+
+	ErrPrefixInvalid = errors.New("invalid prefix")
 )
 
 func (v Version) Equals(other Version) bool {
@@ -69,6 +73,12 @@ func (v Version) IsGreater(other Version) bool {
 	}
 
 	return v.Name > other.Name
+}
+
+func ExtractName(name string) string {
+	parts := strings.Split(name, "/")
+
+	return parts[len(parts)-1]
 }
 
 func (v Version) Compare(other Version) string {
@@ -107,10 +117,14 @@ func parseSemver(version string) (map[string]string, error) {
 	return output, nil
 }
 
-func Parse(version string) (Version, error) {
+func Parse(version string, name string) (Version, error) {
 	matches, err := parseSemver(version)
 	if err != nil {
 		return Version{}, err
+	}
+
+	if !isPrefixAllowed(matches, name) {
+		return Version{}, ErrPrefixInvalid
 	}
 
 	semver := Version{
@@ -148,17 +162,29 @@ func Parse(version string) (Version, error) {
 	return semver, nil
 }
 
+func isPrefixAllowed(matches map[string]string, allowedPrefix string) bool {
+	if len(matches["prefix"]) == 0 {
+		return true
+	}
+
+	for _, prefix := range ignoredPrefixes {
+		if matches["prefix"] == prefix {
+			return false
+		}
+	}
+
+	for _, prefix := range allowedPrefixes {
+		if matches["prefix"] == prefix {
+			return true
+		}
+	}
+
+	return matches["prefix"] == allowedPrefix || matches["prefix"] == allowedPrefix+"-"
+}
+
 func parseNonFinalVersion(matches map[string]string) NonFinalVersion {
 	if len(matches["build"]) > 0 {
 		return 0
-	}
-
-	if len(matches["prefix"]) != 0 {
-		for index, nonFinalVersion := range nonFinalVersions {
-			if strings.Contains(matches["prefix"], nonFinalVersion) {
-				return NonFinalVersion(index + 1)
-			}
-		}
 	}
 
 	if len(matches["prerelease"]) != 0 {
@@ -175,7 +201,7 @@ func parseNonFinalVersion(matches map[string]string) NonFinalVersion {
 }
 
 func safeParse(version string) Version {
-	output, err := Parse(version)
+	output, err := Parse(version, "")
 	if err != nil {
 		fmt.Println(err)
 	}

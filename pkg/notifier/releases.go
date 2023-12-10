@@ -213,13 +213,13 @@ func appendVersion(ctx context.Context, releases []model.Release, upstreamVersio
 
 	compiledPattern, err := semver.ParsePattern(repoPattern)
 	if err != nil {
-		slog.ErrorContext(ctx, "parse pattern", "error", err)
+		slog.ErrorContext(ctx, "parse pattern", "error", err, "pattern", repoPattern)
 		return releases
 	}
 
-	repositoryVersion, err := semver.Parse(repoVersionName)
+	repositoryVersion, err := semver.Parse(repoVersionName, semver.ExtractName(repo.Name))
 	if err != nil {
-		slog.ErrorContext(ctx, "parse version", "error", err)
+		slog.ErrorContext(ctx, "parse version", "error", err, "version", repoVersionName, "repo", semver.ExtractName(repo.Name))
 		return releases
 	}
 
@@ -227,7 +227,7 @@ func appendVersion(ctx context.Context, releases []model.Release, upstreamVersio
 		return releases
 	}
 
-	slog.InfoContext(ctx, "Newversion available", "pattern", repoPattern, "repo", repo.String(), "version", upstreamVersion.Name)
+	slog.InfoContext(ctx, "New version available", "pattern", repoPattern, "repo", repo.String(), "version", upstreamVersion.Name)
 
 	return append(releases, model.NewRelease(repo, repoPattern, upstreamVersion))
 }

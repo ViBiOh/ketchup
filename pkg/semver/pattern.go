@@ -72,9 +72,9 @@ func ParsePattern(pattern string) (Pattern, error) {
 		return NewPattern(pattern, newConstraint(safeParse("0.0"), greaterOrEqual)), nil
 	}
 
-	version, err := Parse(pattern[1:])
+	version, err := Parse(pattern[1:], "")
 	if err != nil {
-		return Pattern{}, fmt.Errorf("parse version in pattern: %w", err)
+		return Pattern{}, fmt.Errorf("parse version in pattern `%s`: %w", pattern[1:], err)
 	}
 
 	constraintVersionSuffix := ""

@@ -142,7 +142,7 @@ func (s *service) LatestVersions(ctx context.Context, repository string, pattern
 		}
 
 		for _, tag := range tags {
-			tagVersion, err := semver.Parse(tag.Name)
+			tagVersion, err := semver.Parse(tag.Name, semver.ExtractName(repository))
 			if err != nil {
 				continue
 			}

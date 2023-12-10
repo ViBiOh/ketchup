@@ -228,12 +228,14 @@ func enrichKetchupsWithSemver(list []model.Ketchup) []model.Ketchup {
 }
 
 func enrichKetchupWithSemver(item model.Ketchup) model.Ketchup {
-	repositoryVersion, err := semver.Parse(item.Repository.Versions[item.Pattern])
+	name := semver.ExtractName(item.Repository.Name)
+
+	repositoryVersion, err := semver.Parse(item.Repository.Versions[item.Pattern], name)
 	if err != nil {
 		return item
 	}
 
-	ketchupVersion, err := semver.Parse(item.Version)
+	ketchupVersion, err := semver.Parse(item.Version, name)
 	if err != nil {
 		return item
 	}

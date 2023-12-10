@@ -60,7 +60,7 @@ func (s Service) FetchIndex(ctx context.Context, url string, chartsPatterns map[
 		}
 
 		for _, chart := range charts {
-			chartVersion, err := semver.Parse(chart.Version)
+			chartVersion, err := semver.Parse(chart.Version, "")
 			if err != nil {
 				continue
 			}

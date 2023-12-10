@@ -163,6 +163,7 @@ func TestParse(t *testing.T) {
 
 	type args struct {
 		version string
+		name    string
 	}
 
 	cases := map[string]struct {
@@ -195,14 +196,23 @@ func TestParse(t *testing.T) {
 			args{
 				version: "edge-23.12.1",
 			},
-			Version{"edge-23.12.1", 23, 12, 1, edge},
-			nil,
+			Version{},
+			ErrPrefixInvalid,
 		},
 		"cassandra": {
 			args{
 				version: "cassandra-4.1.3",
+				name:    "cassandra",
 			},
 			Version{"cassandra-4.1.3", 4, 1, 3, -1},
+			nil,
+		},
+		"jq": {
+			args{
+				version: "jq-1.7",
+				name:    "jq",
+			},
+			Version{"jq-1.7", 1, 7, 0, -1},
 			nil,
 		},
 		"flag rc version": {
@@ -290,7 +300,7 @@ func TestParse(t *testing.T) {
 		t.Run(intention, func(t *testing.T) {
 			t.Parallel()
 
-			got, gotErr := Parse(testCase.args.version)
+			got, gotErr := Parse(testCase.args.version, testCase.args.name)
 
 			failed := false
 

@@ -39,7 +39,7 @@ func (s Service) LatestVersions(ctx context.Context, name string, patterns []str
 	}
 
 	for version := range content.Versions {
-		tagVersion, err := semver.Parse(version)
+		tagVersion, err := semver.Parse(version, semver.ExtractName(name))
 		if err != nil {
 			continue
 		}

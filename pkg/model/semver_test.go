@@ -9,7 +9,7 @@ import (
 )
 
 func safeParse(version string) semver.Version {
-	output, err := semver.Parse(version)
+	output, err := semver.Parse(version, "")
 	if err != nil {
 		fmt.Println(err)
 	}

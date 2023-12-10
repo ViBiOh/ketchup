@@ -81,7 +81,7 @@ func (s Service) LatestVersions(ctx context.Context, repository string, patterns
 			return nil, fmt.Errorf("fetch tags: %w", err)
 		}
 
-		if err := browseRegistryTagsList(resp.Body, versions, compiledPatterns); err != nil {
+		if err := browseRegistryTagsList(resp.Body, repository, versions, compiledPatterns); err != nil {
 			return nil, err
 		}
 
@@ -155,7 +155,7 @@ func (s Service) ghcr(ctx context.Context, repository string) (string, error) {
 	return fmt.Sprintf("Bearer %s", authContent.Token), nil
 }
 
-func browseRegistryTagsList(body io.ReadCloser, versions map[string]semver.Version, patterns map[string]semver.Pattern) error {
+func browseRegistryTagsList(body io.ReadCloser, name string, versions map[string]semver.Version, patterns map[string]semver.Pattern) error {
 	done := make(chan struct{})
 	versionsStream := make(chan string, runtime.NumCPU())
 
@@ -163,7 +163,7 @@ func browseRegistryTagsList(body io.ReadCloser, versions map[string]semver.Versi
 		defer close(done)
 
 		for tag := range versionsStream {
-			tagVersion, err := semver.Parse(tag)
+			tagVersion, err := semver.Parse(tag, semver.ExtractName(name))
 			if err != nil {
 				continue
 			}

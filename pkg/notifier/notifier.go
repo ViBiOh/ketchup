@@ -201,7 +201,7 @@ func (s Service) syncReleasesByUser(ctx context.Context, releases []model.Releas
 
 func (s Service) appendKetchupsToUser(ctx context.Context, usersToNotify map[model.User][]model.Release, ketchups []model.Ketchup) {
 	for _, ketchup := range ketchups {
-		ketchupVersion, err := semver.Parse(ketchup.Version)
+		ketchupVersion, err := semver.Parse(ketchup.Version, semver.ExtractName(ketchup.Repository.Name))
 		if err != nil {
 			slog.ErrorContext(ctx, "parse version of ketchup", "error", err, "version", ketchup.Version)
 			continue
