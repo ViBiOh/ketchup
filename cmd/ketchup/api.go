@@ -183,7 +183,6 @@ func main() {
 
 	doneCtx := healthService.DoneCtx()
 
-	go githubService.Start(doneCtx)
 	if schedulerService != nil {
 		go schedulerService.Start(doneCtx)
 	}

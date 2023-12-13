@@ -7,13 +7,10 @@ import (
 	"log/slog"
 	"net/http"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/ViBiOh/flags"
-	"github.com/ViBiOh/httputils/v4/pkg/cron"
 	"github.com/ViBiOh/httputils/v4/pkg/httpjson"
-	httpModel "github.com/ViBiOh/httputils/v4/pkg/model"
 	"github.com/ViBiOh/httputils/v4/pkg/request"
 	"github.com/ViBiOh/httputils/v4/pkg/telemetry"
 	"github.com/ViBiOh/ketchup/pkg/model"
@@ -40,29 +37,14 @@ type Tag struct {
 	Name string `json:"name"`
 }
 
-type RateLimit struct {
-	Remaining uint64 `json:"remaining"`
-}
-
-type RateLimitResponse struct {
-	Resources map[string]RateLimit `json:"resources"`
-}
-
-type Service interface {
-	Start(context.Context)
-	LatestVersions(context.Context, string, []string) (map[string]semver.Version, error)
-}
-
 type Config struct {
 	Token string
 }
 
-type service struct {
-	traceProvider  trace.TracerProvider
-	redis          Redis
-	token          string
-	rateLimitValue uint64
-	mutex          sync.RWMutex
+type Service struct {
+	traceProvider trace.TracerProvider
+	redis         Redis
+	token         string
 }
 
 func Flags(fs *flag.FlagSet, prefix string) *Config {
@@ -76,53 +58,18 @@ func Flags(fs *flag.FlagSet, prefix string) *Config {
 func New(config *Config, redisClient Redis, meterProvider metric.MeterProvider, traceProvider trace.TracerProvider) Service {
 	httpClient = telemetry.AddOpenTelemetryToClient(httpClient, meterProvider, traceProvider)
 
-	service := &service{
+	return Service{
 		token:         config.Token,
 		redis:         redisClient,
 		traceProvider: traceProvider,
 	}
-
-	if !httpModel.IsNil(meterProvider) {
-		_, err := meterProvider.Meter("github.com/ViBiOh/ketchup/pkg/provider/github").
-			Int64ObservableGauge("github.rate_limit.remainings",
-				metric.WithInt64Callback(func(ctx context.Context, io metric.Int64Observer) error {
-					service.mutex.RLock()
-					defer service.mutex.RUnlock()
-
-					io.Observe(int64(service.rateLimitValue))
-					return nil
-				}))
-		if err != nil {
-			slog.Error("create observable gauge", "error", err)
-		}
-	}
-
-	return service
 }
 
-func (s *service) newClient() request.Request {
+func (s Service) newClient() request.Request {
 	return request.New().Header("Authorization", fmt.Sprintf("token %s", s.token)).WithClient(httpClient)
 }
 
-func (s *service) Start(ctx context.Context) {
-	cron.New().Now().Each(time.Minute).WithTracerProvider(s.traceProvider).OnError(func(ctx context.Context, err error) {
-		slog.ErrorContext(ctx, "get rate limit metrics", "error", err)
-	}).Exclusive(s.redis, "ketchup:github_rate_limit_metrics", 15*time.Second).Start(ctx, func(ctx context.Context) error {
-		value, err := s.getRateLimit(ctx)
-		if err != nil {
-			return err
-		}
-
-		s.mutex.Lock()
-		defer s.mutex.Unlock()
-
-		s.rateLimitValue = value
-
-		return nil
-	})
-}
-
-func (s *service) LatestVersions(ctx context.Context, repository string, patterns []string) (map[string]semver.Version, error) {
+func (s Service) LatestVersions(ctx context.Context, repository string, patterns []string) (map[string]semver.Version, error) {
 	versions, compiledPatterns, err := model.PreparePatternMatching(patterns)
 	if err != nil {
 		return nil, fmt.Errorf("prepare pattern matching: %w", err)
@@ -158,20 +105,6 @@ func (s *service) LatestVersions(ctx context.Context, repository string, pattern
 	}
 
 	return versions, nil
-}
-
-func (s *service) getRateLimit(ctx context.Context) (uint64, error) {
-	resp, err := s.newClient().Get(fmt.Sprintf("%s/rate_limit", apiURL)).Send(ctx, nil)
-	if err != nil {
-		return 0, fmt.Errorf("get rate limit: %w", err)
-	}
-
-	var rateLimits RateLimitResponse
-	if err := httpjson.Read(resp, &rateLimits); err != nil {
-		return 0, fmt.Errorf("read rate limit: %w", err)
-	}
-
-	return rateLimits.Resources["core"].Remaining, nil
 }
 
 func hasNext(resp *http.Response) bool {
