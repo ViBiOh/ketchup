@@ -11,7 +11,10 @@ HEALTHCHECK --retries=5 CMD [ "/ketchup", "-url", "http://localhost:1080/health"
 ENTRYPOINT [ "/ketchup" ]
 
 ARG VERSION
-ENV VERSION=${VERSION}
+ENV VERSION ${VERSION}
+
+ARG GIT_SHA
+ENV GIT_SHA ${GIT_SHA}
 
 ARG TARGETOS
 ARG TARGETARCH
