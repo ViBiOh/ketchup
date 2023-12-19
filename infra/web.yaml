@@ -25,7 +25,7 @@ spec:
     nameOverride: ketchup
     image:
       name: vibioh/ketchup
-      tag: "202312152311" # {"$imagepolicy": "default:flux-ketchup-web:tag"}
+      tag: "202312190821" # {"$imagepolicy": "default:flux-ketchup-web:tag"}
     config:
       GOMAXPROCS: "1"
       KETCHUP_DB_HOST: postgres
