@@ -71,45 +71,15 @@ func (s Service) GetByLoginID(ctx context.Context, loginID uint64) (model.User, 
 	return item, s.db.Get(ctx, scanner, getByLoginIDQuery, loginID)
 }
 
-const listReminderUsers = `
-SELECT
-  id,
-  email,
-  login_id
-FROM
-  ketchup.user
-WHERE
-  reminder IS TRUE
-`
-
-func (s Service) ListReminderUsers(ctx context.Context) ([]model.User, error) {
-	var list []model.User
-
-	scanner := func(rows pgx.Rows) error {
-		var item model.User
-
-		if err := rows.Scan(&item.ID, &item.Email, &item.Login.ID); err != nil {
-			return err
-		}
-
-		list = append(list, item)
-		return nil
-	}
-
-	return list, s.db.List(ctx, scanner, listReminderUsers)
-}
-
 const insertQuery = `
 INSERT INTO
   ketchup.user
 (
   email,
   login_id,
-  reminder
 ) VALUES (
   $1,
   $2,
-  FALSE
 ) RETURNING id
 `
 

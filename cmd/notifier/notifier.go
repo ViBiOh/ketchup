@@ -41,8 +41,6 @@ func main() {
 	dockerConfig := docker.Flags(fs, "docker")
 	notifierConfig := notifier.Flags(fs, "notifier")
 
-	notificationType := fs.String("notification", "daily", "Notification type. \"daily\" or \"reminder\"")
-
 	if err := fs.Parse(os.Args[1:]); err != nil {
 		log.Fatal(err)
 	}
@@ -92,19 +90,8 @@ func main() {
 	ctx, end := telemetry.StartSpan(ctx, telemetryService.TracerProvider().Tracer("notifier"), "notifier")
 	defer end(&err)
 
-	switch *notificationType {
-	case "daily":
-		if err = notifierService.Notify(ctx, telemetryService.MeterProvider()); err != nil {
-			slog.ErrorContext(ctx, "notify", "error", err)
-			os.Exit(1)
-		}
-	case "reminder":
-		if err = notifierService.Remind(ctx); err != nil {
-			slog.ErrorContext(ctx, "remind", "error", err)
-			os.Exit(1)
-		}
-	default:
-		slog.ErrorContext(ctx, "unknown notification type", "type", *notificationType)
+	if err = notifierService.Notify(ctx, telemetryService.MeterProvider()); err != nil {
+		slog.ErrorContext(ctx, "notify", "error", err)
 		os.Exit(1)
 	}
 

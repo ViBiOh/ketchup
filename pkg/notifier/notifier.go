@@ -280,28 +280,3 @@ func (s Service) sendNotification(ctx context.Context, template string, ketchupT
 
 	return nil
 }
-
-func (s Service) Remind(ctx context.Context) error {
-	usersToRemind, err := s.user.ListReminderUsers(ctx)
-	if err != nil {
-		return fmt.Errorf("get reminder users: %w", err)
-	}
-
-	remindKetchups, err := s.ketchup.ListOutdated(ctx, usersToRemind...)
-	if err != nil {
-		return fmt.Errorf("get daily ketchups to remind: %w", err)
-	}
-
-	if len(remindKetchups) == 0 {
-		return nil
-	}
-
-	usersToNotify := make(map[model.User][]model.Release)
-	s.appendKetchupsToUser(ctx, usersToNotify, remindKetchups)
-
-	if err := s.sendNotification(ctx, "ketchup_remind", usersToNotify); err != nil {
-		return fmt.Errorf("send remind notification: %w", err)
-	}
-
-	return nil
-}

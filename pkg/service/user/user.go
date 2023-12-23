@@ -40,10 +40,6 @@ func (s Service) StoreInContext(ctx context.Context) context.Context {
 	return model.StoreUser(ctx, item)
 }
 
-func (s Service) ListReminderUsers(ctx context.Context) ([]model.User, error) {
-	return s.store.ListReminderUsers(ctx)
-}
-
 func (s Service) Create(ctx context.Context, item model.User) (model.User, error) {
 	if err := s.check(ctx, model.User{}, item); err != nil {
 		return model.User{}, httpModel.WrapInvalid(err)
