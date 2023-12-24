@@ -30,10 +30,9 @@ func TestList(t *testing.T) {
 	}
 
 	cases := map[string]struct {
-		args      args
-		want      []model.Ketchup
-		wantCount uint64
-		wantErr   error
+		args    args
+		want    []model.Ketchup
+		wantErr error
 	}{
 		"simple": {
 			args{},
@@ -41,13 +40,11 @@ func TestList(t *testing.T) {
 				{Pattern: model.DefaultPattern, Version: "1.0.0", Frequency: model.Daily, Semver: "Patch", Repository: model.NewGithubRepository(model.Identifier(1), ketchupRepository).AddVersion(model.DefaultPattern, "1.0.2")},
 				{Pattern: model.DefaultPattern, Version: "1.2.3", Frequency: model.Daily, Repository: model.NewGithubRepository(model.Identifier(2), viwsRepository).AddVersion(model.DefaultPattern, "1.2.3")},
 			},
-			2,
 			nil,
 		},
 		"error": {
 			args{},
 			nil,
-			0,
 			httpModel.ErrInternalError,
 		},
 	}
@@ -72,12 +69,12 @@ func TestList(t *testing.T) {
 				mockKetchupStore.EXPECT().List(gomock.Any(), gomock.Any(), gomock.Any()).Return([]model.Ketchup{
 					model.NewKetchup(model.DefaultPattern, "1.2.3", model.Daily, false, model.NewGithubRepository(model.Identifier(2), viwsRepository).AddVersion(model.DefaultPattern, "1.2.3")),
 					model.NewKetchup(model.DefaultPattern, "1.0.0", model.Daily, false, model.NewGithubRepository(model.Identifier(1), ketchupRepository).AddVersion(model.DefaultPattern, "1.0.2")),
-				}, uint64(2), nil)
+				}, nil)
 			case "error":
-				mockKetchupStore.EXPECT().List(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, uint64(0), errors.New("failed"))
+				mockKetchupStore.EXPECT().List(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, errors.New("failed"))
 			}
 
-			got, gotCount, gotErr := instance.List(context.TODO(), testCase.args.pageSize, testCase.args.last)
+			got, gotErr := instance.List(context.TODO(), testCase.args.pageSize, testCase.args.last)
 
 			failed := false
 
@@ -85,12 +82,10 @@ func TestList(t *testing.T) {
 				failed = true
 			} else if !reflect.DeepEqual(got, testCase.want) {
 				failed = true
-			} else if gotCount != testCase.wantCount {
-				failed = true
 			}
 
 			if failed {
-				t.Errorf("List() = (%+v, %d, `%s`), want (%+v, %d, `%s`)", got, gotCount, gotErr, testCase.want, testCase.wantCount, testCase.wantErr)
+				t.Errorf("List() = (%+v, `%s`), want (%+v, `%s`)", got, gotErr, testCase.want, testCase.wantErr)
 			}
 		})
 	}

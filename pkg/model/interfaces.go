@@ -71,7 +71,7 @@ type RepositoryStore interface {
 }
 
 type KetchupService interface {
-	List(ctx context.Context, pageSize uint, last string) ([]Ketchup, uint64, error)
+	List(ctx context.Context, pageSize uint, last string) ([]Ketchup, error)
 	ListForRepositories(ctx context.Context, repositories []Repository, frequencies ...KetchupFrequency) ([]Ketchup, error)
 	ListOutdated(ctx context.Context, users ...User) ([]Ketchup, error)
 	Create(ctx context.Context, item Ketchup) (Ketchup, error)
@@ -83,7 +83,7 @@ type KetchupService interface {
 
 type KetchupStore interface {
 	DoAtomic(ctx context.Context, action func(context.Context) error) error
-	List(ctx context.Context, page uint, last string) ([]Ketchup, uint64, error)
+	List(ctx context.Context, page uint, last string) ([]Ketchup, error)
 	ListByRepositoriesIDAndFrequencies(ctx context.Context, ids []Identifier, frequencies ...KetchupFrequency) ([]Ketchup, error)
 	ListOutdated(ctx context.Context, usersIds ...Identifier) ([]Ketchup, error)
 	GetByRepository(ctx context.Context, id Identifier, pattern string, forUpdate bool) (Ketchup, error)

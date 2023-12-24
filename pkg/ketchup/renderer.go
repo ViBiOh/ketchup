@@ -31,7 +31,7 @@ func (s Service) TemplateFunc(_ http.ResponseWriter, r *http.Request) (renderer.
 		return renderer.NewPage("", http.StatusBadRequest, nil), err
 	}
 
-	ketchups, _, err := s.ketchup.List(r.Context(), pagination.PageSize, pagination.Last)
+	ketchups, err := s.ketchup.List(r.Context(), pagination.PageSize, pagination.Last)
 	if err != nil {
 		return renderer.NewPage("", http.StatusInternalServerError, nil), err
 	}

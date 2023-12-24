@@ -35,8 +35,7 @@ SELECT
   r.name,
   r.part,
   r.kind,
-  rv.version,
-  count(1) OVER() AS full_count
+  rv.version
 FROM
   ketchup.ketchup k,
   ketchup.repository r,
@@ -59,10 +58,9 @@ const listQueryRestart = `
   )
 `
 
-func (s Service) List(ctx context.Context, pageSize uint, last string) ([]model.Ketchup, uint64, error) {
+func (s Service) List(ctx context.Context, pageSize uint, last string) ([]model.Ketchup, error) {
 	user := model.ReadUser(ctx)
 
-	var totalCount uint64
 	var list []model.Ketchup
 
 	scanner := func(rows pgx.Rows) error {
@@ -72,7 +70,7 @@ func (s Service) List(ctx context.Context, pageSize uint, last string) ([]model.
 		var rawKetchupFrequency string
 		var repositoryVersion string
 
-		if err := rows.Scan(&item.Pattern, &item.Version, &rawKetchupFrequency, &item.UpdateWhenNotify, &item.Repository.ID, &item.Repository.Name, &item.Repository.Part, &rawRepositoryKind, &repositoryVersion, &totalCount); err != nil {
+		if err := rows.Scan(&item.Pattern, &item.Version, &rawKetchupFrequency, &item.UpdateWhenNotify, &item.Repository.ID, &item.Repository.Name, &item.Repository.Part, &rawRepositoryKind, &repositoryVersion); err != nil {
 			return err
 		}
 
@@ -103,12 +101,12 @@ func (s Service) List(ctx context.Context, pageSize uint, last string) ([]model.
 	if len(last) != 0 {
 		parts := strings.Split(last, "|")
 		if len(parts) != 2 {
-			return nil, 0, fmt.Errorf("invalid last key format: %s", last)
+			return nil, fmt.Errorf("invalid last key format: %s", last)
 		}
 
 		lastID, err := strconv.ParseUint(parts[0], 10, 64)
 		if err != nil {
-			return nil, 0, fmt.Errorf("invalid last key id: %d", err)
+			return nil, fmt.Errorf("invalid last key id: %d", err)
 		}
 
 		value := len(queryArgs)
@@ -121,7 +119,7 @@ func (s Service) List(ctx context.Context, pageSize uint, last string) ([]model.
 	queryArgs = append(queryArgs, pageSize)
 	query.WriteString(fmt.Sprintf(" LIMIT $%d", len(queryArgs)))
 
-	return list, totalCount, s.db.List(ctx, scanner, query.String(), queryArgs...)
+	return list, s.db.List(ctx, scanner, query.String(), queryArgs...)
 }
 
 const listByRepositoriesIDQuery = `

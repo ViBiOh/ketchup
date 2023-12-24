@@ -24,16 +24,16 @@ func New(ketchupStore model.KetchupStore, repositoryService model.RepositoryServ
 	}
 }
 
-func (s Service) List(ctx context.Context, pageSize uint, last string) ([]model.Ketchup, uint64, error) {
-	list, total, err := s.ketchupStore.List(ctx, pageSize, last)
+func (s Service) List(ctx context.Context, pageSize uint, last string) ([]model.Ketchup, error) {
+	list, err := s.ketchupStore.List(ctx, pageSize, last)
 	if err != nil {
-		return nil, 0, httpModel.WrapInternal(fmt.Errorf("list: %w", err))
+		return nil, httpModel.WrapInternal(fmt.Errorf("list: %w", err))
 	}
 
 	enrichedList := enrichKetchupsWithSemver(list)
 	sort.Sort(model.KetchupByPriority(enrichedList))
 
-	return enrichedList, total, nil
+	return enrichedList, nil
 }
 
 func (s Service) ListForRepositories(ctx context.Context, repositories []model.Repository, frequencies ...model.KetchupFrequency) ([]model.Ketchup, error) {

@@ -32,10 +32,9 @@ func TestList(t *testing.T) {
 	}
 
 	cases := map[string]struct {
-		args      args
-		want      []model.Ketchup
-		wantCount uint64
-		wantErr   error
+		args    args
+		want    []model.Ketchup
+		wantErr error
 	}{
 		"simple": {
 			args{
@@ -59,7 +58,6 @@ func TestList(t *testing.T) {
 					User:       model.NewUser(3, testEmail, authModel.NewUser(0, "")),
 				},
 			},
-			2,
 			nil,
 		},
 		"error": {
@@ -67,7 +65,6 @@ func TestList(t *testing.T) {
 				pageSize: 20,
 			},
 			nil,
-			0,
 			errors.New("failed"),
 		},
 		"invalid kind": {
@@ -75,7 +72,6 @@ func TestList(t *testing.T) {
 				pageSize: 20,
 			},
 			nil,
-			1,
 			errors.New("invalid value `wrong` for repository kind"),
 		},
 	}
@@ -96,7 +92,7 @@ func TestList(t *testing.T) {
 			switch intention {
 			case "simple":
 				mockRows := mocks.NewRows(ctrl)
-				mockRows.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...any) error {
+				mockRows.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...any) error {
 					*pointers[0].(*string) = model.DefaultPattern
 					*pointers[1].(*string) = "0.9.0"
 					*pointers[2].(*string) = "daily"
@@ -106,11 +102,10 @@ func TestList(t *testing.T) {
 					*pointers[6].(*string) = ""
 					*pointers[7].(*string) = "github"
 					*pointers[8].(*string) = repositoryVersion
-					*pointers[9].(*uint64) = 2
 
 					return nil
 				})
-				mockRows.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...any) error {
+				mockRows.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...any) error {
 					*pointers[0].(*string) = model.DefaultPattern
 					*pointers[1].(*string) = repositoryVersion
 					*pointers[2].(*string) = "daily"
@@ -120,7 +115,6 @@ func TestList(t *testing.T) {
 					*pointers[6].(*string) = "app"
 					*pointers[7].(*string) = "helm"
 					*pointers[8].(*string) = repositoryVersion
-					*pointers[9].(*uint64) = 2
 
 					return nil
 				})
@@ -135,7 +129,7 @@ func TestList(t *testing.T) {
 				mockDatabase.EXPECT().List(gomock.Any(), gomock.Any(), gomock.Any(), model.Identifier(3), uint(20)).Return(errors.New("failed"))
 			case "invalid kind":
 				mockRows := mocks.NewRows(ctrl)
-				mockRows.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...any) error {
+				mockRows.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...any) error {
 					*pointers[0].(*string) = model.DefaultPattern
 					*pointers[1].(*string) = "0.9.0"
 					*pointers[2].(*string) = "daily"
@@ -145,7 +139,6 @@ func TestList(t *testing.T) {
 					*pointers[6].(*string) = ""
 					*pointers[7].(*string) = "wrong"
 					*pointers[8].(*string) = repositoryVersion
-					*pointers[9].(*uint64) = 1
 
 					return nil
 				})
@@ -158,7 +151,7 @@ func TestList(t *testing.T) {
 				mockDatabase.EXPECT().List(gomock.Any(), gomock.Any(), gomock.Any(), model.Identifier(3), uint(20)).DoAndReturn(dummyFn)
 			}
 
-			got, gotCount, gotErr := instance.List(testCtx, testCase.args.pageSize, "")
+			got, gotErr := instance.List(testCtx, testCase.args.pageSize, "")
 			failed := false
 
 			if testCase.wantErr == nil && gotErr != nil {
@@ -169,12 +162,10 @@ func TestList(t *testing.T) {
 				failed = true
 			} else if !reflect.DeepEqual(got, testCase.want) {
 				failed = true
-			} else if gotCount != testCase.wantCount {
-				failed = true
 			}
 
 			if failed {
-				t.Errorf("List() = (%+v, %d, `%s`), want (%+v, %d, `%s`)", got, gotCount, gotErr, testCase.want, testCase.wantCount, testCase.wantErr)
+				t.Errorf("List() = (%+v, `%s`), want (%+v, `%s`)", got, gotErr, testCase.want, testCase.wantErr)
 			}
 		})
 	}

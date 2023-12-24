@@ -706,13 +706,12 @@ func (mr *KetchupServiceMockRecorder) Delete(ctx, item any) *gomock.Call {
 }
 
 // List mocks base method.
-func (m *KetchupService) List(ctx context.Context, pageSize uint, last string) ([]model0.Ketchup, uint64, error) {
+func (m *KetchupService) List(ctx context.Context, pageSize uint, last string) ([]model0.Ketchup, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "List", ctx, pageSize, last)
 	ret0, _ := ret[0].([]model0.Ketchup)
-	ret1, _ := ret[1].(uint64)
-	ret2, _ := ret[2].(error)
-	return ret0, ret1, ret2
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // List indicates an expected call of List.
@@ -886,13 +885,12 @@ func (mr *KetchupStoreMockRecorder) GetByRepository(ctx, id, pattern, forUpdate 
 }
 
 // List mocks base method.
-func (m *KetchupStore) List(ctx context.Context, page uint, last string) ([]model0.Ketchup, uint64, error) {
+func (m *KetchupStore) List(ctx context.Context, page uint, last string) ([]model0.Ketchup, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "List", ctx, page, last)
 	ret0, _ := ret[0].([]model0.Ketchup)
-	ret1, _ := ret[1].(uint64)
-	ret2, _ := ret[2].(error)
-	return ret0, ret1, ret2
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // List indicates an expected call of List.
