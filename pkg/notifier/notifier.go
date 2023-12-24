@@ -14,8 +14,6 @@ import (
 	"github.com/ViBiOh/ketchup/pkg/semver"
 	"github.com/ViBiOh/ketchup/pkg/service/user"
 	mailerModel "github.com/ViBiOh/mailer/pkg/model"
-	"go.opentelemetry.io/otel/attribute"
-	"go.opentelemetry.io/otel/metric"
 )
 
 type GetNow func() time.Time
@@ -56,12 +54,12 @@ func New(config *Config, repositoryService model.RepositoryService, ketchupServi
 	}
 }
 
-func (s Service) Notify(ctx context.Context, meterProvider metric.MeterProvider) error {
+func (s Service) Notify(ctx context.Context) error {
 	if err := s.repository.Clean(ctx); err != nil {
 		return fmt.Errorf("clean repository before starting: %w", err)
 	}
 
-	newReleases, repoCount, err := s.getNewReleases(ctx)
+	newReleases, err := s.getNewReleases(ctx)
 	if err != nil {
 		return fmt.Errorf("get new releases: %w", err)
 	}
@@ -78,27 +76,6 @@ func (s Service) Notify(ctx context.Context, meterProvider metric.MeterProvider)
 
 	if err := s.sendNotification(ctx, "ketchup", ketchupsToNotify); err != nil {
 		return fmt.Errorf("send notification: %w", err)
-	}
-
-	if meterProvider != nil {
-		meter := meterProvider.Meter("github.com/ViBiOh/ketchup/pkg/notifier")
-
-		_, err := meter.Int64ObservableGauge("ketchup.metrics", metric.WithInt64Callback(func(ctx context.Context, io metric.Int64Observer) error {
-			userCount, err := s.user.Count(ctx)
-			if err != nil {
-				return fmt.Errorf("get users count: %w", err)
-			}
-
-			io.Observe(int64(userCount), metric.WithAttributes(attribute.String("type", "users")))
-			io.Observe(int64(repoCount), metric.WithAttributes(attribute.String("type", "repositories")))
-			io.Observe(int64(len(newReleases)), metric.WithAttributes(attribute.String("type", "releases")))
-			io.Observe(int64(len(ketchupsToNotify)), metric.WithAttributes(attribute.String("type", "notifications")))
-
-			return nil
-		}))
-		if err != nil {
-			slog.ErrorContext(ctx, "create ketchup counter", "error", err)
-		}
 	}
 
 	return nil

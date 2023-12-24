@@ -11,16 +11,15 @@ import (
 	"github.com/ViBiOh/ketchup/pkg/semver"
 )
 
-func (s Service) getNewReleases(ctx context.Context) ([]model.Release, uint64, error) {
+func (s Service) getNewReleases(ctx context.Context) ([]model.Release, error) {
 	var releases, helmReleases []model.Release
-	var releasesCount, helmCount uint64
 
 	wg := concurrent.NewLimiter(2)
 
 	wg.Go(func() {
 		var err error
 
-		releases, releasesCount, err = s.getNewStandardReleases(ctx)
+		releases, err = s.getNewStandardReleases(ctx)
 		if err != nil {
 			slog.ErrorContext(ctx, "fetch standard releases", "error", err)
 		}
@@ -29,7 +28,7 @@ func (s Service) getNewReleases(ctx context.Context) ([]model.Release, uint64, e
 	wg.Go(func() {
 		var err error
 
-		helmReleases, helmCount, err = s.getNewHelmReleases(ctx)
+		helmReleases, err = s.getNewHelmReleases(ctx)
 
 		if err != nil {
 			slog.ErrorContext(ctx, "fetch helm releases", "error", err)
@@ -38,10 +37,10 @@ func (s Service) getNewReleases(ctx context.Context) ([]model.Release, uint64, e
 
 	wg.Wait()
 
-	return append(releases, helmReleases...), releasesCount + helmCount, nil
+	return append(releases, helmReleases...), nil
 }
 
-func (s Service) getNewStandardReleases(ctx context.Context) ([]model.Release, uint64, error) {
+func (s Service) getNewStandardReleases(ctx context.Context) ([]model.Release, error) {
 	var newReleases []model.Release
 	var count uint64
 	var last string
@@ -67,9 +66,9 @@ func (s Service) getNewStandardReleases(ctx context.Context) ([]model.Release, u
 	}()
 
 	for {
-		repositories, _, err := s.repository.ListByKinds(ctx, pageSize, last, model.Github, model.Docker, model.NPM, model.Pypi)
+		repositories, err := s.repository.ListByKinds(ctx, pageSize, last, model.Github, model.Docker, model.NPM, model.Pypi)
 		if err != nil {
-			return nil, count, fmt.Errorf("fetch standard repositories: %w", err)
+			return nil, fmt.Errorf("fetch standard repositories: %w", err)
 		}
 
 		repoCount := len(repositories)
@@ -99,7 +98,7 @@ func (s Service) getNewStandardReleases(ctx context.Context) ([]model.Release, u
 	<-done
 
 	slog.InfoContext(ctx, "Standard repositories checked", "count", count, "new", len(newReleases))
-	return newReleases, count, nil
+	return newReleases, nil
 }
 
 func (s Service) getNewRepositoryReleases(ctx context.Context, repo model.Repository) []model.Release {
@@ -118,15 +117,15 @@ func (s Service) getNewRepositoryReleases(ctx context.Context, repo model.Reposi
 	return releases
 }
 
-func (s Service) getNewHelmReleases(ctx context.Context) ([]model.Release, uint64, error) {
+func (s Service) getNewHelmReleases(ctx context.Context) ([]model.Release, error) {
 	var newReleases []model.Release
 	var count uint64
 	var last string
 
 	for {
-		repositories, _, err := s.repository.ListByKinds(ctx, pageSize, last, model.Helm)
+		repositories, err := s.repository.ListByKinds(ctx, pageSize, last, model.Helm)
 		if err != nil {
-			return nil, count, fmt.Errorf("fetch Helm repositories: %w", err)
+			return nil, fmt.Errorf("fetch Helm repositories: %w", err)
 		}
 
 		repoCount := len(repositories)
@@ -161,7 +160,7 @@ func (s Service) getNewHelmReleases(ctx context.Context) ([]model.Release, uint6
 	}
 
 	slog.InfoContext(ctx, "Helm repositories checked", "count", count, "new", len(newReleases))
-	return newReleases, count, nil
+	return newReleases, nil
 }
 
 func (s Service) getFetchHelmSources(ctx context.Context, repos map[string]model.Repository) []model.Release {

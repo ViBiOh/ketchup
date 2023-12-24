@@ -90,7 +90,7 @@ func main() {
 	ctx, end := telemetry.StartSpan(ctx, telemetryService.TracerProvider().Tracer("notifier"), "notifier")
 	defer end(&err)
 
-	if err = notifierService.Notify(ctx, telemetryService.MeterProvider()); err != nil {
+	if err = notifierService.Notify(ctx); err != nil {
 		slog.ErrorContext(ctx, "notify", "error", err)
 		os.Exit(1)
 	}

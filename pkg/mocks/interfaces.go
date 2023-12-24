@@ -416,13 +416,12 @@ func (mr *RepositoryServiceMockRecorder) LatestVersions(arg0, arg1 any) *gomock.
 }
 
 // List mocks base method.
-func (m *RepositoryService) List(arg0 context.Context, arg1 uint, arg2 string) ([]model0.Repository, uint64, error) {
+func (m *RepositoryService) List(arg0 context.Context, arg1 uint, arg2 string) ([]model0.Repository, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "List", arg0, arg1, arg2)
 	ret0, _ := ret[0].([]model0.Repository)
-	ret1, _ := ret[1].(uint64)
-	ret2, _ := ret[2].(error)
-	return ret0, ret1, ret2
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // List indicates an expected call of List.
@@ -432,7 +431,7 @@ func (mr *RepositoryServiceMockRecorder) List(arg0, arg1, arg2 any) *gomock.Call
 }
 
 // ListByKinds mocks base method.
-func (m *RepositoryService) ListByKinds(arg0 context.Context, arg1 uint, arg2 string, arg3 ...model0.RepositoryKind) ([]model0.Repository, uint64, error) {
+func (m *RepositoryService) ListByKinds(arg0 context.Context, arg1 uint, arg2 string, arg3 ...model0.RepositoryKind) ([]model0.Repository, error) {
 	m.ctrl.T.Helper()
 	varargs := []any{arg0, arg1, arg2}
 	for _, a := range arg3 {
@@ -440,9 +439,8 @@ func (m *RepositoryService) ListByKinds(arg0 context.Context, arg1 uint, arg2 st
 	}
 	ret := m.ctrl.Call(m, "ListByKinds", varargs...)
 	ret0, _ := ret[0].([]model0.Repository)
-	ret1, _ := ret[1].(uint64)
-	ret2, _ := ret[2].(error)
-	return ret0, ret1, ret2
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // ListByKinds indicates an expected call of ListByKinds.
@@ -592,13 +590,12 @@ func (mr *RepositoryStoreMockRecorder) GetByName(ctx, repositoryKind, name, part
 }
 
 // List mocks base method.
-func (m *RepositoryStore) List(ctx context.Context, pageSize uint, last string) ([]model0.Repository, uint64, error) {
+func (m *RepositoryStore) List(ctx context.Context, pageSize uint, last string) ([]model0.Repository, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "List", ctx, pageSize, last)
 	ret0, _ := ret[0].([]model0.Repository)
-	ret1, _ := ret[1].(uint64)
-	ret2, _ := ret[2].(error)
-	return ret0, ret1, ret2
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // List indicates an expected call of List.
@@ -608,7 +605,7 @@ func (mr *RepositoryStoreMockRecorder) List(ctx, pageSize, last any) *gomock.Cal
 }
 
 // ListByKinds mocks base method.
-func (m *RepositoryStore) ListByKinds(ctx context.Context, pageSize uint, last string, kinds ...model0.RepositoryKind) ([]model0.Repository, uint64, error) {
+func (m *RepositoryStore) ListByKinds(ctx context.Context, pageSize uint, last string, kinds ...model0.RepositoryKind) ([]model0.Repository, error) {
 	m.ctrl.T.Helper()
 	varargs := []any{ctx, pageSize, last}
 	for _, a := range kinds {
@@ -616,9 +613,8 @@ func (m *RepositoryStore) ListByKinds(ctx context.Context, pageSize uint, last s
 	}
 	ret := m.ctrl.Call(m, "ListByKinds", varargs...)
 	ret0, _ := ret[0].([]model0.Repository)
-	ret1, _ := ret[1].(uint64)
-	ret2, _ := ret[2].(error)
-	return ret0, ret1, ret2
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // ListByKinds indicates an expected call of ListByKinds.

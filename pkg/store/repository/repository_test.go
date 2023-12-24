@@ -104,21 +104,19 @@ func TestList(t *testing.T) {
 			switch intention {
 			case "success":
 				mockRows := mocks.NewRows(ctrl)
-				mockRows.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...any) error {
+				mockRows.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...any) error {
 					*pointers[0].(*model.Identifier) = model.Identifier(1)
 					*pointers[1].(*string) = "github"
 					*pointers[2].(*string) = ketchupRepository
 					*pointers[3].(*string) = ""
-					*pointers[4].(*uint64) = 2
 
 					return nil
 				})
-				mockRows.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...any) error {
+				mockRows.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...any) error {
 					*pointers[0].(*model.Identifier) = model.Identifier(2)
 					*pointers[1].(*string) = "github"
 					*pointers[2].(*string) = viwsRepository
 					*pointers[3].(*string) = ""
-					*pointers[4].(*uint64) = 2
 
 					return nil
 				})
@@ -161,7 +159,7 @@ func TestList(t *testing.T) {
 
 			case "scan error":
 				mockRows := mocks.NewRows(ctrl)
-				mockRows.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...any) error {
+				mockRows.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...any) error {
 					return errors.New("read int")
 				})
 				dummyFn := func(_ context.Context, scanner func(pgx.Rows) error, _ string, _ ...any) error {
@@ -174,12 +172,11 @@ func TestList(t *testing.T) {
 
 			case "invalid kind":
 				mockRows := mocks.NewRows(ctrl)
-				mockRows.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...any) error {
+				mockRows.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...any) error {
 					*pointers[0].(*model.Identifier) = model.Identifier(1)
 					*pointers[1].(*string) = "wrong"
 					*pointers[2].(*string) = ketchupRepository
 					*pointers[3].(*string) = ""
-					*pointers[4].(*uint64) = 2
 
 					return nil
 				})
@@ -192,7 +189,7 @@ func TestList(t *testing.T) {
 				mockDatabase.EXPECT().List(gomock.Any(), gomock.Any(), gomock.Any(), uint(20)).DoAndReturn(dummyFn)
 			}
 
-			got, gotCount, gotErr := instance.List(context.TODO(), testCase.args.pageSize, testCase.args.last)
+			got, gotErr := instance.List(context.TODO(), testCase.args.pageSize, testCase.args.last)
 			failed := false
 
 			if testCase.wantErr == nil && gotErr != nil {
@@ -203,12 +200,10 @@ func TestList(t *testing.T) {
 				failed = true
 			} else if !reflect.DeepEqual(got, testCase.want) {
 				failed = true
-			} else if gotCount != testCase.wantCount {
-				failed = true
 			}
 
 			if failed {
-				t.Errorf("List() = (%#v, %d, `%s`), want (%#v, %d, `%s`)", got, gotCount, gotErr, testCase.want, testCase.wantCount, testCase.wantErr)
+				t.Errorf("List() = (%#v, `%s`), want (%#v, `%s`)", got, gotErr, testCase.want, testCase.wantErr)
 			}
 		})
 	}
@@ -256,21 +251,19 @@ func TestSuggest(t *testing.T) {
 			switch intention {
 			case "simple":
 				mockRows := mocks.NewRows(ctrl)
-				mockRows.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...any) error {
+				mockRows.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...any) error {
 					*pointers[0].(*model.Identifier) = model.Identifier(1)
 					*pointers[1].(*string) = "github"
 					*pointers[2].(*string) = ketchupRepository
 					*pointers[3].(*string) = ""
-					*pointers[4].(*uint64) = 2
 
 					return nil
 				})
-				mockRows.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...any) error {
+				mockRows.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...any) error {
 					*pointers[0].(*model.Identifier) = model.Identifier(2)
 					*pointers[1].(*string) = "helm"
 					*pointers[2].(*string) = chartRepository
 					*pointers[3].(*string) = "app"
-					*pointers[4].(*uint64) = 2
 
 					return nil
 				})

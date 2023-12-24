@@ -34,22 +34,22 @@ func New(repositoryStore model.RepositoryStore, githubService model.GenericProvi
 	}
 }
 
-func (s Service) List(ctx context.Context, pageSize uint, last string) ([]model.Repository, uint64, error) {
-	list, total, err := s.repository.List(ctx, pageSize, last)
+func (s Service) List(ctx context.Context, pageSize uint, last string) ([]model.Repository, error) {
+	list, err := s.repository.List(ctx, pageSize, last)
 	if err != nil {
-		return nil, 0, httpModel.WrapInternal(fmt.Errorf("list: %w", err))
+		return nil, httpModel.WrapInternal(fmt.Errorf("list: %w", err))
 	}
 
-	return list, total, nil
+	return list, nil
 }
 
-func (s Service) ListByKinds(ctx context.Context, pageSize uint, last string, kinds ...model.RepositoryKind) ([]model.Repository, uint64, error) {
-	list, total, err := s.repository.ListByKinds(ctx, pageSize, last, kinds...)
+func (s Service) ListByKinds(ctx context.Context, pageSize uint, last string, kinds ...model.RepositoryKind) ([]model.Repository, error) {
+	list, err := s.repository.ListByKinds(ctx, pageSize, last, kinds...)
 	if err != nil {
-		return nil, 0, httpModel.WrapInternal(fmt.Errorf("list by kind: %w", err))
+		return nil, httpModel.WrapInternal(fmt.Errorf("list by kind: %w", err))
 	}
 
-	return list, total, nil
+	return list, nil
 }
 
 func (s Service) Suggest(ctx context.Context, ignoreIds []model.Identifier, count uint64) ([]model.Repository, error) {

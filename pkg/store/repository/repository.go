@@ -25,15 +25,14 @@ func (s Service) DoAtomic(ctx context.Context, action func(context.Context) erro
 	return s.db.DoAtomic(ctx, action)
 }
 
-func (s Service) list(ctx context.Context, query string, args ...any) ([]model.Repository, uint64, error) {
-	var count uint64
+func (s Service) list(ctx context.Context, query string, args ...any) ([]model.Repository, error) {
 	var list []model.Repository
 
 	scanner := func(rows pgx.Rows) error {
 		var rawRepositoryKind string
 		item := model.NewEmptyRepository()
 
-		if err := rows.Scan(&item.ID, &rawRepositoryKind, &item.Name, &item.Part, &count); err != nil {
+		if err := rows.Scan(&item.ID, &rawRepositoryKind, &item.Name, &item.Part); err != nil {
 			return err
 		}
 
@@ -49,10 +48,10 @@ func (s Service) list(ctx context.Context, query string, args ...any) ([]model.R
 
 	err := s.db.List(ctx, scanner, query, args...)
 	if err != nil {
-		return list, 0, err
+		return list, err
 	}
 
-	return list, count, s.enrichRepositoriesVersions(ctx, list)
+	return list, s.enrichRepositoriesVersions(ctx, list)
 }
 
 func (s Service) get(ctx context.Context, query string, args ...any) (model.Repository, error) {
@@ -90,15 +89,14 @@ SELECT
   id,
   kind,
   name,
-  part,
-  count(1) OVER() AS full_count
+  part
 FROM
   ketchup.repository
 WHERE
   TRUE
 `
 
-func (s Service) List(ctx context.Context, pageSize uint, last string) ([]model.Repository, uint64, error) {
+func (s Service) List(ctx context.Context, pageSize uint, last string) ([]model.Repository, error) {
 	var query strings.Builder
 	query.WriteString(listQuery)
 	var queryArgs []any
@@ -106,7 +104,7 @@ func (s Service) List(ctx context.Context, pageSize uint, last string) ([]model.
 	if len(last) != 0 {
 		lastID, err := strconv.ParseUint(last, 10, 64)
 		if err != nil {
-			return nil, 0, fmt.Errorf("invalid last key: %w", err)
+			return nil, fmt.Errorf("invalid last key: %w", err)
 		}
 
 		queryArgs = append(queryArgs, lastID)
@@ -126,8 +124,7 @@ SELECT
   id,
   kind,
   name,
-  part,
-  count(1) OVER() AS full_count
+  part
 FROM
   ketchup.repository
 WHERE
@@ -144,7 +141,7 @@ const listByKindRestartQuery = `
   )
 `
 
-func (s Service) ListByKinds(ctx context.Context, pageSize uint, last string, kinds ...model.RepositoryKind) ([]model.Repository, uint64, error) {
+func (s Service) ListByKinds(ctx context.Context, pageSize uint, last string, kinds ...model.RepositoryKind) ([]model.Repository, error) {
 	var query strings.Builder
 	query.WriteString(listByKindsQuery)
 	var queryArgs []any
@@ -159,7 +156,7 @@ func (s Service) ListByKinds(ctx context.Context, pageSize uint, last string, ki
 	if len(last) != 0 {
 		parts := strings.Split(last, "|")
 		if len(parts) != 2 {
-			return nil, 0, errors.New("invalid last key format")
+			return nil, errors.New("invalid last key format")
 		}
 
 		queryIndex := len(queryArgs)
@@ -172,9 +169,9 @@ func (s Service) ListByKinds(ctx context.Context, pageSize uint, last string, ki
 	queryArgs = append(queryArgs, pageSize)
 	query.WriteString(fmt.Sprintf(" LIMIT $%d", len(queryArgs)))
 
-	list, count, err := s.list(ctx, query.String(), queryArgs...)
+	list, err := s.list(ctx, query.String(), queryArgs...)
 
-	return list, count, err
+	return list, err
 }
 
 const suggestQuery = `
@@ -202,8 +199,7 @@ LIMIT $1
 `
 
 func (s Service) Suggest(ctx context.Context, ignoreIds []model.Identifier, count uint64) ([]model.Repository, error) {
-	list, _, err := s.list(ctx, suggestQuery, count, ignoreIds)
-	return list, err
+	return s.list(ctx, suggestQuery, count, ignoreIds)
 }
 
 const getQuery = `

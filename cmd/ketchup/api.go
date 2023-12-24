@@ -160,7 +160,7 @@ func main() {
 	endCtx := healthService.EndCtx()
 
 	notifierService := notifier.New(notifierConfig, repositoryServiceService, ketchupServiceService, userServiceService, mailerService, helmService)
-	schedulerService := scheduler.New(schedulerConfig, notifierService, redisClient, telemetryService.MeterProvider(), telemetryService.TracerProvider())
+	schedulerService := scheduler.New(schedulerConfig, notifierService, redisClient, telemetryService.TracerProvider())
 	ketchupService := ketchup.New(endCtx, publicRendererService, ketchupServiceService, userServiceService, repositoryServiceService, redisClient, telemetryService.TracerProvider())
 
 	publicHandler := publicRendererService.Handler(ketchupService.PublicTemplateFunc)

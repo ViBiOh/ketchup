@@ -80,16 +80,16 @@ func TestGetNewStandardReleases(t *testing.T) {
 
 			switch intention {
 			case "list error":
-				mockRepositoryService.EXPECT().ListByKinds(gomock.Any(), gomock.Any(), gomock.Any(), model.Github, model.Docker, model.NPM, model.Pypi).Return(nil, uint64(0), errors.New("failed"))
+				mockRepositoryService.EXPECT().ListByKinds(gomock.Any(), gomock.Any(), gomock.Any(), model.Github, model.Docker, model.NPM, model.Pypi).Return(nil, errors.New("failed"))
 			case "github error":
 				mockRepositoryService.EXPECT().ListByKinds(gomock.Any(), gomock.Any(), gomock.Any(), model.Github, model.Docker, model.NPM, model.Pypi).Return([]model.Repository{
 					model.NewGithubRepository(model.Identifier(1), repositoryName).AddVersion(model.DefaultPattern, repositoryVersion),
-				}, uint64(1), nil)
+				}, nil)
 				mockRepositoryService.EXPECT().LatestVersions(gomock.Any(), gomock.Any()).Return(nil, errors.New("failed"))
 			case "same version":
 				mockRepositoryService.EXPECT().ListByKinds(gomock.Any(), gomock.Any(), gomock.Any(), model.Github, model.Docker, model.NPM, model.Pypi).Return([]model.Repository{
 					model.NewGithubRepository(model.Identifier(1), repositoryName).AddVersion(model.DefaultPattern, repositoryVersion),
-				}, uint64(1), nil)
+				}, nil)
 				mockRepositoryService.EXPECT().LatestVersions(gomock.Any(), gomock.Any()).Return(map[string]semver.Version{
 					model.DefaultPattern: {
 						Name: "1.1.0",
@@ -98,14 +98,14 @@ func TestGetNewStandardReleases(t *testing.T) {
 			case "success":
 				mockRepositoryService.EXPECT().ListByKinds(gomock.Any(), gomock.Any(), gomock.Any(), model.Github, model.Docker, model.NPM, model.Pypi).Return([]model.Repository{
 					model.NewGithubRepository(model.Identifier(1), repositoryName).AddVersion(model.DefaultPattern, repositoryVersion),
-				}, uint64(1), nil)
+				}, nil)
 				mockRepositoryService.EXPECT().LatestVersions(gomock.Any(), gomock.Any()).Return(map[string]semver.Version{
 					model.DefaultPattern: safeParse("1.1.0"),
 					"1.0":                safeParse("1.0"),
 				}, nil)
 			}
 
-			got, _, gotErr := testCase.instance.getNewStandardReleases(testCase.args.ctx)
+			got, gotErr := testCase.instance.getNewStandardReleases(testCase.args.ctx)
 
 			failed := false
 
@@ -139,11 +139,10 @@ func TestGetNewHelmReleases(t *testing.T) {
 	}
 
 	cases := map[string]struct {
-		instance  Service
-		args      args
-		want      []model.Release
-		wantCount uint64
-		wantErr   error
+		instance Service
+		args     args
+		want     []model.Release
+		wantErr  error
 	}{
 		"fetch error": {
 			Service{},
@@ -151,7 +150,6 @@ func TestGetNewHelmReleases(t *testing.T) {
 				content: "test",
 			},
 			nil,
-			0,
 			errors.New("db error"),
 		},
 		"no repository": {
@@ -160,7 +158,6 @@ func TestGetNewHelmReleases(t *testing.T) {
 				content: "test",
 			},
 			nil,
-			0,
 			nil,
 		},
 		"helm error": {
@@ -169,7 +166,6 @@ func TestGetNewHelmReleases(t *testing.T) {
 				content: "test",
 			},
 			nil,
-			4,
 			nil,
 		},
 		"helm": {
@@ -182,7 +178,6 @@ func TestGetNewHelmReleases(t *testing.T) {
 				model.NewRelease(cronRepo, model.DefaultPattern, safeParse("2.0.0")),
 				model.NewRelease(postgresRepo, model.DefaultPattern, safeParse("3.1.0")),
 			},
-			4,
 			nil,
 		},
 	}
@@ -204,16 +199,16 @@ func TestGetNewHelmReleases(t *testing.T) {
 
 			switch intention {
 			case "fetch error":
-				mockRepositoryService.EXPECT().ListByKinds(gomock.Any(), gomock.Any(), gomock.Any(), model.Helm).Return(nil, uint64(0), errors.New("db error"))
+				mockRepositoryService.EXPECT().ListByKinds(gomock.Any(), gomock.Any(), gomock.Any(), model.Helm).Return(nil, errors.New("db error"))
 			case "no repository":
-				mockRepositoryService.EXPECT().ListByKinds(gomock.Any(), gomock.Any(), gomock.Any(), model.Helm).Return(nil, uint64(0), nil)
+				mockRepositoryService.EXPECT().ListByKinds(gomock.Any(), gomock.Any(), gomock.Any(), model.Helm).Return(nil, nil)
 			case "helm error":
 				mockRepositoryService.EXPECT().ListByKinds(gomock.Any(), gomock.Any(), gomock.Any(), model.Helm).Return([]model.Repository{
 					model.NewHelmRepository(model.Identifier(1), "https://charts.vibioh.fr", "app"),
 					model.NewHelmRepository(model.Identifier(1), "https://charts.vibioh.fr", "cron"),
 					model.NewHelmRepository(model.Identifier(1), "https://charts.vibioh.fr", "flux"),
 					model.NewHelmRepository(model.Identifier(1), "https://charts.helm.sh/stable", "postgreql"),
-				}, uint64(4), nil)
+				}, nil)
 				mockHelmProvider.EXPECT().FetchIndex(gomock.Any(), gomock.Any(), gomock.Any()).Times(2).Return(nil, errors.New("helm error"))
 			case "helm":
 				mockRepositoryService.EXPECT().ListByKinds(gomock.Any(), gomock.Any(), gomock.Any(), model.Helm).Return([]model.Repository{
@@ -221,7 +216,7 @@ func TestGetNewHelmReleases(t *testing.T) {
 					appRepo,
 					cronRepo,
 					fluxRepo,
-				}, uint64(0), nil)
+				}, nil)
 				mockHelmProvider.EXPECT().FetchIndex(gomock.Any(), gomock.Any(), gomock.Any()).Times(2).Return(map[string]map[string]semver.Version{
 					"app": {
 						model.DefaultPattern: safeParse("1.1.0"),
@@ -238,7 +233,7 @@ func TestGetNewHelmReleases(t *testing.T) {
 				}, nil)
 			}
 
-			got, gotCount, gotErr := testCase.instance.getNewHelmReleases(context.TODO())
+			got, gotErr := testCase.instance.getNewHelmReleases(context.TODO())
 
 			failed := false
 
@@ -250,14 +245,12 @@ func TestGetNewHelmReleases(t *testing.T) {
 				failed = true
 			} else if testCase.wantErr != nil && !strings.Contains(gotErr.Error(), testCase.wantErr.Error()) {
 				failed = true
-			} else if gotCount != testCase.wantCount {
-				failed = true
 			} else if !reflect.DeepEqual(got, testCase.want) {
 				failed = true
 			}
 
 			if failed {
-				t.Errorf("getNewHelmReleases() = (%+v, %d, `%s`), want (%+v, %d, `%s`)", got, gotCount, gotErr, testCase.want, testCase.wantCount, testCase.wantErr)
+				t.Errorf("getNewHelmReleases() = (%+v, `%s`), want (%+v, `%s`)", got, gotErr, testCase.want, testCase.wantErr)
 			}
 		})
 	}
