@@ -7,7 +7,7 @@ toolchain go1.21.0
 require (
 	github.com/ViBiOh/auth/v2 v2.17.0
 	github.com/ViBiOh/flags v1.5.0
-	github.com/ViBiOh/httputils/v4 v4.70.0
+	github.com/ViBiOh/httputils/v4 v4.70.1
 	github.com/ViBiOh/mailer v1.33.0
 	github.com/jackc/pgx/v5 v5.5.1
 	go.opentelemetry.io/otel/metric v1.21.0

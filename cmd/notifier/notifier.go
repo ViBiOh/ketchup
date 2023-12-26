@@ -50,10 +50,7 @@ func main() {
 	ctx := context.Background()
 
 	telemetryService, err := telemetry.New(ctx, telemetryConfig)
-	if err != nil {
-		slog.ErrorContext(ctx, "create telemetry", "error", err)
-		os.Exit(1)
-	}
+	logger.FatalfOnErr(ctx, err, "create telemetry")
 
 	defer telemetryService.Close(ctx)
 
@@ -61,18 +58,12 @@ func main() {
 	request.AddOpenTelemetryToDefaultClient(telemetryService.MeterProvider(), telemetryService.TracerProvider())
 
 	ketchupDb, err := db.New(ctx, dbConfig, telemetryService.TracerProvider())
-	if err != nil {
-		slog.ErrorContext(ctx, "create database", "error", err)
-		os.Exit(1)
-	}
+	logger.FatalfOnErr(ctx, err, "create database")
 
 	defer ketchupDb.Close()
 
 	mailerService, err := mailer.New(mailerConfig, telemetryService.MeterProvider(), telemetryService.TracerProvider())
-	if err != nil {
-		slog.ErrorContext(ctx, "create mailer", "error", err)
-		os.Exit(1)
-	}
+	logger.FatalfOnErr(ctx, err, "create mailer")
 
 	defer mailerService.Close()
 

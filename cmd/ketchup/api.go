@@ -6,7 +6,6 @@ import (
 	"flag"
 	"fmt"
 	"log"
-	"log/slog"
 	"net/http"
 	"os"
 	"strings"
@@ -98,10 +97,7 @@ func main() {
 	ctx := context.Background()
 
 	telemetryService, err := telemetry.New(ctx, telemetryConfig)
-	if err != nil {
-		slog.ErrorContext(ctx, "create telemetry", "error", err)
-		os.Exit(1)
-	}
+	logger.FatalfOnErr(ctx, err, "create telemetry")
 
 	defer telemetryService.Close(ctx)
 
@@ -115,18 +111,12 @@ func main() {
 	appServer := server.New(appServerConfig)
 
 	ketchupDb, err := db.New(ctx, dbConfig, telemetryService.TracerProvider())
-	if err != nil {
-		slog.ErrorContext(ctx, "create database", "error", err)
-		os.Exit(1)
-	}
+	logger.FatalfOnErr(ctx, err, "create database")
 
 	defer ketchupDb.Close()
 
 	redisClient, err := redis.New(redisConfig, telemetryService.MeterProvider(), telemetryService.TracerProvider())
-	if err != nil {
-		slog.ErrorContext(ctx, "create redis", "error", err)
-		os.Exit(1)
-	}
+	logger.FatalfOnErr(ctx, err, "create redis")
 
 	defer redisClient.Close()
 
@@ -144,18 +134,12 @@ func main() {
 	ketchupServiceService := ketchupService.New(ketchupStore.New(ketchupDb), repositoryServiceService)
 
 	mailerService, err := mailer.New(mailerConfig, telemetryService.MeterProvider(), telemetryService.TracerProvider())
-	if err != nil {
-		slog.ErrorContext(ctx, "create mailer", "error", err)
-		os.Exit(1)
-	}
+	logger.FatalfOnErr(ctx, err, "create mailer")
 
 	defer mailerService.Close()
 
 	publicRendererService, err := renderer.New(rendererConfig, content, ketchup.FuncMap, telemetryService.MeterProvider(), telemetryService.TracerProvider())
-	if err != nil {
-		slog.ErrorContext(ctx, "create renderer", "error", err)
-		os.Exit(1)
-	}
+	logger.FatalfOnErr(ctx, err, "create renderer")
 
 	endCtx := healthService.EndCtx()
 
