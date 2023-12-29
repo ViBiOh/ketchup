@@ -179,16 +179,7 @@ SELECT
   id,
   kind,
   name,
-  part,
-  (
-    SELECT
-      COUNT(1)
-    FROM
-      ketchup.ketchup
-    WHERE
-      repository_id = id
-      AND pattern = 'stable'
-  ) AS count
+  part
 FROM
   ketchup.repository
 WHERE
