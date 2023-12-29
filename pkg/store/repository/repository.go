@@ -183,10 +183,20 @@ SELECT
 FROM
   ketchup.repository
 WHERE
-  id != ALL($2)
-ORDER BY
-  count DESC
-LIMIT $1
+  id IN (
+    SELECT
+      repository_id
+    FROM
+      ketchup.ketchup
+    WHERE
+      pattern = 'stable'
+      AND id != ALL($2)
+    GROUP BY
+      repository_id
+    ORDER BY
+      COUNT(1) DESC
+    LIMIT $1
+  )
 `
 
 func (s Service) Suggest(ctx context.Context, ignoreIds []model.Identifier, count uint64) ([]model.Repository, error) {
