@@ -30,6 +30,32 @@
 {{ end}}
 
 {{ define "header-part" }}
+  <script type="text/javascript" nonce="{{ .nonce }}">
+    function logout() {
+      const logoutXHR = new XMLHttpRequest();
+      logoutXHR.open("GET", "", true, "no user", "no password");
+      logoutXHR.send();
+
+      setTimeout(() => window.location.href = "/", 4);
+    }
+
+    document.addEventListener("readystatechange", (event) => {
+      if (event.target.readyState !== "complete") {
+        return;
+      }
+
+      const logoutLink = document.getElementById("logout");
+
+      if (logoutLink) {
+        logoutLink.addEventListener("click", (e) => {
+          e.preventDefault();
+          logout();
+          return false;
+        });
+      }
+    });
+  </script>
+
   {{ with .Root }}
     {{ if ne . "/" }}
       <form method="POST" action="/app/ketchups/all" class="inline">
@@ -41,6 +67,8 @@
       </form>
 
       <a href="#create-modal" class="button bg-primary">Create</a>
+
+      <a id="logout" href="/" class="margin-left button bg-danger">Logout</a>
     {{ end }}
   {{ end }}
 {{ end }}

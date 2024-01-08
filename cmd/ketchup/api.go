@@ -153,11 +153,13 @@ func main() {
 
 	appHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if strings.HasPrefix(r.URL.Path, appPath) {
+			telemetry.SetRouteTag(r.Context(), "/app")
 			protectedhandler.ServeHTTP(w, r)
 			return
 		}
 
 		if strings.HasPrefix(r.URL.Path, signupPath) {
+			telemetry.SetRouteTag(r.Context(), "/signup")
 			signupHandler.ServeHTTP(w, r)
 			return
 		}
