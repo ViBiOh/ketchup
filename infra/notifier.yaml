@@ -8,7 +8,7 @@ spec:
   chart:
     spec:
       chart: cron
-      version: "0.0.30"
+      version: "0.0.33"
       sourceRef:
         kind: HelmRepository
         name: vibioh
@@ -31,8 +31,28 @@ spec:
     image:
       name: vibioh/ketchup
       tag: "202401172227" # {"$imagepolicy": "default:flux-ketchup-web:tag"}
+    labels:
+      tags.datadoghq.com/env: "production"
+      tags.datadoghq.com/service: "ketchup-notifier"
+      tags.datadoghq.com/version: "202401172227" # {"$imagepolicy": "default:flux-ketchup-web:tag"}
+    env:
+      - name: GOMAXPROCS
+        valueFrom:
+          resourceFieldRef:
+            resource: limits.cpu
+      - name: GOMEMLIMIT
+        valueFrom:
+          resourceFieldRef:
+            resource: limits.memory
+      - name: VERSION
+        valueFrom:
+          fieldRef:
+            fieldPath: metadata.labels['tags.datadoghq.com/version']
+      - name: OTEL_SERVICE_NAME
+        valueFrom:
+          fieldRef:
+            fieldPath: metadata.labels['tags.datadoghq.com/service']
     config:
-      GOMAXPROCS: "1"
       KETCHUP_DB_HOST: postgres
       KETCHUP_DB_NAME: ketchup
       KETCHUP_DB_PORT: "5432"
@@ -42,7 +62,6 @@ spec:
       KETCHUP_NOTIFIER_PUSH_URL: http://pushgateway.observability
       KETCHUP_TELEMETRY_URL: datadog.observability:4317
       OTEL_RESOURCE_ATTRIBUTES: env=production,git.repository_url=github.com/ViBiOh/ketchup
-      OTEL_SERVICE_NAME: ketchup-notifier
     secrets:
       KETCHUP_DB_PASS: AgBh5qNwTuuHnGaT7fHiBk+AoON8h1MPBOJegopdGeU6TAyHjbbzo6nP6eLwILoxv/F8SVpdZV5Ne7Q+tCpWnBnMuJJ88ILNe2ty2UrtI9+g+FIGhkFLYU8cWDPK/6ITPt0I4sTD1hc/j/0NxSred60MelIM0FBd6lK5nSqxfG3bGQTYQMQgslmgzqsp7/jOfr1YkGcoHIbkEjS6K/iC55++8XLbRCCc0ZDBSYgyjZs0CbRCUbIjG8cHa+QGWy2qw6v8pENtMjLNi9/Qdy1ADVsml2NTBdJJe4CQ8ieRZ7xn/TKOTaHoqT9fRpQgHHyAn8N9duZhGA0I9MOeLN+2LUP5YU6yXMCcJFjFC+kcEKbA3dBG+hE5cERps8pTXfzsZ6PPWXdpHtyqge8d0FBGqZS1eDQEaZVDtw4yJx+LbTcNKWWxdSRjkpooKJ+ZF/wTMgExgTHgzrDWKM2Qbe+l91gXWYIHm2Mo9U0lucnrQ9qg0HrWgaprUEPuZBgLx7jAL+L2ruuPWbDbG52THqLEfPTpt/O19pJ68kh/7wznY/WilVtISu8F8cunCsEUCIVa2pf8aprri4V3ri7zOU1v2SUnUAiCCM0t9IMbt3ELTt/TPtkVQ/IOQ+cvbHmSmWCdbOpZf0WAKlWGbCS5MaPfKldPrD9yEAwnNUyKmaXR8LOIUA3QjPK17/wRY2NKXHP+ARGf8GWs1LgkQ2CbJJD/PZjoLbx7Dkw8Feuks96zxc54YiqElboJA5QxhGV+BnipgCG9c4pcAu1vNCk2MeA=
       KETCHUP_GITHUB_TOKEN: AgAAha8rprm3aMU8tqWsBFuMDVxTRmuyfd8Lmz90aIMmwxGxXq0EV5pUXHGZ6tO6BTO6eywUEYGrLWsip1VYvk2EeRfxqALijKXJxKdan1y8dwCkoBPZiA3TzAb4Hain1By4qU1wHu8DH5FeuadWKiQsYtJRWulZWp8zumm0iI7T7lD+NzzubVG6tJvfNScVbpQ4EjwShZcSPxAe66CXaR/i1az3uW+9lOAzdolBWKvkqO9FTCmQnxCxvoeOdPIjcCCSoDCrAhn6kfilskYL12VUJ3P/WuD/OnuFVavl5CUcN1VDTNxEucosAQazNmU6xu4rdBgQqeTJ+iVxMq5A41Rtp3x8evN6MtPrNwjzSKhZFYdAzvZjNCtoa/PCPf5DclGxzG7alFB59TpmFHtbZ/65tncoRo8exaEN+DBO4MrFzEXlwlpCCQOe1vl+m6w6Tq5dJq5CD0Amp0MOZhN4j+jtfQ2DwWELoeR6rUP4Sn4bdiwGi1B+YBwokVyXTf88N54fMDKqRDEXExl2GffYp/1F3xkal21Jk8hW+8I7PAdCsDpxr2ZpD49fS8o7TwC7peFCt6YDDQ435KnXUubnkdogS4BApzJZEPGO0LoDUwuAV2QjtkrX9WxkDzzDZLt6Mb8JXD1lhIW0ztDGYvQUxoHLpuATcPcjh25R5UVLZQ3ZfyJEUmvn9FCCQ5Y3b/w0WqRd23c/aAAYTg8KO8r8ymFs/MVjuEn6Eid6UintALodHDEL5RQN1XfZ

@@ -26,8 +26,28 @@ spec:
     image:
       name: vibioh/ketchup
       tag: "202401172227" # {"$imagepolicy": "default:flux-ketchup-web:tag"}
+    labels:
+      tags.datadoghq.com/env: "production"
+      tags.datadoghq.com/service: "ketchup"
+      tags.datadoghq.com/version: "202401172227" # {"$imagepolicy": "default:flux-ketchup-web:tag"}
+    env:
+      - name: GOMAXPROCS
+        valueFrom:
+          resourceFieldRef:
+            resource: limits.cpu
+      - name: GOMEMLIMIT
+        valueFrom:
+          resourceFieldRef:
+            resource: limits.memory
+      - name: VERSION
+        valueFrom:
+          fieldRef:
+            fieldPath: metadata.labels['tags.datadoghq.com/version']
+      - name: OTEL_SERVICE_NAME
+        valueFrom:
+          fieldRef:
+            fieldPath: metadata.labels['tags.datadoghq.com/service']
     config:
-      GOMAXPROCS: "1"
       KETCHUP_DB_HOST: postgres
       KETCHUP_DB_NAME: ketchup
       KETCHUP_DB_PORT: "5432"
@@ -39,7 +59,6 @@ spec:
       KETCHUP_SCHEDULER_ENABLED: "false"
       KETCHUP_TELEMETRY_URL: datadog.observability:4317
       OTEL_RESOURCE_ATTRIBUTES: env=production,git.repository_url=github.com/ViBiOh/ketchup
-      OTEL_SERVICE_NAME: ketchup
     secrets:
       KETCHUP_DB_PASS: AgA8XVcbAEVRIr5XWgMxBm0zBmtwQwlh26g0suNF7/udGUdmbV/KYZ7tPCzrwvKb4RwASD0M2KaqzSmQ0LuW4m5l4b8TjDIL4Bya2Airn09sUCIgREncGBdSxtx2MYCMRgacXDJdA0QKB8J6PnJ7WSPr9DMX5OhWL54B3ZiFk8+yAog0l12vMbnNHkkLsyv+kRRIGiZVDc8zJzBnDdd3ERT72XqrR/U+5i5d39OLMCxrZ6/FML3/R9ddwZT2QrcDj2ESwhcGYyEzEloP8dZwKAxPkm4P2ze0nZs76O1T5/5WSL5ujQX0H/23Z7A2ecAZb4ESi0UJ9j40G/wdIubP4sWDpizwZC1+3Jq28bnBRKvhDMRlKTTGbR+TWfo4my/x8PV5paXTG8Lm9pnzQi8ATm3caR6NCpdW/zFbZfvwODfbZGmrU7TFLKHr182jWdEv/uZ07q+7Gjr+RamIWRWZs5UGg5wPerYjBDhYlgcUngHFf+Hk1MAidNYc7/ijWllfTSsHVGpqx2KCk8lwCbu/kHgfhVFwCA4A7R9YLyCQuHejDU+87Psf3kRW126W1lj/CfDdj/ZUM/JvLNpE5E0vKTlwwf6Q8SNz7j3cgIUMB5/O02jY2goTWGw3VjPlMc0fRCL6DWBUYz6nWNc6YNA+R7+iBzxUMdO/xUiELx+k8pADFowHwqT3mh3AmE6ZnSWlZb7duek/dVlr3S3GnhJnemGlAszE63hk/64ZukJ89i9VozJGw4fc63FctGwDKoQXczc15jo4ZoJ/dkpFpC8=
       KETCHUP_REDIS_PASSWORD: AgA2BZ9IxpHv2Rl+JfnXLjVXBPPczvNXt4YEVhMyt5DG+brXKety0GxUdHna89DqI3nWC/oJfUZsVuh0FKRG9ZGxxrRPErZkAXbLXo9sYnmZdPPfkfE6po6DEu45zqnCxIyou8nZQwPaYqKexOKFrDgMfyIV18Wir031IkQ0G02x4J8P+G+hvWBZlXo5ofmNg4BvQVuall/UcJbFOEJHc0MislHPYokY9zBiTYb2kvl9T2cfNPwGXlVw7+FEezuua5ozePfd58t5MHDsJOrLDXRUTEgVCBK7KK4j7Ok32L2DX1XNtOjo5wenYRM0U09b5ql3IXCiiU16FljOyup6aCEgmXBti99Ybd7FMT7JZ2IoUN+KxTbYvK++cVpiK9gFyzRP1wS03kjr6xkZvgCKyE2TqNCxckGSt9ll47uZfjcjtoRnBtsufAdw30CB87hRsdx7DCP9vi2F1PRo4/P4u0YKa3A0glvZzOXG2RYg56cuEjrNarx7JhyL3urkGPae4VzOIBc50jyaeZMBOgbXC8Mm+hwMsKS6IProOyZu0x3wU18P+jcfRQOyKveSlKj2sWhJrsqf6AWlUiQSryHX05AEeRwiO4BrBMYk9CpQWaD/9ytAFohmhFu59L8zdRkfwi1ZN0HGMR0wHzQBs5FrtlgrHZWg7xvMGjxP4mJRzDa+uo4+YSTCq26a0UpW+RlW13qJcL8/kyVDeBDeDnW32gbVochJxJDufgmLkX48HJsn2/VwaDwp+0opNT3u7D74Mwsiog9S/9Z0OgSuXkbTxo0=
