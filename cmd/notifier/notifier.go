@@ -82,14 +82,14 @@ func main() {
 	defer end(&err)
 
 	if err = notifierService.Notify(ctx); err != nil {
-		slog.ErrorContext(ctx, "notify", "error", err)
+		slog.LogAttrs(ctx, slog.LevelError, "notify", slog.Any("error", err))
 		os.Exit(1)
 	}
 
 	meterProvider := telemetryService.MeterProvider()
 	if flushableProvider, ok := meterProvider.(*metric.MeterProvider); ok {
 		if err := flushableProvider.ForceFlush(ctx); err != nil {
-			slog.ErrorContext(ctx, "flush meter provider", "error", err)
+			slog.LogAttrs(ctx, slog.LevelError, "flush meter provider", slog.Any("error", err))
 		}
 	}
 

@@ -118,7 +118,7 @@ func (s Service) getKetchupToNotify(ctx context.Context, releases []model.Releas
 		return nil, fmt.Errorf("get ketchups for repositories: %w", err)
 	}
 
-	slog.InfoContext(ctx, "Daily ketchups updates", "count", len(ketchups))
+	slog.LogAttrs(ctx, slog.LevelInfo, "Daily ketchups updates", slog.Int("count", len(ketchups)))
 
 	userToNotify := s.syncReleasesByUser(ctx, releases, ketchups)
 
@@ -128,11 +128,11 @@ func (s Service) getKetchupToNotify(ctx context.Context, releases []model.Releas
 			return nil, fmt.Errorf("get weekly ketchups: %w", err)
 		}
 
-		slog.InfoContext(ctx, "Weekly ketchups updates", "count", len(weeklyKetchups))
+		slog.LogAttrs(ctx, slog.LevelInfo, "Weekly ketchups updates", slog.Int("count", len(weeklyKetchups)))
 		s.appendKetchupsToUser(ctx, userToNotify, weeklyKetchups)
 	}
 
-	slog.InfoContext(ctx, "Users to notify", "count", len(userToNotify))
+	slog.LogAttrs(ctx, slog.LevelInfo, "Users to notify", slog.Int("count", len(userToNotify)))
 
 	return userToNotify, nil
 }
@@ -170,7 +170,7 @@ func (s Service) syncReleasesByUser(ctx context.Context, releases []model.Releas
 			return nil
 		})
 	if err != nil {
-		slog.ErrorContext(ctx, "synchronise releases and ketchups", "error", err)
+		slog.LogAttrs(ctx, slog.LevelError, "synchronise releases and ketchups", slog.Any("error", err))
 	}
 
 	return usersToNotify
@@ -180,7 +180,7 @@ func (s Service) appendKetchupsToUser(ctx context.Context, usersToNotify map[mod
 	for _, ketchup := range ketchups {
 		ketchupVersion, err := semver.Parse(ketchup.Version, semver.ExtractName(ketchup.Repository.Name))
 		if err != nil {
-			slog.ErrorContext(ctx, "parse version of ketchup", "error", err, "version", ketchup.Version)
+			slog.LogAttrs(ctx, slog.LevelError, "parse version of ketchup", slog.String("version", ketchup.Version), slog.Any("error", err))
 			continue
 		}
 
@@ -217,7 +217,7 @@ func (s Service) handleUpdateWhenNotify(ctx context.Context, ketchup model.Ketch
 
 	log.InfoContext(ctx, "Auto-updating ketchup", "version", release.Version.Name)
 	if err := s.ketchup.UpdateVersion(ctx, ketchup.User.ID, ketchup.Repository.ID, ketchup.Pattern, release.Version.Name); err != nil {
-		log.ErrorContext(ctx, "update ketchup", "error", err)
+		log.LogAttrs(ctx, slog.LevelError, "update ketchup", slog.Any("error", err))
 		return release.SetUpdated(1)
 	}
 
@@ -235,7 +235,7 @@ func (s Service) sendNotification(ctx context.Context, template string, ketchupT
 	}
 
 	for ketchupUser, releases := range ketchupToNotify {
-		slog.InfoContext(ctx, "Sending email", "to", ketchupUser.Email, "count", len(releases))
+		slog.LogAttrs(ctx, slog.LevelInfo, "Sending email", slog.String("to", ketchupUser.Email), slog.Int("count", len(releases)))
 
 		sort.Sort(model.ReleaseByKindAndName(releases))
 

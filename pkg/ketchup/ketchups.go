@@ -78,7 +78,7 @@ func (s Service) handleCreate(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := s.cache.EvictOnSuccess(ctx, model.ReadUser(ctx), nil); err != nil {
-		slog.ErrorContext(ctx, "evict suggests cache", "error", err)
+		slog.LogAttrs(ctx, slog.LevelError, "evict suggests cache", slog.Any("error", err))
 	}
 
 	s.renderer.Redirect(w, r, fmt.Sprintf("%s/", appPath), renderer.NewSuccessMessage(fmt.Sprintf("%s created with success!", created.Repository.Name)))
@@ -137,7 +137,7 @@ func (s Service) handleDelete(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := s.cache.EvictOnSuccess(ctx, model.ReadUser(ctx), nil); err != nil {
-		slog.ErrorContext(ctx, "evict suggests cache", "error", err)
+		slog.LogAttrs(ctx, slog.LevelError, "evict suggests cache", slog.Any("error", err))
 	}
 
 	s.renderer.Redirect(w, r, fmt.Sprintf("%s/", appPath), renderer.NewSuccessMessage("Deleted with success!"))

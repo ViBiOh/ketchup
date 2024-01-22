@@ -60,18 +60,18 @@ func (s Service) generateToken(ctx context.Context) (securityPayload, error) {
 func (s Service) validateToken(ctx context.Context, token, answer string) bool {
 	questionIDString, err := s.redis.Load(ctx, tokenKey(token))
 	if err != nil {
-		slog.WarnContext(ctx, "retrieve captcha token", "error", err)
+		slog.LogAttrs(ctx, slog.LevelWarn, "retrieve captcha token", slog.Any("error", err))
 		return false
 	}
 
 	questionID, err := strconv.ParseInt(string(questionIDString), 10, 64)
 	if err != nil {
-		slog.ErrorContext(ctx, "question id is not numerical", "error", err)
+		slog.LogAttrs(ctx, slog.LevelError, "question id is not numerical", slog.Any("error", err))
 		return false
 	}
 
 	if colors[questionID].Answer != strings.TrimSpace(answer) {
-		slog.WarnContext(ctx, "invalid question answer", "answer", answer)
+		slog.LogAttrs(ctx, slog.LevelWarn, "invalid question answer", slog.String("answer", answer))
 		return false
 	}
 
@@ -80,7 +80,7 @@ func (s Service) validateToken(ctx context.Context, token, answer string) bool {
 
 func (s Service) cleanToken(ctx context.Context, token string) {
 	if err := s.redis.Delete(ctx, tokenKey(token)); err != nil {
-		slog.ErrorContext(ctx, "delete token", "error", err, "token", token)
+		slog.LogAttrs(ctx, slog.LevelError, "delete token", slog.String("token", token), slog.Any("error", err))
 	}
 }
 

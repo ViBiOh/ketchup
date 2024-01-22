@@ -23,7 +23,7 @@ var (
 	apiURL = "https://api.github.com"
 
 	httpClient = request.CreateClient(30*time.Second, func(r *http.Request, via []*http.Request) error {
-		slog.WarnContext(r.Context(), "Redirect", "from", via[len(via)-1].URL.Path, "to", r.URL.Path)
+		slog.LogAttrs(r.Context(), slog.LevelWarn, "Redirect", slog.String("from", via[len(via)-1].URL.Path), slog.String("to", r.URL.Path))
 		return nil
 	})
 )
