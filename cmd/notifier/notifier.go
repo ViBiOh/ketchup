@@ -26,6 +26,7 @@ import (
 	userStore "github.com/ViBiOh/ketchup/pkg/store/user"
 	mailer "github.com/ViBiOh/mailer/pkg/client"
 	"go.opentelemetry.io/otel/sdk/metric"
+	"go.opentelemetry.io/otel/sdk/trace"
 )
 
 func main() {
@@ -86,8 +87,17 @@ func main() {
 		os.Exit(1)
 	}
 
-	meterProvider := telemetryService.MeterProvider()
-	if flushableProvider, ok := meterProvider.(*metric.MeterProvider); ok {
+	if flushableProvider, ok := telemetryService.MeterProvider().(*metric.MeterProvider); ok {
+		slog.InfoContext(ctx, "Flush meters...")
+
+		if err := flushableProvider.ForceFlush(ctx); err != nil {
+			slog.LogAttrs(ctx, slog.LevelError, "flush meter provider", slog.Any("error", err))
+		}
+	}
+
+	if flushableProvider, ok := telemetryService.TracerProvider().(*trace.TracerProvider); ok {
+		slog.InfoContext(ctx, "Flush traces...")
+
 		if err := flushableProvider.ForceFlush(ctx); err != nil {
 			slog.LogAttrs(ctx, slog.LevelError, "flush meter provider", slog.Any("error", err))
 		}
