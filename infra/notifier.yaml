@@ -8,7 +8,7 @@ spec:
   chart:
     spec:
       chart: cron
-      version: "0.0.35"
+      version: "0.0.36"
       sourceRef:
         kind: HelmRepository
         name: vibioh
@@ -30,6 +30,7 @@ spec:
       name: vibioh/ketchup
       tag: "202401301123" # {"$imagepolicy": "default:flux-ketchup-web:tag"}
     labels:
+      k8s-cleaner: "true"
       tags.datadoghq.com/env: "production"
       tags.datadoghq.com/service: "ketchup-notifier"
       tags.datadoghq.com/version: "202401301123" # {"$imagepolicy": "default:flux-ketchup-web:tag"}

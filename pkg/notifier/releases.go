@@ -29,7 +29,6 @@ func (s Service) getNewReleases(ctx context.Context) ([]model.Release, error) {
 		var err error
 
 		helmReleases, err = s.getNewHelmReleases(ctx)
-
 		if err != nil {
 			slog.LogAttrs(ctx, slog.LevelError, "fetch helm releases", slog.Any("error", err))
 		}
