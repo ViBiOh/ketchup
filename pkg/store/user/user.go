@@ -76,10 +76,10 @@ INSERT INTO
   ketchup.user
 (
   email,
-  login_id,
+  login_id
 ) VALUES (
   $1,
-  $2,
+  $2
 ) RETURNING id
 `
 
