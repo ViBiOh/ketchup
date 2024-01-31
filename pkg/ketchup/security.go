@@ -70,7 +70,7 @@ func (s Service) validateToken(ctx context.Context, token, answer string) bool {
 		return false
 	}
 
-	if colors[questionID].Answer != strings.TrimSpace(answer) {
+	if colors[questionID].Answer != strings.TrimSpace(strings.ToLower(answer)) {
 		slog.LogAttrs(ctx, slog.LevelWarn, "invalid question answer", slog.String("answer", answer))
 		return false
 	}
