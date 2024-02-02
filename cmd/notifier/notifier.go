@@ -25,8 +25,6 @@ import (
 	repositoryStore "github.com/ViBiOh/ketchup/pkg/store/repository"
 	userStore "github.com/ViBiOh/ketchup/pkg/store/user"
 	mailer "github.com/ViBiOh/mailer/pkg/client"
-	"go.opentelemetry.io/otel/sdk/metric"
-	"go.opentelemetry.io/otel/sdk/trace"
 )
 
 func main() {
@@ -85,22 +83,6 @@ func main() {
 	if err = notifierService.Notify(ctx); err != nil {
 		slog.LogAttrs(ctx, slog.LevelError, "notify", slog.Any("error", err))
 		os.Exit(1)
-	}
-
-	if flushableProvider, ok := telemetryService.MeterProvider().(*metric.MeterProvider); ok {
-		slog.InfoContext(ctx, "Flush meters...")
-
-		if err := flushableProvider.ForceFlush(ctx); err != nil {
-			slog.LogAttrs(ctx, slog.LevelError, "flush meter provider", slog.Any("error", err))
-		}
-	}
-
-	if flushableProvider, ok := telemetryService.TracerProvider().(*trace.TracerProvider); ok {
-		slog.InfoContext(ctx, "Flush traces...")
-
-		if err := flushableProvider.ForceFlush(ctx); err != nil {
-			slog.LogAttrs(ctx, slog.LevelError, "flush meter provider", slog.Any("error", err))
-		}
 	}
 
 	slog.InfoContext(ctx, "Notifier ended!")
