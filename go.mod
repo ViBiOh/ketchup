@@ -7,7 +7,7 @@ toolchain go1.22.0
 require (
 	github.com/ViBiOh/auth/v2 v2.18.2
 	github.com/ViBiOh/flags v1.5.0
-	github.com/ViBiOh/httputils/v4 v4.73.0
+	github.com/ViBiOh/httputils/v4 v4.73.1
 	github.com/ViBiOh/mailer v1.33.1
 	github.com/jackc/pgx/v5 v5.5.5
 	go.opentelemetry.io/otel/metric v1.24.0
@@ -34,7 +34,7 @@ require (
 	github.com/redis/go-redis/extra/redisotel/v9 v9.0.5 // indirect
 	github.com/redis/go-redis/v9 v9.5.1 // indirect
 	github.com/rs/xid v1.5.0 // indirect
-	github.com/tdewolff/minify/v2 v2.20.18 // indirect
+	github.com/tdewolff/minify/v2 v2.20.19 // indirect
 	github.com/tdewolff/parse/v2 v2.7.12 // indirect
 	github.com/zeebo/xxh3 v1.0.2 // indirect
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.49.0 // indirect
@@ -51,8 +51,8 @@ require (
 	golang.org/x/sync v0.6.0 // indirect
 	golang.org/x/sys v0.18.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
-	google.golang.org/genproto/googleapis/api v0.0.0-20240308144416-29370a3891b7 // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20240308144416-29370a3891b7 // indirect
+	google.golang.org/genproto/googleapis/api v0.0.0-20240314234333-6e1732d8331c // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20240314234333-6e1732d8331c // indirect
 	google.golang.org/grpc v1.62.1 // indirect
 	google.golang.org/protobuf v1.33.0 // indirect
 )
