@@ -176,6 +176,10 @@ func browseRegistryTagsList(body io.ReadCloser, name string, versions map[string
 		return fmt.Errorf("read tags: %w", err)
 	}
 
+	if err := request.DiscardBody(body); err != nil {
+		return fmt.Errorf("discard body: %w", err)
+	}
+
 	<-done
 
 	return nil
