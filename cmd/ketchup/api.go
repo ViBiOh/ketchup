@@ -8,7 +8,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"strings"
 
 	_ "net/http/pprof"
 
@@ -31,7 +30,6 @@ import (
 	"github.com/ViBiOh/httputils/v4/pkg/server"
 	"github.com/ViBiOh/httputils/v4/pkg/telemetry"
 	"github.com/ViBiOh/ketchup/pkg/ketchup"
-	"github.com/ViBiOh/ketchup/pkg/middleware"
 	"github.com/ViBiOh/ketchup/pkg/notifier"
 	"github.com/ViBiOh/ketchup/pkg/provider/docker"
 	"github.com/ViBiOh/ketchup/pkg/provider/github"
@@ -47,11 +45,6 @@ import (
 	userStore "github.com/ViBiOh/ketchup/pkg/store/user"
 	mailer "github.com/ViBiOh/mailer/pkg/client"
 	"go.opentelemetry.io/otel/trace"
-)
-
-const (
-	appPath    = "/app"
-	signupPath = "/signup"
 )
 
 //go:embed templates static
@@ -138,34 +131,14 @@ func main() {
 
 	defer mailerService.Close()
 
-	publicRendererService, err := renderer.New(rendererConfig, content, ketchup.FuncMap, telemetryService.MeterProvider(), telemetryService.TracerProvider())
+	rendererService, err := renderer.New(rendererConfig, content, ketchup.FuncMap, telemetryService.MeterProvider(), telemetryService.TracerProvider())
 	logger.FatalfOnErr(ctx, err, "create renderer")
 
 	endCtx := healthService.EndCtx()
 
 	notifierService := notifier.New(notifierConfig, repositoryServiceService, ketchupServiceService, userServiceService, mailerService, helmService)
 	schedulerService := scheduler.New(schedulerConfig, notifierService, redisClient, telemetryService.TracerProvider())
-	ketchupService := ketchup.New(endCtx, publicRendererService, ketchupServiceService, userServiceService, repositoryServiceService, redisClient, telemetryService.TracerProvider())
-
-	publicHandler := publicRendererService.Handler(ketchupService.PublicTemplateFunc)
-	signupHandler := http.StripPrefix(signupPath, ketchupService.Signup())
-	protectedhandler := authMiddlewareApp.Middleware(middleware.New(userServiceService).Middleware(http.StripPrefix(appPath, ketchupService.Handler())))
-
-	appHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if strings.HasPrefix(r.URL.Path, appPath) {
-			telemetry.SetRouteTag(r.Context(), "/app")
-			protectedhandler.ServeHTTP(w, r)
-			return
-		}
-
-		if strings.HasPrefix(r.URL.Path, signupPath) {
-			telemetry.SetRouteTag(r.Context(), "/signup")
-			signupHandler.ServeHTTP(w, r)
-			return
-		}
-
-		publicHandler.ServeHTTP(w, r)
-	})
+	ketchupService := ketchup.New(endCtx, rendererService, ketchupServiceService, userServiceService, repositoryServiceService, redisClient, telemetryService.TracerProvider())
 
 	doneCtx := healthService.DoneCtx()
 
@@ -173,7 +146,7 @@ func main() {
 		go schedulerService.Start(doneCtx)
 	}
 
-	go appServer.Start(endCtx, httputils.Handler(appHandler, healthService, recoverer.Middleware, telemetryService.Middleware(appServerConfig.Name), owasp.New(owaspConfig).Middleware, cors.New(corsConfig).Middleware))
+	go appServer.Start(endCtx, httputils.Handler(newPort(ketchupService, authMiddlewareApp, userServiceService, rendererService), healthService, recoverer.Middleware, telemetryService.Middleware(appServerConfig.Name), owasp.New(owaspConfig).Middleware, cors.New(corsConfig).Middleware))
 
 	healthService.WaitForTermination(appServer.Done())
 

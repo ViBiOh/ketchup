@@ -3,8 +3,6 @@ package ketchup
 import (
 	"context"
 	"html/template"
-	"net/http"
-	"strings"
 	"time"
 
 	"github.com/ViBiOh/httputils/v4/pkg/cache"
@@ -17,10 +15,7 @@ import (
 	"go.opentelemetry.io/otel/trace"
 )
 
-const (
-	ketchupsPath = "/ketchups"
-	appPath      = "/app"
-)
+const appPath = "/app"
 
 var FuncMap = template.FuncMap{
 	"frequencyImage": func(frequency model.KetchupFrequency) string {
@@ -61,18 +56,4 @@ func New(ctx context.Context, rendererService *renderer.Service, ketchupService 
 		WithClientSideCaching(ctx, "ketchup_suggests", 10)
 
 	return service
-}
-
-func (s Service) Handler() http.Handler {
-	rendererHandler := s.renderer.Handler(s.TemplateFunc)
-	ketchupHandler := http.StripPrefix(ketchupsPath, s.ketchups())
-
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if strings.HasPrefix(r.URL.Path, ketchupsPath) {
-			ketchupHandler.ServeHTTP(w, r)
-			return
-		}
-
-		rendererHandler.ServeHTTP(w, r)
-	})
 }

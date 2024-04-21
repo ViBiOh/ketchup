@@ -14,7 +14,7 @@ import (
 	"github.com/ViBiOh/ketchup/pkg/semver"
 )
 
-func (s Service) ketchups() http.Handler {
+func (s Service) Ketchups() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodPost {
 			s.renderer.Error(w, r, nil, httpModel.WrapMethodNotAllowed(fmt.Errorf("invalid method %s", r.Method)))
@@ -85,7 +85,8 @@ func (s Service) handleCreate(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s Service) handleUpdate(w http.ResponseWriter, r *http.Request) {
-	rawID := strings.Trim(r.URL.Path, "/")
+	rawID := r.PathValue("id")
+
 	if rawID == "all" {
 		if err := s.ketchup.UpdateAll(r.Context()); err != nil {
 			s.renderer.Error(w, r, nil, toHttpError(err))
@@ -96,7 +97,7 @@ func (s Service) handleUpdate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	id, err := strconv.ParseUint(strings.Trim(r.URL.Path, "/"), 10, 64)
+	id, err := strconv.ParseUint(rawID, 10, 64)
 	if err != nil {
 		s.renderer.Error(w, r, nil, httpModel.WrapInvalid(err))
 		return
@@ -122,7 +123,7 @@ func (s Service) handleUpdate(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s Service) handleDelete(w http.ResponseWriter, r *http.Request) {
-	id, err := strconv.ParseUint(strings.Trim(r.URL.Path, "/"), 10, 64)
+	id, err := strconv.ParseUint(r.PathValue("id"), 10, 64)
 	if err != nil {
 		s.renderer.Error(w, r, nil, httpModel.WrapInvalid(err))
 		return
