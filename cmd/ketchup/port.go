@@ -12,12 +12,12 @@ import (
 
 func newPort(ketchupService ketchup.Service, auth authMiddleware.Service, userService user.Service, rendererService *renderer.Service) http.Handler {
 	authMux := http.NewServeMux()
-	authMux.Handle("/app/ketchups/{id...}", ketchupService.Ketchups())
+	authMux.Handle("/ketchups/{id...}", ketchupService.Ketchups())
 	authMux.Handle("/", rendererService.Handler(ketchupService.TemplateFunc))
 
 	mux := http.NewServeMux()
 	mux.Handle("/signup", ketchupService.Signup())
-	mux.Handle("/app/{any...}", auth.Middleware(middleware.New(userService).Middleware(authMux)))
+	mux.Handle("/app/{any...}", http.StripPrefix("/app", auth.Middleware(middleware.New(userService).Middleware(authMux))))
 	mux.Handle("/", rendererService.Handler(ketchupService.PublicTemplateFunc))
 
 	return mux
