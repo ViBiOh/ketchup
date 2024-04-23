@@ -5,7 +5,6 @@ import (
 	"embed"
 	"flag"
 	"fmt"
-	"log"
 	"net/http"
 	"os"
 
@@ -79,9 +78,7 @@ func main() {
 	notifierConfig := notifier.Flags(fs, "notifier")
 	schedulerConfig := scheduler.Flags(fs, "scheduler")
 
-	if err := fs.Parse(os.Args[1:]); err != nil {
-		log.Fatal(err)
-	}
+	_ = fs.Parse(os.Args[1:])
 
 	alcotest.DoAndExit(alcotestConfig)
 

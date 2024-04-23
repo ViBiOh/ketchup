@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"flag"
-	"log"
 	"log/slog"
 	"os"
 
@@ -40,9 +39,7 @@ func main() {
 	dockerConfig := docker.Flags(fs, "docker")
 	notifierConfig := notifier.Flags(fs, "notifier")
 
-	if err := fs.Parse(os.Args[1:]); err != nil {
-		log.Fatal(err)
-	}
+	_ = fs.Parse(os.Args[1:])
 
 	logger.Init(loggerConfig)
 
