@@ -48,9 +48,10 @@ func (s Service) handleCreate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ketchupFrequency, err := model.ParseKetchupFrequency(r.FormValue("frequency"))
+	rawKetchupFrequency := r.FormValue("frequency")
+	ketchupFrequency, err := model.ParseKetchupFrequency(rawKetchupFrequency)
 	if err != nil {
-		s.renderer.Error(w, r, nil, httpModel.WrapInvalid(err))
+		s.renderer.Error(w, r, nil, httpModel.WrapInvalid(fmt.Errorf("parse frequency `%s`: %w", rawKetchupFrequency, err)))
 		return
 	}
 
@@ -103,9 +104,10 @@ func (s Service) handleUpdate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ketchupFrequency, err := model.ParseKetchupFrequency(r.FormValue("frequency"))
+	rawKetchupFrequency := r.FormValue("frequency")
+	ketchupFrequency, err := model.ParseKetchupFrequency(rawKetchupFrequency)
 	if err != nil {
-		s.renderer.Error(w, r, nil, httpModel.WrapInvalid(err))
+		s.renderer.Error(w, r, nil, httpModel.WrapInvalid(fmt.Errorf("parse frequency `%s`: %w", rawKetchupFrequency, err)))
 		return
 	}
 

@@ -3,6 +3,7 @@ package model
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"strings"
 )
@@ -23,20 +24,23 @@ const (
 	Pypi
 )
 
-var RepositoryKindValues = []string{"github", "helm", "docker", "npm", "pypi"}
+var (
+	ErrUnknownRepositoryKind = errors.New("unknown repository kind")
+	repositoryKindValues     = []string{"github", "helm", "docker", "npm", "pypi"}
+)
 
 func ParseRepositoryKind(value string) (RepositoryKind, error) {
-	for i, short := range RepositoryKindValues {
+	for i, short := range repositoryKindValues {
 		if strings.EqualFold(short, value) {
 			return RepositoryKind(i), nil
 		}
 	}
 
-	return Github, fmt.Errorf("invalid value `%s` for repository kind", value)
+	return Github, ErrUnknownRepositoryKind
 }
 
 func (r RepositoryKind) String() string {
-	return RepositoryKindValues[r]
+	return repositoryKindValues[r]
 }
 
 func (r RepositoryKind) MarshalJSON() ([]byte, error) {

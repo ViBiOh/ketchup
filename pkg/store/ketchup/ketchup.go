@@ -78,13 +78,13 @@ func (s Service) List(ctx context.Context, pageSize uint, last string) ([]model.
 
 		ketchupFrequency, err := model.ParseKetchupFrequency(rawKetchupFrequency)
 		if err != nil {
-			return err
+			return fmt.Errorf("parse frequency `%s`: %w", rawKetchupFrequency, err)
 		}
 		item.Frequency = ketchupFrequency
 
 		repositoryKind, err := model.ParseRepositoryKind(rawRepositoryKind)
 		if err != nil {
-			return err
+			return fmt.Errorf("parse kind `%s`: %w", rawRepositoryKind, err)
 		}
 		item.Repository.Kind = repositoryKind
 
@@ -154,7 +154,7 @@ func (s Service) ListByRepositoriesIDAndFrequencies(ctx context.Context, ids []m
 
 		ketchupFrequency, err := model.ParseKetchupFrequency(rawKetchupFrequency)
 		if err != nil {
-			return err
+			return fmt.Errorf("parse frequency `%s`: %w", rawKetchupFrequency, err)
 		}
 		item.Frequency = ketchupFrequency
 
@@ -208,13 +208,13 @@ func (s Service) ListOutdated(ctx context.Context, userIds ...model.Identifier) 
 
 		ketchupFrequency, err := model.ParseKetchupFrequency(rawKetchupFrequency)
 		if err != nil {
-			return err
+			return fmt.Errorf("parse frequency `%s`: %w", rawKetchupFrequency, err)
 		}
 		item.Frequency = ketchupFrequency
 
 		repositoryKind, err := model.ParseRepositoryKind(rawRepositoryKind)
 		if err != nil {
-			return err
+			return fmt.Errorf("parse kind `%s`: %w", rawRepositoryKind, err)
 		}
 		item.Repository.Kind = repositoryKind
 
@@ -265,7 +265,7 @@ func (s Service) ListSilentForRepositories(ctx context.Context, ids []uint64) ([
 
 		ketchupFrequency, err := model.ParseKetchupFrequency(rawKetchupFrequency)
 		if err != nil {
-			return err
+			return fmt.Errorf("parse frequency `%s`: %w", rawKetchupFrequency, err)
 		}
 		item.Frequency = ketchupFrequency
 
@@ -320,13 +320,13 @@ func (s Service) GetByRepository(ctx context.Context, id model.Identifier, patte
 
 		ketchupFrequency, err := model.ParseKetchupFrequency(rawKetchupFrequency)
 		if err != nil {
-			return err
+			return fmt.Errorf("parse frequency `%s`: %w", rawKetchupFrequency, err)
 		}
 		item.Frequency = ketchupFrequency
 
 		repositoryKind, err := model.ParseRepositoryKind(rawRepositoryKind)
 		if err != nil {
-			return err
+			return fmt.Errorf("parse kind `%s`: %w", rawRepositoryKind, err)
 		}
 		item.Repository.Kind = repositoryKind
 

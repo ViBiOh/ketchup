@@ -1,7 +1,7 @@
 package model
 
 import (
-	"fmt"
+	"errors"
 	"strings"
 
 	"github.com/ViBiOh/httputils/v4/pkg/hash"
@@ -16,20 +16,23 @@ const (
 	Weekly
 )
 
-var KetchupFrequencyValues = []string{"None", "Daily", "Weekly"}
+var (
+	ErrUnknownKetchupFrequency = errors.New("unknown ketchup frequency")
+	ketchupFrequencyValues     = []string{"None", "Daily", "Weekly"}
+)
 
 func ParseKetchupFrequency(value string) (KetchupFrequency, error) {
-	for i, short := range KetchupFrequencyValues {
+	for i, short := range ketchupFrequencyValues {
 		if strings.EqualFold(short, value) {
 			return KetchupFrequency(i), nil
 		}
 	}
 
-	return Daily, fmt.Errorf("invalid value `%s` for ketchup frequency", value)
+	return Daily, ErrUnknownKetchupFrequency
 }
 
 func (r KetchupFrequency) String() string {
-	return KetchupFrequencyValues[r]
+	return ketchupFrequencyValues[r]
 }
 
 type Ketchup struct {

@@ -38,7 +38,7 @@ func (s Service) list(ctx context.Context, query string, args ...any) ([]model.R
 
 		repositoryKind, err := model.ParseRepositoryKind(rawRepositoryKind)
 		if err != nil {
-			return err
+			return fmt.Errorf("parse kind `%s`: %w", rawRepositoryKind, err)
 		}
 		item.Kind = repositoryKind
 

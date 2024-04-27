@@ -72,7 +72,7 @@ func TestList(t *testing.T) {
 				pageSize: 20,
 			},
 			nil,
-			errors.New("invalid value `wrong` for repository kind"),
+			model.ErrUnknownRepositoryKind,
 		},
 	}
 

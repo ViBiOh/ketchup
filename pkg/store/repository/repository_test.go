@@ -84,7 +84,7 @@ func TestList(t *testing.T) {
 			},
 			nil,
 			0,
-			errors.New("invalid value `wrong` for repository kind"),
+			model.ErrUnknownRepositoryKind,
 		},
 	}
 

@@ -1,7 +1,6 @@
 package model
 
 import (
-	"errors"
 	"strings"
 	"testing"
 )
@@ -143,7 +142,7 @@ func TestParseRepositoryKind(t *testing.T) {
 				value: "wrong",
 			},
 			Github,
-			errors.New("invalid value `wrong` for repository kind"),
+			ErrUnknownRepositoryKind,
 		},
 	}
 

@@ -1,7 +1,6 @@
 package model
 
 import (
-	"errors"
 	"reflect"
 	"sort"
 	"strings"
@@ -41,7 +40,7 @@ func TestParseKetchupFrequency(t *testing.T) {
 				value: "wrong",
 			},
 			Daily,
-			errors.New("invalid value `wrong` for ketchup frequency"),
+			ErrUnknownKetchupFrequency,
 		},
 	}
 
