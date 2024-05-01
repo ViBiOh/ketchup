@@ -1,7 +1,6 @@
 # ketchup
 
 [![Build](https://github.com/ViBiOh/ketchup/workflows/Build/badge.svg)](https://github.com/ViBiOh/ketchup/actions)
-[![codecov](https://codecov.io/gh/ViBiOh/ketchup/branch/main/graph/badge.svg)](https://codecov.io/gh/ViBiOh/ketchup)
 
 Thanks to [OpenEmoji](https://openmoji.org) for favicon.
 
