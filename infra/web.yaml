@@ -54,6 +54,7 @@ spec:
       KETCHUP_DB_USER: ketchup
       KETCHUP_DOCKER_USERNAME: vibioh
       KETCHUP_LOGGER_JSON: "true"
+      KETCHUP_PPROF_AGENT: http://datadog.observability:8126
       KETCHUP_REDIS_ADDRESS: redis:6379
       KETCHUP_REDIS_DATABASE: "2"
       KETCHUP_SCHEDULER_ENABLED: "false"

@@ -95,6 +95,7 @@ Usage of ketchup:
   --okStatus           int           [http] Healthy HTTP Status code ${KETCHUP_OK_STATUS} (default 204)
   --pathPrefix         string        Root Path Prefix ${KETCHUP_PATH_PREFIX}
   --port               uint          [server] Listen port (0 to disable) ${KETCHUP_PORT} (default 1080)
+  --pprofAgent         string        [pprof] URL of the Datadog Trace Agent (e.g. http://datadog.observability:8126) ${KETCHUP_PPROF_AGENT}
   --publicURL          string        Public URL ${KETCHUP_PUBLIC_URL} (default "https://ketchup.vibioh.fr")
   --readTimeout        duration      [server] Read Timeout ${KETCHUP_READ_TIMEOUT} (default 5s)
   --redisAddress       string slice  [redis] Redis Address host:port (blank to disable) ${KETCHUP_REDIS_ADDRESS}, as a string slice, environment variable separated by "," (default [127.0.0.1:6379])
@@ -109,6 +110,7 @@ Usage of ketchup:
   --shutdownTimeout    duration      [server] Shutdown Timeout ${KETCHUP_SHUTDOWN_TIMEOUT} (default 10s)
   --telemetryRate      string        [telemetry] OpenTelemetry sample rate, 'always', 'never' or a float value ${KETCHUP_TELEMETRY_RATE} (default "always")
   --telemetryURL       string        [telemetry] OpenTelemetry gRPC endpoint (e.g. otel-exporter:4317) ${KETCHUP_TELEMETRY_URL}
+  --telemetryUint64                  [telemetry] Change OpenTelemetry Trace ID format to an unsigned int 64 ${KETCHUP_TELEMETRY_UINT64} (default true)
   --title              string        Application title ${KETCHUP_TITLE} (default "Ketchup")
   --url                string        [alcotest] URL to check ${KETCHUP_URL}
   --userAgent          string        [alcotest] User-Agent for check ${KETCHUP_USER_AGENT} (default "Alcotest")

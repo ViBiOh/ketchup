@@ -22,6 +22,7 @@ import (
 	"github.com/ViBiOh/httputils/v4/pkg/httputils"
 	"github.com/ViBiOh/httputils/v4/pkg/logger"
 	"github.com/ViBiOh/httputils/v4/pkg/owasp"
+	"github.com/ViBiOh/httputils/v4/pkg/pprof"
 	"github.com/ViBiOh/httputils/v4/pkg/recoverer"
 	"github.com/ViBiOh/httputils/v4/pkg/redis"
 	"github.com/ViBiOh/httputils/v4/pkg/renderer"
@@ -66,6 +67,7 @@ func main() {
 	alcotestConfig := alcotest.Flags(fs, "")
 	loggerConfig := logger.Flags(fs, "logger")
 	telemetryConfig := telemetry.Flags(fs, "telemetry")
+	pprofConfig := pprof.Flags(fs, "pprof")
 	owaspConfig := owasp.Flags(fs, "", flags.NewOverride("Csp", "default-src 'self'; base-uri 'self'; script-src 'self' 'httputils-nonce'; style-src 'self' 'httputils-nonce'"))
 	corsConfig := cors.Flags(fs, "cors")
 	rendererConfig := renderer.Flags(fs, "", flags.NewOverride("Title", "Ketchup"), flags.NewOverride("PublicURL", "https://ketchup.vibioh.fr"))
@@ -91,6 +93,9 @@ func main() {
 
 	defer telemetryService.Close(ctx)
 
+	service, version, env := telemetryService.GetServiceVersionAndEnv()
+	pprofService := pprof.New(pprofConfig, service, version, env)
+
 	logger.AddOpenTelemetryToDefaultLogger(telemetryService)
 	request.AddOpenTelemetryToDefaultClient(telemetryService.MeterProvider(), telemetryService.TracerProvider())
 
@@ -111,6 +116,8 @@ func main() {
 	defer redisClient.Close()
 
 	healthService := health.New(ctx, healthConfig, ketchupDb.Ping, redisClient.Ping)
+
+	go pprofService.Start(healthService.DoneCtx())
 
 	authServiceService, authMiddlewareApp := initAuth(ketchupDb, telemetryService.TracerProvider())
 
