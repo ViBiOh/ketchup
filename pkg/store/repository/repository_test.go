@@ -93,7 +93,6 @@ func TestList(t *testing.T) {
 			t.Parallel()
 
 			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
 
 			mockDatabase := mocks.NewDatabase(ctrl)
 
@@ -238,7 +237,6 @@ func TestSuggest(t *testing.T) {
 			t.Parallel()
 
 			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
 
 			mockDatabase := mocks.NewDatabase(ctrl)
 
@@ -362,7 +360,6 @@ func TestGet(t *testing.T) {
 			t.Parallel()
 
 			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
 
 			mockDatabase := mocks.NewDatabase(ctrl)
 
@@ -491,7 +488,6 @@ func TestCreate(t *testing.T) {
 			t.Parallel()
 
 			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
 
 			mockDatabase := mocks.NewDatabase(ctrl)
 
@@ -581,7 +577,6 @@ func TestDeleteUnused(t *testing.T) {
 			t.Parallel()
 
 			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
 
 			mockDatabase := mocks.NewDatabase(ctrl)
 
@@ -623,7 +618,6 @@ func TestDeleteUnusedVersions(t *testing.T) {
 			t.Parallel()
 
 			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
 
 			mockDatabase := mocks.NewDatabase(ctrl)
 

@@ -81,7 +81,6 @@ func TestList(t *testing.T) {
 			t.Parallel()
 
 			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
 
 			mockDatabase := mocks.NewDatabase(ctrl)
 
@@ -220,7 +219,6 @@ func TestListByRepositoriesIDAndFrequencies(t *testing.T) {
 			t.Parallel()
 
 			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
 
 			mockDatabase := mocks.NewDatabase(ctrl)
 
@@ -326,7 +324,6 @@ func TestGetByRepository(t *testing.T) {
 			t.Parallel()
 
 			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
 
 			mockDatabase := mocks.NewDatabase(ctrl)
 
@@ -413,7 +410,6 @@ func TestCreate(t *testing.T) {
 			t.Parallel()
 
 			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
 
 			mockDatabase := mocks.NewDatabase(ctrl)
 
@@ -472,7 +468,6 @@ func TestUpdate(t *testing.T) {
 			t.Parallel()
 
 			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
 
 			mockDatabase := mocks.NewDatabase(ctrl)
 
@@ -525,7 +520,6 @@ func TestDelete(t *testing.T) {
 			t.Parallel()
 
 			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
 
 			mockDatabase := mocks.NewDatabase(ctrl)
 

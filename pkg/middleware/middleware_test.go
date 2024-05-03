@@ -48,7 +48,6 @@ func TestMiddleware(t *testing.T) {
 			t.Parallel()
 
 			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
 
 			userService := mocks.NewUserService(ctrl)
 			if intention == "simple" {

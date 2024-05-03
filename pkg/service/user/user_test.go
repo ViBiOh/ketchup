@@ -67,7 +67,6 @@ func TestStoreInContext(t *testing.T) {
 			t.Parallel()
 
 			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
 
 			mockUserStore := mocks.NewUserStore(ctrl)
 			testCase.instance.store = mockUserStore
@@ -163,7 +162,6 @@ func TestCreate(t *testing.T) {
 			t.Parallel()
 
 			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
 
 			authService := mocks.NewAuthService(ctrl)
 			mockUserStore := mocks.NewUserStore(ctrl)
@@ -270,7 +268,6 @@ func TestCheck(t *testing.T) {
 			t.Parallel()
 
 			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
 
 			mockUserStore := mocks.NewUserStore(ctrl)
 

@@ -70,7 +70,6 @@ func TestGetNewStandardReleases(t *testing.T) {
 			t.Parallel()
 
 			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
 
 			mockRepositoryService := mocks.NewRepositoryService(ctrl)
 
@@ -185,7 +184,6 @@ func TestGetNewHelmReleases(t *testing.T) {
 			t.Parallel()
 
 			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
 
 			mockRepositoryService := mocks.NewRepositoryService(ctrl)
 			mockHelmProvider := mocks.NewHelmProvider(ctrl)

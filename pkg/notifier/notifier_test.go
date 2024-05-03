@@ -118,7 +118,6 @@ func TestGetNewRepositoryReleases(t *testing.T) {
 			t.Parallel()
 
 			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
 
 			mockRepositoryService := mocks.NewRepositoryService(ctrl)
 
@@ -243,7 +242,6 @@ func TestGetKetchupToNotify(t *testing.T) {
 			t.Parallel()
 
 			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
 
 			mockKetchupService := mocks.NewKetchupService(ctrl)
 
@@ -439,7 +437,6 @@ func TestSendNotification(t *testing.T) {
 			t.Parallel()
 
 			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
 
 			mailerService := mocks.NewMailer(ctrl)
 			testCase.instance.mailer = mailerService

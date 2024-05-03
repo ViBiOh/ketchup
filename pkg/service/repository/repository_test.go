@@ -65,7 +65,6 @@ func TestList(t *testing.T) {
 			t.Parallel()
 
 			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
 
 			mockRepositoryStore := mocks.NewRepositoryStore(ctrl)
 
@@ -137,7 +136,6 @@ func TestSuggest(t *testing.T) {
 			t.Parallel()
 
 			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
 
 			mockRepositoryStore := mocks.NewRepositoryStore(ctrl)
 
@@ -264,7 +262,6 @@ func TestGetOrCreate(t *testing.T) {
 			t.Parallel()
 
 			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
 
 			mockRepositoryStore := mocks.NewRepositoryStore(ctrl)
 			mockGithub := mocks.NewGenericProvider(ctrl)
@@ -381,7 +378,6 @@ func TestCreate(t *testing.T) {
 			t.Parallel()
 
 			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
 
 			mockRepositoryStore := mocks.NewRepositoryStore(ctrl)
 			mockGithub := mocks.NewGenericProvider(ctrl)
@@ -489,7 +485,6 @@ func TestUpdate(t *testing.T) {
 			t.Parallel()
 
 			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
 
 			mockRepositoryStore := mocks.NewRepositoryStore(ctrl)
 
@@ -582,7 +577,6 @@ func TestClean(t *testing.T) {
 			t.Parallel()
 
 			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
 
 			mockRepositoryStore := mocks.NewRepositoryStore(ctrl)
 
@@ -686,7 +680,6 @@ func TestCheck(t *testing.T) {
 			t.Parallel()
 
 			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
 
 			mockRepositoryStore := mocks.NewRepositoryStore(ctrl)
 

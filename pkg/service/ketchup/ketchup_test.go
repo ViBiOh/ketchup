@@ -54,7 +54,6 @@ func TestList(t *testing.T) {
 			t.Parallel()
 
 			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
 
 			mockKetchupStore := mocks.NewKetchupStore(ctrl)
 
@@ -126,7 +125,6 @@ func TestListForRepositories(t *testing.T) {
 			t.Parallel()
 
 			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
 
 			mockKetchupStore := mocks.NewKetchupStore(ctrl)
 
@@ -221,7 +219,6 @@ func TestCreate(t *testing.T) {
 			t.Parallel()
 
 			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
 
 			mockKetchupStore := mocks.NewKetchupStore(ctrl)
 			mockRepositoryService := mocks.NewRepositoryService(ctrl)
@@ -366,7 +363,6 @@ func TestUpdate(t *testing.T) {
 			t.Parallel()
 
 			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
 
 			mockKetchupStore := mocks.NewKetchupStore(ctrl)
 			mockRepositoryService := mocks.NewRepositoryService(ctrl)
@@ -505,7 +501,6 @@ func TestDelete(t *testing.T) {
 			t.Parallel()
 
 			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
 
 			mockKetchupStore := mocks.NewKetchupStore(ctrl)
 
@@ -631,7 +626,6 @@ func TestCheck(t *testing.T) {
 			t.Parallel()
 
 			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
 
 			mockKetchupStore := mocks.NewKetchupStore(ctrl)
 
