@@ -6,8 +6,6 @@ import (
 	"flag"
 	"os"
 
-	_ "net/http/pprof"
-
 	authIdent "github.com/ViBiOh/auth/v2/pkg/ident/basic"
 	authMiddleware "github.com/ViBiOh/auth/v2/pkg/middleware"
 	authService "github.com/ViBiOh/auth/v2/pkg/service"
