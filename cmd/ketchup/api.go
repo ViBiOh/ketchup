@@ -19,7 +19,6 @@ import (
 	"github.com/ViBiOh/httputils/v4/pkg/logger"
 	"github.com/ViBiOh/httputils/v4/pkg/owasp"
 	"github.com/ViBiOh/httputils/v4/pkg/pprof"
-	"github.com/ViBiOh/httputils/v4/pkg/recoverer"
 	"github.com/ViBiOh/httputils/v4/pkg/redis"
 	"github.com/ViBiOh/httputils/v4/pkg/renderer"
 	"github.com/ViBiOh/httputils/v4/pkg/request"
@@ -80,9 +79,9 @@ func main() {
 
 	alcotest.DoAndExit(alcotestConfig)
 
-	logger.Init(loggerConfig)
-
 	ctx := context.Background()
+
+	logger.Init(ctx, loggerConfig)
 
 	telemetryService, err := telemetry.New(ctx, telemetryConfig)
 	logger.FatalfOnErr(ctx, err, "create telemetry")
@@ -102,10 +101,10 @@ func main() {
 
 	defer ketchupDb.Close()
 
-	redisClient, err := redis.New(redisConfig, telemetryService.MeterProvider(), telemetryService.TracerProvider())
+	redisClient, err := redis.New(ctx, redisConfig, telemetryService.MeterProvider(), telemetryService.TracerProvider())
 	logger.FatalfOnErr(ctx, err, "create redis")
 
-	defer redisClient.Close()
+	defer redisClient.Close(ctx)
 
 	healthService := health.New(ctx, healthConfig, ketchupDb.Ping, redisClient.Ping)
 
@@ -122,12 +121,12 @@ func main() {
 	repositoryServiceService := repositoryService.New(repositoryStore.New(ketchupDb), githubService, helmService, dockerService, npmService, pypiService)
 	ketchupServiceService := ketchupService.New(ketchupStore.New(ketchupDb), repositoryServiceService)
 
-	mailerService, err := mailer.New(mailerConfig, telemetryService.MeterProvider(), telemetryService.TracerProvider())
+	mailerService, err := mailer.New(ctx, mailerConfig, telemetryService.MeterProvider(), telemetryService.TracerProvider())
 	logger.FatalfOnErr(ctx, err, "create mailer")
 
-	defer mailerService.Close()
+	defer mailerService.Close(ctx)
 
-	rendererService, err := renderer.New(rendererConfig, content, ketchup.FuncMap, telemetryService.MeterProvider(), telemetryService.TracerProvider())
+	rendererService, err := renderer.New(ctx, rendererConfig, content, ketchup.FuncMap, telemetryService.MeterProvider(), telemetryService.TracerProvider())
 	logger.FatalfOnErr(ctx, err, "create renderer")
 
 	endCtx := healthService.EndCtx()
@@ -142,7 +141,7 @@ func main() {
 		go schedulerService.Start(doneCtx)
 	}
 
-	go appServer.Start(endCtx, httputils.Handler(newPort(ketchupService, authMiddlewareApp, userServiceService, rendererService), healthService, recoverer.Middleware, telemetryService.Middleware(appServerConfig.Name), owasp.New(owaspConfig).Middleware, cors.New(corsConfig).Middleware))
+	go appServer.Start(endCtx, httputils.Handler(newPort(ketchupService, authMiddlewareApp, userServiceService, rendererService), healthService, telemetryService.Middleware(appServerConfig.Name), owasp.New(owaspConfig).Middleware, cors.New(corsConfig).Middleware))
 
 	healthService.WaitForTermination(appServer.Done())
 
