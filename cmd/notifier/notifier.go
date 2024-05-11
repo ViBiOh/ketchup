@@ -41,9 +41,9 @@ func main() {
 
 	_ = fs.Parse(os.Args[1:])
 
-	logger.Init(loggerConfig)
-
 	ctx := context.Background()
+
+	logger.Init(ctx, loggerConfig)
 
 	telemetryService, err := telemetry.New(ctx, telemetryConfig)
 	logger.FatalfOnErr(ctx, err, "create telemetry")
@@ -58,10 +58,10 @@ func main() {
 
 	defer ketchupDb.Close()
 
-	mailerService, err := mailer.New(mailerConfig, telemetryService.MeterProvider(), telemetryService.TracerProvider())
+	mailerService, err := mailer.New(ctx, mailerConfig, telemetryService.MeterProvider(), telemetryService.TracerProvider())
 	logger.FatalfOnErr(ctx, err, "create mailer")
 
-	defer mailerService.Close()
+	defer mailerService.Close(ctx)
 
 	helmService := helm.New()
 	npmService := npm.New()
