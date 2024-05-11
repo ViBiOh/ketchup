@@ -39,10 +39,14 @@ var (
 	semverMatcher    = regexp.MustCompile(`(?i)^(?P<prefix>[a-zA-Z-]*)(?P<major>[0-9]+)(?:\.(?P<minor>[0-9]+))?(?:\.(?P<patch>[0-9]+))?(?P<prerelease>-[a-zA-Z0-9.]+)?(?P<build>\+[a-zA-Z0-9.]+)?$`)
 	semverMatchNames = semverMatcher.SubexpNames()
 
-	nonFinalVersions = []string{"alpha", "beta", "canary", "edge", "rc", "test"}
+	nonFinalVersions = []string{"alpha", "beta", "canary", "edge", "rc", "test", "preview"}
 
 	allowedPrefixes = []string{"v", "stable-"}
 	ignoredPrefixes = []string{"sealed-secrets-"} // manually ignore historic stuff
+
+	stableBuild = []*regexp.Regexp{
+		regexp.MustCompile(`k3s[0-9]`),
+	}
 
 	ErrPrefixInvalid = errors.New("invalid prefix")
 )
@@ -183,7 +187,7 @@ func isPrefixAllowed(matches map[string]string, allowedPrefix string) bool {
 }
 
 func parseNonFinalVersion(matches map[string]string) NonFinalVersion {
-	if len(matches["build"]) > 0 {
+	if build := matches["build"]; len(build) > 0 && !isKnownBuild(build) {
 		return 0
 	}
 
@@ -198,6 +202,16 @@ func parseNonFinalVersion(matches map[string]string) NonFinalVersion {
 	}
 
 	return -1
+}
+
+func isKnownBuild(build string) bool {
+	for _, knownBuild := range stableBuild {
+		if knownBuild.MatchString(build) {
+			return true
+		}
+	}
+
+	return false
 }
 
 func safeParse(version string) Version {

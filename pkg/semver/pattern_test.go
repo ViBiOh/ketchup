@@ -162,6 +162,20 @@ func TestCheck(t *testing.T) {
 			},
 			true,
 		},
+		"suffix build": {
+			safeParsePattern("stable"),
+			args{
+				version: safeParse("v1.28.4+k3s2"),
+			},
+			true,
+		},
+		"suffix rc and build": {
+			safeParsePattern("stable"),
+			args{
+				version: safeParse("v1.30.0-rc2+k3s1"),
+			},
+			false,
+		},
 	}
 
 	for intention, testCase := range cases {

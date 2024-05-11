@@ -27,36 +27,38 @@ type Service struct {
 	mailer     model.Mailer
 	helm       model.HelmProvider
 	clock      GetNow
-	pushURL    string
+	dryRun     bool
 }
 
 type Config struct {
-	PushURL string
+	DryRun bool
 }
 
 func Flags(fs *flag.FlagSet, prefix string) *Config {
 	var config Config
 
-	flags.New("PushUrl", "Pushgateway URL").Prefix(prefix).DocPrefix("notifier").StringVar(fs, &config.PushURL, "", nil)
+	flags.New("DryRun", "Run in dry-run").Prefix(prefix).DocPrefix("notifier").BoolVar(fs, &config.DryRun, false, nil)
 
 	return &config
 }
 
 func New(config *Config, repositoryService model.RepositoryService, ketchupService model.KetchupService, userService user.Service, mailerService model.Mailer, helmService model.HelmProvider) Service {
 	return Service{
-		pushURL:    config.PushURL,
 		clock:      time.Now,
 		repository: repositoryService,
 		ketchup:    ketchupService,
 		user:       userService,
 		mailer:     mailerService,
 		helm:       helmService,
+		dryRun:     config.DryRun,
 	}
 }
 
 func (s Service) Notify(ctx context.Context) error {
-	if err := s.repository.Clean(ctx); err != nil {
-		return fmt.Errorf("clean repository before starting: %w", err)
+	if !s.dryRun {
+		if err := s.repository.Clean(ctx); err != nil {
+			return fmt.Errorf("clean repository before starting: %w", err)
+		}
 	}
 
 	newReleases, err := s.getNewReleases(ctx)
@@ -65,8 +67,11 @@ func (s Service) Notify(ctx context.Context) error {
 	}
 
 	sort.Sort(model.ReleaseByRepositoryIDAndPattern(newReleases))
-	if err := s.updateRepositories(ctx, newReleases); err != nil {
-		return fmt.Errorf("update repositories: %w", err)
+
+	if !s.dryRun {
+		if err := s.updateRepositories(ctx, newReleases); err != nil {
+			return fmt.Errorf("update repositories: %w", err)
+		}
 	}
 
 	ketchupsToNotify, err := s.getKetchupToNotify(ctx, newReleases)
@@ -74,8 +79,10 @@ func (s Service) Notify(ctx context.Context) error {
 		return fmt.Errorf("get ketchup to notify: %w", err)
 	}
 
-	if err := s.sendNotification(ctx, "ketchup", ketchupsToNotify); err != nil {
-		return fmt.Errorf("send notification: %w", err)
+	if !s.dryRun {
+		if err := s.sendNotification(ctx, "ketchup", ketchupsToNotify); err != nil {
+			return fmt.Errorf("send notification: %w", err)
+		}
 	}
 
 	return nil
@@ -215,10 +222,12 @@ func (s Service) handleUpdateWhenNotify(ctx context.Context, ketchup model.Ketch
 
 	log := slog.With("repository", ketchup.Repository.ID).With("user", ketchup.User.ID).With("pattern", ketchup.Pattern)
 
-	log.InfoContext(ctx, "Auto-updating ketchup", "version", release.Version.Name)
-	if err := s.ketchup.UpdateVersion(ctx, ketchup.User.ID, ketchup.Repository.ID, ketchup.Pattern, release.Version.Name); err != nil {
-		log.LogAttrs(ctx, slog.LevelError, "update ketchup", slog.Any("error", err))
-		return release.SetUpdated(1)
+	if !s.dryRun {
+		log.InfoContext(ctx, "Auto-updating ketchup", "version", release.Version.Name)
+		if err := s.ketchup.UpdateVersion(ctx, ketchup.User.ID, ketchup.Repository.ID, ketchup.Pattern, release.Version.Name); err != nil {
+			log.LogAttrs(ctx, slog.LevelError, "update ketchup", slog.Any("error", err))
+			return release.SetUpdated(1)
+		}
 	}
 
 	return release.SetUpdated(2)

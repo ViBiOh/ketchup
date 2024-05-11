@@ -38,7 +38,7 @@ func TestFlags(t *testing.T) {
 		want string
 	}{
 		"simple": {
-			"Usage of simple:\n  -pushUrl string\n    \t[notifier] Pushgateway URL ${SIMPLE_PUSH_URL}\n",
+			"Usage of simple:\n  -dryRun\n    \t[notifier] Run in dry-run ${SIMPLE_DRY_RUN}\n",
 		},
 	}
 
