@@ -57,7 +57,6 @@ spec:
       KETCHUP_PPROF_AGENT: http://datadog.observability:8126
       KETCHUP_REDIS_ADDRESS: redis:6379
       KETCHUP_REDIS_DATABASE: "2"
-      KETCHUP_SCHEDULER_ENABLED: "false"
       KETCHUP_TELEMETRY_URL: datadog.observability:4317
       OTEL_RESOURCE_ATTRIBUTES: env=production,git.repository_url=github.com/ViBiOh/ketchup
     secrets:
