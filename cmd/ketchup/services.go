@@ -68,7 +68,7 @@ func newServices(ctx context.Context, config configuration, clients clients) (se
 
 	output.renderer, err = renderer.New(ctx, config.renderer, content, ketchup.FuncMap, clients.telemetry.MeterProvider(), clients.telemetry.TracerProvider())
 	if err != nil {
-		return services{}, fmt.Errorf("renderer: %w", err)
+		return output, fmt.Errorf("renderer: %w", err)
 	}
 
 	output.user = userService.New(userStore.New(clients.db), &authService)
