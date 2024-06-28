@@ -3,10 +3,11 @@ package main
 import (
 	"net/http"
 
+	"github.com/ViBiOh/httputils/v4/pkg/httputils"
 	"github.com/ViBiOh/ketchup/pkg/middleware"
 )
 
-func newPort(config configuration, services services) http.Handler {
+func newPort(config configuration, clients clients, services services) http.Handler {
 	authMux := http.NewServeMux()
 	authMux.Handle("/ketchups/{id...}", services.ketchup.Ketchups())
 	authMux.Handle("/", services.renderer.Handler(services.ketchup.TemplateFunc))
@@ -15,10 +16,11 @@ func newPort(config configuration, services services) http.Handler {
 	mux.Handle("/signup", services.ketchup.Signup())
 	mux.Handle("/app/", http.StripPrefix("/app", services.authMiddleware.Middleware(middleware.New(services.user).Middleware(authMux))))
 
-	mux.Handle(config.renderer.PathPrefix+"/", http.StripPrefix(
-		config.renderer.PathPrefix,
-		services.renderer.NewServeMux(services.ketchup.PublicTemplateFunc),
-	))
+	services.renderer.RegisterMux(mux, services.ketchup.PublicTemplateFunc)
 
-	return mux
+	return httputils.Handler(mux, clients.health,
+		clients.telemetry.Middleware("http"),
+		services.owasp.Middleware,
+		services.cors.Middleware,
+	)
 }
