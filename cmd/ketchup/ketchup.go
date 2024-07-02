@@ -20,7 +20,7 @@ func main() {
 	go clients.Start()
 	defer clients.Close(ctx)
 
-	services, err := newServices(ctx, config, clients)
+	services, err := newServices(clients.health.EndCtx(), config, clients)
 	logger.FatalfOnErr(ctx, err, "services")
 
 	port := newPort(config, clients, services)

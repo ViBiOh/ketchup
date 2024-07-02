@@ -252,12 +252,13 @@ func (s Service) sendNotification(ctx context.Context, template string, ketchupT
 			"releases": releases,
 		}
 
-		mr := mailerModel.NewMailRequest().Template(template).From("ketchup@vibioh.fr").As("Ketchup").To(ketchupUser.Email).Data(payload)
-		subject := fmt.Sprintf("Ketchup - %d new release", len(releases))
-		if len(releases) > 1 {
-			subject += "s"
-		}
-		mr = mr.WithSubject(subject)
+		mr := mailerModel.NewMailRequest().
+			Template(template).
+			From("ketchup@vibioh.fr").
+			As("Ketchup").
+			To(ketchupUser.Email).
+			Data(payload).
+			WithSubject("Ketchup - Daily notification")
 
 		if err := s.mailer.Send(ctx, mr); err != nil {
 			return fmt.Errorf("send email to %s: %w", ketchupUser.Email, err)
