@@ -102,6 +102,10 @@ func (v Version) Compare(other Version) string {
 		return "Suffix"
 	}
 
+	if v.Name != other.Name {
+		return "Version"
+	}
+
 	return ""
 }
 
