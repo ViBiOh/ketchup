@@ -74,13 +74,13 @@ func (s Service) Notify(ctx context.Context) error {
 		}
 	}
 
-	ketchupsToNotify, err := s.getKetchupToNotify(ctx, newReleases)
+	ketchupsToNotify, weeklyUsers, err := s.getKetchupToNotify(ctx, newReleases)
 	if err != nil {
 		return fmt.Errorf("get ketchup to notify: %w", err)
 	}
 
 	if !s.dryRun {
-		if err := s.sendNotification(ctx, "ketchup", ketchupsToNotify); err != nil {
+		if err := s.sendNotification(ctx, "ketchup", ketchupsToNotify, weeklyUsers); err != nil {
 			return fmt.Errorf("send notification: %w", err)
 		}
 	}
@@ -114,7 +114,7 @@ func (s Service) updateRepositories(ctx context.Context, releases []model.Releas
 	return nil
 }
 
-func (s Service) getKetchupToNotify(ctx context.Context, releases []model.Release) (map[model.User][]model.Release, error) {
+func (s Service) getKetchupToNotify(ctx context.Context, releases []model.Release) (map[model.User][]model.Release, map[model.Identifier]uint8, error) {
 	repositories := make([]model.Repository, len(releases))
 	for index, release := range releases {
 		repositories[index] = release.Repository
@@ -122,26 +122,27 @@ func (s Service) getKetchupToNotify(ctx context.Context, releases []model.Releas
 
 	ketchups, err := s.ketchup.ListForRepositories(ctx, repositories, model.Daily, model.None)
 	if err != nil {
-		return nil, fmt.Errorf("get ketchups for repositories: %w", err)
+		return nil, nil, fmt.Errorf("get ketchups for repositories: %w", err)
 	}
 
 	slog.LogAttrs(ctx, slog.LevelInfo, "Daily ketchups updates", slog.Int("count", len(ketchups)))
 
-	userToNotify := s.syncReleasesByUser(ctx, releases, ketchups)
+	userToNotify, userStatuses := s.syncReleasesByUser(ctx, releases, ketchups)
 
 	if s.clock().Weekday() == time.Monday {
 		weeklyKetchups, err := s.ketchup.ListOutdated(ctx)
 		if err != nil {
-			return nil, fmt.Errorf("get weekly ketchups: %w", err)
+			return nil, nil, fmt.Errorf("get weekly ketchups: %w", err)
 		}
 
 		slog.LogAttrs(ctx, slog.LevelInfo, "Weekly ketchups updates", slog.Int("count", len(weeklyKetchups)))
-		s.appendKetchupsToUser(ctx, userToNotify, weeklyKetchups)
+
+		s.appendWeeklyKetchupsToUsers(ctx, userToNotify, userStatuses, weeklyKetchups)
 	}
 
 	slog.LogAttrs(ctx, slog.LevelInfo, "Users to notify", slog.Int("count", len(userToNotify)))
 
-	return userToNotify, nil
+	return userToNotify, userStatuses, nil
 }
 
 func releaseKey(r model.Release) []byte {
@@ -152,8 +153,9 @@ func ketchupKey(k model.Ketchup) []byte {
 	return []byte(fmt.Sprintf("%10d|%s", k.Repository.ID, k.Pattern))
 }
 
-func (s Service) syncReleasesByUser(ctx context.Context, releases []model.Release, ketchups []model.Ketchup) map[model.User][]model.Release {
+func (s Service) syncReleasesByUser(ctx context.Context, releases []model.Release, ketchups []model.Ketchup) (map[model.User][]model.Release, map[model.Identifier]uint8) {
 	usersToNotify := make(map[model.User][]model.Release)
+	userStatuses := make(map[model.Identifier]uint8)
 
 	sort.Sort(model.ReleaseByRepositoryIDAndPattern(releases))
 	sort.Sort(model.KetchupByRepositoryIDAndPattern(ketchups))
@@ -172,7 +174,7 @@ func (s Service) syncReleasesByUser(ctx context.Context, releases []model.Releas
 			ketchup := items[1].(model.Ketchup)
 
 			if ketchup.Version != release.Version.Name {
-				s.handleKetchupNotification(ctx, usersToNotify, ketchup, release)
+				s.handleKetchupNotification(ctx, usersToNotify, userStatuses, ketchup, release)
 			}
 			return nil
 		})
@@ -180,10 +182,10 @@ func (s Service) syncReleasesByUser(ctx context.Context, releases []model.Releas
 		slog.LogAttrs(ctx, slog.LevelError, "synchronise releases and ketchups", slog.Any("error", err))
 	}
 
-	return usersToNotify
+	return usersToNotify, userStatuses
 }
 
-func (s Service) appendKetchupsToUser(ctx context.Context, usersToNotify map[model.User][]model.Release, ketchups []model.Ketchup) {
+func (s Service) appendWeeklyKetchupsToUsers(ctx context.Context, usersToNotify map[model.User][]model.Release, userStatuses map[model.Identifier]uint8, ketchups []model.Ketchup) {
 	for _, ketchup := range ketchups {
 		ketchupVersion, err := semver.Parse(ketchup.Version, semver.ExtractName(ketchup.Repository.Name))
 		if err != nil {
@@ -191,16 +193,18 @@ func (s Service) appendKetchupsToUser(ctx context.Context, usersToNotify map[mod
 			continue
 		}
 
-		s.handleKetchupNotification(ctx, usersToNotify, ketchup, model.NewRelease(ketchup.Repository, ketchup.Pattern, ketchupVersion))
+		s.handleKetchupNotification(ctx, usersToNotify, userStatuses, ketchup, model.NewRelease(ketchup.Repository, ketchup.Pattern, ketchupVersion))
 	}
 }
 
-func (s Service) handleKetchupNotification(ctx context.Context, usersToNotify map[model.User][]model.Release, ketchup model.Ketchup, release model.Release) {
+func (s Service) handleKetchupNotification(ctx context.Context, usersToNotify map[model.User][]model.Release, userStatuses map[model.Identifier]uint8, ketchup model.Ketchup, release model.Release) {
 	release = s.handleUpdateWhenNotify(ctx, ketchup, release)
 
 	if ketchup.Frequency == model.None {
 		return
 	}
+
+	userStatuses[ketchup.User.ID] |= uint8(ketchup.Frequency)
 
 	if usersToNotify[ketchup.User] != nil {
 		for _, userRelease := range usersToNotify[ketchup.User] {
@@ -233,7 +237,7 @@ func (s Service) handleUpdateWhenNotify(ctx context.Context, ketchup model.Ketch
 	return release.SetUpdated(2)
 }
 
-func (s Service) sendNotification(ctx context.Context, template string, ketchupToNotify map[model.User][]model.Release) error {
+func (s Service) sendNotification(ctx context.Context, template string, ketchupToNotify map[model.User][]model.Release, userStatuses map[model.Identifier]uint8) error {
 	if len(ketchupToNotify) == 0 {
 		return nil
 	}
@@ -252,13 +256,24 @@ func (s Service) sendNotification(ctx context.Context, template string, ketchupT
 			"releases": releases,
 		}
 
+		var subject string
+
+		switch userStatuses[ketchupUser.ID] {
+		case uint8(model.Daily | model.Weekly):
+			subject = "Ketchup - Daily & Weekly notification"
+		case uint8(model.Weekly):
+			subject = "Ketchup - Weekly notification"
+		default:
+			subject = "Ketchup - Daily notification"
+		}
+
 		mr := mailerModel.NewMailRequest().
 			Template(template).
 			From("ketchup@vibioh.fr").
 			As("Ketchup").
 			To(ketchupUser.Email).
 			Data(payload).
-			WithSubject("Ketchup - Daily notification")
+			WithSubject(subject)
 
 		if err := s.mailer.Send(ctx, mr); err != nil {
 			return fmt.Errorf("send email to %s: %w", ketchupUser.Email, err)

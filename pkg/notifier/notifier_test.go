@@ -160,14 +160,16 @@ func TestGetKetchupToNotify(t *testing.T) {
 	}
 
 	cases := map[string]struct {
-		args    args
-		want    map[model.User][]model.Release
-		wantErr error
+		args     args
+		want     map[model.User][]model.Release
+		wantUser map[model.Identifier]uint8
+		wantErr  error
 	}{
 		"list error": {
 			args{
 				ctx: context.TODO(),
 			},
+			nil,
 			nil,
 			errors.New("failed"),
 		},
@@ -176,6 +178,7 @@ func TestGetKetchupToNotify(t *testing.T) {
 				ctx: context.TODO(),
 			},
 			make(map[model.User][]model.Release),
+			make(map[model.Identifier]uint8),
 			nil,
 		},
 		"one release, n ketchups": {
@@ -232,6 +235,10 @@ func TestGetKetchupToNotify(t *testing.T) {
 					},
 					Repository: model.NewGithubRepository(model.Identifier(3), "vibioh/zzz"),
 				}},
+			},
+			map[model.Identifier]uint8{
+				1: 3,
+				2: 1,
 			},
 			nil,
 		},
@@ -290,7 +297,7 @@ func TestGetKetchupToNotify(t *testing.T) {
 						Repository: model.NewGithubRepository(model.Identifier(3), "vibioh/zzz"),
 						User:       model.NewUser(1, testEmail, authModel.NewUser(0, "")),
 						Version:    repositoryVersion,
-						Frequency:  model.Daily,
+						Frequency:  model.Weekly,
 					},
 					{
 						Pattern:    model.DefaultPattern,
@@ -302,7 +309,7 @@ func TestGetKetchupToNotify(t *testing.T) {
 				}, nil)
 			}
 
-			got, gotErr := instance.getKetchupToNotify(testCase.args.ctx, testCase.args.releases)
+			got, gotUser, gotErr := instance.getKetchupToNotify(testCase.args.ctx, testCase.args.releases)
 
 			failed := false
 
@@ -314,10 +321,12 @@ func TestGetKetchupToNotify(t *testing.T) {
 				failed = true
 			} else if !reflect.DeepEqual(got, testCase.want) {
 				failed = true
+			} else if !reflect.DeepEqual(gotUser, testCase.wantUser) {
+				failed = true
 			}
 
 			if failed {
-				t.Errorf("getKetchupToNotify() = (%+v, `%s`), want (%+v, `%s`)", got, gotErr, testCase.want, testCase.wantErr)
+				t.Errorf("getKetchupToNotify() = (%+v, %+v, `%s`), want (%+v, %+v, `%s`)", got, gotUser, gotErr, testCase.want, testCase.wantUser, testCase.wantErr)
 			}
 		})
 	}
@@ -329,6 +338,7 @@ func TestSendNotification(t *testing.T) {
 	type args struct {
 		ctx             context.Context
 		ketchupToNotify map[model.User][]model.Release
+		userStatuses    map[model.Identifier]uint8
 	}
 
 	cases := map[string]struct {
@@ -427,6 +437,10 @@ func TestSendNotification(t *testing.T) {
 						},
 					},
 				},
+				userStatuses: map[model.Identifier]uint8{
+					1: 1,
+					2: 3,
+				},
 			},
 			nil,
 		},
@@ -453,7 +467,7 @@ func TestSendNotification(t *testing.T) {
 				mailerService.EXPECT().Enabled().Return(false)
 			}
 
-			gotErr := testCase.instance.sendNotification(testCase.args.ctx, "ketchup", testCase.args.ketchupToNotify)
+			gotErr := testCase.instance.sendNotification(testCase.args.ctx, "ketchup", testCase.args.ketchupToNotify, testCase.args.userStatuses)
 
 			failed := false
 
