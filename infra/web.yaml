@@ -25,11 +25,11 @@ spec:
     nameOverride: ketchup
     image:
       name: vibioh/ketchup
-      tag: "202407082005" # {"$imagepolicy": "default:flux-ketchup-web:tag"}
+      tag: "202407121803" # {"$imagepolicy": "default:flux-ketchup-web:tag"}
     labels:
       tags.datadoghq.com/env: "production"
       tags.datadoghq.com/service: "ketchup"
-      tags.datadoghq.com/version: "202407082005" # {"$imagepolicy": "default:flux-ketchup-web:tag"}
+      tags.datadoghq.com/version: "202407121803" # {"$imagepolicy": "default:flux-ketchup-web:tag"}
     env:
       - name: GOMAXPROCS
         valueFrom:
