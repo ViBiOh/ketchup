@@ -37,8 +37,8 @@ func (s Service) LatestVersions(ctx context.Context, name string, patterns []str
 		return nil, fmt.Errorf("fetch registry: %w", err)
 	}
 
-	var content packageResp
-	if err := httpjson.Read(resp, &content); err != nil {
+	content, err := httpjson.Read[packageResp](resp)
+	if err != nil {
 		return nil, fmt.Errorf("read versions: %w", err)
 	}
 

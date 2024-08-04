@@ -130,8 +130,8 @@ func (s Service) login(ctx context.Context, repository string) (string, error) {
 		return "", fmt.Errorf("authenticate to `%s`: %w", authURL, err)
 	}
 
-	var authContent authResponse
-	if err := httpjson.Read(resp, &authContent); err != nil {
+	authContent, err := httpjson.Read[authResponse](resp)
+	if err != nil {
 		return "", fmt.Errorf("read auth token: %w", err)
 	}
 
@@ -147,8 +147,8 @@ func (s Service) ghcr(ctx context.Context, repository string) (string, error) {
 		return "", fmt.Errorf("authenticate to `%s`: %w", ghcrLoginURL, err)
 	}
 
-	var authContent authResponse
-	if err := httpjson.Read(resp, &authContent); err != nil {
+	authContent, err := httpjson.Read[authResponse](resp)
+	if err != nil {
 		return "", fmt.Errorf("read auth token: %w", err)
 	}
 

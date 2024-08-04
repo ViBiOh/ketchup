@@ -83,8 +83,8 @@ func (s Service) LatestVersions(ctx context.Context, repository string, patterns
 			return nil, fmt.Errorf("list page %d of tags: %w", page, err)
 		}
 
-		var tags []Tag
-		if err := httpjson.Read(resp, &tags); err != nil {
+		tags, err := httpjson.Read[[]Tag](resp)
+		if err != nil {
 			return nil, fmt.Errorf("read tags page #%d: %w", page, err)
 		}
 
