@@ -148,7 +148,7 @@ func (s Service) ListByKinds(ctx context.Context, pageSize uint, last string, ki
 
 	kindsValue := make([]string, len(kinds))
 	for i, kind := range kinds {
-		kindsValue[i] = kind.String()
+		kindsValue[i] = strings.ToLower(kind.String())
 	}
 
 	queryArgs = append(queryArgs, kindsValue)
@@ -239,7 +239,7 @@ WHERE
 `
 
 func (s Service) GetByName(ctx context.Context, repositoryKind model.RepositoryKind, name, part string) (model.Repository, error) {
-	return s.get(ctx, getByNameQuery, repositoryKind.String(), strings.ToLower(name), strings.ToLower(part))
+	return s.get(ctx, getByNameQuery, strings.ToLower(repositoryKind.String()), strings.ToLower(name), strings.ToLower(part))
 }
 
 const insertLock = `
@@ -274,7 +274,7 @@ func (s Service) Create(ctx context.Context, o model.Repository) (model.Identifi
 		return 0, fmt.Errorf("%s repository already exists with name=%s part=%s", o.Kind.String(), o.Name, o.Part)
 	}
 
-	id, err := s.db.Create(ctx, insertQuery, o.Kind.String(), strings.ToLower(o.Name), strings.ToLower(o.Part))
+	id, err := s.db.Create(ctx, insertQuery, strings.ToLower(o.Kind.String()), strings.ToLower(o.Name), strings.ToLower(o.Part))
 	if err != nil {
 		return 0, err
 	}

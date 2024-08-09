@@ -14,6 +14,7 @@ const (
 	githubURL = "https://github.com"
 )
 
+//go:generate stringer -type=RepositoryKind
 type RepositoryKind int
 
 const (
@@ -24,23 +25,22 @@ const (
 	Pypi
 )
 
-var (
-	ErrUnknownRepositoryKind = errors.New("unknown repository kind")
-	repositoryKindValues     = []string{"github", "helm", "docker", "npm", "pypi"}
-)
+var ErrUnknownRepositoryKind = errors.New("unknown repository kind")
 
 func ParseRepositoryKind(value string) (RepositoryKind, error) {
-	for i, short := range repositoryKindValues {
-		if strings.EqualFold(short, value) {
-			return RepositoryKind(i), nil
+	var previous, current uint8
+
+	for i := 1; i < len(_RepositoryKind_index); i++ {
+		current = _RepositoryKind_index[i]
+
+		if strings.EqualFold(_RepositoryKind_name[previous:current], value) {
+			return RepositoryKind(i - 1), nil
 		}
+
+		previous = current
 	}
 
 	return Github, ErrUnknownRepositoryKind
-}
-
-func (r RepositoryKind) String() string {
-	return repositoryKindValues[r]
 }
 
 func (r RepositoryKind) MarshalJSON() ([]byte, error) {

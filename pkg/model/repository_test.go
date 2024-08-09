@@ -14,11 +14,11 @@ func TestString(t *testing.T) {
 	}{
 		"github": {
 			Github,
-			"github",
+			"Github",
 		},
 		"helm": {
 			Helm,
-			"helm",
+			"Helm",
 		},
 	}
 
@@ -143,6 +143,20 @@ func TestParseRepositoryKind(t *testing.T) {
 			},
 			Github,
 			ErrUnknownRepositoryKind,
+		},
+		"first bound": {
+			args{
+				value: "github",
+			},
+			Github,
+			nil,
+		},
+		"last bound": {
+			args{
+				value: "Pypi",
+			},
+			Pypi,
+			nil,
 		},
 	}
 

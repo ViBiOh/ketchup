@@ -8,6 +8,7 @@ import (
 	"github.com/ViBiOh/ketchup/pkg/semver"
 )
 
+//go:generate stringer -type=KetchupFrequency
 type KetchupFrequency int
 
 const (
@@ -16,23 +17,22 @@ const (
 	Weekly
 )
 
-var (
-	ErrUnknownKetchupFrequency = errors.New("unknown ketchup frequency")
-	ketchupFrequencyValues     = []string{"None", "Daily", "Weekly"}
-)
+var ErrUnknownKetchupFrequency = errors.New("unknown ketchup frequency")
 
 func ParseKetchupFrequency(value string) (KetchupFrequency, error) {
-	for i, short := range ketchupFrequencyValues {
-		if strings.EqualFold(short, value) {
-			return KetchupFrequency(i), nil
+	var previous, current uint8
+
+	for i := 1; i < len(_KetchupFrequency_index); i++ {
+		current = _KetchupFrequency_index[i]
+
+		if strings.EqualFold(_KetchupFrequency_name[previous:current], value) {
+			return KetchupFrequency(i - 1), nil
 		}
+
+		previous = current
 	}
 
 	return Daily, ErrUnknownKetchupFrequency
-}
-
-func (r KetchupFrequency) String() string {
-	return ketchupFrequencyValues[r]
 }
 
 type Ketchup struct {
