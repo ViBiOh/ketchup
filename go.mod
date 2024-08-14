@@ -1,8 +1,8 @@
 module github.com/ViBiOh/ketchup
 
-go 1.22
+go 1.23
 
-toolchain go1.22.0
+toolchain go1.23.0
 
 require (
 	github.com/ViBiOh/auth/v2 v2.20.1
