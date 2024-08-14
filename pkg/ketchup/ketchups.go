@@ -82,7 +82,7 @@ func (s Service) handleCreate(w http.ResponseWriter, r *http.Request) {
 		slog.LogAttrs(ctx, slog.LevelError, "evict suggests cache", slog.Any("error", err))
 	}
 
-	s.renderer.Redirect(w, r, fmt.Sprintf("%s/", appPath), renderer.NewSuccessMessage(fmt.Sprintf("%s created with success!", created.Repository.Name)))
+	s.renderer.Redirect(w, r, fmt.Sprintf("%s/", appPath), renderer.NewSuccessMessage("%s created with success!", created.Repository.Name))
 }
 
 func (s Service) handleUpdate(w http.ResponseWriter, r *http.Request) {
@@ -121,7 +121,7 @@ func (s Service) handleUpdate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	s.renderer.Redirect(w, r, fmt.Sprintf("%s/", appPath), renderer.NewSuccessMessage(fmt.Sprintf("Updated %s with success!", updated.Version)))
+	s.renderer.Redirect(w, r, fmt.Sprintf("%s/", appPath), renderer.NewSuccessMessage("Updated %s with success!", updated.Version))
 }
 
 func (s Service) handleDelete(w http.ResponseWriter, r *http.Request) {
