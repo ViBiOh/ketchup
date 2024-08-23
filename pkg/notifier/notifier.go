@@ -165,7 +165,7 @@ func (s Service) syncReleasesByUser(ctx context.Context, releases []model.Releas
 			breaksync.NewSliceSource(releases, releaseKey, breaksync.NewRupture("release", breaksync.RuptureIdentity)),
 			breaksync.NewSliceSource(ketchups, ketchupKey, nil),
 		).
-		Run(func(synchronised uint64, items []any) error {
+		Run(func(synchronised uint, items []any) error {
 			if synchronised != 0 {
 				return nil
 			}
