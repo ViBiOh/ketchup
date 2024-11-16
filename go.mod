@@ -8,7 +8,7 @@ require (
 	github.com/ViBiOh/auth/v2 v2.20.4
 	github.com/ViBiOh/flags v1.6.0
 	github.com/ViBiOh/httputils/v4 v4.80.11
-	github.com/ViBiOh/mailer v1.33.7
+	github.com/ViBiOh/mailer v1.33.8
 	github.com/jackc/pgx/v5 v5.7.1
 	go.opentelemetry.io/otel/metric v1.32.0
 	go.opentelemetry.io/otel/trace v1.32.0
