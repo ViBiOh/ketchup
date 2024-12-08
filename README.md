@@ -74,6 +74,7 @@ Usage of ketchup:
   --dbUser            string        [db] User ${KETCHUP_DB_USER}
   --dockerPassword    string        [docker] Registry Password ${KETCHUP_DOCKER_PASSWORD}
   --dockerUsername    string        [docker] Registry Username ${KETCHUP_DOCKER_USERNAME}
+  --extension         string        Go Template Extension ${KETCHUP_EXTENSION} (default "tmpl")
   --frameOptions      string        [owasp] X-Frame-Options ${KETCHUP_FRAME_OPTIONS} (default "deny")
   --githubToken       string        [github] OAuth Token ${KETCHUP_GITHUB_TOKEN}
   --graceDuration     duration      [http] Grace duration when signal received ${KETCHUP_GRACE_DURATION} (default 30s)
