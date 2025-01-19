@@ -14,7 +14,7 @@ func (i Identifier) IsZero() bool {
 	return i == 0
 }
 
-//go:generate mockgen -source interfaces.go -destination ../mocks/interfaces.go -package mocks -mock_names Mailer=Mailer,AuthService=AuthService,UserService=UserService,UserStore=UserStore,GenericProvider=GenericProvider,HelmProvider=HelmProvider,RepositoryService=RepositoryService,RepositoryStore=RepositoryStore,KetchupService=KetchupService,KetchupStore=KetchupStore
+//go:generate mockgen -source $GOFILE -destination ../mocks/$GOFILE -package mocks -mock_names Mailer=Mailer,AuthService=AuthService,UserService=UserService,UserStore=UserStore,GenericProvider=GenericProvider,HelmProvider=HelmProvider,RepositoryService=RepositoryService,RepositoryStore=RepositoryStore,KetchupService=KetchupService,KetchupStore=KetchupStore
 
 type Mailer interface {
 	Enabled() bool

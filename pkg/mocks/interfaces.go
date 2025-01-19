@@ -22,6 +22,7 @@ import (
 
 // Mailer is a mock of Mailer interface.
 type Mailer struct {
+	isgomock struct{}
 	ctrl     *gomock.Controller
 	recorder *MailerMockRecorder
 }
@@ -73,6 +74,7 @@ func (mr *MailerMockRecorder) Send(arg0, arg1 any) *gomock.Call {
 
 // AuthService is a mock of AuthService interface.
 type AuthService struct {
+	isgomock struct{}
 	ctrl     *gomock.Controller
 	recorder *AuthServiceMockRecorder
 }
@@ -125,6 +127,7 @@ func (mr *AuthServiceMockRecorder) Create(arg0, arg1 any) *gomock.Call {
 
 // UserService is a mock of UserService interface.
 type UserService struct {
+	isgomock struct{}
 	ctrl     *gomock.Controller
 	recorder *UserServiceMockRecorder
 }
@@ -162,6 +165,7 @@ func (mr *UserServiceMockRecorder) StoreInContext(arg0 any) *gomock.Call {
 
 // UserStore is a mock of UserStore interface.
 type UserStore struct {
+	isgomock struct{}
 	ctrl     *gomock.Controller
 	recorder *UserStoreMockRecorder
 }
@@ -259,6 +263,7 @@ func (mr *UserStoreMockRecorder) GetByLoginID(arg0, arg1 any) *gomock.Call {
 
 // GenericProvider is a mock of GenericProvider interface.
 type GenericProvider struct {
+	isgomock struct{}
 	ctrl     *gomock.Controller
 	recorder *GenericProviderMockRecorder
 }
@@ -297,6 +302,7 @@ func (mr *GenericProviderMockRecorder) LatestVersions(arg0, arg1, arg2 any) *gom
 
 // HelmProvider is a mock of HelmProvider interface.
 type HelmProvider struct {
+	isgomock struct{}
 	ctrl     *gomock.Controller
 	recorder *HelmProviderMockRecorder
 }
@@ -350,6 +356,7 @@ func (mr *HelmProviderMockRecorder) LatestVersions(arg0, arg1, arg2, arg3 any) *
 
 // RepositoryService is a mock of RepositoryService interface.
 type RepositoryService struct {
+	isgomock struct{}
 	ctrl     *gomock.Controller
 	recorder *RepositoryServiceMockRecorder
 }
@@ -481,6 +488,7 @@ func (mr *RepositoryServiceMockRecorder) Update(arg0, arg1 any) *gomock.Call {
 
 // RepositoryStore is a mock of RepositoryStore interface.
 type RepositoryStore struct {
+	isgomock struct{}
 	ctrl     *gomock.Controller
 	recorder *RepositoryStoreMockRecorder
 }
@@ -655,6 +663,7 @@ func (mr *RepositoryStoreMockRecorder) UpdateVersions(ctx, o any) *gomock.Call {
 
 // KetchupService is a mock of KetchupService interface.
 type KetchupService struct {
+	isgomock struct{}
 	ctrl     *gomock.Controller
 	recorder *KetchupServiceMockRecorder
 }
@@ -805,6 +814,7 @@ func (mr *KetchupServiceMockRecorder) UpdateVersion(ctx, userID, repositoryID, p
 
 // KetchupStore is a mock of KetchupStore interface.
 type KetchupStore struct {
+	isgomock struct{}
 	ctrl     *gomock.Controller
 	recorder *KetchupStoreMockRecorder
 }
