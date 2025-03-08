@@ -5,7 +5,7 @@ go 1.24
 toolchain go1.24.0
 
 require (
-	github.com/ViBiOh/auth/v2 v2.20.9
+	github.com/ViBiOh/auth/v2 v2.20.10
 	github.com/ViBiOh/flags v1.6.0
 	github.com/ViBiOh/httputils/v4 v4.81.7
 	github.com/ViBiOh/mailer v1.33.11
