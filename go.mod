@@ -32,7 +32,7 @@ require (
 	github.com/rabbitmq/amqp091-go v1.10.0 // indirect
 	github.com/redis/go-redis/extra/rediscmd/v9 v9.7.1 // indirect
 	github.com/redis/go-redis/extra/redisotel/v9 v9.7.1 // indirect
-	github.com/redis/go-redis/v9 v9.7.1 // indirect
+	github.com/redis/go-redis/v9 v9.7.3 // indirect
 	github.com/rs/xid v1.6.0 // indirect
 	github.com/tdewolff/minify/v2 v2.21.3 // indirect
 	github.com/tdewolff/parse/v2 v2.7.20 // indirect
