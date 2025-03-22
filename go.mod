@@ -7,7 +7,7 @@ toolchain go1.24.0
 require (
 	github.com/ViBiOh/auth/v2 v2.20.10
 	github.com/ViBiOh/flags v1.6.0
-	github.com/ViBiOh/httputils/v4 v4.81.7
+	github.com/ViBiOh/httputils/v4 v4.81.8
 	github.com/ViBiOh/mailer v1.33.11
 	github.com/jackc/pgx/v5 v5.7.2
 	go.opentelemetry.io/otel/metric v1.35.0
@@ -30,12 +30,12 @@ require (
 	github.com/jackc/puddle/v2 v2.2.2 // indirect
 	github.com/klauspost/cpuid/v2 v2.2.10 // indirect
 	github.com/rabbitmq/amqp091-go v1.10.0 // indirect
-	github.com/redis/go-redis/extra/rediscmd/v9 v9.7.1 // indirect
-	github.com/redis/go-redis/extra/redisotel/v9 v9.7.1 // indirect
+	github.com/redis/go-redis/extra/rediscmd/v9 v9.7.3 // indirect
+	github.com/redis/go-redis/extra/redisotel/v9 v9.7.3 // indirect
 	github.com/redis/go-redis/v9 v9.7.3 // indirect
 	github.com/rs/xid v1.6.0 // indirect
-	github.com/tdewolff/minify/v2 v2.21.3 // indirect
-	github.com/tdewolff/parse/v2 v2.7.20 // indirect
+	github.com/tdewolff/minify/v2 v2.22.3 // indirect
+	github.com/tdewolff/parse/v2 v2.7.21 // indirect
 	github.com/zeebo/xxh3 v1.0.2 // indirect
 	go.opentelemetry.io/auto/sdk v1.1.0 // indirect
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.60.0 // indirect
@@ -52,8 +52,8 @@ require (
 	golang.org/x/sync v0.12.0 // indirect
 	golang.org/x/sys v0.31.0 // indirect
 	golang.org/x/text v0.23.0 // indirect
-	google.golang.org/genproto/googleapis/api v0.0.0-20250303144028-a0af3efb3deb // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20250303144028-a0af3efb3deb // indirect
+	google.golang.org/genproto/googleapis/api v0.0.0-20250313205543-e70fdf4c4cb4 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20250313205543-e70fdf4c4cb4 // indirect
 	google.golang.org/grpc v1.71.0 // indirect
 	google.golang.org/protobuf v1.36.5 // indirect
 )
