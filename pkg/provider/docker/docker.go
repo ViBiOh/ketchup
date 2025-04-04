@@ -70,7 +70,7 @@ func (s Service) LatestVersions(ctx context.Context, repository string, patterns
 	tagsURL := fmt.Sprintf("%s/v2/%s/tags/list", registry, repository)
 
 	for len(tagsURL) != 0 {
-		req := request.Get(tagsURL).WithClient(request.CreateClient(15*time.Second, nil))
+		req := request.Get(tagsURL).WithClient(request.CreateClient(30*time.Second, nil))
 
 		if len(auth) != 0 {
 			req = req.Header("Authorization", auth)
