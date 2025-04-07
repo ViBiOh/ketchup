@@ -117,8 +117,6 @@ Thanks for your interest in contributing! There are many ways to contribute to t
 
 Following variables are required for CI:
 
-|            Name            |           Purpose           |
-| :------------------------: | :-------------------------: |
-|      **DOCKER_USER**       | for publishing Docker image |
-|      **DOCKER_PASS**       | for publishing Docker image |
-| **SCRIPTS_NO_INTERACTIVE** | for disabling prompt in CI  |
+|            Name            |          Purpose           |
+| :------------------------: | :------------------------: |
+| **SCRIPTS_NO_INTERACTIVE** | for disabling prompt in CI |
