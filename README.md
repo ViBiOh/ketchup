@@ -36,8 +36,6 @@ In order to send email, you must configure a [mailer](https://github.com/ViBiOh/
 
 Golang binary is built with static link. You can download it directly from the [GitHub Release page](https://github.com/ViBiOh/ketchup/releases) or build it by yourself by cloning this repo and running `make`.
 
-A Docker image is available for `amd64`, `arm` and `arm64` platforms on Docker Hub: [vibioh/ketchup](https://hub.docker.com/r/vibioh/ketchup/tags).
-
 You can configure app by passing CLI args or environment variables (cf. [Usage](#usage) section). CLI override environment variables.
 
 You'll find a Kubernetes example in the [`infra/`](infra) folder, using my [`app chart`](https://github.com/ViBiOh/charts/tree/main/app)
