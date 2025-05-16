@@ -196,7 +196,7 @@ func getNextURL(headers http.Header, registry string) string {
 			continue
 		}
 
-		for _, part := range strings.Split(link, ";") {
+		for part := range strings.SplitSeq(link, ";") {
 			if strings.Contains(part, nextLink) {
 				continue
 			}
