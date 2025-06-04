@@ -28,12 +28,12 @@ spec:
     timeZone: "Europe/Paris"
     image:
       name: rg.fr-par.scw.cloud/vibioh/ketchup
-      tag: "202505241324" # {"$imagepolicy": "default:flux-ketchup-web:tag"}
+      tag: "202506042152" # {"$imagepolicy": "default:flux-ketchup-web:tag"}
     labels:
       k8s-cleaner: "true"
       tags.datadoghq.com/env: "production"
       tags.datadoghq.com/service: "ketchup-notifier"
-      tags.datadoghq.com/version: "202505241324" # {"$imagepolicy": "default:flux-ketchup-web:tag"}
+      tags.datadoghq.com/version: "202506042152" # {"$imagepolicy": "default:flux-ketchup-web:tag"}
     env:
       - name: GOMAXPROCS
         valueFrom:
