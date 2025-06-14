@@ -5,7 +5,7 @@ go 1.24
 require (
 	github.com/ViBiOh/auth/v2 v2.20.14
 	github.com/ViBiOh/flags v1.6.0
-	github.com/ViBiOh/httputils/v4 v4.81.14
+	github.com/ViBiOh/httputils/v4 v4.82.1
 	github.com/ViBiOh/mailer v1.33.14
 	github.com/jackc/pgx/v5 v5.7.5
 	go.opentelemetry.io/otel/metric v1.36.0
