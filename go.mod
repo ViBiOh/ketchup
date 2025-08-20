@@ -1,6 +1,6 @@
 module github.com/ViBiOh/ketchup
 
-go 1.24
+go 1.25
 
 require (
 	github.com/ViBiOh/auth/v2 v2.20.14
@@ -10,7 +10,7 @@ require (
 	github.com/jackc/pgx/v5 v5.7.5
 	go.opentelemetry.io/otel/metric v1.37.0
 	go.opentelemetry.io/otel/trace v1.37.0
-	go.uber.org/mock v0.5.2
+	go.uber.org/mock v0.6.0
 	gopkg.in/yaml.v3 v3.0.1
 )
 

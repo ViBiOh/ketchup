@@ -35,10 +35,6 @@ spec:
       tags.datadoghq.com/service: "ketchup-notifier"
       tags.datadoghq.com/version: "202508140802" # {"$imagepolicy": "default:flux-ketchup-web:tag"}
     env:
-      - name: GOMAXPROCS
-        valueFrom:
-          resourceFieldRef:
-            resource: limits.cpu
       - name: GOMEMLIMIT
         valueFrom:
           resourceFieldRef:
