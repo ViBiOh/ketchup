@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	authModel "github.com/ViBiOh/auth/v2/pkg/model"
+	authModel "github.com/ViBiOh/auth/v3/pkg/model"
 	"github.com/ViBiOh/ketchup/pkg/mocks"
 	"github.com/ViBiOh/ketchup/pkg/model"
 	"github.com/jackc/pgx/v5"

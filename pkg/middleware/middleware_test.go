@@ -6,7 +6,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	authModel "github.com/ViBiOh/auth/v2/pkg/model"
+	authModel "github.com/ViBiOh/auth/v3/pkg/model"
 	"github.com/ViBiOh/httputils/v4/pkg/request"
 	"github.com/ViBiOh/ketchup/pkg/mocks"
 	"github.com/ViBiOh/ketchup/pkg/model"

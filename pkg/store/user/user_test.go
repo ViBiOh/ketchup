@@ -6,7 +6,7 @@ import (
 	"reflect"
 	"testing"
 
-	authModel "github.com/ViBiOh/auth/v2/pkg/model"
+	authModel "github.com/ViBiOh/auth/v3/pkg/model"
 	"github.com/ViBiOh/ketchup/pkg/mocks"
 	"github.com/ViBiOh/ketchup/pkg/model"
 	"github.com/jackc/pgx/v5"
@@ -190,9 +190,8 @@ func TestCreate(t *testing.T) {
 		"simple": {
 			args{
 				o: model.NewUser(0, testEmail, authModel.User{
-					ID:       1,
-					Login:    "vibioh",
-					Password: "secret",
+					ID:   1,
+					Name: "vibioh",
 				}),
 			},
 			1,

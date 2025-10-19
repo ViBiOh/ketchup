@@ -13,7 +13,7 @@ import (
 	context "context"
 	reflect "reflect"
 
-	model "github.com/ViBiOh/auth/v2/pkg/model"
+	model "github.com/ViBiOh/auth/v3/pkg/model"
 	model0 "github.com/ViBiOh/ketchup/pkg/model"
 	semver "github.com/ViBiOh/ketchup/pkg/semver"
 	model1 "github.com/ViBiOh/mailer/pkg/model"
@@ -96,33 +96,19 @@ func (m *AuthService) EXPECT() *AuthServiceMockRecorder {
 	return m.recorder
 }
 
-// Check mocks base method.
-func (m *AuthService) Check(arg0 context.Context, arg1, arg2 model.User) error {
+// CreateBasic mocks base method.
+func (m *AuthService) CreateBasic(ctx context.Context, login, password string) (model.User, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Check", arg0, arg1, arg2)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// Check indicates an expected call of Check.
-func (mr *AuthServiceMockRecorder) Check(arg0, arg1, arg2 any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Check", reflect.TypeOf((*AuthService)(nil).Check), arg0, arg1, arg2)
-}
-
-// Create mocks base method.
-func (m *AuthService) Create(arg0 context.Context, arg1 model.User) (model.User, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Create", arg0, arg1)
+	ret := m.ctrl.Call(m, "CreateBasic", ctx, login, password)
 	ret0, _ := ret[0].(model.User)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// Create indicates an expected call of Create.
-func (mr *AuthServiceMockRecorder) Create(arg0, arg1 any) *gomock.Call {
+// CreateBasic indicates an expected call of CreateBasic.
+func (mr *AuthServiceMockRecorder) CreateBasic(ctx, login, password any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*AuthService)(nil).Create), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateBasic", reflect.TypeOf((*AuthService)(nil).CreateBasic), ctx, login, password)
 }
 
 // UserService is a mock of UserService interface.

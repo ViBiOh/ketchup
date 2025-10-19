@@ -25,7 +25,7 @@ const getByEmailQuery = `
 SELECT
   id,
   email,
-  login_id
+  user_id
 FROM
   ketchup.user
 WHERE
@@ -34,8 +34,9 @@ WHERE
 
 func (s Service) GetByEmail(ctx context.Context, email string) (model.User, error) {
 	var item model.User
+
 	scanner := func(row pgx.Row) (err error) {
-		switch err = row.Scan(&item.ID, &item.Email, &item.Login.ID); err {
+		switch err = row.Scan(&item.ID, &item.Email, &item.Base.ID); err {
 		case pgx.ErrNoRows:
 			err = nil
 		}
@@ -59,8 +60,9 @@ WHERE
 
 func (s Service) GetByLoginID(ctx context.Context, loginID uint64) (model.User, error) {
 	var item model.User
+
 	scanner := func(row pgx.Row) (err error) {
-		switch err = row.Scan(&item.ID, &item.Email, &item.Login.ID); err {
+		switch err = row.Scan(&item.ID, &item.Email, &item.Base.ID); err {
 		case pgx.ErrNoRows:
 			return nil
 		}
@@ -84,7 +86,7 @@ INSERT INTO
 `
 
 func (s Service) Create(ctx context.Context, o model.User) (model.Identifier, error) {
-	id, err := s.db.Create(ctx, insertQuery, o.Email, o.Login.ID)
+	id, err := s.db.Create(ctx, insertQuery, o.Email, o.Base.ID)
 
 	return model.Identifier(id), err
 }

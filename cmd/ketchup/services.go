@@ -5,10 +5,9 @@ import (
 	"embed"
 	"fmt"
 
-	authIdent "github.com/ViBiOh/auth/v2/pkg/ident/basic"
-	authMiddleware "github.com/ViBiOh/auth/v2/pkg/middleware"
-	authService "github.com/ViBiOh/auth/v2/pkg/service"
-	authStore "github.com/ViBiOh/auth/v2/pkg/store/db"
+	authMiddleware "github.com/ViBiOh/auth/v3/pkg/middleware"
+	basic "github.com/ViBiOh/auth/v3/pkg/provider/basic"
+	authStore "github.com/ViBiOh/auth/v3/pkg/store/db"
 	"github.com/ViBiOh/httputils/v4/pkg/cors"
 	"github.com/ViBiOh/httputils/v4/pkg/owasp"
 	"github.com/ViBiOh/httputils/v4/pkg/renderer"
@@ -32,14 +31,13 @@ import (
 var content embed.FS
 
 type services struct {
-	server   *server.Server
-	owasp    owasp.Service
-	cors     cors.Service
-	renderer *renderer.Service
-
 	ketchup        ketchup.Service
 	user           user.Service
+	server         *server.Server
+	renderer       *renderer.Service
+	cors           cors.Service
 	authMiddleware authMiddleware.Service
+	owasp          owasp.Service
 }
 
 func newServices(ctx context.Context, config configuration, clients clients) (services, error) {
@@ -50,11 +48,10 @@ func newServices(ctx context.Context, config configuration, clients clients) (se
 	output.owasp = owasp.New(config.owasp)
 	output.cors = cors.New(config.cors)
 
-	authProvider := authStore.New(clients.db)
-	identProvider := authIdent.New(authProvider, "ketchup")
+	authStorage := authStore.New(clients.db)
+	basicProvider := basic.New(authStorage, basic.WithRealm("ketchup"))
 
-	authService := authService.New(authProvider, authProvider)
-	output.authMiddleware = authMiddleware.New(authProvider, clients.telemetry.TracerProvider(), identProvider)
+	output.authMiddleware = authMiddleware.New(basicProvider, "", clients.telemetry.TracerProvider())
 
 	githubService := github.New(config.github, clients.redis, clients.telemetry.MeterProvider(), clients.telemetry.TracerProvider())
 	helmService := helm.New()
@@ -71,7 +68,7 @@ func newServices(ctx context.Context, config configuration, clients clients) (se
 		return output, fmt.Errorf("renderer: %w", err)
 	}
 
-	output.user = userService.New(userStore.New(clients.db), &authService)
+	output.user = userService.New(userStore.New(clients.db), authStorage)
 	output.ketchup = ketchup.New(ctx, output.renderer, ketchupService, output.user, repositoryService, clients.redis, clients.telemetry.TracerProvider())
 
 	return output, nil

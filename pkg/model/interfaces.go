@@ -3,7 +3,7 @@ package model
 import (
 	"context"
 
-	authModel "github.com/ViBiOh/auth/v2/pkg/model"
+	authModel "github.com/ViBiOh/auth/v3/pkg/model"
 	"github.com/ViBiOh/ketchup/pkg/semver"
 	mailerModel "github.com/ViBiOh/mailer/pkg/model"
 )
@@ -22,8 +22,7 @@ type Mailer interface {
 }
 
 type AuthService interface {
-	Create(context.Context, authModel.User) (authModel.User, error)
-	Check(context.Context, authModel.User, authModel.User) error
+	CreateBasic(ctx context.Context, login, password string) (authModel.User, error)
 }
 
 type UserService interface {

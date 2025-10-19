@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	authModel "github.com/ViBiOh/auth/v2/pkg/model"
+	authModel "github.com/ViBiOh/auth/v3/pkg/model"
 	httpModel "github.com/ViBiOh/httputils/v4/pkg/model"
 	"github.com/ViBiOh/ketchup/pkg/mocks"
 	"github.com/ViBiOh/ketchup/pkg/model"
@@ -91,8 +91,10 @@ func TestCreate(t *testing.T) {
 	t.Parallel()
 
 	type args struct {
-		ctx  context.Context
-		item model.User
+		ctx      context.Context
+		email    string
+		login    string
+		password string
 	}
 
 	cases := map[string]struct {
@@ -104,8 +106,7 @@ func TestCreate(t *testing.T) {
 		"invalid user": {
 			Service{},
 			args{
-				ctx:  context.TODO(),
-				item: model.NewUser(1, "", authModel.NewUser(1, "")),
+				ctx: context.TODO(),
 			},
 			model.User{},
 			httpModel.ErrInvalid,
@@ -113,8 +114,8 @@ func TestCreate(t *testing.T) {
 		"invalid auth": {
 			Service{},
 			args{
-				ctx:  context.TODO(),
-				item: model.NewUser(0, testEmail, authModel.NewUser(0, "")),
+				ctx:   context.TODO(),
+				email: testEmail,
 			},
 			model.User{},
 			httpModel.ErrInvalid,
@@ -122,8 +123,10 @@ func TestCreate(t *testing.T) {
 		"start atomic error": {
 			Service{},
 			args{
-				ctx:  context.TODO(),
-				item: model.NewUser(1, testEmail, authModel.NewUser(1, "")),
+				ctx:      context.TODO(),
+				email:    testEmail,
+				login:    "admin",
+				password: "password",
 			},
 			model.User{},
 			errAtomicStart,
@@ -131,8 +134,10 @@ func TestCreate(t *testing.T) {
 		"login create error": {
 			Service{},
 			args{
-				ctx:  context.TODO(),
-				item: model.NewUser(1, testEmail, authModel.NewUser(1, "")),
+				ctx:      context.TODO(),
+				email:    testEmail,
+				login:    "admin",
+				password: "password",
 			},
 			model.User{},
 			httpModel.ErrInternalError,
@@ -140,8 +145,10 @@ func TestCreate(t *testing.T) {
 		"user create error": {
 			Service{},
 			args{
-				ctx:  context.TODO(),
-				item: model.NewUser(2, testEmail, authModel.NewUser(2, "")),
+				ctx:      context.TODO(),
+				email:    testEmail,
+				login:    "admin",
+				password: "password",
 			},
 			model.User{},
 			httpModel.ErrInternalError,
@@ -149,8 +156,10 @@ func TestCreate(t *testing.T) {
 		"success": {
 			Service{},
 			args{
-				ctx:  context.TODO(),
-				item: model.NewUser(2, testEmail, authModel.NewUser(2, "")),
+				ctx:      context.TODO(),
+				email:    testEmail,
+				login:    "admin",
+				password: "password",
 			},
 			model.NewUser(2, testEmail, authModel.NewUser(2, "admin")),
 			nil,
@@ -176,30 +185,26 @@ func TestCreate(t *testing.T) {
 			case "invalid user":
 				mockUserStore.EXPECT().GetByEmail(gomock.Any(), gomock.Any()).Return(model.User{}, nil)
 			case "invalid auth":
-				authService.EXPECT().Check(gomock.Any(), gomock.Any(), gomock.Any()).Return(errors.New("failed"))
+				mockUserStore.EXPECT().GetByEmail(gomock.Any(), gomock.Any()).Return(model.User{}, nil)
 			case "start atomic error":
-				authService.EXPECT().Check(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 				mockUserStore.EXPECT().GetByEmail(gomock.Any(), gomock.Any()).Return(model.User{}, nil)
 				mockUserStore.EXPECT().DoAtomic(gomock.Any(), gomock.Any()).Return(errAtomicStart)
 			case "login create error":
 				mockUserStore.EXPECT().DoAtomic(gomock.Any(), gomock.Any()).DoAndReturn(realDoAtomic)
 				mockUserStore.EXPECT().GetByEmail(gomock.Any(), gomock.Any()).Return(model.User{}, nil)
-				authService.EXPECT().Check(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
-				authService.EXPECT().Create(gomock.Any(), gomock.Any()).Return(authModel.User{}, errors.New("failed"))
+				authService.EXPECT().CreateBasic(gomock.Any(), gomock.Any(), gomock.Any()).Return(authModel.User{}, errors.New("failed"))
 			case "user create error":
 				mockUserStore.EXPECT().DoAtomic(gomock.Any(), gomock.Any()).DoAndReturn(realDoAtomic)
 				mockUserStore.EXPECT().GetByEmail(gomock.Any(), gomock.Any()).Return(model.User{}, nil)
-				authService.EXPECT().Check(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
-				authService.EXPECT().Create(gomock.Any(), gomock.Any()).Return(authModel.User{}, errors.New("failed"))
+				authService.EXPECT().CreateBasic(gomock.Any(), gomock.Any(), gomock.Any()).Return(authModel.User{}, errors.New("failed"))
 			case "success":
 				mockUserStore.EXPECT().DoAtomic(gomock.Any(), gomock.Any()).DoAndReturn(realDoAtomic)
 				mockUserStore.EXPECT().GetByEmail(gomock.Any(), gomock.Any()).Return(model.User{}, nil)
 				mockUserStore.EXPECT().Create(gomock.Any(), gomock.Any()).Return(model.Identifier(2), nil)
-				authService.EXPECT().Check(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
-				authService.EXPECT().Create(gomock.Any(), gomock.Any()).Return(authModel.NewUser(2, "admin"), nil)
+				authService.EXPECT().CreateBasic(gomock.Any(), gomock.Any(), gomock.Any()).Return(authModel.NewUser(2, "admin"), nil)
 			}
 
-			got, gotErr := testCase.instance.Create(testCase.args.ctx, testCase.args.item)
+			got, gotErr := testCase.instance.Create(testCase.args.ctx, testCase.args.email, testCase.args.login, testCase.args.password)
 
 			failed := false
 
@@ -220,9 +225,10 @@ func TestCheck(t *testing.T) {
 	t.Parallel()
 
 	type args struct {
-		ctx context.Context
-		old model.User
-		new model.User
+		ctx      context.Context
+		email    string
+		login    string
+		password string
 	}
 
 	cases := map[string]struct {
@@ -230,34 +236,30 @@ func TestCheck(t *testing.T) {
 		args     args
 		wantErr  error
 	}{
-		"delete": {
-			Service{},
-			args{
-				ctx: context.TODO(),
-			},
-			nil,
-		},
 		"no name": {
 			Service{},
 			args{
 				ctx: context.TODO(),
-				new: model.NewUser(1, "", authModel.NewUser(1, "")),
 			},
 			errors.New("email is required"),
 		},
 		"get error": {
 			Service{},
 			args{
-				ctx: context.TODO(),
-				new: model.NewUser(1, testEmail, authModel.NewUser(1, "")),
+				ctx:      context.TODO(),
+				email:    testEmail,
+				login:    "admin",
+				password: "password",
 			},
 			errors.New("check if email already exists"),
 		},
 		"already used": {
 			Service{},
 			args{
-				ctx: context.TODO(),
-				new: model.NewUser(1, testEmail, authModel.NewUser(1, "")),
+				ctx:      context.TODO(),
+				email:    testEmail,
+				login:    "admin",
+				password: "password",
 			},
 			errors.New("email already used"),
 		},
@@ -282,7 +284,7 @@ func TestCheck(t *testing.T) {
 				mockUserStore.EXPECT().GetByEmail(gomock.Any(), gomock.Any()).Return(model.NewUser(1, testEmail, authModel.NewUser(1, "")), nil)
 			}
 
-			gotErr := testCase.instance.check(testCase.args.ctx, testCase.args.old, testCase.args.new)
+			gotErr := testCase.instance.check(testCase.args.ctx, testCase.args.email, testCase.args.login, testCase.args.password)
 
 			failed := false
 

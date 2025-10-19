@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	authModel "github.com/ViBiOh/auth/v2/pkg/model"
+	authModel "github.com/ViBiOh/auth/v3/pkg/model"
 )
 
 type key int
@@ -15,15 +15,15 @@ const (
 
 type User struct {
 	Email string         `json:"email"`
-	Login authModel.User `json:"login"`
+	Base  authModel.User `json:"login"`
 	ID    Identifier     `json:"id"`
 }
 
 func (u User) String() string {
 	output := fmt.Sprintf("id=%d", u.ID)
 
-	if len(u.Login.Login) != 0 {
-		output += fmt.Sprintf("login=`%s`", u.Login.Login)
+	if len(u.Base.Name) != 0 {
+		output += fmt.Sprintf("login=`%s`", u.Base.Name)
 	} else if len(u.Email) != 0 {
 		output += fmt.Sprintf("email=`%s`", u.Email)
 	}
@@ -32,14 +32,14 @@ func (u User) String() string {
 }
 
 func (u User) IsZero() bool {
-	return u.ID.IsZero() && u.Login.ID == 0
+	return u.ID.IsZero() && u.Base.ID == 0
 }
 
-func NewUser(id Identifier, email string, login authModel.User) User {
+func NewUser(id Identifier, email string, user authModel.User) User {
 	return User{
 		ID:    id,
 		Email: email,
-		Login: login,
+		Base:  user,
 	}
 }
 
