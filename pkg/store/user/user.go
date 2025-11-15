@@ -58,7 +58,7 @@ WHERE
   login_id = $1
 `
 
-func (s Service) GetByLoginID(ctx context.Context, loginID uint64) (model.User, error) {
+func (s Service) GetByLoginID(ctx context.Context, loginID string) (model.User, error) {
 	var item model.User
 
 	scanner := func(row pgx.Row) (err error) {

@@ -29,7 +29,7 @@ func TestMiddleware(t *testing.T) {
 					t.Errorf("write: %s", err)
 				}
 			}),
-			httptest.NewRequest(http.MethodGet, "/", nil).WithContext(authModel.StoreUser(context.TODO(), authModel.NewUser(1, "test"))),
+			httptest.NewRequest(http.MethodGet, "/", nil).WithContext(authModel.StoreUser(context.TODO(), authModel.NewUser("test"))),
 			"nobody@localhost",
 			http.StatusOK,
 			http.Header{},
@@ -51,7 +51,7 @@ func TestMiddleware(t *testing.T) {
 
 			userService := mocks.NewUserService(ctrl)
 			if intention == "simple" {
-				userService.EXPECT().StoreInContext(gomock.Any()).Return(model.StoreUser(context.TODO(), model.NewUser(1, "nobody@localhost", authModel.NewUser(1, "test"))))
+				userService.EXPECT().StoreInContext(gomock.Any()).Return(model.StoreUser(context.TODO(), model.NewUser(1, "nobody@localhost", authModel.NewUser("test"))))
 			}
 
 			writer := httptest.NewRecorder()

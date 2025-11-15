@@ -154,6 +154,8 @@ func TestGetNewRepositoryReleases(t *testing.T) {
 func TestGetKetchupToNotify(t *testing.T) {
 	t.Parallel()
 
+	loginUser := authModel.NewUser("")
+
 	type args struct {
 		ctx      context.Context
 		releases []model.Release
@@ -209,14 +211,14 @@ func TestGetKetchupToNotify(t *testing.T) {
 				},
 			},
 			map[model.User][]model.Release{
-				{ID: 2, Email: "guest@nowhere"}: {{
+				{ID: 2, Email: "guest@nowhere", Base: loginUser}: {{
 					Pattern: model.DefaultPattern,
 					Version: semver.Version{
 						Name: "1.1.0",
 					},
 					Repository: model.NewGithubRepository(model.Identifier(1), repositoryName),
 				}},
-				{ID: 1, Email: testEmail}: {{
+				{ID: 1, Email: testEmail, Base: loginUser}: {{
 					Pattern: model.DefaultPattern,
 					Version: semver.Version{
 						Name: "1.1.0",
@@ -260,49 +262,51 @@ func TestGetKetchupToNotify(t *testing.T) {
 			switch intention {
 			case "list error":
 				mockKetchupService.EXPECT().ListForRepositories(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, errors.New("failed"))
+
 			case "empty":
 				mockKetchupService.EXPECT().ListForRepositories(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, nil)
+
 			case "one release, n ketchups":
 				mockKetchupService.EXPECT().ListForRepositories(gomock.Any(), gomock.Any(), gomock.Any()).Return([]model.Ketchup{
 					{
 						Pattern:    model.DefaultPattern,
 						Repository: model.NewGithubRepository(model.Identifier(1), repositoryName),
-						User:       model.NewUser(1, testEmail, authModel.NewUser(0, "")),
+						User:       model.NewUser(1, testEmail, loginUser),
 						Version:    repositoryVersion,
 						Frequency:  model.Daily,
 					},
 					{
 						Pattern:    model.DefaultPattern,
 						Repository: model.NewGithubRepository(model.Identifier(1), repositoryName),
-						User:       model.NewUser(2, "guest@nowhere", authModel.NewUser(0, "")),
+						User:       model.NewUser(2, "guest@nowhere", loginUser),
 						Version:    repositoryVersion,
 						Frequency:  model.Daily,
 					},
 					{
 						Pattern:    model.DefaultPattern,
 						Repository: model.NewGithubRepository(model.Identifier(2), "vibioh/dotfiles"),
-						User:       model.NewUser(1, testEmail, authModel.NewUser(0, "")),
+						User:       model.NewUser(1, testEmail, loginUser),
 						Version:    repositoryVersion,
 						Frequency:  model.Daily,
 					},
 					{
 						Pattern:    "^1.1-0",
 						Repository: model.NewGithubRepository(model.Identifier(2), "vibioh/dotfiles"),
-						User:       model.NewUser(2, "guest@nowhere", authModel.NewUser(0, "")),
+						User:       model.NewUser(2, "guest@nowhere", loginUser),
 						Version:    repositoryVersion,
 						Frequency:  model.Daily,
 					},
 					{
 						Pattern:    model.DefaultPattern,
 						Repository: model.NewGithubRepository(model.Identifier(3), "vibioh/zzz"),
-						User:       model.NewUser(1, testEmail, authModel.NewUser(0, "")),
+						User:       model.NewUser(1, testEmail, loginUser),
 						Version:    repositoryVersion,
 						Frequency:  model.Weekly,
 					},
 					{
 						Pattern:    model.DefaultPattern,
 						Repository: model.NewGithubRepository(model.Identifier(3), "vibioh/zzz"),
-						User:       model.NewUser(2, "guest@nowhere", authModel.NewUser(0, "")),
+						User:       model.NewUser(2, "guest@nowhere", loginUser),
 						Version:    "1.1.0",
 						Frequency:  model.Daily,
 					},

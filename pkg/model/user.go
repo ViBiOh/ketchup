@@ -23,16 +23,22 @@ func (u User) String() string {
 	output := fmt.Sprintf("id=%d", u.ID)
 
 	if len(u.Base.Name) != 0 {
-		output += fmt.Sprintf("login=`%s`", u.Base.Name)
-	} else if len(u.Email) != 0 {
-		output += fmt.Sprintf("email=`%s`", u.Email)
+		output += fmt.Sprintf(",login=`%s`", u.Base.Name)
+	}
+
+	if len(u.Base.ID) != 0 {
+		output += fmt.Sprintf(",login_id=`%s`", u.Base.ID)
+	}
+
+	if len(u.Email) != 0 {
+		output += fmt.Sprintf(",email=`%s`", u.Email)
 	}
 
 	return output
 }
 
 func (u User) IsZero() bool {
-	return u.ID.IsZero() && u.Base.ID == 0
+	return u.ID.IsZero() && len(u.Base.ID) == 0
 }
 
 func NewUser(id Identifier, email string, user authModel.User) User {
