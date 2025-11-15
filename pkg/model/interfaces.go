@@ -31,7 +31,7 @@ type UserService interface {
 
 type UserStore interface {
 	DoAtomic(context.Context, func(context.Context) error) error
-	GetByLoginID(context.Context, uint64) (User, error)
+	GetByLoginID(context.Context, string) (User, error)
 	GetByEmail(context.Context, string) (User, error)
 	Create(context.Context, User) (Identifier, error)
 	Count(context.Context) (uint64, error)

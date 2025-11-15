@@ -31,7 +31,7 @@ func TestGetByEmail(t *testing.T) {
 			args{
 				email: testEmail,
 			},
-			model.NewUser(1, testEmail, authModel.NewUser(1, "")),
+			model.NewUser(1, testEmail, authModel.NewUser("")),
 			nil,
 		},
 		"no rows": {
@@ -59,7 +59,7 @@ func TestGetByEmail(t *testing.T) {
 				mockRow.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...any) error {
 					*pointers[0].(*model.Identifier) = model.Identifier(1)
 					*pointers[1].(*string) = testEmail
-					*pointers[2].(*uint64) = 1
+					*pointers[2].(*string) = testCase.want.Base.ID
 
 					return nil
 				})
@@ -98,8 +98,10 @@ func TestGetByEmail(t *testing.T) {
 func TestGetByLoginID(t *testing.T) {
 	t.Parallel()
 
+	existing := authModel.NewUser("")
+
 	type args struct {
-		loginID uint64
+		loginID string
 	}
 
 	cases := map[string]struct {
@@ -109,14 +111,14 @@ func TestGetByLoginID(t *testing.T) {
 	}{
 		"simple": {
 			args{
-				loginID: 2,
+				loginID: existing.ID,
 			},
-			model.NewUser(1, testEmail, authModel.NewUser(2, "")),
+			model.NewUser(1, testEmail, existing),
 			nil,
 		},
 		"no rows": {
 			args{
-				loginID: 2,
+				loginID: "not found",
 			},
 			model.User{},
 			nil,
@@ -139,14 +141,15 @@ func TestGetByLoginID(t *testing.T) {
 				mockRow.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...any) error {
 					*pointers[0].(*model.Identifier) = 1
 					*pointers[1].(*string) = testEmail
-					*pointers[2].(*uint64) = 2
+					*pointers[2].(*string) = existing.ID
 
 					return nil
 				})
 				dummyFn := func(_ context.Context, scanner func(pgx.Row) error, _ string, _ ...any) error {
 					return scanner(mockRow)
 				}
-				mockDatabase.EXPECT().Get(gomock.Any(), gomock.Any(), gomock.Any(), uint64(2)).DoAndReturn(dummyFn)
+				mockDatabase.EXPECT().Get(gomock.Any(), gomock.Any(), gomock.Any(), existing.ID).DoAndReturn(dummyFn)
+
 			case "no rows":
 				mockRow := mocks.NewRow(ctrl)
 				mockRow.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...any) error {
@@ -155,7 +158,7 @@ func TestGetByLoginID(t *testing.T) {
 				dummyFn := func(_ context.Context, scanner func(pgx.Row) error, _ string, _ ...any) error {
 					return scanner(mockRow)
 				}
-				mockDatabase.EXPECT().Get(gomock.Any(), gomock.Any(), gomock.Any(), uint64(2)).DoAndReturn(dummyFn)
+				mockDatabase.EXPECT().Get(gomock.Any(), gomock.Any(), gomock.Any(), testCase.args.loginID).DoAndReturn(dummyFn)
 			}
 
 			got, gotErr := instance.GetByLoginID(context.TODO(), testCase.args.loginID)
@@ -189,10 +192,7 @@ func TestCreate(t *testing.T) {
 	}{
 		"simple": {
 			args{
-				o: model.NewUser(0, testEmail, authModel.User{
-					ID:   1,
-					Name: "vibioh",
-				}),
+				o: model.NewUser(0, testEmail, authModel.NewUser("vibioh")),
 			},
 			1,
 			nil,
@@ -211,7 +211,7 @@ func TestCreate(t *testing.T) {
 
 			switch intention {
 			case "simple":
-				mockDatabase.EXPECT().Create(gomock.Any(), gomock.Any(), testEmail, uint64(1)).Return(uint64(1), nil)
+				mockDatabase.EXPECT().Create(gomock.Any(), gomock.Any(), testEmail, testCase.args.o.Base.ID).Return(uint64(1), nil)
 			}
 
 			got, gotErr := instance.Create(context.TODO(), testCase.args.o)

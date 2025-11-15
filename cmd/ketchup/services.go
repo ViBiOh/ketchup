@@ -51,7 +51,7 @@ func newServices(ctx context.Context, config configuration, clients clients) (se
 	authStorage := authStore.New(clients.db)
 	basicProvider := basic.New(authStorage, basic.WithRealm("ketchup"))
 
-	output.authMiddleware = authMiddleware.New(basicProvider, "", clients.telemetry.TracerProvider())
+	output.authMiddleware = authMiddleware.New(basicProvider, authMiddleware.WithTracer(clients.telemetry.TracerProvider().Tracer("auth")))
 
 	githubService := github.New(config.github, clients.redis, clients.telemetry.MeterProvider(), clients.telemetry.TracerProvider())
 	helmService := helm.New()

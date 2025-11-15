@@ -28,7 +28,7 @@ CREATE SEQUENCE ketchup.user_seq;
 CREATE TABLE ketchup.user (
   id            BIGINT                   NOT NULL DEFAULT nextval('ketchup.user_seq'),
   email         TEXT                     NOT NULL,
-  login_id      BIGINT                   NOT NULL REFERENCES auth.login(id) ON DELETE CASCADE,
+  login_id      TEXT                     NOT NULL REFERENCES auth.login(id) ON DELETE CASCADE,
   creation_date TIMESTAMP WITH TIME ZONE          DEFAULT now()
 );
 ALTER SEQUENCE ketchup.user_seq OWNED BY ketchup.user.id;

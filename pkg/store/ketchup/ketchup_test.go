@@ -15,7 +15,9 @@ import (
 )
 
 var (
-	testCtx = model.StoreUser(context.TODO(), model.NewUser(3, testEmail, authModel.NewUser(0, "")))
+	loginUser authModel.User
+
+	testCtx = model.StoreUser(context.TODO(), model.NewUser(3, testEmail, loginUser))
 
 	testEmail       = "nobody@localhost"
 	repositoryName  = "vibioh/ketchup"
@@ -23,6 +25,11 @@ var (
 
 	repositoryVersion = "1.0.0"
 )
+
+func init() {
+	loginUser = authModel.NewUser("")
+	loginUser.ID = ""
+}
 
 func TestList(t *testing.T) {
 	t.Parallel()
@@ -42,20 +49,20 @@ func TestList(t *testing.T) {
 			},
 			[]model.Ketchup{
 				{
-					ID:         "cad120aa",
+					ID:         "3b20eb15",
 					Pattern:    model.DefaultPattern,
 					Version:    "0.9.0",
 					Frequency:  model.Daily,
 					Repository: model.NewGithubRepository(model.Identifier(1), repositoryName).AddVersion(model.DefaultPattern, repositoryVersion),
-					User:       model.NewUser(3, testEmail, authModel.NewUser(0, "")),
+					User:       model.NewUser(3, testEmail, loginUser),
 				},
 				{
-					ID:         "5ec6147c",
+					ID:         "adb2e660",
 					Pattern:    model.DefaultPattern,
 					Version:    repositoryVersion,
 					Frequency:  model.Daily,
 					Repository: model.NewHelmRepository(model.Identifier(2), chartRepository, "app").AddVersion(model.DefaultPattern, repositoryVersion),
-					User:       model.NewUser(3, testEmail, authModel.NewUser(0, "")),
+					User:       model.NewUser(3, testEmail, loginUser),
 				},
 			},
 			nil,
@@ -122,8 +129,10 @@ func TestList(t *testing.T) {
 					return scanner(mockRows)
 				}
 				mockDatabase.EXPECT().List(gomock.Any(), gomock.Any(), gomock.Any(), model.Identifier(3), uint(20)).DoAndReturn(dummyFn)
+
 			case "error":
 				mockDatabase.EXPECT().List(gomock.Any(), gomock.Any(), gomock.Any(), model.Identifier(3), uint(20)).Return(errors.New("failed"))
+
 			case "invalid kind":
 				mockRows := mocks.NewRows(ctrl)
 				mockRows.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...any) error {
@@ -192,14 +201,14 @@ func TestListByRepositoriesIDAndFrequencies(t *testing.T) {
 					Version:    "0.9.0",
 					Frequency:  model.Daily,
 					Repository: model.NewGithubRepository(model.Identifier(1), ""),
-					User:       model.NewUser(1, testEmail, authModel.NewUser(0, "")),
+					User:       model.NewUser(1, testEmail, loginUser),
 				},
 				{
 					Pattern:    model.DefaultPattern,
 					Version:    repositoryVersion,
 					Frequency:  model.Daily,
 					Repository: model.NewGithubRepository(model.Identifier(2), ""),
-					User:       model.NewUser(2, "guest@domain", authModel.NewUser(0, "")),
+					User:       model.NewUser(2, "guest@domain", loginUser),
 				},
 			},
 			nil,
@@ -256,6 +265,7 @@ func TestListByRepositoriesIDAndFrequencies(t *testing.T) {
 					return scanner(mockRows)
 				}
 				mockDatabase.EXPECT().List(gomock.Any(), gomock.Any(), gomock.Any(), testCase.args.ids, []string{"daily"}).DoAndReturn(dummyFn)
+
 			case "error":
 				mockDatabase.EXPECT().List(gomock.Any(), gomock.Any(), gomock.Any(), testCase.args.ids, []string{"daily"}).Return(errors.New("failed"))
 			}
@@ -304,7 +314,7 @@ func TestGetByRepository(t *testing.T) {
 				Version:    "0.9.0",
 				Frequency:  model.Daily,
 				Repository: model.NewGithubRepository(model.Identifier(1), repositoryName),
-				User:       model.NewUser(3, testEmail, authModel.NewUser(0, "")),
+				User:       model.NewUser(3, testEmail, loginUser),
 			},
 			nil,
 		},
