@@ -23,7 +23,7 @@ func main() {
 	services, err := newServices(clients.health.EndCtx(), config, clients)
 	logger.FatalfOnErr(ctx, err, "services")
 
-	port := newPort(config, clients, services)
+	port := newPort(clients, services)
 
 	go services.server.Start(clients.health.EndCtx(), port)
 

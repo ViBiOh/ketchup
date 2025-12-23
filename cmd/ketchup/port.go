@@ -7,7 +7,7 @@ import (
 	"github.com/ViBiOh/ketchup/pkg/middleware"
 )
 
-func newPort(config configuration, clients clients, services services) http.Handler {
+func newPort(clients clients, services services) http.Handler {
 	authMux := http.NewServeMux()
 	authMux.Handle("/ketchups/{id...}", services.ketchup.Ketchups())
 	authMux.Handle("/", services.renderer.Handler(services.ketchup.TemplateFunc))
