@@ -69,7 +69,7 @@ func newServices(ctx context.Context, config configuration, clients clients) (se
 	}
 
 	output.user = userService.New(userStore.New(clients.db), authStorage)
-	output.ketchup = ketchup.New(ctx, output.renderer, ketchupService, output.user, repositoryService, clients.redis, clients.telemetry.TracerProvider())
+	output.ketchup = ketchup.New(ctx, output.renderer, ketchupService, output.user, repositoryService, clients.cap, clients.redis, clients.telemetry.TracerProvider())
 
 	return output, nil
 }

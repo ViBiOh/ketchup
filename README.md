@@ -55,6 +55,9 @@ Be careful when using the CLI values, if someone list the processes on the syste
 ```bash
 Usage of ketchup:
   --address           string        [server] Listen address ${KETCHUP_ADDRESS}
+  --capSecretKey      string        [cap] Secret Key ${KETCHUP_CAP_SECRET_KEY}
+  --capSiteKey        string        [cap] Site Key ${KETCHUP_CAP_SITE_KEY}
+  --capURL            string        [cap] Instance URL ${KETCHUP_CAP_URL} (default "http://cap")
   --cert              string        [server] Certificate file ${KETCHUP_CERT}
   --corsCredentials                 [cors] Access-Control-Allow-Credentials ${KETCHUP_CORS_CREDENTIALS} (default false)
   --corsExpose        string        [cors] Access-Control-Expose-Headers ${KETCHUP_CORS_EXPOSE}
@@ -95,9 +98,7 @@ Usage of ketchup:
   --readTimeout       duration      [server] Read Timeout ${KETCHUP_READ_TIMEOUT} (default 5s)
   --redisAddress      string slice  [redis] Redis Address host:port (blank to disable) ${KETCHUP_REDIS_ADDRESS}, as a string slice, environment variable separated by "," (default [127.0.0.1:6379])
   --redisDatabase     int           [redis] Redis Database ${KETCHUP_REDIS_DATABASE} (default 0)
-  --redisMinIdleConn  int           [redis] Redis Minimum Idle Connections ${KETCHUP_REDIS_MIN_IDLE_CONN} (default 0)
   --redisPassword     string        [redis] Redis Password, if any ${KETCHUP_REDIS_PASSWORD}
-  --redisPoolSize     int           [redis] Redis Pool Size (default GOMAXPROCS*10) ${KETCHUP_REDIS_POOL_SIZE} (default 0)
   --redisUsername     string        [redis] Redis Username, if any ${KETCHUP_REDIS_USERNAME}
   --shutdownTimeout   duration      [server] Shutdown Timeout ${KETCHUP_SHUTDOWN_TIMEOUT} (default 10s)
   --telemetryRate     string        [telemetry] OpenTelemetry sample rate, 'always', 'never' or a float value ${KETCHUP_TELEMETRY_RATE} (default "always")
@@ -107,6 +108,7 @@ Usage of ketchup:
   --url               string        [alcotest] URL to check ${KETCHUP_URL}
   --userAgent         string        [alcotest] User-Agent for check ${KETCHUP_USER_AGENT} (default "Alcotest")
   --writeTimeout      duration      [server] Write Timeout ${KETCHUP_WRITE_TIMEOUT} (default 10s)
+
 ```
 
 ## Contributing

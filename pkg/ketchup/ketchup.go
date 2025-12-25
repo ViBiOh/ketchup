@@ -8,6 +8,7 @@ import (
 	"github.com/ViBiOh/httputils/v4/pkg/cache"
 	"github.com/ViBiOh/httputils/v4/pkg/redis"
 	"github.com/ViBiOh/httputils/v4/pkg/renderer"
+	"github.com/ViBiOh/ketchup/pkg/cap"
 	"github.com/ViBiOh/ketchup/pkg/model"
 	"github.com/ViBiOh/ketchup/pkg/service/ketchup"
 	"github.com/ViBiOh/ketchup/pkg/service/repository"
@@ -37,18 +38,20 @@ type Service struct {
 	cache      *cache.Cache[model.User, []model.Repository]
 	redis      redis.Client
 	renderer   *renderer.Service
+	cap        cap.Service
 }
 
-func New(ctx context.Context, rendererService *renderer.Service, ketchupService ketchup.Service, userService user.Service, repositoryService repository.Service, redisClient redis.Client, traceProvider trace.TracerProvider) Service {
+func New(ctx context.Context, renderer *renderer.Service, ketchup ketchup.Service, user user.Service, repository repository.Service, cap cap.Service, redis redis.Client, traceProvider trace.TracerProvider) Service {
 	service := Service{
-		renderer:   rendererService,
-		ketchup:    ketchupService,
-		user:       userService,
-		repository: repositoryService,
-		redis:      redisClient,
+		renderer:   renderer,
+		cap:        cap,
+		ketchup:    ketchup,
+		user:       user,
+		repository: repository,
+		redis:      redis,
 	}
 
-	service.cache = cache.New(redisClient, suggestCacheKey, func(ctx context.Context, user model.User) ([]model.Repository, error) {
+	service.cache = cache.New(redis, suggestCacheKey, func(ctx context.Context, user model.User) ([]model.Repository, error) {
 		return service.repository.Suggest(ctx, ignoresIdsFromCtx(ctx), countFromCtx(ctx))
 	}, traceProvider).
 		WithTTL(time.Hour*24).

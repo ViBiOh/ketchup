@@ -1,5 +1,5 @@
 {{ define "main-style" }}
-  <style type="text/css" nonce="{{ .nonce }}">
+  <style nonce="{{ .nonce }}">
     :root {
       --primary: cornflowerblue;
       --success: limegreen;
@@ -7,6 +7,9 @@
       --dark: #000000;
       --grey: #272727;
       --white: silver;
+
+      --success-fade: #155415;
+      --danger-fade: #66352E;
 
       --icon-small: 1.6rem;
       --icon-size: 2.4rem;
@@ -155,7 +158,7 @@
 
     .modal {
       align-items: center;
-      background-color: rgba(84, 84, 84, 0.75);
+      backdrop-filter: blur(1rem);
       display: none;
       height: 100vh;
       justify-content: center;
@@ -260,31 +263,25 @@
 
 {{ define "main-script" }}
   <script type="text/javascript" nonce="{{ .nonce }}">
-    /**
-    * Go back from state.
-    */
     function goBack() {
       const previousHash = document.location.hash;
-      document.location.hash = '';
+      document.location.hash = "";
 
       if (/success$/gim.test(previousHash)) {
         window.location.reload(true);
       }
     }
 
-    /**
-    * Handle Previous/next.
-    */
-    window.onkeyup = e => {
-      switch(e.key) {
-        case 'Escape':
+    window.onkeyup = (e) => {
+      switch (e.key) {
+        case "Escape":
           goBack();
           break;
       }
     };
 
-    document.addEventListener('readystatechange', async (event) => {
-      if (event.target.readyState === 'complete') {
+    document.addEventListener("readystatechange", async (event) => {
+      if (event.target.readyState === "complete") {
         const link = document.getElementById("go-back");
         if (link) {
           link.setAttribute("href", document.referrer);

@@ -95,12 +95,16 @@
     <a href="{{ url "/app/" }}" class="active-link">Login</a> or <a href="#signup" class="active-link">Signup</a>
   </h2>
 
+  <script src="/scripts/cap.js"></script>
+  <script type="text/javascript" nonce="{{ .nonce }}">
+    window.CAP_CSS_NONCE = '{{ .nonce }}';
+    window.CAP_CUSTOM_WASM_URL = '{{ publicURL "/scripts/cap_wasm.min.js" }}';
+  </script>
+
   <fieldset id="signup">
     <legend>Signup</legend>
 
     <form method="POST" action="/signup">
-      <input type="hidden" name="token" value="{{ .Security.Token }}">
-
       <p class="padding no-margin">
         <label for="email" class="block">Email: <span class="danger">*</span></label>
         <input id="email" type="text" name="email" placeholder="nobody@localhost">
@@ -116,9 +120,8 @@
         <input id="password" type="password" name="password" placeholder="secret">
       </p>
 
-      <p class="padding no-margin">
-        <label for="question" class="block">{{ .Security.Question }} <span class="danger">*</span></label>
-        <input id="question" type="text" name="answer" placeholder="color">
+      <p class="flex flex-center">
+        <cap-widget data-cap-api-endpoint="{{ .CapSiteURL }}"></cap-widget>
       </p>
 
       <p class="padding no-margin center">

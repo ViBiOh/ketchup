@@ -1,7 +1,6 @@
 package ketchup
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -22,9 +21,14 @@ func (s Service) Signup() http.Handler {
 			return
 		}
 
-		token := r.FormValue("token")
-		if !s.validateToken(r.Context(), token, r.FormValue("answer")) {
-			s.renderer.Error(w, r, nil, httpModel.WrapInvalid(errors.New("validate security question")))
+		success, err := s.cap.Verify(r.Context(), r.FormValue("cap-token"))
+		if err != nil {
+			s.renderer.Error(w, r, nil, httpModel.WrapInternal(err))
+			return
+		}
+
+		if !success {
+			s.renderer.Error(w, r, nil, httpModel.WrapInternal(errors.New("invalid token")))
 			return
 		}
 
@@ -32,8 +36,6 @@ func (s Service) Signup() http.Handler {
 			s.renderer.Error(w, r, nil, err)
 			return
 		}
-
-		go s.cleanToken(context.WithoutCancel(r.Context()), token)
 
 		s.renderer.Redirect(w, r, fmt.Sprintf("%s/", appPath), renderer.NewSuccessMessage("Welcome to ketchup!"))
 	})

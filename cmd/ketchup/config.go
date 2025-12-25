@@ -16,6 +16,7 @@ import (
 	"github.com/ViBiOh/httputils/v4/pkg/renderer"
 	"github.com/ViBiOh/httputils/v4/pkg/server"
 	"github.com/ViBiOh/httputils/v4/pkg/telemetry"
+	"github.com/ViBiOh/ketchup/pkg/cap"
 	"github.com/ViBiOh/ketchup/pkg/provider/docker"
 	"github.com/ViBiOh/ketchup/pkg/provider/github"
 )
@@ -37,6 +38,7 @@ type configuration struct {
 
 	github *github.Config
 	docker *docker.Config
+	cap    *cap.Config
 }
 
 func newConfig() configuration {
@@ -51,7 +53,7 @@ func newConfig() configuration {
 		health:    health.Flags(fs, ""),
 
 		server:   server.Flags(fs, ""),
-		owasp:    owasp.Flags(fs, "", flags.NewOverride("Csp", "default-src 'self'; base-uri 'self'; script-src 'self' 'httputils-nonce'; style-src 'self' 'httputils-nonce'")),
+		owasp:    owasp.Flags(fs, "", flags.NewOverride("Csp", "default-src 'self'; base-uri 'self'; script-src 'self' 'httputils-nonce' 'wasm-unsafe-eval'; style-src 'self' 'httputils-nonce'; img-src 'self' data:; connect-src 'self' cap.vibioh.fr; worker-src 'self' blob:")),
 		cors:     cors.Flags(fs, "cors"),
 		renderer: renderer.Flags(fs, "", flags.NewOverride("Title", "Ketchup"), flags.NewOverride("PublicURL", "https://ketchup.vibioh.fr")),
 
@@ -60,6 +62,7 @@ func newConfig() configuration {
 
 		github: github.Flags(fs, "github"),
 		docker: docker.Flags(fs, "docker"),
+		cap:    cap.Flags(fs, "cap"),
 	}
 
 	_ = fs.Parse(os.Args[1:])

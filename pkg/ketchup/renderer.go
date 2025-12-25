@@ -13,15 +13,10 @@ import (
 const suggestThresold = uint64(5)
 
 func (s Service) PublicTemplateFunc(_ http.ResponseWriter, r *http.Request) (renderer.Page, error) {
-	securityPayload, err := s.generateToken(r.Context())
-	if err != nil {
-		return renderer.NewPage("", http.StatusInternalServerError, nil), err
-	}
-
 	return renderer.NewPage("public", http.StatusOK, map[string]any{
-		"Security": securityPayload,
-		"Suggests": s.suggests(r.Context(), nil, 3),
-		"Root":     "/",
+		"CapSiteURL": s.cap.SiteURL(),
+		"Suggests":   s.suggests(r.Context(), nil, 3),
+		"Root":       "/",
 	}), nil
 }
 

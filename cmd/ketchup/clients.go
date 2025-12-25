@@ -11,15 +11,16 @@ import (
 	"github.com/ViBiOh/httputils/v4/pkg/redis"
 	"github.com/ViBiOh/httputils/v4/pkg/request"
 	"github.com/ViBiOh/httputils/v4/pkg/telemetry"
+	"github.com/ViBiOh/ketchup/pkg/cap"
 )
 
 type clients struct {
+	redis     redis.Client
 	telemetry *telemetry.Service
 	pprof     *pprof.Service
 	health    *health.Service
-
-	redis redis.Client
-	db    db.Service
+	cap       cap.Service
+	db        db.Service
 }
 
 func newClients(ctx context.Context, config configuration) (clients, error) {
@@ -48,6 +49,8 @@ func newClients(ctx context.Context, config configuration) (clients, error) {
 	if err != nil {
 		return output, fmt.Errorf("redis: %w", err)
 	}
+
+	output.cap = cap.New(config.cap)
 
 	output.health = health.New(ctx, config.health, output.db.Ping)
 
