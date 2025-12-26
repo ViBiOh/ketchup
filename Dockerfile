@@ -7,7 +7,7 @@ ENV ZONEINFO /zoneinfo.zip
 COPY zoneinfo.zip /zoneinfo.zip
 COPY ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
 
-HEALTHCHECK --retries=5 CMD [ "/ketchup", "-url", "http://localhost:1080/health" ]
+HEALTHCHECK --retries=5 CMD [ "/ketchup", "-url", "http://127.0.0.1:1080/health" ]
 ENTRYPOINT [ "/ketchup" ]
 
 ARG VERSION

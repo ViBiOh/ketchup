@@ -27,23 +27,23 @@ func TestGetNextURL(t *testing.T) {
 		"empty": {
 			args{
 				headers:  http.Header{},
-				registry: "http://localhost",
+				registry: "http://127.0.0.1",
 			},
 			"",
 		},
 		"uppercase link with next": {
 			args{
 				headers:  upperCaseHeader,
-				registry: "http://localhost",
+				registry: "http://127.0.0.1",
 			},
-			"http://localhost/v2/test",
+			"http://127.0.0.1/v2/test",
 		},
 		"lowercase link with previous and next inverted": {
 			args{
 				headers:  lowerCaseHeader,
-				registry: "http://localhost",
+				registry: "http://127.0.0.1",
 			},
-			"http://localhost/v2/next",
+			"http://127.0.0.1/v2/next",
 		},
 	}
 
