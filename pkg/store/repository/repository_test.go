@@ -589,11 +589,7 @@ func TestDeleteUnused(t *testing.T) {
 
 			gotErr := instance.DeleteUnused(context.TODO())
 
-			failed := false
-
-			if !errors.Is(gotErr, testCase.wantErr) {
-				failed = true
-			}
+			failed := !errors.Is(gotErr, testCase.wantErr)
 
 			if failed {
 				t.Errorf("DeleteUnused() = `%s`, want `%s`", gotErr, testCase.wantErr)
@@ -630,11 +626,7 @@ func TestDeleteUnusedVersions(t *testing.T) {
 
 			gotErr := instance.DeleteUnusedVersions(context.TODO())
 
-			failed := false
-
-			if !errors.Is(gotErr, testCase.wantErr) {
-				failed = true
-			}
+			failed := !errors.Is(gotErr, testCase.wantErr)
 
 			if failed {
 				t.Errorf("DeleteUnusedVersions() = `%s`, want `%s`", gotErr, testCase.wantErr)

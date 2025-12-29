@@ -161,11 +161,7 @@ func TestUpdateVersions(t *testing.T) {
 
 			gotErr := instance.UpdateVersions(context.TODO(), testCase.args.o)
 
-			failed := false
-
-			if !errors.Is(gotErr, testCase.wantErr) {
-				failed = true
-			}
+			failed := !errors.Is(gotErr, testCase.wantErr)
 
 			if failed {
 				t.Errorf("UpdateVersions() = `%s`, want `%s`", gotErr, testCase.wantErr)

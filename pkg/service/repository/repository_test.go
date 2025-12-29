@@ -528,11 +528,7 @@ func TestUpdate(t *testing.T) {
 
 			gotErr := instance.Update(testCase.args.ctx, testCase.args.item)
 
-			failed := false
-
-			if !errors.Is(gotErr, testCase.wantErr) {
-				failed = true
-			}
+			failed := !errors.Is(gotErr, testCase.wantErr)
 
 			if failed {
 				t.Errorf("Update() = `%s`, want `%s`", gotErr, testCase.wantErr)
@@ -609,11 +605,7 @@ func TestClean(t *testing.T) {
 
 			gotErr := instance.Clean(testCase.args.ctx)
 
-			failed := false
-
-			if !errors.Is(gotErr, testCase.wantErr) {
-				failed = true
-			}
+			failed := !errors.Is(gotErr, testCase.wantErr)
 
 			if failed {
 				t.Errorf("Clean() = `%s`, want `%s`", gotErr, testCase.wantErr)

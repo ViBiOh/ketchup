@@ -550,11 +550,7 @@ func TestDelete(t *testing.T) {
 
 			gotErr := instance.Delete(testCase.args.ctx, testCase.args.item)
 
-			failed := false
-
-			if !errors.Is(gotErr, testCase.wantErr) {
-				failed = true
-			}
+			failed := !errors.Is(gotErr, testCase.wantErr)
 
 			if failed {
 				t.Errorf("Delete() = `%s`, want `%s`", gotErr, testCase.wantErr)

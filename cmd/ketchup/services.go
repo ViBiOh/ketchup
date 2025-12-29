@@ -20,7 +20,6 @@ import (
 	"github.com/ViBiOh/ketchup/pkg/provider/pypi"
 	ketchupService "github.com/ViBiOh/ketchup/pkg/service/ketchup"
 	repositoryService "github.com/ViBiOh/ketchup/pkg/service/repository"
-	"github.com/ViBiOh/ketchup/pkg/service/user"
 	userService "github.com/ViBiOh/ketchup/pkg/service/user"
 	ketchupStore "github.com/ViBiOh/ketchup/pkg/store/ketchup"
 	repositoryStore "github.com/ViBiOh/ketchup/pkg/store/repository"
@@ -32,7 +31,7 @@ var content embed.FS
 
 type services struct {
 	ketchup        ketchup.Service
-	user           user.Service
+	user           userService.Service
 	server         *server.Server
 	renderer       *renderer.Service
 	cors           cors.Service

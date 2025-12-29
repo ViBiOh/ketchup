@@ -490,11 +490,7 @@ func TestUpdate(t *testing.T) {
 
 			gotErr := instance.Update(testCtx, testCase.args.o, testCase.args.oldPattern)
 
-			failed := false
-
-			if !errors.Is(gotErr, testCase.wantErr) {
-				failed = true
-			}
+			failed := !errors.Is(gotErr, testCase.wantErr)
 
 			if failed {
 				t.Errorf("Update() = `%s`, want `%s`", gotErr, testCase.wantErr)
@@ -542,11 +538,7 @@ func TestDelete(t *testing.T) {
 
 			gotErr := instance.Delete(testCtx, testCase.args.o)
 
-			failed := false
-
-			if !errors.Is(gotErr, testCase.wantErr) {
-				failed = true
-			}
+			failed := !errors.Is(gotErr, testCase.wantErr)
 
 			if failed {
 				t.Errorf("Delete() = `%s`, want `%s`", gotErr, testCase.wantErr)
