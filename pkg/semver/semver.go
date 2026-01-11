@@ -125,7 +125,7 @@ func parseSemver(version string) (map[string]string, error) {
 	return output, nil
 }
 
-func Parse(version string, name string) (Version, error) {
+func Parse(version, name string) (Version, error) {
 	matches, err := parseSemver(version)
 	if err != nil {
 		return Version{}, err

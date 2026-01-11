@@ -149,7 +149,7 @@ func (r Repository) VersionURL(version string) string {
 	}
 }
 
-func (r Repository) CompareURL(version string, pattern string) string {
+func (r Repository) CompareURL(version, pattern string) string {
 	switch r.Kind {
 	case Github:
 		return fmt.Sprintf("%s/%s/compare/%s...%s", githubURL, r.Name, version, r.Versions[pattern])

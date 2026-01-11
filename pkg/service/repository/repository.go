@@ -23,7 +23,7 @@ type Service struct {
 	pypi       model.GenericProvider
 }
 
-func New(repositoryStore model.RepositoryStore, githubService model.GenericProvider, helmService model.HelmProvider, dockerService model.GenericProvider, npmService model.GenericProvider, pypiService model.GenericProvider) Service {
+func New(repositoryStore model.RepositoryStore, githubService model.GenericProvider, helmService model.HelmProvider, dockerService, npmService, pypiService model.GenericProvider) Service {
 	return Service{
 		repository: repositoryStore,
 		github:     githubService,
