@@ -29,8 +29,8 @@ func newServices(ctx context.Context, config configuration, clients clients) (se
 	var err error
 
 	githubService := github.New(config.github, nil, clients.telemetry.MeterProvider(), clients.telemetry.TracerProvider())
-	helmService := helm.New()
 	dockerService := docker.New(config.docker)
+	helmService := helm.New(dockerService)
 	npmService := npm.New()
 	pypiService := pypi.New()
 

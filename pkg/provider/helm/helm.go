@@ -5,9 +5,11 @@ import (
 	"fmt"
 	"io"
 	"log/slog"
+	"strings"
 
 	"github.com/ViBiOh/httputils/v4/pkg/request"
 	"github.com/ViBiOh/ketchup/pkg/model"
+	"github.com/ViBiOh/ketchup/pkg/provider/docker"
 	"github.com/ViBiOh/ketchup/pkg/semver"
 	"gopkg.in/yaml.v3"
 )
@@ -24,10 +26,14 @@ type chart struct {
 	Version string `yaml:"version"`
 }
 
-type Service struct{}
+type Service struct {
+	docker docker.Service
+}
 
-func New() Service {
-	return Service{}
+func New(docker docker.Service) Service {
+	return Service{
+		docker: docker,
+	}
 }
 
 func (s Service) FetchIndex(ctx context.Context, url string, chartsPatterns map[string][]string) (map[string]map[string]semver.Version, error) {
@@ -75,6 +81,10 @@ func (s Service) FetchIndex(ctx context.Context, url string, chartsPatterns map[
 }
 
 func (s Service) LatestVersions(ctx context.Context, name, part string, patterns []string) (map[string]semver.Version, error) {
+	if strings.HasPrefix(name, "oci://") {
+		return s.docker.LatestVersions(ctx, strings.TrimPrefix(name, "oci://"), patterns)
+	}
+
 	index, err := s.FetchIndex(ctx, name, map[string][]string{part: patterns})
 	if err != nil {
 		return nil, err

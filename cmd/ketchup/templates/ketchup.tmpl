@@ -89,6 +89,9 @@
   <script type="text/javascript" nonce="{{ .nonce }}">
     const repositoryInput = document.getElementById('create-name');
     const nameInput = document.getElementById('create-part-wrapper');
+    const helmInput = document.getElementById('create-kind-helm');
+
+    let isHelm = false;
 
     document.getElementById('create-kind-github').addEventListener('change', (e) => {
       if (e.target.value === 'github') {
@@ -97,7 +100,19 @@
       }
     });
 
-    document.getElementById('create-kind-helm').addEventListener('change', (e) => {
+    repositoryInput.addEventListener("input", event => {
+      if (helmInput.value != "helm") {
+        return;
+      }
+
+      if (event.target.value.startsWith("oci://")) {
+        nameInput.classList.add("hidden");
+      } else {
+        nameInput.classList.remove("hidden");
+      }
+    })
+
+    helmInput.addEventListener('change', (e) => {
       if (e.target.value === 'helm') {
         repositoryInput.placeholder = 'https://charts.vibioh.fr';
         nameInput.classList.remove("hidden");

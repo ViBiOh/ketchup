@@ -56,8 +56,8 @@ func newServices(ctx context.Context, config configuration, clients clients) (se
 	output.authMiddleware = authMiddleware.New(basicProvider, authMiddleware.WithTracer(clients.telemetry.TracerProvider().Tracer("auth")))
 
 	githubService := github.New(config.github, clients.redis, clients.telemetry.MeterProvider(), clients.telemetry.TracerProvider())
-	helmService := helm.New()
 	dockerService := docker.New(config.docker)
+	helmService := helm.New(dockerService)
 	npmService := npm.New()
 	pypiService := pypi.New()
 
