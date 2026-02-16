@@ -25,11 +25,11 @@ spec:
     nameOverride: ketchup
     image:
       name: rg.fr-par.scw.cloud/vibioh/ketchup
-      tag: "202602122102" # {"$imagepolicy": "default:flux-ketchup-web:tag"}
+      tag: "202602161154" # {"$imagepolicy": "default:flux-ketchup-web:tag"}
     labels:
       tags.datadoghq.com/env: "production"
       tags.datadoghq.com/service: "ketchup"
-      tags.datadoghq.com/version: "202602122102" # {"$imagepolicy": "default:flux-ketchup-web:tag"}
+      tags.datadoghq.com/version: "202602161154" # {"$imagepolicy": "default:flux-ketchup-web:tag"}
     env:
       - name: GOMEMLIMIT
         valueFrom:
