@@ -5,7 +5,9 @@ import (
 	"embed"
 	"fmt"
 
+	"github.com/ViBiOh/auth/v3/pkg/cookie"
 	authMiddleware "github.com/ViBiOh/auth/v3/pkg/middleware"
+	authModel "github.com/ViBiOh/auth/v3/pkg/model"
 	basic "github.com/ViBiOh/auth/v3/pkg/provider/basic"
 	authStore "github.com/ViBiOh/auth/v3/pkg/store/db"
 	"github.com/ViBiOh/httputils/v4/pkg/cors"
@@ -48,7 +50,8 @@ func newServices(ctx context.Context, config configuration, clients clients) (se
 	output.cors = cors.New(config.cors)
 
 	authStorage := authStore.New(clients.db)
-	basicProvider := basic.New(authStorage, basic.WithRealm("ketchup"))
+	cookieService := cookie.New[authModel.User](config.cookie)
+	basicProvider := basic.New(authStorage, basic.WithRealm("ketchup"), basic.WithCookie(cookieService))
 
 	output.authMiddleware = authMiddleware.New(basicProvider, authMiddleware.WithTracer(clients.telemetry.TracerProvider().Tracer("auth")))
 

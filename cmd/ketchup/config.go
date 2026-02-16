@@ -4,6 +4,7 @@ import (
 	"flag"
 	"os"
 
+	"github.com/ViBiOh/auth/v3/pkg/cookie"
 	"github.com/ViBiOh/flags"
 	"github.com/ViBiOh/httputils/v4/pkg/alcotest"
 	"github.com/ViBiOh/httputils/v4/pkg/cors"
@@ -33,8 +34,9 @@ type configuration struct {
 	cors     *cors.Config
 	renderer *renderer.Config
 
-	db    *db.Config
-	redis *redis.Config
+	db     *db.Config
+	redis  *redis.Config
+	cookie *cookie.Config
 
 	github *github.Config
 	docker *docker.Config
@@ -57,8 +59,9 @@ func newConfig() configuration {
 		cors:     cors.Flags(fs, "cors"),
 		renderer: renderer.Flags(fs, "", flags.NewOverride("Title", "Ketchup"), flags.NewOverride("PublicURL", "https://ketchup.vibioh.fr")),
 
-		db:    db.Flags(fs, "db"),
-		redis: redis.Flags(fs, "redis"),
+		db:     db.Flags(fs, "db"),
+		redis:  redis.Flags(fs, "redis"),
+		cookie: cookie.Flags(fs, "cookie"),
 
 		github: github.Flags(fs, "github"),
 		docker: docker.Flags(fs, "docker"),
