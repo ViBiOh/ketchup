@@ -81,8 +81,8 @@ func (s Service) FetchIndex(ctx context.Context, url string, chartsPatterns map[
 }
 
 func (s Service) LatestVersions(ctx context.Context, name, part string, patterns []string) (map[string]semver.Version, error) {
-	if strings.HasPrefix(name, "oci://") {
-		return s.docker.LatestVersions(ctx, strings.TrimPrefix(name, "oci://"), patterns)
+	if after, ok := strings.CutPrefix(name, "oci://"); ok {
+		return s.docker.LatestVersions(ctx, after, patterns)
 	}
 
 	index, err := s.FetchIndex(ctx, name, map[string][]string{part: patterns})

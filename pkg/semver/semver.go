@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"regexp"
+	"slices"
 	"strconv"
 	"strings"
 )
@@ -175,16 +176,12 @@ func isPrefixAllowed(matches map[string]string, allowedPrefix string) bool {
 		return true
 	}
 
-	for _, prefix := range ignoredPrefixes {
-		if matches["prefix"] == prefix {
-			return false
-		}
+	if slices.Contains(ignoredPrefixes, matches["prefix"]) {
+		return false
 	}
 
-	for _, prefix := range allowedPrefixes {
-		if matches["prefix"] == prefix {
-			return true
-		}
+	if slices.Contains(allowedPrefixes, matches["prefix"]) {
+		return true
 	}
 
 	return matches["prefix"] == allowedPrefix || matches["prefix"] == allowedPrefix+"-"

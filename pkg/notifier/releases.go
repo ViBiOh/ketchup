@@ -76,7 +76,6 @@ func (s Service) getNewStandardReleases(ctx context.Context) ([]model.Release, e
 		}
 
 		for _, repo := range repositories {
-			repo := repo
 			count++
 
 			wg.Go(func() {

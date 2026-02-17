@@ -146,11 +146,11 @@ func (s Service) getKetchupToNotify(ctx context.Context, releases []model.Releas
 }
 
 func releaseKey(r model.Release) []byte {
-	return []byte(fmt.Sprintf("%10d|%s", r.Repository.ID, r.Pattern))
+	return fmt.Appendf(nil, "%10d|%s", r.Repository.ID, r.Pattern)
 }
 
 func ketchupKey(k model.Ketchup) []byte {
-	return []byte(fmt.Sprintf("%10d|%s", k.Repository.ID, k.Pattern))
+	return fmt.Appendf(nil, "%10d|%s", k.Repository.ID, k.Pattern)
 }
 
 func (s Service) syncReleasesByUser(ctx context.Context, releases []model.Release, ketchups []model.Ketchup) (map[model.User][]model.Release, map[model.Identifier]uint8) {
