@@ -15,7 +15,7 @@ const suggestThresold = uint64(5)
 func (s Service) PublicTemplateFunc(_ http.ResponseWriter, r *http.Request) (renderer.Page, error) {
 	return renderer.NewPage("public", http.StatusOK, map[string]any{
 		"CapSiteURL": s.cap.SiteURL(),
-		"Suggests":   s.suggests(r.Context(), nil, 3),
+		"Suggests":   s.suggests(r.Context(), nil, 5),
 		"Root":       "/",
 	}), nil
 }

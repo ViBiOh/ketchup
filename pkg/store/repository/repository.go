@@ -175,28 +175,34 @@ func (s Service) ListByKinds(ctx context.Context, pageSize uint, last string, ki
 }
 
 const suggestQuery = `
+WITH ranked_repositories AS (
+  SELECT
+    r.id,
+    r.kind,
+    r.name,
+    r.part,
+    COUNT(k.user_id) as stable_count,
+    ROW_NUMBER() OVER (PARTITION BY r.kind ORDER BY COUNT(k.user_id) DESC) as rank
+  FROM
+    ketchup.repository r
+  JOIN
+    ketchup.ketchup k ON r.id = k.repository_id
+  WHERE
+    k.pattern = 'stable'
+    AND k.repository_id != ALL($2)
+  GROUP BY
+    r.id, r.kind, r.name, r.part
+)
 SELECT
   id,
   kind,
   name,
   part
 FROM
-  ketchup.repository
+  ranked_repositories
 WHERE
-  id IN (
-    SELECT
-      repository_id
-    FROM
-      ketchup.ketchup
-    WHERE
-      pattern = 'stable'
-      AND id != ALL($2)
-    GROUP BY
-      repository_id
-    ORDER BY
-      COUNT(1) DESC
-    LIMIT $1
-  )
+  rank = 1
+LIMIT $1
 `
 
 func (s Service) Suggest(ctx context.Context, ignoreIds []model.Identifier, count uint64) ([]model.Repository, error) {
