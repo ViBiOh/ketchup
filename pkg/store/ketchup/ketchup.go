@@ -110,14 +110,14 @@ func (s Service) List(ctx context.Context, pageSize uint, last string) ([]model.
 		}
 
 		value := len(queryArgs)
-		query.WriteString(fmt.Sprintf(listQueryRestart, value+1, value+2, value+3))
+		fmt.Fprintf(&query, listQueryRestart, value+1, value+2, value+3)
 		queryArgs = append(queryArgs, lastID, parts[1], lastID)
 	}
 
 	query.WriteString(" ORDER BY k.repository_id ASC, k.pattern ASC")
 
 	queryArgs = append(queryArgs, pageSize)
-	query.WriteString(fmt.Sprintf(" LIMIT $%d", len(queryArgs)))
+	fmt.Fprintf(&query, " LIMIT $%d", len(queryArgs))
 
 	return list, s.db.List(ctx, scanner, query.String(), queryArgs...)
 }

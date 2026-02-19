@@ -108,13 +108,13 @@ func (s Service) List(ctx context.Context, pageSize uint, last string) ([]model.
 		}
 
 		queryArgs = append(queryArgs, lastID)
-		query.WriteString(fmt.Sprintf(" AND id > $%d", len(queryArgs)))
+		fmt.Fprintf(&query, " AND id > $%d", len(queryArgs))
 	}
 
 	query.WriteString(" ORDER BY id ASC")
 
 	queryArgs = append(queryArgs, pageSize)
-	query.WriteString(fmt.Sprintf(" LIMIT $%d", len(queryArgs)))
+	fmt.Fprintf(&query, " LIMIT $%d", len(queryArgs))
 
 	return s.list(ctx, query.String(), queryArgs...)
 }
@@ -160,14 +160,14 @@ func (s Service) ListByKinds(ctx context.Context, pageSize uint, last string, ki
 		}
 
 		queryIndex := len(queryArgs)
-		query.WriteString(fmt.Sprintf(listByKindRestartQuery, queryIndex+1, queryIndex+2, queryIndex+3))
+		fmt.Fprintf(&query, listByKindRestartQuery, queryIndex+1, queryIndex+2, queryIndex+3)
 		queryArgs = append(queryArgs, parts[0], parts[1], parts[0])
 	}
 
 	query.WriteString(" ORDER BY name ASC, part ASC")
 
 	queryArgs = append(queryArgs, pageSize)
-	query.WriteString(fmt.Sprintf(" LIMIT $%d", len(queryArgs)))
+	fmt.Fprintf(&query, " LIMIT $%d", len(queryArgs))
 
 	list, err := s.list(ctx, query.String(), queryArgs...)
 
