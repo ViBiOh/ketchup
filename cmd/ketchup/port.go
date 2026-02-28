@@ -14,6 +14,7 @@ func newPort(clients clients, services services) http.Handler {
 
 	mux := http.NewServeMux()
 	mux.Handle("/signup", services.ketchup.Signup())
+	mux.Handle("/logout", services.ketchup.Logout())
 	mux.Handle("/app/", http.StripPrefix("/app", services.authMiddleware.Middleware(middleware.New(services.user).Middleware(authMux))))
 
 	services.renderer.RegisterMux(mux, services.ketchup.PublicTemplateFunc)

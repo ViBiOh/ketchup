@@ -3,6 +3,7 @@ package ketchup
 import (
 	"context"
 	"html/template"
+	"net/http"
 	"time"
 
 	"github.com/ViBiOh/httputils/v4/pkg/cache"
@@ -31,20 +32,26 @@ var FuncMap = template.FuncMap{
 	},
 }
 
+type LogoutService interface {
+	Logout(w http.ResponseWriter, r *http.Request)
+}
+
 type Service struct {
+	repository repository.Service
 	user       user.Service
 	ketchup    ketchup.Service
-	repository repository.Service
-	cache      *cache.Cache[model.User, []model.Repository]
 	redis      redis.Client
+	logout     LogoutService
+	cache      *cache.Cache[model.User, []model.Repository]
 	renderer   *renderer.Service
 	cap        cap.Service
 }
 
-func New(ctx context.Context, renderer *renderer.Service, ketchup ketchup.Service, user user.Service, repository repository.Service, cap cap.Service, redis redis.Client, traceProvider trace.TracerProvider) Service {
+func New(ctx context.Context, renderer *renderer.Service, ketchup ketchup.Service, user user.Service, repository repository.Service, cap cap.Service, logout LogoutService, redis redis.Client, traceProvider trace.TracerProvider) Service {
 	service := Service{
 		renderer:   renderer,
 		cap:        cap,
+		logout:     logout,
 		ketchup:    ketchup,
 		user:       user,
 		repository: repository,
