@@ -12,7 +12,7 @@ import (
 )
 
 func (s Service) getNewReleases(ctx context.Context) ([]model.Release, error) {
-	releases, err := s.getNewStandardReleases(ctx)
+	releases, err := s.getNeweleases(ctx)
 	if err != nil {
 		slog.LogAttrs(ctx, slog.LevelError, "fetch releases", slog.Any("error", err))
 	}
@@ -20,7 +20,7 @@ func (s Service) getNewReleases(ctx context.Context) ([]model.Release, error) {
 	return releases, nil
 }
 
-func (s Service) getNewStandardReleases(ctx context.Context) ([]model.Release, error) {
+func (s Service) getNeweleases(ctx context.Context) ([]model.Release, error) {
 	var newReleases []model.Release
 	var count uint64
 	var last string
@@ -46,7 +46,7 @@ func (s Service) getNewStandardReleases(ctx context.Context) ([]model.Release, e
 	}()
 
 	for {
-		repositories, err := s.repository.ListByKinds(ctx, pageSize, last, model.Github, model.Docker, model.NPM, model.Pypi)
+		repositories, err := s.repository.List(ctx, pageSize, last)
 		if err != nil {
 			return nil, fmt.Errorf("fetch standard repositories: %w", err)
 		}

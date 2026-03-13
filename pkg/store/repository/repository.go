@@ -119,61 +119,6 @@ func (s Service) List(ctx context.Context, pageSize uint, last string) ([]model.
 	return s.list(ctx, query.String(), queryArgs...)
 }
 
-const listByKindsQuery = `
-SELECT
-  id,
-  kind,
-  name,
-  part
-FROM
-  ketchup.repository
-WHERE
-  kind = ANY($1)
-`
-
-const listByKindRestartQuery = `
-  AND (
-    (
-      name = $%d AND part > $%d
-    ) OR (
-      name > $%d
-    )
-  )
-`
-
-func (s Service) ListByKinds(ctx context.Context, pageSize uint, last string, kinds ...model.RepositoryKind) ([]model.Repository, error) {
-	var query strings.Builder
-	query.WriteString(listByKindsQuery)
-	var queryArgs []any
-
-	kindsValue := make([]string, len(kinds))
-	for i, kind := range kinds {
-		kindsValue[i] = strings.ToLower(kind.String())
-	}
-
-	queryArgs = append(queryArgs, kindsValue)
-
-	if len(last) != 0 {
-		parts := strings.Split(last, "|")
-		if len(parts) != 2 {
-			return nil, errors.New("invalid last key format")
-		}
-
-		queryIndex := len(queryArgs)
-		fmt.Fprintf(&query, listByKindRestartQuery, queryIndex+1, queryIndex+2, queryIndex+3)
-		queryArgs = append(queryArgs, parts[0], parts[1], parts[0])
-	}
-
-	query.WriteString(" ORDER BY name ASC, part ASC")
-
-	queryArgs = append(queryArgs, pageSize)
-	fmt.Fprintf(&query, " LIMIT $%d", len(queryArgs))
-
-	list, err := s.list(ctx, query.String(), queryArgs...)
-
-	return list, err
-}
-
 const suggestQuery = `
 WITH ranked_repositories AS (
   SELECT

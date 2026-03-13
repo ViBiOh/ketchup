@@ -43,15 +43,6 @@ func (s Service) List(ctx context.Context, pageSize uint, last string) ([]model.
 	return list, nil
 }
 
-func (s Service) ListByKinds(ctx context.Context, pageSize uint, last string, kinds ...model.RepositoryKind) ([]model.Repository, error) {
-	list, err := s.repository.ListByKinds(ctx, pageSize, last, kinds...)
-	if err != nil {
-		return nil, httpModel.WrapInternal(fmt.Errorf("list by kind: %w", err))
-	}
-
-	return list, nil
-}
-
 func (s Service) Suggest(ctx context.Context, ignoreIds []model.Identifier, count uint64) ([]model.Repository, error) {
 	list, err := s.repository.Suggest(ctx, ignoreIds, count)
 	if err != nil {

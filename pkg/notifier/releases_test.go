@@ -13,7 +13,7 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
-func TestGetNewStandardReleases(t *testing.T) {
+func TestGetNewReleases(t *testing.T) {
 	t.Parallel()
 
 	type args struct {
@@ -32,7 +32,7 @@ func TestGetNewStandardReleases(t *testing.T) {
 				ctx: context.TODO(),
 			},
 			nil,
-			errors.New("failed"),
+			nil,
 		},
 		"github error": {
 			Service{},
@@ -76,14 +76,14 @@ func TestGetNewStandardReleases(t *testing.T) {
 
 			switch intention {
 			case "list error":
-				mockRepositoryService.EXPECT().ListByKinds(gomock.Any(), gomock.Any(), gomock.Any(), model.Github, model.Docker, model.NPM, model.Pypi).Return(nil, errors.New("failed"))
+				mockRepositoryService.EXPECT().List(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, errors.New("failed"))
 			case "github error":
-				mockRepositoryService.EXPECT().ListByKinds(gomock.Any(), gomock.Any(), gomock.Any(), model.Github, model.Docker, model.NPM, model.Pypi).Return([]model.Repository{
+				mockRepositoryService.EXPECT().List(gomock.Any(), gomock.Any(), gomock.Any()).Return([]model.Repository{
 					model.NewGithubRepository(model.Identifier(1), repositoryName).AddVersion(model.DefaultPattern, repositoryVersion),
 				}, nil)
 				mockRepositoryService.EXPECT().LatestVersions(gomock.Any(), gomock.Any()).Return(nil, errors.New("failed"))
 			case "same version":
-				mockRepositoryService.EXPECT().ListByKinds(gomock.Any(), gomock.Any(), gomock.Any(), model.Github, model.Docker, model.NPM, model.Pypi).Return([]model.Repository{
+				mockRepositoryService.EXPECT().List(gomock.Any(), gomock.Any(), gomock.Any()).Return([]model.Repository{
 					model.NewGithubRepository(model.Identifier(1), repositoryName).AddVersion(model.DefaultPattern, repositoryVersion),
 				}, nil)
 				mockRepositoryService.EXPECT().LatestVersions(gomock.Any(), gomock.Any()).Return(map[string]semver.Version{
@@ -92,7 +92,7 @@ func TestGetNewStandardReleases(t *testing.T) {
 					},
 				}, nil)
 			case "success":
-				mockRepositoryService.EXPECT().ListByKinds(gomock.Any(), gomock.Any(), gomock.Any(), model.Github, model.Docker, model.NPM, model.Pypi).Return([]model.Repository{
+				mockRepositoryService.EXPECT().List(gomock.Any(), gomock.Any(), gomock.Any()).Return([]model.Repository{
 					model.NewGithubRepository(model.Identifier(1), repositoryName).AddVersion(model.DefaultPattern, repositoryVersion),
 				}, nil)
 				mockRepositoryService.EXPECT().LatestVersions(gomock.Any(), gomock.Any()).Return(map[string]semver.Version{
@@ -101,7 +101,7 @@ func TestGetNewStandardReleases(t *testing.T) {
 				}, nil)
 			}
 
-			got, gotErr := testCase.instance.getNewStandardReleases(testCase.args.ctx)
+			got, gotErr := testCase.instance.getNewReleases(testCase.args.ctx)
 
 			failed := false
 
@@ -116,7 +116,7 @@ func TestGetNewStandardReleases(t *testing.T) {
 			}
 
 			if failed {
-				t.Errorf("getNewStandardReleases() = (%+v, `%s`), want (%+v, `%s`)", got, gotErr, testCase.want, testCase.wantErr)
+				t.Errorf("getNewReleases() = (%+v, `%s`), want (%+v, `%s`)", got, gotErr, testCase.want, testCase.wantErr)
 			}
 		})
 	}
