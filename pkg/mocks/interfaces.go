@@ -423,26 +423,6 @@ func (mr *RepositoryServiceMockRecorder) List(arg0, arg1, arg2 any) *gomock.Call
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*RepositoryService)(nil).List), arg0, arg1, arg2)
 }
 
-// ListByKinds mocks base method.
-func (m *RepositoryService) ListByKinds(arg0 context.Context, arg1 uint, arg2 string, arg3 ...model0.RepositoryKind) ([]model0.Repository, error) {
-	m.ctrl.T.Helper()
-	varargs := []any{arg0, arg1, arg2}
-	for _, a := range arg3 {
-		varargs = append(varargs, a)
-	}
-	ret := m.ctrl.Call(m, "ListByKinds", varargs...)
-	ret0, _ := ret[0].([]model0.Repository)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// ListByKinds indicates an expected call of ListByKinds.
-func (mr *RepositoryServiceMockRecorder) ListByKinds(arg0, arg1, arg2 any, arg3 ...any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	varargs := append([]any{arg0, arg1, arg2}, arg3...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListByKinds", reflect.TypeOf((*RepositoryService)(nil).ListByKinds), varargs...)
-}
-
 // Suggest mocks base method.
 func (m *RepositoryService) Suggest(arg0 context.Context, arg1 []model0.Identifier, arg2 uint64) ([]model0.Repository, error) {
 	m.ctrl.T.Helper()
@@ -596,26 +576,6 @@ func (m *RepositoryStore) List(ctx context.Context, pageSize uint, last string) 
 func (mr *RepositoryStoreMockRecorder) List(ctx, pageSize, last any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*RepositoryStore)(nil).List), ctx, pageSize, last)
-}
-
-// ListByKinds mocks base method.
-func (m *RepositoryStore) ListByKinds(ctx context.Context, pageSize uint, last string, kinds ...model0.RepositoryKind) ([]model0.Repository, error) {
-	m.ctrl.T.Helper()
-	varargs := []any{ctx, pageSize, last}
-	for _, a := range kinds {
-		varargs = append(varargs, a)
-	}
-	ret := m.ctrl.Call(m, "ListByKinds", varargs...)
-	ret0, _ := ret[0].([]model0.Repository)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// ListByKinds indicates an expected call of ListByKinds.
-func (mr *RepositoryStoreMockRecorder) ListByKinds(ctx, pageSize, last any, kinds ...any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	varargs := append([]any{ctx, pageSize, last}, kinds...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListByKinds", reflect.TypeOf((*RepositoryStore)(nil).ListByKinds), varargs...)
 }
 
 // Suggest mocks base method.
