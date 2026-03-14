@@ -409,7 +409,7 @@ func (mr *RepositoryServiceMockRecorder) LatestVersions(arg0, arg1 any) *gomock.
 }
 
 // List mocks base method.
-func (m *RepositoryService) List(arg0 context.Context, arg1 uint, arg2 string) ([]model0.Repository, error) {
+func (m *RepositoryService) List(arg0 context.Context, arg1 uint, arg2 model0.Identifier) ([]model0.Repository, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "List", arg0, arg1, arg2)
 	ret0, _ := ret[0].([]model0.Repository)
@@ -564,7 +564,7 @@ func (mr *RepositoryStoreMockRecorder) GetByName(ctx, repositoryKind, name, part
 }
 
 // List mocks base method.
-func (m *RepositoryStore) List(ctx context.Context, pageSize uint, last string) ([]model0.Repository, error) {
+func (m *RepositoryStore) List(ctx context.Context, pageSize uint, last model0.Identifier) ([]model0.Repository, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "List", ctx, pageSize, last)
 	ret0, _ := ret[0].([]model0.Repository)

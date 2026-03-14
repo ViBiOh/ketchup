@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"strconv"
 	"strings"
 
 	"github.com/ViBiOh/ketchup/pkg/model"
@@ -96,17 +95,12 @@ WHERE
   TRUE
 `
 
-func (s Service) List(ctx context.Context, pageSize uint, last string) ([]model.Repository, error) {
+func (s Service) List(ctx context.Context, pageSize uint, lastID model.Identifier) ([]model.Repository, error) {
 	var query strings.Builder
 	query.WriteString(listQuery)
 	var queryArgs []any
 
-	if len(last) != 0 {
-		lastID, err := strconv.ParseUint(last, 10, 64)
-		if err != nil {
-			return nil, fmt.Errorf("invalid last key: %w", err)
-		}
-
+	if lastID != 0 {
 		queryArgs = append(queryArgs, lastID)
 		fmt.Fprintf(&query, " AND id > $%d", len(queryArgs))
 	}

@@ -12,18 +12,9 @@ import (
 )
 
 func (s Service) getNewReleases(ctx context.Context) ([]model.Release, error) {
-	releases, err := s.getNeweleases(ctx)
-	if err != nil {
-		slog.LogAttrs(ctx, slog.LevelError, "fetch releases", slog.Any("error", err))
-	}
-
-	return releases, nil
-}
-
-func (s Service) getNeweleases(ctx context.Context) ([]model.Release, error) {
 	var newReleases []model.Release
 	var count uint64
-	var last string
+	var last model.Identifier
 
 	workerCount := 4
 	done := make(chan struct{})
@@ -69,7 +60,7 @@ func (s Service) getNeweleases(ctx context.Context) ([]model.Release, error) {
 		}
 
 		lastRepo := repositories[len(repositories)-1]
-		last = fmt.Sprintf("%s|%s", lastRepo.Name, lastRepo.Part)
+		last = lastRepo.ID
 	}
 
 	wg.Wait()

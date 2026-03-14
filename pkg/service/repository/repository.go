@@ -34,7 +34,7 @@ func New(repositoryStore model.RepositoryStore, githubService model.GenericProvi
 	}
 }
 
-func (s Service) List(ctx context.Context, pageSize uint, last string) ([]model.Repository, error) {
+func (s Service) List(ctx context.Context, pageSize uint, last model.Identifier) ([]model.Repository, error) {
 	list, err := s.repository.List(ctx, pageSize, last)
 	if err != nil {
 		return nil, httpModel.WrapInternal(fmt.Errorf("list: %w", err))

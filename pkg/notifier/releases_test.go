@@ -32,7 +32,7 @@ func TestGetNewReleases(t *testing.T) {
 				ctx: context.TODO(),
 			},
 			nil,
-			nil,
+			errors.New("failed"),
 		},
 		"github error": {
 			Service{},

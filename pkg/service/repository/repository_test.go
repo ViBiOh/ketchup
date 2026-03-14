@@ -37,7 +37,7 @@ func TestList(t *testing.T) {
 
 	type args struct {
 		pageSize uint
-		last     string
+		last     model.Identifier
 	}
 
 	cases := map[string]struct {

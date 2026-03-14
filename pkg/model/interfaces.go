@@ -47,7 +47,7 @@ type HelmProvider interface {
 }
 
 type RepositoryService interface {
-	List(context.Context, uint, string) ([]Repository, error)
+	List(context.Context, uint, Identifier) ([]Repository, error)
 	Suggest(context.Context, []Identifier, uint64) ([]Repository, error)
 	GetOrCreate(context.Context, RepositoryKind, string, string, string) (Repository, error)
 	Update(context.Context, Repository) error
@@ -57,7 +57,7 @@ type RepositoryService interface {
 
 type RepositoryStore interface {
 	DoAtomic(ctx context.Context, action func(context.Context) error) error
-	List(ctx context.Context, pageSize uint, last string) ([]Repository, error)
+	List(ctx context.Context, pageSize uint, last Identifier) ([]Repository, error)
 	Suggest(ctx context.Context, ignoreIds []Identifier, count uint64) ([]Repository, error)
 	Get(ctx context.Context, id Identifier, forUpdate bool) (Repository, error)
 	GetByName(ctx context.Context, repositoryKind RepositoryKind, name, part string) (Repository, error)

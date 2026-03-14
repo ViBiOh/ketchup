@@ -24,7 +24,7 @@ func TestList(t *testing.T) {
 
 	type args struct {
 		pageSize uint
-		last     string
+		last     model.Identifier
 	}
 
 	cases := map[string]struct {
@@ -44,19 +44,10 @@ func TestList(t *testing.T) {
 			2,
 			nil,
 		},
-		"invalid last": {
-			args{
-				pageSize: 20,
-				last:     "abc",
-			},
-			nil,
-			0,
-			errors.New("invalid last key"),
-		},
 		"last": {
 			args{
 				pageSize: 20,
-				last:     "2",
+				last:     model.Identifier(2),
 			},
 			nil,
 			0,
@@ -149,7 +140,7 @@ func TestList(t *testing.T) {
 				mockDatabase.EXPECT().List(gomock.Any(), gomock.Any(), gomock.Any(), []model.Identifier{1, 2}).DoAndReturn(enrichFn)
 
 			case "last":
-				mockDatabase.EXPECT().List(gomock.Any(), gomock.Any(), gomock.Any(), uint64(2), uint(20)).Return(nil)
+				mockDatabase.EXPECT().List(gomock.Any(), gomock.Any(), gomock.Any(), model.Identifier(2), uint(20)).Return(nil)
 
 			case "error":
 				mockDatabase.EXPECT().List(gomock.Any(), gomock.Any(), gomock.Any(), uint(20)).Return(errors.New("timeout"))
