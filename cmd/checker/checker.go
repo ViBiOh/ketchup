@@ -22,6 +22,6 @@ func main() {
 
 	githubApp := github.New(githubConfig, nil, nil, nil)
 
-	patterns, err := githubApp.LatestVersions(ctx, "k3s-io/k3s", []string{"stable", "latest"})
+	patterns, err := githubApp.LatestVersions(ctx, "alacritty/alacritty", []string{"stable"})
 	fmt.Println(patterns, err)
 }

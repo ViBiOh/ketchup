@@ -66,7 +66,13 @@ func New(config *Config, redisClient Redis, meterProvider metric.MeterProvider, 
 }
 
 func (s Service) newClient() request.Request {
-	return request.New().Header("Authorization", fmt.Sprintf("token %s", s.token)).WithClient(httpClient)
+	req := request.New().WithClient(httpClient)
+
+	if len(s.token) != 0 {
+		req = req.Header("Authorization", fmt.Sprintf("token %s", s.token))
+	}
+
+	return req
 }
 
 func (s Service) LatestVersions(ctx context.Context, repository string, patterns []string) (map[string]semver.Version, error) {

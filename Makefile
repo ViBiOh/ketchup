@@ -21,6 +21,12 @@ ifeq ($(DEBUG), true)
 	NOTIFIER_RUNNER = dlv debug $(NOTIFIER_SOURCE)) --
 endif
 
+CHECKER_SOURCE = ./cmd/checker/
+CHECKER_RUNNER = go run $(CHECKER_SOURCE)
+ifeq ($(DEBUG), true)
+	CHECKER_RUNNER = dlv debug $(CHECKER_SOURCE)) --
+endif
+
 .DEFAULT_GOAL := app
 
 ## help: Display list of commands
@@ -117,6 +123,11 @@ run:
 .PHONY: run-notifier
 run-notifier:
 	$(NOTIFIER_RUNNER)
+
+## run-notifier: Locally run the checker of the application
+.PHONY: run-checker
+run-checker:
+	$(CHECKER_RUNNER)
 
 .PHONY: sidecars
 sidecars:
