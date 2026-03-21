@@ -3,7 +3,7 @@ module github.com/ViBiOh/ketchup
 go 1.26
 
 require (
-	github.com/ViBiOh/auth/v3 v3.9.1
+	github.com/ViBiOh/auth/v3 v3.10.0
 	github.com/ViBiOh/flags v1.6.1
 	github.com/ViBiOh/httputils/v4 v4.85.0
 	github.com/ViBiOh/mailer v1.33.14
@@ -49,7 +49,7 @@ require (
 	go.uber.org/atomic v1.11.0 // indirect
 	golang.org/x/crypto v0.49.0 // indirect
 	golang.org/x/net v0.52.0 // indirect
-	golang.org/x/oauth2 v0.35.0 // indirect
+	golang.org/x/oauth2 v0.36.0 // indirect
 	golang.org/x/sync v0.20.0 // indirect
 	golang.org/x/sys v0.42.0 // indirect
 	golang.org/x/text v0.35.0 // indirect
