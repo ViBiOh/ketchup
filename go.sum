@@ -1,5 +1,5 @@
-github.com/ViBiOh/auth/v3 v3.10.0 h1:/zz/B1L1XvdgkQlnHSNJuZrDsIZOwDXckx3Iwhm7KFQ=
-github.com/ViBiOh/auth/v3 v3.10.0/go.mod h1:XD0L2Ilhyx9YUDQ6kJDN1IDSufG4XWbsuMfr6LxykM8=
+github.com/ViBiOh/auth/v3 v3.11.1 h1:bsEfw5b8BQkI3qJkjKldx/V8M2b2JgP2dc0NH9Id348=
+github.com/ViBiOh/auth/v3 v3.11.1/go.mod h1:9WgU7mDbWSr3aePtPanKfCK2lz037CtTmmKxz1zjx0Y=
 github.com/ViBiOh/flags v1.6.1 h1:IAHiEj4c564mR1BuwaIjr89AJpG2xeFELgek9xWTxaE=
 github.com/ViBiOh/flags v1.6.1/go.mod h1:U5O1cuTHPRBQ1sKCZDkV9rl9ESxQHohwvbCkT4toNps=
 github.com/ViBiOh/httputils/v4 v4.86.0 h1:S0/kONBgqsUxa8kJyfCAAVFq1BI9o+igeczjwfsEfeo=
