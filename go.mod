@@ -3,7 +3,7 @@ module github.com/ViBiOh/ketchup
 go 1.26
 
 require (
-	github.com/ViBiOh/auth/v3 v3.10.0
+	github.com/ViBiOh/auth/v3 v3.11.1
 	github.com/ViBiOh/flags v1.6.1
 	github.com/ViBiOh/httputils/v4 v4.86.0
 	github.com/ViBiOh/mailer v1.33.14
