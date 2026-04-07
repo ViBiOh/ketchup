@@ -3,9 +3,7 @@ FROM rg.fr-par.scw.cloud/vibioh/scratch
 ENV KETCHUP_PORT=1080
 EXPOSE 1080
 
-ENV ZONEINFO=/zoneinfo.zip
-COPY zoneinfo.zip /zoneinfo.zip
-COPY ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
+COPY cacert.pem /etc/ssl/cert.pem
 
 HEALTHCHECK --retries=5 CMD [ "/ketchup", "-url", "http://127.0.0.1:1080/health" ]
 ENTRYPOINT [ "/ketchup" ]
