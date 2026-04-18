@@ -95,11 +95,11 @@
     <a href="{{ url "/app/" }}" class="active-link">Login</a> or <a href="#signup" class="active-link">Signup</a>
   </h2>
 
-  <script type="module" src="/scripts/cap.js"></script>
   <script type="text/javascript" nonce="{{ .nonce }}">
     window.CAP_CSS_NONCE = '{{ .nonce }}';
-    window.CAP_CUSTOM_WASM_URL = '{{ publicURL "/scripts/cap_wasm.min.js" }}';
+    window.CAP_CUSTOM_WASM_URL = '{{ publicURL "/scripts/cap_wasm_bg.wasm" }}';
   </script>
+  <script type="module" src="/scripts/cap.js"></script>
 
   <fieldset id="signup">
     <legend>Signup</legend>
