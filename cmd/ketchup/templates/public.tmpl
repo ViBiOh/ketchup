@@ -34,9 +34,8 @@
     function logout() {
       const logoutXHR = new XMLHttpRequest();
       logoutXHR.open("GET", "/logout", true, "no user", "no password");
+      logoutXHR.onloadend = () => window.location.href = "/";
       logoutXHR.send();
-
-      setTimeout(() => window.location.href = "/", 4);
     }
 
     document.addEventListener("readystatechange", (event) => {
