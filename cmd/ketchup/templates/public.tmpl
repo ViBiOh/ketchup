@@ -33,8 +33,8 @@
   <script type="text/javascript" nonce="{{ .nonce }}">
     function logout() {
       const logoutXHR = new XMLHttpRequest();
-      logoutXHR.open("GET", "/logout", true, "no user", "no password");
-      logoutXHR.onloadend = () => window.location.href = "/";
+      logoutXHR.open("GET", "/", true, "no user", "no password");
+      logoutXHR.onloadend = () => window.location.href = "/logout";
       logoutXHR.send();
     }
 
