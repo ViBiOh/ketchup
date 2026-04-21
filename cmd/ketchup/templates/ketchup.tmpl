@@ -224,24 +224,6 @@
 
 {{ define "ketchups" }}
   <style type="text/css" nonce="{{ .nonce }}">
-    {{ range .Ketchups }}
-      #delete-modal-{{ .ID }}:target,
-      #edit-modal-{{ .ID }}:target,
-    {{ end }}
-    #create-modal:target {
-      display: flex;
-      z-index: 5;
-    }
-
-    {{ range .Ketchups }}
-      #delete-modal-{{ .ID }}:target ~ .content,
-      #edit-modal-{{ .ID }}:target ~ .content,
-    {{ end }}
-    #create-modal:target ~ .content {
-      display: flex;
-      z-index: 5;
-    }
-
     .content {
       padding-bottom: .5rem;
     }

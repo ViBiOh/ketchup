@@ -185,6 +185,15 @@
       pointer-events: auto;
     }
 
+    .modal:target {
+      display: flex;
+      z-index: 5;
+    }
+
+    .modal:target ~ .content {
+      pointer-events: none;
+    }
+
     .header {
       background-color: var(--grey);
       margin-top: 0;
@@ -194,6 +203,10 @@
 
     .block {
       display: block;
+    }
+
+    .inline-block {
+      display: inline-block;
     }
 
     .flex {
